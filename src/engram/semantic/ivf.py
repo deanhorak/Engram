@@ -9,6 +9,7 @@ from pathlib import Path
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from engram.semantic.swiglu import silu
 from engram.utils import atomic_json
 
 
@@ -120,6 +121,19 @@ def _fit_joint_centroids(
     return centroids, assignments
 
 
+def _csr_postings(
+    assignments: NDArray[np.int64], count: int
+) -> tuple[np.ndarray, np.ndarray]:
+    counts = np.bincount(assignments, minlength=count)
+    offsets = np.empty(count + 1, dtype=np.int64)
+    offsets[0] = 0
+    np.cumsum(counts, out=offsets[1:])
+    postings = np.lexsort(
+        (np.arange(assignments.size, dtype=np.int64), assignments)
+    ).astype(np.int64, copy=False)
+    return offsets, postings
+
+
 def _readonly(value: ArrayLike, dtype: np.dtype | type, name: str) -> np.ndarray:
     try:
         result = np.asanyarray(value, dtype=dtype)
@@ -187,14 +201,7 @@ class JointKeyIVFIndex:
         centroids, assignments = _fit_joint_centroids(
             joint, clusters, iterations
         )
-        counts = np.bincount(assignments, minlength=clusters)
-        offsets = np.empty(clusters + 1, dtype=np.int64)
-        offsets[0] = 0
-        np.cumsum(counts, out=offsets[1:])
-        # cluster is the primary key and record ID the deterministic secondary key.
-        postings = np.lexsort(
-            (np.arange(gate.shape[0], dtype=np.int64), assignments)
-        ).astype(np.int64, copy=False)
+        offsets, postings = _csr_postings(assignments, clusters)
         hidden = gate.shape[1]
         return cls(
             gate_records=normalized_gate.astype(np.float32),
@@ -449,6 +456,190 @@ class JointKeyIVFIndex:
             raise IVFIndexError(f"cannot load IVF index: {source}") from error
 
 
+class SeparateKeyIVFIndex:
+    """Experimental IVF router with independent gate and up posting lists."""
+
+    def __init__(
+        self,
+        *,
+        gate_records: ArrayLike,
+        up_records: ArrayLike,
+        gate_norms: ArrayLike,
+        up_norms: ArrayLike,
+        value_norms: ArrayLike,
+        gate_centroids: ArrayLike,
+        up_centroids: ArrayLike,
+        gate_offsets: ArrayLike,
+        gate_indices: ArrayLike,
+        up_offsets: ArrayLike,
+        up_indices: ArrayLike,
+        build_iterations: int,
+    ) -> None:
+        self.gate_records = _readonly(gate_records, np.float32, "gate_records")
+        self.up_records = _readonly(up_records, np.float32, "up_records")
+        self.gate_norms = _readonly(gate_norms, np.float32, "gate_norms")
+        self.up_norms = _readonly(up_norms, np.float32, "up_norms")
+        self.value_norms = _readonly(value_norms, np.float32, "value_norms")
+        self.gate_centroids = _readonly(gate_centroids, np.float32, "gate_centroids")
+        self.up_centroids = _readonly(up_centroids, np.float32, "up_centroids")
+        self.gate_offsets = _readonly(gate_offsets, np.int64, "gate_offsets")
+        self.gate_indices = _readonly(gate_indices, np.int64, "gate_indices")
+        self.up_offsets = _readonly(up_offsets, np.int64, "up_offsets")
+        self.up_indices = _readonly(up_indices, np.int64, "up_indices")
+        self.build_iterations = _positive_integer(build_iterations, "build_iterations")
+        if self.gate_records.ndim != 2 or self.gate_records.shape != self.up_records.shape:
+            raise IVFIndexError("gate and up records must have the same rank-2 shape")
+        record_norms = (self.gate_norms, self.up_norms, self.value_norms)
+        if any(item.shape != (self.records,) for item in record_norms):
+            raise IVFIndexError("record norm arrays have incompatible dimensions")
+        if any(np.any(item < 0.0) for item in record_norms):
+            raise IVFIndexError("record norms must be non-negative")
+        if self.gate_centroids.shape != self.up_centroids.shape:
+            raise IVFIndexError("gate and up centroid shapes differ")
+        if self.gate_centroids.ndim != 2 or self.gate_centroids.shape[1] != self.hidden_size:
+            raise IVFIndexError("centroids have incompatible dimensions")
+        for name, offsets, indices in (
+            ("gate", self.gate_offsets, self.gate_indices),
+            ("up", self.up_offsets, self.up_indices),
+        ):
+            valid_offsets = (
+                offsets.shape == (self.centroids + 1,)
+                and offsets[0] == 0
+                and offsets[-1] == self.records
+            )
+            if not valid_offsets:
+                raise IVFIndexError(f"{name} offsets do not span all records")
+            expected = np.arange(self.records, dtype=np.int64)
+            if indices.shape != (self.records,) or not np.array_equal(
+                np.sort(indices), expected
+            ):
+                raise IVFIndexError(f"{name} postings must contain every record exactly once")
+
+    @classmethod
+    def build(
+        cls,
+        gate_keys: ArrayLike,
+        up_keys: ArrayLike,
+        *,
+        num_clusters: int,
+        iterations: int = 20,
+        value_norms: ArrayLike | None = None,
+    ) -> "SeparateKeyIVFIndex":
+        gate = _matrix(gate_keys, "gate_keys")
+        up = _matrix(up_keys, "up_keys")
+        if gate.shape != up.shape:
+            raise IVFIndexError("gate_keys and up_keys must have the same shape")
+        clusters = _positive_integer(num_clusters, "num_clusters")
+        iterations = _positive_integer(iterations, "iterations")
+        if clusters > gate.shape[0]:
+            raise IVFIndexError("num_clusters cannot exceed record count")
+        normalized_gate = _normalize_rows(gate)
+        normalized_up = _normalize_rows(up)
+        values = (
+            np.ones(gate.shape[0], dtype=np.float64)
+            if value_norms is None
+            else np.asarray(value_norms, dtype=np.float64)
+        )
+        if values.shape != (gate.shape[0],) or not np.all(np.isfinite(values)):
+            raise IVFIndexError("value_norms must be finite with one entry per record")
+        gate_centroids, gate_assignments = _fit_joint_centroids(
+            normalized_gate, clusters, iterations
+        )
+        up_centroids, up_assignments = _fit_joint_centroids(
+            normalized_up, clusters, iterations
+        )
+        gate_offsets, gate_indices = _csr_postings(gate_assignments, clusters)
+        up_offsets, up_indices = _csr_postings(up_assignments, clusters)
+        return cls(
+            gate_records=normalized_gate.astype(np.float32),
+            up_records=normalized_up.astype(np.float32),
+            gate_norms=np.linalg.norm(gate, axis=1).astype(np.float32),
+            up_norms=np.linalg.norm(up, axis=1).astype(np.float32),
+            value_norms=values.astype(np.float32),
+            gate_centroids=gate_centroids.astype(np.float32),
+            up_centroids=up_centroids.astype(np.float32),
+            gate_offsets=gate_offsets,
+            gate_indices=gate_indices,
+            up_offsets=up_offsets,
+            up_indices=up_indices,
+            build_iterations=iterations,
+        )
+
+    @property
+    def records(self) -> int:
+        return int(self.gate_records.shape[0])
+
+    @property
+    def hidden_size(self) -> int:
+        return int(self.gate_records.shape[1])
+
+    @property
+    def centroids(self) -> int:
+        return int(self.gate_centroids.shape[0])
+
+    @staticmethod
+    def _posting(offsets: np.ndarray, indices: np.ndarray, cluster: int) -> np.ndarray:
+        start, end = offsets[cluster : cluster + 2]
+        return indices[start:end]
+
+    def search(
+        self,
+        hidden: ArrayLike,
+        *,
+        probes: int,
+        candidate_count: int,
+        expand_for_candidates: bool = False,
+    ) -> IVFCandidateResult:
+        query = np.asarray(hidden, dtype=np.float64)
+        if query.shape != (self.hidden_size,) or not np.all(np.isfinite(query)):
+            raise IVFIndexError(f"hidden must be finite with shape [{self.hidden_size}]")
+        probe_count = _positive_integer(probes, "probes")
+        candidate_count = _positive_integer(candidate_count, "candidate_count")
+        if probe_count > self.centroids:
+            raise IVFIndexError("probes cannot exceed centroid count")
+        norm = float(np.linalg.norm(query))
+        unit_query = query / norm if norm > 0.0 else np.zeros_like(query)
+        ids = np.arange(self.centroids, dtype=np.int64)
+        gate_order = np.lexsort((ids, -(self.gate_centroids @ unit_query)))
+        up_order = np.lexsort((ids, -np.abs(self.up_centroids @ unit_query)))
+        selected = probe_count
+        while True:
+            gate_clusters = gate_order[:selected]
+            up_clusters = up_order[:selected]
+            parts = [
+                self._posting(self.gate_offsets, self.gate_indices, int(cluster))
+                for cluster in gate_clusters
+            ]
+            parts += [
+                self._posting(self.up_offsets, self.up_indices, int(cluster))
+                for cluster in up_clusters
+            ]
+            probed_records = np.unique(np.concatenate(parts)).astype(np.int64, copy=False)
+            enough = probed_records.size >= candidate_count or selected >= self.centroids
+            if not expand_for_candidates or enough:
+                break
+            selected += 1
+        gate_dot = (
+            self.gate_records[probed_records] @ unit_query
+            * self.gate_norms[probed_records]
+            * norm
+        )
+        up_dot = (
+            self.up_records[probed_records] @ unit_query
+            * self.up_norms[probed_records]
+            * norm
+        )
+        scores = np.abs(silu(gate_dot) * up_dot) * self.value_norms[probed_records]
+        order = np.lexsort((probed_records, -scores))
+        chosen = order[: min(candidate_count, probed_records.size)]
+        return IVFCandidateResult(
+            indices=probed_records[chosen],
+            proxy_scores=scores[chosen],
+            probed_clusters=np.concatenate([gate_clusters, up_clusters + self.centroids]),
+            probed_record_count=int(probed_records.size),
+        )
+
+
 class JointKeyIVFProbeIndex:
     """Runtime IVF routing data without duplicate full-precision record keys."""
 
@@ -668,4 +859,5 @@ __all__ = [
     "IVFProbeResult",
     "JointKeyIVFIndex",
     "JointKeyIVFProbeIndex",
+    "SeparateKeyIVFIndex",
 ]

@@ -52,6 +52,28 @@ reduction. The immediate research priority is improving semantic candidate recal
 compilation claims. See [architecture](docs/architecture.md), [evaluation](docs/evaluation.md),
 and [limitations](docs/limitations.md) for the precise design and caveats.
 
+## How conversion and inference work
+
+A Llama model alternates attention blocks, which move information between token positions, and
+SwiGLU MLP blocks, which transform each position independently. Engram treats every MLP neuron as
+a memory record with two lookup keys and one output value. It reads those tensors directly from
+the Hugging Face checkpoint, records the real inputs and outputs seen at each layer, and measures
+which records matter for each state. The converter then quantizes the records, builds indexes for
+sparse lookup, copies tokenizer and embedding data, and writes a checksummed `.engram` directory.
+The original transformer layers are not needed to load that directory.
+
+At inference time, the runtime tokenizes the prompt and maintains one fixed-width recurrent state.
+For each token it retrieves semantic records, updates bounded short- and long-context memory,
+runs a shared recurrent controller for a small number of cycles, and searches the vocabulary for
+the next token. The intended trained system will distill the controller and episodic mechanisms
+from teacher traces. The current runnable baseline exercises this dataflow but uses an initialized
+controller and heuristic episodic memory, so it is infrastructure for the research rather than a
+quality-preserving conversion.
+
+For a detailed explanation written for readers who know general computer science but not language
+models, see [How Engram works](docs/how_engram_works.md). It covers the source Llama computation,
+extraction process, compiled format, inference loop, and the work still required.
+
 ## Quick start
 
 Python 3.10+, NumPy, CMake 3.20+, and a C++20 compiler are required. PyTorch,
@@ -172,6 +194,7 @@ repetition. Its small KL is an artifact of near-uniform random logits.
 ## Documentation
 
 - [Architecture](docs/architecture.md)
+- [How Engram works](docs/how_engram_works.md)
 - [Conversion pipeline](docs/conversion_pipeline.md)
 - [Model format](docs/model_format.md)
 - [Evaluation](docs/evaluation.md)

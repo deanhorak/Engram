@@ -7,6 +7,7 @@ from engram.semantic.ivf import (
     IVFIndexError,
     JointKeyIVFIndex,
     JointKeyIVFProbeIndex,
+    SeparateKeyIVFIndex,
 )
 
 
@@ -115,3 +116,30 @@ def test_runtime_probe_index_uses_uint32_and_expands_only_until_sufficient(tmp_p
     assert isinstance(loaded.joint_centroids, np.memmap)
     np.testing.assert_array_equal(actual.indices, result.indices)
     np.testing.assert_array_equal(actual.clusters, result.clusters)
+
+
+def test_separate_key_index_unions_gate_and_up_postings_deterministically():
+    gate = np.array([[1, 0], [1, 0], [0, 1], [0, 1]], dtype=np.float32)
+    up = np.array([[0, 1], [1, 0], [1, 0], [0, 1]], dtype=np.float32)
+    index = SeparateKeyIVFIndex.build(gate, up, num_clusters=2, iterations=8)
+
+    first = index.search([1, 0], probes=1, candidate_count=4)
+    second = index.search([1, 0], probes=1, candidate_count=4)
+
+    np.testing.assert_array_equal(first.indices, second.indices)
+    assert 1 in first.indices
+    assert first.probed_record_count >= first.indices.size
+    assert first.probed_record_count <= index.records
+
+
+def test_separate_key_index_reranks_with_true_key_magnitudes():
+    gate = np.array([[1, 0], [3, 0]], dtype=np.float32)
+    up = np.array([[1, 0], [1, 0]], dtype=np.float32)
+    index = SeparateKeyIVFIndex.build(
+        gate, up, num_clusters=1, iterations=2, value_norms=[1, 1]
+    )
+
+    result = index.search([1, 0], probes=1, candidate_count=1)
+
+    assert result.indices.tolist() == [1]
+    assert result.proxy_scores[0] > 0
