@@ -1,0 +1,32 @@
+{"input_type":"prose","text":"A patient gardener records rainfall each morning and adjusts the watering schedule for tomatoes, herbs, and young fruit trees."}
+{"input_type":"prose","text":"The coastal railway follows steep cliffs, crosses three stone bridges, and reaches the harbor shortly before sunset."}
+{"input_type":"prose","text":"Researchers compared the migration patterns of birds across wetlands, forests, grasslands, and densely populated cities."}
+{"input_type":"prose","text":"A museum curator carefully labels each ceramic fragment before reconstructing the history of the ancient settlement."}
+{"input_type":"prose","text":"Renewable energy systems combine solar panels, battery storage, and demand forecasting to stabilize a small electrical grid."}
+{"input_type":"prose","text":"The orchestra rehearsed the final movement repeatedly until the brass, strings, and percussion entered at precisely the right moments."}
+{"input_type":"prose","text":"Mountain snow melts gradually in spring, feeding rivers that supply farms and communities throughout the dry summer."}
+{"input_type":"prose","text":"Clear technical documentation explains assumptions, defines interfaces, includes examples, and records known limitations."}
+{"input_type":"code","text":"def binary_search(values, target):\n    low, high = 0, len(values) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if values[mid] == target: return mid\n        if values[mid] < target: low = mid + 1\n        else: high = mid - 1\n    return -1"}
+{"input_type":"code","text":"class Counter:\n    def __init__(self): self.value = 0\n    def increment(self, amount=1): self.value += amount\n    def reset(self): self.value = 0"}
+{"input_type":"code","text":"SELECT customer_id, COUNT(*) AS orders FROM purchases WHERE created_at >= '2025-01-01' GROUP BY customer_id ORDER BY orders DESC;"}
+{"input_type":"code","text":"for (const item of queue) {\n  if (!item.valid) continue;\n  results.push(await processItem(item));\n}"}
+{"input_type":"code","text":"fn gcd(mut a: u64, mut b: u64) -> u64 { while b != 0 { let r = a % b; a = b; b = r; } a }"}
+{"input_type":"code","text":"def moving_average(samples, width):\n    return [sum(samples[i:i+width]) / width for i in range(len(samples)-width+1)]"}
+{"input_type":"code","text":"if cache_key in cache:\n    return cache[cache_key]\nvalue = compute_expensive_result(request)\ncache[cache_key] = value\nreturn value"}
+{"input_type":"code","text":"CREATE TABLE events (id BIGINT PRIMARY KEY, kind TEXT NOT NULL, payload JSONB, created_at TIMESTAMP NOT NULL);"}
+{"input_type":"conversation","text":"User: How can I improve my sleep schedule?\nAssistant: Keep a consistent wake time, reduce late caffeine, and dim bright lights before bed."}
+{"input_type":"conversation","text":"User: Why did the build fail?\nAssistant: The linker cannot find the math library. Add the required library to the target configuration and rebuild."}
+{"input_type":"conversation","text":"User: Can you summarize this meeting?\nAssistant: The team approved the launch date, assigned documentation work, and deferred the database migration."}
+{"input_type":"conversation","text":"User: What should I pack for a cold hike?\nAssistant: Bring insulating layers, waterproof outerwear, gloves, food, water, navigation, and an emergency light."}
+{"input_type":"conversation","text":"User: Is the service healthy?\nAssistant: Latency is normal and all instances are responding, but the error rate increased slightly in one region."}
+{"input_type":"conversation","text":"User: Explain recursion simply.\nAssistant: Recursion is when a function solves a problem by calling itself on a smaller version until it reaches a base case."}
+{"input_type":"conversation","text":"User: Please revise the headline.\nAssistant: Here is a shorter version that states the result first and removes the ambiguous wording."}
+{"input_type":"conversation","text":"User: When does the train leave?\nAssistant: The next departure is at 14:35 from platform six, subject to the posted schedule."}
+{"input_type":"structured","text":"{\"experiment\": \"router_sweep\", \"seed\": 42, \"parameters\": {\"top_k\": 128, \"candidates\": 256}}"}
+{"input_type":"structured","text":"{\"users\": [{\"id\": 17, \"active\": true}, {\"id\": 23, \"active\": false}], \"count\": 2}"}
+{"input_type":"structured","text":"service: inference\nreplicas: 4\nresources:\n  cpu: 8\n  memory_gb: 32\nhealthcheck:\n  path: /ready\n  interval: 10s"}
+{"input_type":"structured","text":"timestamp,temperature,humidity\n2026-07-17T12:00:00Z,24.1,0.48\n2026-07-17T13:00:00Z,24.8,0.45"}
+{"input_type":"structured","text":"[{\"op\": \"replace\", \"path\": \"/status\", \"value\": \"ready\"}, {\"op\": \"add\", \"path\": \"/retries\", \"value\": 0}]"}
+{"input_type":"structured","text":"HTTP/1.1 200 OK\nContent-Type: application/json\nCache-Control: no-store\n\n{\"status\":\"ok\",\"latency_ms\":12}"}
+{"input_type":"structured","text":"name,version,license\nengram,0.1.0,MIT\nnumpy,2.4.6,BSD\ntorch,2.7.1,BSD"}
+{"input_type":"structured","text":"{\"matrix\": [[1, 0, 0], [0, 1, 0], [0, 0, 1]], \"shape\": [3, 3], \"dtype\": \"float32\"}"}

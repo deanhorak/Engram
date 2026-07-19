@@ -1,0 +1,16 @@
+{"input_type":"prose","text":"After the storm passed, engineers inspected the bridge supports and reopened one lane for local traffic."}
+{"input_type":"prose","text":"A language teacher uses short stories, conversation practice, and spaced review to help students retain new vocabulary."}
+{"input_type":"prose","text":"The satellite measures cloud cover, ocean temperature, soil moisture, and seasonal changes in vegetation."}
+{"input_type":"prose","text":"Good experiments separate calibration from validation and report negative results alongside successful measurements."}
+{"input_type":"code","text":"def merge(left, right):\n    output = []\n    while left and right: output.append(left.pop(0) if left[0] <= right[0] else right.pop(0))\n    return output + left + right"}
+{"input_type":"code","text":"async function retry(task, attempts) { for (let i = 0; i < attempts; i++) { try { return await task(); } catch (error) { if (i + 1 === attempts) throw error; } } }"}
+{"input_type":"code","text":"UPDATE jobs SET status = 'expired' WHERE status = 'queued' AND created_at < NOW() - INTERVAL '1 day';"}
+{"input_type":"code","text":"struct Point { double x; double y; }; double distance(Point a, Point b) { return hypot(a.x-b.x, a.y-b.y); }"}
+{"input_type":"conversation","text":"User: Why is validation separate from training?\nAssistant: Separation tests whether the learned behavior generalizes to examples that did not influence fitting."}
+{"input_type":"conversation","text":"User: The request timed out again.\nAssistant: Check upstream latency, connection-pool saturation, retry behavior, and whether the timeout budget is realistic."}
+{"input_type":"conversation","text":"User: Suggest a quick dinner.\nAssistant: Roast vegetables and chickpeas with olive oil and spices, then serve them over rice with yogurt or tahini."}
+{"input_type":"conversation","text":"User: What does this metric mean?\nAssistant: Candidate recall is the fraction of oracle-selected records that were present in the router's candidate set."}
+{"input_type":"structured","text":"{\"run_id\": \"gate2-b\", \"split\": \"validation\", \"records\": 16, \"complete\": true}"}
+{"input_type":"structured","text":"apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: runtime-settings\ndata:\n  mode: evaluation\n  log_level: info"}
+{"input_type":"structured","text":"metric,value,unit\ncandidate_recall,0.72,fraction\nlatency,4.8,milliseconds\nmemory,312,megabytes"}
+{"input_type":"structured","text":"{\"query\": {\"filters\": [{\"field\": \"region\", \"equals\": \"north\"}], \"limit\": 25}, \"sort\": [\"score:desc\"]}"}

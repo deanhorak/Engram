@@ -1,5 +1,6 @@
 import json
 
+import numpy as np
 import pytest
 
 torch = pytest.importorskip("torch")
@@ -10,7 +11,7 @@ try:
 except (ImportError, RuntimeError) as error:
     pytest.skip(f"local Transformers Llama stack is unavailable: {error}", allow_module_level=True)
 
-from engram.models.inspection import inspect_model
+from engram.models.inspection import inspect_model, load_layer_mlp
 from engram.semantic.oracle import analyze_magnitude_oracle
 from engram.tracing.teacher import capture_teacher_traces
 
@@ -45,3 +46,24 @@ def test_local_hf_llama_exact_mlp_boundary(tmp_path):
     assert report["record_count"] == 8
     overall = next(group for group in report["groups"] if group["scope"] == "all")
     assert overall["teacher_reconstruction_relative_l2"]["p95"] < 1e-5
+
+
+def test_local_hf_bfloat16_mlp_weights_load_as_float32(tmp_path):
+    config = transformers.LlamaConfig(
+        hidden_size=16,
+        intermediate_size=32,
+        num_hidden_layers=1,
+        num_attention_heads=2,
+        num_key_value_heads=2,
+        vocab_size=64,
+    )
+    model_path = tmp_path / "bf16-model"
+    LlamaForCausalLM(config).to(dtype=torch.bfloat16).save_pretrained(
+        model_path, safe_serialization=True
+    )
+
+    gate, up, down = load_layer_mlp(model_path, 0)
+
+    assert gate.dtype == np.float32
+    assert up.dtype == np.float32
+    assert down.dtype == np.float32

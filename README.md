@@ -1,17 +1,56 @@
 # Engram
 
-Engram is a research engineering project exploring whether a pretrained Llama-family
-transformer can be compiled into a CPU-native recurrent controller plus sparse semantic
-and episodic memories. The production goal is explicitly **not** a transformer wrapper.
+Engram asks a practical research question: can we take knowledge and behavior learned by a
+Llama-family transformer and reorganize them into a much smaller, CPU-native inference system?
 
-The repository now contains an end-to-end research prototype: validated local-model inspection,
-deterministic Llama-shaped fixtures, checksummed streaming traces at the exact MLP module
-boundary for Hugging Face checkpoints, exact SwiGLU neuron decomposition, a full-information
-contribution-magnitude oracle, indexed joint-key IVF routing, low-rank residual backgrounds,
-scalar/additive quantization, inspectable compiled packages, a shared recurrent controller,
-hybrid episodic memory, indexed vocabulary MIPS, transition caching, corrections, and PyTorch-free
-Python and native C++20 generation. It is a runnable baseline, not evidence that the research
-quality or memory-traffic goals have been met. See [limitations](docs/limitations.md).
+A normal transformer evaluates every layer and most model weights for every token. Engram's
+target design does something different:
+
+1. A small recurrent **controller** maintains the current language-model state and decides what
+   computation is needed next.
+2. A sparse **semantic memory** stores the useful records extracted from transformer MLPs and
+   retrieves only a small relevant subset for each token.
+3. A bounded **episodic memory** combines exact recent context with compressed older context.
+4. A CPU-native runtime executes the compiled representation without PyTorch or the original
+   transformer layers.
+
+The intended result is not a wrapper, cache, or quantized copy of the source transformer. It is
+a different inference architecture compiled from a trained model.
+
+## Goals
+
+- Preserve useful next-token behavior from a trained Llama-compatible teacher.
+- Avoid reading the full transformer parameter set for every generated token.
+- Bound working memory as context grows instead of retaining an unlimited attention cache.
+- Run efficiently on ordinary CPUs with an inspectable C++20 implementation.
+- Measure quality, latency, memory traffic, and failure modes honestly at every research gate.
+
+The long-term systems target is a substantial reduction in DRAM traffic—ideally around 10x—while
+retaining useful model quality. That target is a hypothesis, not a result. Engram will not claim
+success from random fixtures, synthetic tasks, proxy byte counts, or a runnable compiler alone.
+
+## Where the project stands
+
+The repository contains an end-to-end research prototype: Hugging Face model inspection and
+download, exact teacher tracing, SwiGLU decomposition, sparsity oracles, semantic routing and
+quantization, recurrent and retrieval memory primitives, compiled packages, and PyTorch-free
+Python and native C++20 generation.
+
+The first trained-model experiments used `HuggingFaceTB/SmolLM2-135M`:
+
+- Retaining 90% of each MLP output's energy required 16.6% of neurons on average; retaining 99%
+  required 44.8%. This suggests useful sparsity, but not extreme sparsity at high fidelity.
+- The current joint-key IVF router is the main bottleneck. With 256 active neurons and 512
+  candidates, candidate recall was only 40.6% and practical relative error was 0.673 versus the
+  oracle's 0.335.
+- The fitted rank-4 background operator worsened mean held-out error, so it is not currently a
+  viable correction.
+
+The compiler and runtimes work, but the controller is initialized rather than distilled and the
+project has not demonstrated acceptable end-to-end language quality or its target memory-traffic
+reduction. The immediate research priority is improving semantic candidate recall before further
+compilation claims. See [architecture](docs/architecture.md), [evaluation](docs/evaluation.md),
+and [limitations](docs/limitations.md) for the precise design and caveats.
 
 ## Quick start
 
@@ -106,8 +145,9 @@ production router. A target of 90% means
 `||full - approximation||² / ||full||² <= 0.10`.
 
 The checked-in [fixture report](reports/milestone1_fixture/oracle_topk.md) is pipeline
-evidence only. Gate 1 remains incomplete until a trained model is evaluated with and
-without a fitted background operator.
+evidence only. A subsequent SmolLM2-135M experiment measured trained-model sparsity and a
+fitted-background ablation; the background failed to improve held-out mean error. Those pilot
+corpora remain too small for a broad model-family claim.
 
 The [Gate 2 fixture report](reports/milestone2_fixture/practical_routing.md) preserves a
 negative result: joint-key IVF scored 18.25 of 32 records on average, but candidate recall

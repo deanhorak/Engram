@@ -231,10 +231,19 @@ def _load_from_shard(model_path: Path, shard: str, names: list[str]) -> dict[str
         with np.load(path, allow_pickle=False) as archive:
             return {name: np.asarray(archive[name]) for name in names}
     if path.suffix == ".safetensors":
-        from safetensors import safe_open
+        try:
+            import torch
+            from safetensors import safe_open
+        except ImportError as exc:
+            raise ModelValidationError(
+                "install the 'conversion' extra to load safetensors"
+            ) from exc
 
-        with safe_open(path, framework="np", device="cpu") as handle:
-            return {name: np.asarray(handle.get_tensor(name)) for name in names}
+        with safe_open(path, framework="pt", device="cpu") as handle:
+            return {
+                name: handle.get_tensor(name).detach().to(torch.float32).numpy().copy()
+                for name in names
+            }
     import torch
 
     state = torch.load(path, map_location="cpu", weights_only=True, mmap=True)

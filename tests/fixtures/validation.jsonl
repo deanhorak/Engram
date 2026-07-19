@@ -1,0 +1,4 @@
+{"input_type":"prose","text":"The river crosses the valley before reaching the sea."}
+{"input_type":"code","text":"def factorial(n): return 1 if n < 2 else n * factorial(n - 1)"}
+{"input_type":"conversation","text":"User: What color is the sky?\nAssistant: On a clear day, it is blue."}
+{"input_type":"structured","text":"{\"service\": \"search\", \"healthy\": true, \"replicas\": 3}"}
