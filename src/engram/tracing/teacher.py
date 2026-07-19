@@ -6,7 +6,7 @@ from typing import Any
 
 import numpy as np
 
-from engram.models.inspection import inspect_model, load_layer_mlp
+from engram.models.inspection import inspect_model, load_layer_mlp, resolve_model_path
 from engram.semantic.swiglu import swiglu
 from engram.tracing.format import TraceWriter
 from engram.utils import sha256_file, sha256_json
@@ -79,7 +79,7 @@ def _hf_trace(
     seed: int,
     samples: int,
 ) -> None:
-    """Capture exact MLP-boundary traces from a local Hugging Face checkpoint."""
+    """Capture exact MLP-boundary traces from a cached Hugging Face checkpoint."""
     try:
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -197,7 +197,7 @@ def capture_teacher_traces(
     seed: int = 17,
     samples: int = 32,
 ) -> None:
-    model_path = Path(model)
+    model_path = resolve_model_path(model)
     with (model_path / "config.json").open("r", encoding="utf-8") as handle:
         config = json.load(handle)
     dataset_path = Path(dataset) if dataset is not None else None

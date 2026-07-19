@@ -1,5 +1,5 @@
 from .fixture import create_tiny_fixture
-from .inspection import ModelInspection, inspect_model, load_layer_mlp, load_named_tensors
+from .inspection import ModelInspection, inspect_model, load_layer_mlp, load_named_tensors, resolve_model_path
 
 __all__ = [
     "ModelInspection",
@@ -7,4 +7,5 @@ __all__ = [
     "inspect_model",
     "load_layer_mlp",
     "load_named_tensors",
+    "resolve_model_path",
 ]

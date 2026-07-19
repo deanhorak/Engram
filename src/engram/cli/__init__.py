@@ -26,7 +26,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version", version="engram 0.1.0")
     commands = parser.add_subparsers(dest="command", required=True)
 
-    inspect = commands.add_parser("inspect", help="validate and inventory a local Llama-compatible model")
+    inspect = commands.add_parser("inspect", help="validate a local or Hugging Face Llama-compatible model")
     inspect.add_argument("--model", required=True)
     inspect.add_argument("--no-weight-hash", action="store_true")
     inspect.add_argument("--out", type=Path)
@@ -109,9 +109,9 @@ def _parser() -> argparse.ArgumentParser:
     benchmark.add_argument("--tokens", type=int, default=32)
     benchmark.add_argument("--enable-transition-cache", action="store_true")
 
-    quality = commands.add_parser("evaluate-e2e", help="measure Gate 5 against a local HF teacher")
+    quality = commands.add_parser("evaluate-e2e", help="measure Gate 5 against a Hugging Face teacher")
     quality.add_argument("--model", required=True, help="compiled .engram package")
-    quality.add_argument("--teacher", required=True, help="local teacher checkpoint")
+    quality.add_argument("--teacher", required=True, help="local checkpoint or Hugging Face model ID")
     quality.add_argument("--dataset", required=True, type=Path)
     quality.add_argument("--out", required=True, type=Path)
     quality.add_argument("--max-records", type=int)

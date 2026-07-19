@@ -11,10 +11,38 @@ from engram.utils import sha256_file, sha256_json
 
 
 SUPPORTED_MODEL_TYPES = {"llama", "mistral", "engram_tiny_llama"}
+HUGGING_FACE_MODEL_PATTERNS = ("*.json", "*.model", "*.safetensors", "*.bin", "*.txt")
 
 
 class ModelValidationError(ValueError):
     pass
+
+
+def resolve_model_path(model: str | Path) -> Path:
+    """Return a local model directory, downloading a Hub model when necessary."""
+    candidate = Path(model).expanduser()
+    if candidate.is_dir():
+        return candidate.resolve()
+    if candidate.exists():
+        raise ModelValidationError(f"model path is not a directory: {candidate.resolve()}")
+    model_id = str(model)
+    if Path(model_id).is_absolute() or model_id.startswith(("./", "../", "~")):
+        raise ModelValidationError(f"model path is not a directory: {candidate.resolve()}")
+    try:
+        from huggingface_hub import snapshot_download
+    except ImportError as exc:
+        raise ModelValidationError(
+            "install engram-lm[conversion] to download Hugging Face models"
+        ) from exc
+    try:
+        downloaded = snapshot_download(
+            repo_id=model_id, allow_patterns=list(HUGGING_FACE_MODEL_PATTERNS)
+        )
+    except Exception as exc:
+        raise ModelValidationError(
+            f"could not download Hugging Face model {model_id!r}: {exc}"
+        ) from exc
+    return Path(downloaded).resolve()
 
 
 @dataclass(frozen=True)
@@ -128,9 +156,7 @@ def _required_mlp_names(layer: int) -> tuple[str, str, str]:
 
 
 def inspect_model(path: str | Path, *, hash_weights: bool = True) -> ModelInspection:
-    model_path = Path(path).expanduser().resolve()
-    if not model_path.is_dir():
-        raise ModelValidationError(f"model path is not a directory: {model_path}")
+    model_path = resolve_model_path(path)
     config = _read_config(model_path)
     model_type = str(config.get("model_type", ""))
     if model_type not in SUPPORTED_MODEL_TYPES:

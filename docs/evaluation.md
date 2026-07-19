@@ -20,5 +20,6 @@ reported to catch boundary or extraction errors.
 Gate 1 is not complete until the same trained-model study includes fitted background
 operators. Gates 2–4 have only random/synthetic pipeline reports. `engram evaluate-e2e` measures
 student NLL/perplexity, teacher KL, top-1/top-5 agreement, category accuracy, repetition, and
-fixed examples against a local Hugging Face teacher without Hub access. No trained checkpoint
+fixed examples against a cached Hugging Face teacher. Model IDs are downloaded automatically,
+while local model directories remain offline-capable. No trained checkpoint
 was available in this workspace, so no Gate 5 quality target is claimed.

@@ -52,26 +52,33 @@ cmake --build build
 ```
 
 The fixture is random and only validates the pipeline. To produce meaningful evidence,
-use a local, trained Llama-compatible Hugging Face directory. Engram never downloads a
-model:
+use a trained Llama-compatible Hugging Face model. Pass either a local directory or a
+Hub model ID. Hub models are downloaded automatically into the standard Hugging Face
+cache and reused on subsequent commands:
 
 ```bash
-engram inspect --model /absolute/path/to/local-model
+engram inspect --model HuggingFaceTB/SmolLM2-135M
 engram trace \
-  --model /absolute/path/to/local-model \
+  --model HuggingFaceTB/SmolLM2-135M \
   --dataset /absolute/path/to/calibration.jsonl \
   --out work/real-traces \
   --samples 128
 engram analyze-mlp \
-  --model /absolute/path/to/local-model \
+  --model HuggingFaceTB/SmolLM2-135M \
   --traces work/real-traces \
   --out reports/generated/real-model
-engram compile --model /absolute/path/to/local-model --out work/local.engram
+engram compile --model HuggingFaceTB/SmolLM2-135M --out work/local.engram
 engram evaluate-e2e --model work/local.engram \
-  --teacher /absolute/path/to/local-model \
+  --teacher HuggingFaceTB/SmolLM2-135M \
   --dataset /absolute/path/to/held-out.jsonl \
   --out reports/generated/local-quality
 ```
+
+For gated repositories, authenticate first with `hf auth login` or set `HF_TOKEN`.
+Existing local directories continue to work without network access.
+The cache location follows Hugging Face defaults and can be changed with `HF_HOME` or
+`HF_HUB_CACHE`. See the [conversion pipeline](docs/conversion_pipeline.md) for model-source
+resolution details and supported commands.
 
 Dataset records may contain either `{"text": "...", "input_type": "prose"}` or
 pretokenized `{"input_ids": [1, 2, 3], "input_type": "code"}`. Pretokenized input is

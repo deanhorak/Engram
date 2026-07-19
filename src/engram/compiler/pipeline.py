@@ -49,6 +49,7 @@ def compile_model(
     ):
         raise ValueError("vocabulary candidates, IVF clusters, and iterations must be positive")
     source = inspect_model(model)
+    model_path = Path(source.model_path)
     target = Path(out)
     compile_options = {
         "seed": seed,
@@ -95,7 +96,7 @@ def compile_model(
 
     completed("inspect_and_validate", {"model_type": source.model_type})
     names = ["model.embed_tokens.weight", "lm_head.weight"]
-    extracted = load_named_tensors(model, names)
+    extracted = load_named_tensors(model_path, names)
     embeddings_dir = target / "embeddings"
     vocabulary_dir = target / "vocabulary"
     embeddings_dir.mkdir(exist_ok=True)
@@ -130,7 +131,7 @@ def compile_model(
     )
     copied_tokenizer = []
     for file_name in tokenizer_files:
-        source_file = Path(model) / file_name
+        source_file = model_path / file_name
         if source_file.is_file():
             shutil.copy2(source_file, tokenizer_dir / file_name)
             copied_tokenizer.append(file_name)
@@ -144,7 +145,7 @@ def compile_model(
     completed("extract_runtime_tensors", {"tokenizer_files": copied_tokenizer})
 
     build_semantic_package(
-        model,
+        model_path,
         target,
         include_reference=False,
         ivf_clusters=semantic_ivf_clusters,
@@ -212,7 +213,7 @@ def compile_model(
         "source_model_hash": source.source_hash,
         "source_architecture": source.architecture,
         "fixture_only": source.model_type == "llama" and bool(
-            json.loads((Path(model) / "config.json").read_text()).get("engram_fixture")
+            json.loads((model_path / "config.json").read_text()).get("engram_fixture")
         ),
         "hidden_size": width,
         "vocab_size": source.vocab_size,

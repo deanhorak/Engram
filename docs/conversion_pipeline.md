@@ -1,8 +1,32 @@
 # Conversion pipeline
 
+## Model sources
+
+Commands that consume a source model accept either an existing local directory or a Hugging
+Face Hub model ID, for example `meta-llama/Llama-3.2-1B`. Install the conversion dependencies
+before working with trained checkpoints:
+
+```bash
+python -m pip install -e '.[conversion]'
+```
+
+When the argument is not an existing directory, Engram downloads the configuration, tokenizer,
+and weight files with `huggingface_hub.snapshot_download`. Files are stored in the standard
+Hugging Face cache (controlled by `HF_HOME` or `HF_HUB_CACHE`) and reused by later commands.
+Authenticate gated repositories with `hf auth login` or `HF_TOKEN`. Absolute paths and paths
+beginning with `./`, `../`, or `~` are always treated as explicit local paths; a missing one is
+reported as an error instead of being interpreted as a Hub ID.
+
+Automatic resolution applies to `inspect`, `trace`, `analyze-mlp`, `build-semantic`,
+`evaluate-semantic`, `compile`, and the `evaluate-e2e --teacher` argument. Once resolved, model
+loading remains local-only so all Transformers calls use the single cached snapshot. Existing
+local directories never require Hub access.
+
+## Milestone 1 artifacts
+
 Milestone 1 supports the following resumable artifacts:
 
-1. `engram inspect` validates configuration and MLP tensor names/shapes, inventories local
+1. `engram inspect` resolves the source, validates configuration and MLP tensor names/shapes, inventories local
    weight shards, and records SHA-256 source hashes.
 2. `engram trace` writes a manifest and independent NPY shards. Each field records dtype,
    shape, and checksum. The manifest remains incomplete until a clean close.

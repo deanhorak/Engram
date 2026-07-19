@@ -9,6 +9,7 @@ from typing import Any
 import numpy as np
 
 from engram.runtime import EngramRuntime
+from engram.models import resolve_model_path
 from engram.utils import sha256_file
 
 
@@ -24,14 +25,14 @@ def evaluate_end_to_end(
     *,
     max_records: int | None = None,
 ) -> dict[str, Any]:
-    """Compare compiled Engram with a local HF teacher; never accesses the Hub."""
+    """Compare compiled Engram with a local or automatically cached HF teacher."""
     try:
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
     except ImportError as exc:
         raise RuntimeError("install engram-lm[conversion] for teacher evaluation") from exc
     runtime = EngramRuntime(package)
-    teacher_path = Path(teacher)
+    teacher_path = resolve_model_path(teacher)
     model = AutoModelForCausalLM.from_pretrained(
         teacher_path, local_files_only=True, dtype=torch.float32, device_map=None
     ).eval()
