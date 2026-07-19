@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "status": "fixture_runtime_measurement",
+  "date": "2026-07-19",
+  "hardware": {
+    "cpu": "Intel Xeon E5-2695 v2",
+    "logical_cpus": 24,
+    "avx2_available": false
+  },
+  "model": {
+    "kind": "deterministic random fixture",
+    "hidden_size": 16,
+    "layers": 2,
+    "vocabulary_size": 64,
+    "source_bytes": 35451,
+    "package_bytes": 106476
+  },
+  "configuration": {
+    "generated_tokens": 512,
+    "cycles_per_token": 2,
+    "active_semantic_records_per_token": 16,
+    "semantic_proxy_records_per_token": 32,
+    "semantic_ivf_clusters_probed_per_token": 32,
+    "vocabulary_candidates_per_token": 32,
+    "vocabulary_proxy_records_per_token": 32,
+    "vocabulary_ivf_clusters_probed_per_token": 32,
+    "transition_cache_bypassed": true,
+    "vocabulary_candidates": 64
+  },
+  "python": {
+    "elapsed_ns": 3194176019,
+    "decode_tokens_per_second": 160.29172999686216,
+    "peak_rss_kib": 37056
+  },
+  "native": {
+    "elapsed_ns": 49358651,
+    "decode_tokens_per_second": 10373.1,
+    "peak_rss_kib": 8448,
+    "selected_vector_kernel": "scalar"
+  },
+  "native_over_python_throughput_ratio": 64.71388137243925,
+  "logical_bytes_per_token_estimate": {
+    "engram_semantic": 17888,
+    "engram_vocabulary": 8576,
+    "engram_total_excluding_controller_and_episodic": 26464,
+    "dense_source_q4_weight_payload_if_read_once": 3656,
+    "engram_over_dense_source_q4_ratio": 7.238512035010941,
+    "semantic_active_fraction": 0.25,
+    "interpretation": "Analytical byte accounting, not hardware-counter DRAM traffic. This tiny fixture misses both the less-than-25-percent active-record and 10x-lower-traffic goals."
+  },
+  "measured": ["elapsed_ns", "decode_tokens_per_second", "peak_rss_kib", "package_bytes"],
+  "not_measured": ["DRAM traffic", "energy", "trained-model quality", "time to first token", "prompt throughput"],
+  "quality_claim": null
+}

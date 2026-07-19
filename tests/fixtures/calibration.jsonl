@@ -1,0 +1,4 @@
+{"input_type":"prose","text":"A short deterministic calibration record."}
+{"input_type":"code","text":"def add(a, b): return a + b"}
+{"input_type":"conversation","text":"User: hello\nAssistant: hello"}
+{"input_type":"structured","text":"{\"key\": [1, 2, 3]}"}

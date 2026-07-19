@@ -1,0 +1,939 @@
+{
+  "background": "fitted_low_rank_linear_residual",
+  "backgrounds": [
+    {
+      "layer": 0,
+      "metadata": {
+        "fit_intercept": true,
+        "fit_samples": 16,
+        "format": "engram.semantic.background",
+        "input_dim": 16,
+        "operator": "low_rank_linear_residual",
+        "output_dim": 16,
+        "rank": 4,
+        "ridge": 1e-06,
+        "schema_version": 1,
+        "storage_dtype": "float64",
+        "tensor_layout": {
+          "input_factor": [
+            16,
+            4
+          ],
+          "input_mean": [
+            16
+          ],
+          "output_factor": [
+            4,
+            16
+          ],
+          "output_mean": [
+            16
+          ]
+        }
+      }
+    },
+    {
+      "layer": 1,
+      "metadata": {
+        "fit_intercept": true,
+        "fit_samples": 16,
+        "format": "engram.semantic.background",
+        "input_dim": 16,
+        "operator": "low_rank_linear_residual",
+        "output_dim": 16,
+        "rank": 4,
+        "ridge": 1e-06,
+        "schema_version": 1,
+        "storage_dtype": "float64",
+        "tensor_layout": {
+          "input_factor": [
+            16,
+            4
+          ],
+          "input_mean": [
+            16
+          ],
+          "output_factor": [
+            4,
+            16
+          ],
+          "output_mean": [
+            16
+          ]
+        }
+      }
+    }
+  ],
+  "calibration_dataset_hash": "9225233bbbb70e715082cb4be657bfd1dbe66e962b20c6ef2363fd8b7b318168",
+  "candidate_count": 16,
+  "end_to_end_logit_effect": {
+    "reason": "transformer substitution evaluator pending",
+    "status": "not_run"
+  },
+  "experiment": "gate_2_practical_semantic_routing",
+  "fixture_only": true,
+  "groups": [
+    {
+      "metrics": {
+        "candidate_precision": {
+          "mean": 0.2890625,
+          "median": 0.3125,
+          "p95": 0.4375
+        },
+        "candidate_recall": {
+          "mean": 0.578125,
+          "median": 0.625,
+          "p95": 0.875
+        },
+        "estimated_active_value_bytes": {
+          "mean": 1024.0,
+          "median": 1024.0,
+          "p95": 1024.0
+        },
+        "estimated_index_bytes": {
+          "mean": 3576.0,
+          "median": 3604.0,
+          "p95": 3858.0
+        },
+        "index_storage_bytes": {
+          "mean": 5448.0,
+          "median": 5448.0,
+          "p95": 5448.0
+        },
+        "oracle_cosine": {
+          "mean": 0.9256103239256996,
+          "median": 0.9334528847089567,
+          "p95": 0.9700621053348149
+        },
+        "oracle_relative_l2": {
+          "mean": 0.36972780437154334,
+          "median": 0.3650231305408609,
+          "p95": 0.5294984039679231
+        },
+        "practical_cosine": {
+          "mean": 0.7212503407601807,
+          "median": 0.730057124069469,
+          "p95": 0.885421824722614
+        },
+        "practical_relative_l2": {
+          "mean": 0.6927890001163168,
+          "median": 0.6957383276721669,
+          "p95": 0.8261003685553514
+        },
+        "probed_clusters": {
+          "mean": 4.375,
+          "median": 4.0,
+          "p95": 5.0
+        },
+        "probed_records": {
+          "mean": 18.25,
+          "median": 18.5,
+          "p95": 20.25
+        },
+        "router_latency_ns": {
+          "mean": 1001030.5,
+          "median": 990271.0,
+          "p95": 1057335.0
+        },
+        "with_background_cosine": {
+          "mean": 0.1724013942556068,
+          "median": 0.1348728554894016,
+          "p95": 0.6949786629695758
+        },
+        "with_background_relative_l2": {
+          "mean": 7.089743830869804,
+          "median": 5.121620941316268,
+          "p95": 21.225613517813855
+        }
+      },
+      "samples": 16,
+      "scope": "all"
+    },
+    {
+      "layer": 0,
+      "metrics": {
+        "candidate_precision": {
+          "mean": 0.25,
+          "median": 0.25,
+          "p95": 0.35312499999999997
+        },
+        "candidate_recall": {
+          "mean": 0.5,
+          "median": 0.5,
+          "p95": 0.7062499999999999
+        },
+        "estimated_active_value_bytes": {
+          "mean": 1024.0,
+          "median": 1024.0,
+          "p95": 1024.0
+        },
+        "estimated_index_bytes": {
+          "mean": 3527.0,
+          "median": 3544.0,
+          "p95": 3824.0
+        },
+        "index_storage_bytes": {
+          "mean": 5448.0,
+          "median": 5448.0,
+          "p95": 5448.0
+        },
+        "oracle_cosine": {
+          "mean": 0.918415175447172,
+          "median": 0.9366900174829866,
+          "p95": 0.9611555746281438
+        },
+        "oracle_relative_l2": {
+          "mean": 0.3898998301095252,
+          "median": 0.3669592991017556,
+          "p95": 0.5348284350925481
+        },
+        "practical_cosine": {
+          "mean": 0.6775442851384494,
+          "median": 0.7293198296165202,
+          "p95": 0.7672143482840665
+        },
+        "practical_relative_l2": {
+          "mean": 0.7286319629109462,
+          "median": 0.6941657126486959,
+          "p95": 0.8973531578714755
+        },
+        "probed_clusters": {
+          "mean": 4.5,
+          "median": 4.5,
+          "p95": 5.0
+        },
+        "probed_records": {
+          "mean": 17.875,
+          "median": 18.0,
+          "p95": 20.0
+        },
+        "router_latency_ns": {
+          "mean": 1011982.25,
+          "median": 1003016.5,
+          "p95": 1080829.4
+        },
+        "with_background_cosine": {
+          "mean": 0.028992975911460564,
+          "median": 0.03498183354951671,
+          "p95": 0.28672800135103943
+        },
+        "with_background_relative_l2": {
+          "mean": 10.520136745324265,
+          "median": 7.06865461212311,
+          "p95": 25.02550127014087
+        }
+      },
+      "samples": 8,
+      "scope": "layer"
+    },
+    {
+      "layer": 1,
+      "metrics": {
+        "candidate_precision": {
+          "mean": 0.328125,
+          "median": 0.34375,
+          "p95": 0.4375
+        },
+        "candidate_recall": {
+          "mean": 0.65625,
+          "median": 0.6875,
+          "p95": 0.875
+        },
+        "estimated_active_value_bytes": {
+          "mean": 1024.0,
+          "median": 1024.0,
+          "p95": 1024.0
+        },
+        "estimated_index_bytes": {
+          "mean": 3625.0,
+          "median": 3604.0,
+          "p95": 3912.4
+        },
+        "index_storage_bytes": {
+          "mean": 5448.0,
+          "median": 5448.0,
+          "p95": 5448.0
+        },
+        "oracle_cosine": {
+          "mean": 0.9328054724042272,
+          "median": 0.9331724661066841,
+          "p95": 0.9727862682977564
+        },
+        "oracle_relative_l2": {
+          "mean": 0.34955577863356146,
+          "median": 0.3650231305408609,
+          "p95": 0.48343729927475415
+        },
+        "practical_cosine": {
+          "mean": 0.7649563963819119,
+          "median": 0.7441687519872184,
+          "p95": 0.8886612241545633
+        },
+        "practical_relative_l2": {
+          "mean": 0.6569460373216873,
+          "median": 0.7093885426366857,
+          "p95": 0.7575612379687188
+        },
+        "probed_clusters": {
+          "mean": 4.25,
+          "median": 4.0,
+          "p95": 5.0
+        },
+        "probed_records": {
+          "mean": 18.625,
+          "median": 18.5,
+          "p95": 20.65
+        },
+        "router_latency_ns": {
+          "mean": 990078.75,
+          "median": 984684.0,
+          "p95": 1027513.35
+        },
+        "with_background_cosine": {
+          "mean": 0.31580981259975305,
+          "median": 0.2547805622742261,
+          "p95": 0.7292800636978809
+        },
+        "with_background_relative_l2": {
+          "mean": 3.6593509164153435,
+          "median": 3.3045169226604427,
+          "p95": 6.039024468344083
+        }
+      },
+      "samples": 8,
+      "scope": "layer"
+    },
+    {
+      "input_type": "code",
+      "layer": 0,
+      "metrics": {
+        "candidate_precision": {
+          "mean": 0.1875,
+          "median": 0.1875,
+          "p95": 0.24375
+        },
+        "candidate_recall": {
+          "mean": 0.375,
+          "median": 0.375,
+          "p95": 0.4875
+        },
+        "estimated_active_value_bytes": {
+          "mean": 1024.0,
+          "median": 1024.0,
+          "p95": 1024.0
+        },
+        "estimated_index_bytes": {
+          "mean": 3264.0,
+          "median": 3264.0,
+          "p95": 3264.0
+        },
+        "index_storage_bytes": {
+          "mean": 5448.0,
+          "median": 5448.0,
+          "p95": 5448.0
+        },
+        "oracle_cosine": {
+          "mean": 0.9554303929953823,
+          "median": 0.9554303929953823,
+          "p95": 0.9583211756808416
+        },
+        "oracle_relative_l2": {
+          "mean": 0.31201224730307825,
+          "median": 0.31201224730307825,
+          "p95": 0.3177381291322465
+        },
+        "practical_cosine": {
+          "mean": 0.730057124069469,
+          "median": 0.730057124069469,
+          "p95": 0.7306131542341249
+        },
+        "practical_relative_l2": {
+          "mean": 0.6941657126486959,
+          "median": 0.6941657126486959,
+          "p95": 0.6952658553453338
+        },
+        "probed_clusters": {
+          "mean": 4.0,
+          "median": 4.0,
+          "p95": 4.0
+        },
+        "probed_records": {
+          "mean": 16.0,
+          "median": 16.0,
+          "p95": 16.0
+        },
+        "router_latency_ns": {
+          "mean": 973893.0,
+          "median": 973893.0,
+          "p95": 981530.4
+        },
+        "with_background_cosine": {
+          "mean": -0.11572997206452355,
+          "median": -0.11572997206452355,
+          "p95": 0.16495776712810245
+        },
+        "with_background_relative_l2": {
+          "mean": 6.624854457119213,
+          "median": 6.624854457119213,
+          "p95": 8.144140988225232
+        }
+      },
+      "samples": 2,
+      "scope": "layer_input_type"
+    },
+    {
+      "input_type": "conversation",
+      "layer": 0,
+      "metrics": {
+        "candidate_precision": {
+          "mean": 0.28125,
+          "median": 0.28125,
+          "p95": 0.309375
+        },
+        "candidate_recall": {
+          "mean": 0.5625,
+          "median": 0.5625,
+          "p95": 0.61875
+        },
+        "estimated_active_value_bytes": {
+          "mean": 1024.0,
+          "median": 1024.0,
+          "p95": 1024.0
+        },
+        "estimated_index_bytes": {
+          "mean": 3544.0,
+          "median": 3544.0,
+          "p95": 3796.0
+        },
+        "index_storage_bytes": {
+          "mean": 5448.0,
+          "median": 5448.0,
+          "p95": 5448.0
+        },
+        "oracle_cosine": {
+          "mean": 0.9568589945218318,
+          "median": 0.9568589945218318,
+          "p95": 0.9619438524242958
+        },
+        "oracle_relative_l2": {
+          "mean": 0.2960959825310564,
+          "median": 0.2960959825310564,
+          "p95": 0.3149847325054155
+        },
+        "practical_cosine": {
+          "mean": 0.7483727459498377,
+          "median": 0.7483727459498377,
+          "p95": 0.7656279054928216
+        },
+        "practical_relative_l2": {
+          "mean": 0.6628904793057294,
+          "median": 0.6628904793057294,
+          "p95": 0.6824285217204517
+        },
+        "probed_clusters": {
+          "mean": 4.5,
+          "median": 4.5,
+          "p95": 4.95
+        },
+        "probed_records": {
+          "mean": 18.0,
+          "median": 18.0,
+          "p95": 19.8
+        },
+        "router_latency_ns": {
+          "mean": 1002388.0,
+          "median": 1002388.0,
+          "p95": 1038624.7
+        },
+        "with_background_cosine": {
+          "mean": 0.1524999506376637,
+          "median": 0.1524999506376637,
+          "p95": 0.2571294652806438
+        },
+        "with_background_relative_l2": {
+          "mean": 5.146891681154385,
+          "median": 5.146891681154385,
+          "p95": 5.939239219995645
+        }
+      },
+      "samples": 2,
+      "scope": "layer_input_type"
+    },
+    {
+      "input_type": "prose",
+      "layer": 0,
+      "metrics": {
+        "candidate_precision": {
+          "mean": 0.1875,
+          "median": 0.1875,
+          "p95": 0.1875
+        },
+        "candidate_recall": {
+          "mean": 0.375,
+          "median": 0.375,
+          "p95": 0.375
+        },
+        "estimated_active_value_bytes": {
+          "mean": 1024.0,
+          "median": 1024.0,
+          "p95": 1024.0
+        },
+        "estimated_index_bytes": {
+          "mean": 3688.0,
+          "median": 3688.0,
+          "p95": 3688.0
+        },
+        "index_storage_bytes": {
+          "mean": 5448.0,
+          "median": 5448.0,
+          "p95": 5448.0
+        },
+        "oracle_cosine": {
+          "mean": 0.8873692117822551,
+          "median": 0.8873692117822551,
+          "p95": 0.8961992521154094
+        },
+        "oracle_relative_l2": {
+          "mean": 0.4615883618880272,
+          "median": 0.4615883618880272,
+          "p95": 0.4783096678271985
+        },
+        "practical_cosine": {
+          "mean": 0.5475547087167658,
+          "median": 0.5475547087167658,
+          "p95": 0.7446954805061489
+        },
+        "practical_relative_l2": {
+          "mean": 0.8044948983466701,
+          "median": 0.8044948983466701,
+          "p95": 0.9441789035054429
+        },
+        "probed_clusters": {
+          "mean": 5.0,
+          "median": 5.0,
+          "p95": 5.0
+        },
+        "probed_records": {
+          "mean": 19.0,
+          "median": 19.0,
+          "p95": 19.0
+        },
+        "router_latency_ns": {
+          "mean": 1061857.0,
+          "median": 1061857.0,
+          "p95": 1097434.0
+        },
+        "with_background_cosine": {
+          "mean": 0.08777304606190754,
+          "median": 0.08777304606190754,
+          "p95": 0.275542514821619
+        },
+        "with_background_relative_l2": {
+          "mean": 6.708257480005223,
+          "median": 6.708257480005223,
+          "p95": 7.969853997941913
+        }
+      },
+      "samples": 2,
+      "scope": "layer_input_type"
+    },
+    {
+      "input_type": "structured",
+      "layer": 0,
+      "metrics": {
+        "candidate_precision": {
+          "mean": 0.34375,
+          "median": 0.34375,
+          "p95": 0.371875
+        },
+        "candidate_recall": {
+          "mean": 0.6875,
+          "median": 0.6875,
+          "p95": 0.74375
+        },
+        "estimated_active_value_bytes": {
+          "mean": 1024.0,
+          "median": 1024.0,
+          "p95": 1024.0
+        },
+        "estimated_index_bytes": {
+          "mean": 3612.0,
+          "median": 3612.0,
+          "p95": 3802.8
+        },
+        "index_storage_bytes": {
+          "mean": 5448.0,
+          "median": 5448.0,
+          "p95": 5448.0
+        },
+        "oracle_cosine": {
+          "mean": 0.874002102489219,
+          "median": 0.874002102489219,
+          "p95": 0.9173540045511133
+        },
+        "oracle_relative_l2": {
+          "mean": 0.48990272871593904,
+          "median": 0.48990272871593904,
+          "p95": 0.5568253505790628
+        },
+        "practical_cosine": {
+          "mean": 0.6841925618177251,
+          "median": 0.6841925618177251,
+          "p95": 0.7230771573657114
+        },
+        "practical_relative_l2": {
+          "mean": 0.7529767613426894,
+          "median": 0.7529767613426894,
+          "p95": 0.7787083138437654
+        },
+        "probed_clusters": {
+          "mean": 4.5,
+          "median": 4.5,
+          "p95": 4.95
+        },
+        "probed_records": {
+          "mean": 18.5,
+          "median": 18.5,
+          "p95": 19.85
+        },
+        "router_latency_ns": {
+          "mean": 1009791.0,
+          "median": 1009791.0,
+          "p95": 1033267.5
+        },
+        "with_background_cosine": {
+          "mean": -0.008571120989205424,
+          "median": -0.008571120989205424,
+          "p95": 0.0294897473592923
+        },
+        "with_background_relative_l2": {
+          "mean": 23.600543363018243,
+          "median": 23.600543363018243,
+          "p95": 27.875417084386143
+        }
+      },
+      "samples": 2,
+      "scope": "layer_input_type"
+    },
+    {
+      "input_type": "code",
+      "layer": 1,
+      "metrics": {
+        "candidate_precision": {
+          "mean": 0.375,
+          "median": 0.375,
+          "p95": 0.43125
+        },
+        "candidate_recall": {
+          "mean": 0.75,
+          "median": 0.75,
+          "p95": 0.8625
+        },
+        "estimated_active_value_bytes": {
+          "mean": 1024.0,
+          "median": 1024.0,
+          "p95": 1024.0
+        },
+        "estimated_index_bytes": {
+          "mean": 3392.0,
+          "median": 3392.0,
+          "p95": 3521.6
+        },
+        "index_storage_bytes": {
+          "mean": 5448.0,
+          "median": 5448.0,
+          "p95": 5448.0
+        },
+        "oracle_cosine": {
+          "mean": 0.9417396207599328,
+          "median": 0.9417396207599328,
+          "p95": 0.9718268818772906
+        },
+        "oracle_relative_l2": {
+          "mean": 0.3219989853951763,
+          "median": 0.3219989853951763,
+          "p95": 0.4096734635554709
+        },
+        "practical_cosine": {
+          "mean": 0.7227083333821447,
+          "median": 0.7227083333821447,
+          "p95": 0.7507550828873258
+        },
+        "practical_relative_l2": {
+          "mean": 0.7560857312912682,
+          "median": 0.7560857312912682,
+          "p95": 0.7605122513236199
+        },
+        "probed_clusters": {
+          "mean": 3.5,
+          "median": 3.5,
+          "p95": 3.95
+        },
+        "probed_records": {
+          "mean": 17.0,
+          "median": 17.0,
+          "p95": 17.9
+        },
+        "router_latency_ns": {
+          "mean": 952627.0,
+          "median": 952627.0,
+          "p95": 970541.5
+        },
+        "with_background_cosine": {
+          "mean": 0.1348728554894016,
+          "median": 0.1348728554894016,
+          "p95": 0.1547834027328959
+        },
+        "with_background_relative_l2": {
+          "mean": 4.122125665633888,
+          "median": 4.122125665633888,
+          "p95": 5.951118373069348
+        }
+      },
+      "samples": 2,
+      "scope": "layer_input_type"
+    },
+    {
+      "input_type": "conversation",
+      "layer": 1,
+      "metrics": {
+        "candidate_precision": {
+          "mean": 0.25,
+          "median": 0.25,
+          "p95": 0.3625
+        },
+        "candidate_recall": {
+          "mean": 0.5,
+          "median": 0.5,
+          "p95": 0.725
+        },
+        "estimated_active_value_bytes": {
+          "mean": 1024.0,
+          "median": 1024.0,
+          "p95": 1024.0
+        },
+        "estimated_index_bytes": {
+          "mean": 3892.0,
+          "median": 3892.0,
+          "p95": 3953.2
+        },
+        "index_storage_bytes": {
+          "mean": 5448.0,
+          "median": 5448.0,
+          "p95": 5448.0
+        },
+        "oracle_cosine": {
+          "mean": 0.9438762771928411,
+          "median": 0.9438762771928411,
+          "p95": 0.9659111808539628
+        },
+        "oracle_relative_l2": {
+          "mean": 0.3257040665854676,
+          "median": 0.3257040665854676,
+          "p95": 0.393472880859122
+        },
+        "practical_cosine": {
+          "mean": 0.8089316578320904,
+          "median": 0.8089316578320904,
+          "p95": 0.8759506458530902
+        },
+        "practical_relative_l2": {
+          "mean": 0.5873927438333135,
+          "median": 0.5873927438333135,
+          "p95": 0.6852189801127677
+        },
+        "probed_clusters": {
+          "mean": 5.0,
+          "median": 5.0,
+          "p95": 5.0
+        },
+        "probed_records": {
+          "mean": 20.5,
+          "median": 20.5,
+          "p95": 20.95
+        },
+        "router_latency_ns": {
+          "mean": 1026832.5,
+          "median": 1026832.5,
+          "p95": 1028875.05
+        },
+        "with_background_cosine": {
+          "mean": 0.5130528631514432,
+          "median": 0.5130528631514432,
+          "p95": 0.6574915450780908
+        },
+        "with_background_relative_l2": {
+          "mean": 3.3723420778021866,
+          "median": 3.3723420778021866,
+          "p95": 4.406270552967481
+        }
+      },
+      "samples": 2,
+      "scope": "layer_input_type"
+    },
+    {
+      "input_type": "prose",
+      "layer": 1,
+      "metrics": {
+        "candidate_precision": {
+          "mean": 0.3125,
+          "median": 0.3125,
+          "p95": 0.36875
+        },
+        "candidate_recall": {
+          "mean": 0.625,
+          "median": 0.625,
+          "p95": 0.7375
+        },
+        "estimated_active_value_bytes": {
+          "mean": 1024.0,
+          "median": 1024.0,
+          "p95": 1024.0
+        },
+        "estimated_index_bytes": {
+          "mean": 3604.0,
+          "median": 3604.0,
+          "p95": 3665.2
+        },
+        "index_storage_bytes": {
+          "mean": 5448.0,
+          "median": 5448.0,
+          "p95": 5448.0
+        },
+        "oracle_cosine": {
+          "mean": 0.9564218788242285,
+          "median": 0.9564218788242285,
+          "p95": 0.9669401715921032
+        },
+        "oracle_relative_l2": {
+          "mean": 0.29009803658637207,
+          "median": 0.29009803658637207,
+          "p95": 0.32514896443161145
+        },
+        "practical_cosine": {
+          "mean": 0.7342957983333478,
+          "median": 0.7342957983333478,
+          "p95": 0.7944939140086321
+        },
+        "practical_relative_l2": {
+          "mean": 0.6763701392626915,
+          "median": 0.6763701392626915,
+          "p95": 0.7389428825862768
+        },
+        "probed_clusters": {
+          "mean": 4.0,
+          "median": 4.0,
+          "p95": 4.0
+        },
+        "probed_records": {
+          "mean": 18.5,
+          "median": 18.5,
+          "p95": 18.95
+        },
+        "router_latency_ns": {
+          "mean": 984683.5,
+          "median": 984683.5,
+          "p95": 995620.75
+        },
+        "with_background_cosine": {
+          "mean": 0.6302003707122603,
+          "median": 0.6302003707122603,
+          "p95": 0.7463844474728591
+        },
+        "with_background_relative_l2": {
+          "mean": 2.290648266500281,
+          "median": 2.290648266500281,
+          "p95": 2.685458213650369
+        }
+      },
+      "samples": 2,
+      "scope": "layer_input_type"
+    },
+    {
+      "input_type": "structured",
+      "layer": 1,
+      "metrics": {
+        "candidate_precision": {
+          "mean": 0.375,
+          "median": 0.375,
+          "p95": 0.43125
+        },
+        "candidate_recall": {
+          "mean": 0.75,
+          "median": 0.75,
+          "p95": 0.8625
+        },
+        "estimated_active_value_bytes": {
+          "mean": 1024.0,
+          "median": 1024.0,
+          "p95": 1024.0
+        },
+        "estimated_index_bytes": {
+          "mean": 3612.0,
+          "median": 3612.0,
+          "p95": 3680.4
+        },
+        "index_storage_bytes": {
+          "mean": 5448.0,
+          "median": 5448.0,
+          "p95": 5448.0
+        },
+        "oracle_cosine": {
+          "mean": 0.8891841128399067,
+          "median": 0.8891841128399067,
+          "p95": 0.9183674521020914
+        },
+        "oracle_relative_l2": {
+          "mean": 0.4604220259672298,
+          "median": 0.4604220259672298,
+          "p95": 0.5121619281224078
+        },
+        "practical_cosine": {
+          "mean": 0.7938897959800646,
+          "median": 0.7938897959800646,
+          "p95": 0.8817351083897734
+        },
+        "practical_relative_l2": {
+          "mean": 0.6079355348994762,
+          "median": 0.6079355348994762,
+          "p95": 0.7112132245065456
+        },
+        "probed_clusters": {
+          "mean": 4.5,
+          "median": 4.5,
+          "p95": 4.95
+        },
+        "probed_records": {
+          "mean": 18.5,
+          "median": 18.5,
+          "p95": 18.95
+        },
+        "router_latency_ns": {
+          "mean": 996172.0,
+          "median": 996172.0,
+          "p95": 1018706.2
+        },
+        "with_background_cosine": {
+          "mean": -0.014886838954092933,
+          "median": -0.014886838954092933,
+          "p95": 0.03705079926389987
+        },
+        "with_background_relative_l2": {
+          "mean": 4.852287655725018,
+          "median": 4.852287655725018,
+          "p95": 5.727609472089077
+        }
+      },
+      "samples": 2,
+      "scope": "layer_input_type"
+    }
+  ],
+  "ivf_clusters": 8,
+  "ivf_minimum_probes": 2,
+  "router": "joint_key_ivf_plus_exact_candidate_rerank",
+  "schema_version": 1,
+  "source_model_hash": "e4e93594bda24ab2894800d137de8f688fd818baf2cd1c378573ed70ffd52d12",
+  "status": "pipeline_validation",
+  "top_k": 8,
+  "validation_dataset_hash": "41d40dfbde80b46ba2afbd361f77bb00bde4a20909ef897977fa49061fceeeab"
+}

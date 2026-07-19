@@ -1,0 +1,23 @@
+seed: 17
+calibration_split: calibration
+validation_split: validation
+test_split: test
+trace:
+  samples: 32
+  dtype: float32
+semantic:
+  oracle_energy_targets: [0.90, 0.95, 0.99]
+  background: null  # Milestone 2
+compile:
+  seed: 71
+  semantic_top_k: 8
+  semantic_candidates: 16
+  semantic_ivf_clusters: 32
+  semantic_ivf_probes: 4
+  semantic_ivf_iterations: 20
+  vocabulary_candidates: 32
+  vocabulary_ivf_clusters: 64
+  vocabulary_ivf_probes: 4
+  vocabulary_ivf_iterations: 20
+  local_window: 16
+  cycles: 2

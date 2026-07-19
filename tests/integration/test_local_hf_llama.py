@@ -1,0 +1,47 @@
+import json
+
+import pytest
+
+torch = pytest.importorskip("torch")
+pytest.importorskip("safetensors")
+transformers = pytest.importorskip("transformers")
+try:
+    LlamaForCausalLM = transformers.LlamaForCausalLM
+except (ImportError, RuntimeError) as error:
+    pytest.skip(f"local Transformers Llama stack is unavailable: {error}", allow_module_level=True)
+
+from engram.models.inspection import inspect_model
+from engram.semantic.oracle import analyze_magnitude_oracle
+from engram.tracing.teacher import capture_teacher_traces
+
+
+def test_local_hf_llama_exact_mlp_boundary(tmp_path):
+    torch.manual_seed(101)
+    config = transformers.LlamaConfig(
+        vocab_size=64,
+        hidden_size=16,
+        intermediate_size=32,
+        num_hidden_layers=2,
+        num_attention_heads=4,
+        num_key_value_heads=4,
+        max_position_embeddings=64,
+    )
+    model = LlamaForCausalLM(config)
+    model_path = tmp_path / "model"
+    model.save_pretrained(model_path, safe_serialization=True)
+    del model
+
+    dataset = tmp_path / "data.jsonl"
+    dataset.write_text(
+        json.dumps({"input_ids": [1, 5, 9, 2], "input_type": "prose"}) + "\n",
+        encoding="utf-8",
+    )
+    traces = tmp_path / "traces"
+    capture_teacher_traces(model_path, traces, dataset=dataset, samples=1)
+    report = analyze_magnitude_oracle(model_path, traces)
+
+    assert inspect_model(model_path).model_type == "llama"
+    assert report["status"] == "measured_local_model"
+    assert report["record_count"] == 8
+    overall = next(group for group in report["groups"] if group["scope"] == "all")
+    assert overall["teacher_reconstruction_relative_l2"]["p95"] < 1e-5

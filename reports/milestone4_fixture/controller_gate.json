@@ -1,0 +1,22 @@
+{
+  "adaptive_cycle": {
+    "max_cycles": 8,
+    "mean_cycles": 7.984375,
+    "mean_final_logit_kl": 7.682537956685994e-05,
+    "mean_hidden_cosine": 0.9999630748323742,
+    "min_cycles": 7
+  },
+  "experiment": "gate_4_shared_controller",
+  "fixed_cycle": {
+    "cycles": 4,
+    "mean_final_logit_kl": 0.17065098373599077,
+    "mean_hidden_cosine": 0.9655140001239799
+  },
+  "quality_claim": null,
+  "schema_version": 1,
+  "source_transformer_hidden_states": {
+    "status": "not_run"
+  },
+  "status": "synthetic_pipeline_validation",
+  "teacher_definition": "same initialized shared controller run for eight cycles"
+}

@@ -1,0 +1,50 @@
+{
+  "configuration": {
+    "key_width": 16,
+    "length": 128,
+    "local_window": 16,
+    "seed": 41,
+    "value_width": 16
+  },
+  "copying_accuracy": 1.0,
+  "experiment": "gate_3_attention_replacement",
+  "latency_ns_per_token": {
+    "hybrid": 1201260.4921875,
+    "local": 76106.8828125,
+    "recurrent": 228863.015625
+  },
+  "long_context_retrieval_accuracy": 1.0,
+  "mean_retrieval_bytes_read": 1319.0625,
+  "memory": {
+    "growth_model": "bounded_by_dimensions_local_window_and_configured_retrieval_capacity",
+    "peak_state_bytes": 10496,
+    "state_bytes_at_end": 10496
+  },
+  "relative_l2": {
+    "hybrid": {
+      "mean": 0.45621734857559204,
+      "median": 0.4228433072566986,
+      "p95": 1.094980674982071
+    },
+    "local": {
+      "mean": 0.9744126796722412,
+      "median": 0.7021645903587341,
+      "p95": 2.804146814346313
+    },
+    "recurrent": {
+      "mean": 0.834883451461792,
+      "median": 0.8858833312988281,
+      "p95": 1.055703455209732
+    }
+  },
+  "retrieval_head_recall": {
+    "mean": 1.0,
+    "median": 1.0,
+    "p95": 1.0
+  },
+  "schema_version": 1,
+  "status": "synthetic_pipeline_validation",
+  "teacher_attention_traces": {
+    "status": "not_run"
+  }
+}

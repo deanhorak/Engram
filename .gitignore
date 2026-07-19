@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+build/
+dist/
+.venv/
+work/
+*.engram/
+*.safetensors
+*.bin
+*.pt
+*.pth
+traces/
+reports/generated/
+.webui_secret_key
