@@ -86,6 +86,11 @@ records.
 
 Engram's target runtime replaces repeated full-transformer execution with four cooperating parts:
 
+This is the compiled **worker** architecture. The optional
+[Oracle cognitive executive](cognitive_executive.md) sits above workers and handles request-level
+goals, evidence, memory policy, strategy, and cost-aware action selection. It is not the shared
+controller shown in the per-token loop below.
+
 ```text
 input token embedding ───────────────┐
                                      v
@@ -114,7 +119,7 @@ information from the current prompt and generated sequence. Engram combines:
 
 Unlike a transformer key/value cache, these structures have configured size limits.
 
-### Shared recurrent controller
+### Token-level shared recurrent controller
 
 The controller owns the current fixed-width state. It receives the token embedding, semantic
 read, and episodic read, then applies a GRU-like transition. Its large kernels are shared across

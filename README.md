@@ -6,8 +6,8 @@ Llama-family transformer and reorganize them into a much smaller, CPU-native inf
 A normal transformer evaluates every layer and most model weights for every token. Engram's
 target design does something different:
 
-1. A small recurrent **controller** maintains the current language-model state and decides what
-   computation is needed next.
+1. A small recurrent **controller** maintains the current language-model state and allocates
+   bounded internal update cycles.
 2. A sparse **semantic memory** stores the useful records extracted from transformer MLPs and
    retrieves only a small relevant subset for each token.
 3. A bounded **episodic memory** combines exact recent context with compressed older context.
@@ -29,6 +29,22 @@ The long-term systems target is a substantial reduction in DRAM traffic—ideall
 retaining useful model quality. That target is a hypothesis, not a result. Engram will not claim
 success from random fixtures, synthetic tasks, proxy byte counts, or a runnable compiler alone.
 
+## Two levels of control
+
+Engram's compiled runtime and its longer-term system architecture solve different problems. The
+runtime controller is a low-level numeric mechanism inside one model worker. Above it, Engram is
+developing an optional **Oracle cognitive executive** that represents goals, scopes attention,
+estimates evidence confidence, proposes memory retention, selects strategies and workers, and
+monitors progress under explicit cost and risk policy.
+
+The executive produces typed decisions rather than prose and does not sit in the per-token hot
+loop. Its deterministic policy, revisioned SQLite/JSONL/in-memory event stores, versioned worker
+registry, resource ledger, worker-adapter boundary, outcome-observation loop, and calibration
+metrics are implemented. Production model/tool adapters, content validators, deployment security,
+and learned predictors are not. See
+[The Oracle cognitive executive](docs/cognitive_executive.md) for its contracts, boundaries,
+safety requirements, and separate research gates.
+
 ## Where the project stands
 
 The repository contains an end-to-end research prototype: Hugging Face model inspection and
@@ -43,6 +59,22 @@ The first trained-model experiments used `HuggingFaceTB/SmolLM2-135M`:
 - The current joint-key IVF router is the main bottleneck. With 256 active neurons and 512
   candidates, candidate recall was only 40.6% and practical relative error was 0.673 versus the
   oracle's 0.335.
+- An experimental trace-calibrated router improves mean top-256 recall to 61.0% with 512
+  candidates, and to 66.8% while examining about 641 records. Increasing calibration coverage
+  fourfold did not improve it, so the next step is a learned multi-label or coverage-optimized
+  partition rather than simply collecting more of the same traces.
+- A learned multi-label ridge router reaches 65.9% recall with 512 candidates and 72.2% with 640.
+  This confirms that direct oracle-membership supervision helps, but its dense scoring matrix is
+  too expensive for production.
+- Low-rank compression preserves most of that gain: rank 16 reaches 63.3% recall with 512
+  candidates using 141 KB of float32 router parameters per layer, 4.0% of the dense router. Rank
+  32 reaches 64.4% using 276 KB.
+- Hierarchical rank-16 group selection followed by exact local reranking was not successful. Its
+  best configuration reached only 52.8% recall at 512 records, and the router-weight saving is
+  small beside the selected key traffic.
+- Training groups directly for oracle coverage improves hierarchical recall to 54.6%. Multiple
+  representatives do not improve that result. The remaining partition constraint is too costly;
+  the next routing experiment should learn overlapping postings with a coverage objective.
 - The fitted rank-4 background operator worsened mean held-out error, so it is not currently a
   viable correction.
 
@@ -50,7 +82,16 @@ The compiler and runtimes work, but the controller is initialized rather than di
 project has not demonstrated acceptable end-to-end language quality or its target memory-traffic
 reduction. The immediate research priority is improving semantic candidate recall before further
 compilation claims. See [architecture](docs/architecture.md), [evaluation](docs/evaluation.md),
-and [limitations](docs/limitations.md) for the precise design and caveats.
+and [limitations](docs/limitations.md) for the precise design and caveats. The latest routing
+measurement is documented in the [trace-calibrated recall report](reports/smollm2_calibrated_router/recall.md).
+The directly supervised follow-up is in the
+[multi-label routing report](reports/smollm2_multilabel_router/recall.md).
+The compression frontier is measured in the
+[low-rank routing report](reports/smollm2_lowrank_router/recall.md).
+The hierarchical follow-up and its negative result are in the
+[hierarchical routing report](reports/smollm2_hierarchical_router/recall.md).
+The direct coverage and multiple-representative experiments are in the
+[coverage-trained group report](reports/smollm2_coverage_groups/recall.md).
 
 ## How conversion and inference work
 

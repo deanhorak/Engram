@@ -5,6 +5,15 @@ memory derived from SwiGLU records, hybrid local/recurrent/retrieval episodic me
 indexed vocabulary projection, transition caching, and uncertainty-triggered corrections.
 The target package must generate without loading source transformer layers.
 
+This document describes one compiled model worker. A separate, request-level
+[Oracle cognitive executive](cognitive_executive.md) may manage goals, evidence, persistent
+memory policy, tools, and multiple workers above it. Those system functions are not stored in an
+`.engram` package and do not run in its per-token loop.
+
+The executive reference layer supports transactional SQLite and checksummed JSONL event streams,
+versioned worker capabilities, and typed worker adapters. These deployment/session artifacts remain
+outside the compiled model format.
+
 ## Implemented foundation
 
 For a Llama SwiGLU MLP, Engram represents neuron `j` as two keys and one value:
@@ -37,7 +46,7 @@ fixed-capacity older-token ring. Older keys and values use per-vector int8 codes
 retrieval performs quantized cosine candidate search followed by decoded exact dot-product
 reranking. A heuristic hybrid combines the three reads and exposes state/read byte metrics.
 
-## Controller and output path
+## Token-level controller and output path
 
 The compiled runtime uses a GRU-like controller whose base kernels are shared across cycles.
 Stage embeddings and optional low-rank stage adapters retain stage identity. Fixed and adaptive

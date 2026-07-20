@@ -1,5 +1,8 @@
 # Conversion pipeline
 
+Compilation produces one self-contained model worker. It does not construct or train the optional
+request-level Cognitive Executive, its durable memory, or its tool/model routing policy.
+
 ## Model sources
 
 Commands that consume a source model accept either an existing local directory or a Hugging

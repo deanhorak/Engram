@@ -1,5 +1,22 @@
 # Research log
 
+## 2026-07-20 — Cognitive Executive policy scaffold
+
+- Separated the token-level recurrent controller from an optional request-level Oracle cognitive
+  executive; `.engram` packages remain independent model workers.
+- Added typed goal graphs, evidence-confidence summaries, attention budgeting, non-mutating memory
+  curation proposals, predictive action selection, and observable-progress monitoring.
+- Added compare-and-swap event streams with deterministic replay, immutable worker generations,
+  pinned action attempts, predicted-budget reservation, idempotent matched outcomes, and
+  prediction-versus-outcome calibration summaries.
+- Added transactional SQLite and checksummed, fsynced JSONL stores using an allow-listed JSON
+  codec, plus explicit worker adapters and identity-stamped structured outcomes.
+- Kept dispatch and storage mutations outside the policy layer. Durable memory, tool/model
+  production adapters, output-content validation, learned predictors, and confidence calibration
+  remain unimplemented research work. External side effects remain at-least-once across crashes.
+- Defined separate executive safety and evaluation gates; no model-quality or autonomous-agent
+  claim follows from the deterministic scaffold.
+
 ## 2026-07-18 — Milestone 1 foundation
 
 - Started from an empty workspace with no usable Git metadata.

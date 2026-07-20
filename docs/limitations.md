@@ -1,5 +1,21 @@
 # Limitations
 
+- The Cognitive Executive currently has deterministic policy, revisioned SQLite/JSONL/in-memory
+  event stores, a worker capability registry, resource accounting, matched outcome observation,
+  adapter protocols, and calibration metrics. It has no durable knowledge store, strategy
+  registry, production model/tool adapters, domain content validators, or learned success/cost
+  predictors. Its reference session permits only one in-flight attempt.
+- Executive evidence confidence is a conservative policy score, not calibrated epistemic
+  probability. Existing controller-residual and vocabulary-margin confidence fields are also
+  proxies and must not be interpreted as knowing whether a claim is true.
+- Outcome calibration covers dispatched actions only. It cannot estimate counterfactual quality
+  for rejected alternatives without controlled exploration, and information-gain measurements
+  are comparable only when they share a declared validator.
+- External dispatch is at-least-once across crashes: selection is durable before invocation, but a
+  process can fail after a worker side effect and before recording its outcome. Production workers
+  must deduplicate the stable attempt ID or recover their prior result. SQLite/JSONL durability
+  does not make external side effects exactly once.
+
 - The checked-in measurements use random weights and do not establish trained-model MLP
   sparsity.
 - The oracle computes every activation. The practical router now uses deterministic joint-key
@@ -21,9 +37,10 @@
   executed on a Haswell-or-newer host or suitable CI runner.
 - Hardware performance counters are unavailable on the development host. DRAM and energy
   claims cannot be measured here.
-- No trained checkpoint was present for the checked-in reports. Engram now downloads a model
-  when a Hub ID is supplied explicitly; this can require substantial disk space and gated models
-  still require Hugging Face authentication and license acceptance.
+- Trained SmolLM2 semantic-routing reports are checked in, but no trained end-to-end compiled
+  Gate 5 run exists. Engram downloads a model when a Hub ID is supplied explicitly; this can
+  require substantial disk space and gated models still require Hugging Face authentication and
+  license acceptance.
 - Synthetic Gate 3 mean relative L2 is 0.456 for the heuristic hybrid; retrieval/copying
   accuracy of 1.0 comes from a controlled synthetic case and must not be generalized.
 - Synthetic Gate 4 adaptive control averaged 7.98/8 cycles and therefore did not demonstrate

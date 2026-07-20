@@ -21,6 +21,10 @@ source-transformer independence, and every file's byte count and SHA-256. Every 
 also records dtype, shape, byte order, format version, Fortran-order flag, payload offset, and
 actual alignment. Semantic submanifests repeat array-level metadata for independent inspection.
 
+An `.engram` package is a model worker, not a system-agent snapshot. It does not contain executive
+goal graphs, durable user memory, tool credentials, worker registries, or Cognitive Executive
+policy.
+
 Each compiled semantic layer contains `quantized/ivf/centroids.npy` (`float32` joint gate/up
 centroids), `posting_offsets.npy` (`uint32` CSR offsets), and `posting_indices.npy` (`uint32`
 record IDs), plus versioned IVF metadata.

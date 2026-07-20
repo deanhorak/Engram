@@ -21,5 +21,9 @@ Gate 1 is not complete until the same trained-model study includes fitted backgr
 operators. Gates 2–4 have only random/synthetic pipeline reports. `engram evaluate-e2e` measures
 student NLL/perplexity, teacher KL, top-1/top-5 agreement, category accuracy, repetition, and
 fixed examples against a cached Hugging Face teacher. Model IDs are downloaded automatically,
-while local model directories remain offline-capable. No trained checkpoint
-was available in this workspace, so no Gate 5 quality target is claimed.
+while local model directories remain offline-capable. Trained SmolLM2 semantic-routing experiments
+have run, but no trained end-to-end Gate 5 evaluation has, so no Gate 5 quality target is claimed.
+
+The system-level Cognitive Executive has separate goal, confidence-calibration, action-utility,
+attention, memory, monitoring, and safety gates defined in
+[its design document](cognitive_executive.md). Compiler gates do not imply executive success.
