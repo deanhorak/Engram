@@ -21,9 +21,9 @@ beginning with `./`, `../`, or `~` are always treated as explicit local paths; a
 reported as an error instead of being interpreted as a Hub ID.
 
 Automatic resolution applies to `inspect`, `trace`, `analyze-mlp`, `build-semantic`,
-`evaluate-semantic`, `compile`, and the `evaluate-e2e --teacher` argument. Once resolved, model
-loading remains local-only so all Transformers calls use the single cached snapshot. Existing
-local directories never require Hub access.
+`evaluate-semantic`, `evaluate-mlp-intervention`, `compile`, and the `evaluate-e2e --teacher`
+argument. Once resolved, model loading remains local-only so all Transformers calls use the
+single cached snapshot. Existing local directories never require Hub access.
 
 ## Milestone 1 artifacts
 
@@ -44,6 +44,47 @@ and is not yet layer-streamed, which is a known converter limitation.
 Fixture tracing deliberately feeds deterministic synthetic residual states through the
 extracted MLP weights. This tests the semantic experiment without claiming full-model
 teacher behavior.
+
+## Semantic progression gate
+
+Before learned semantic parameters can enter a compiled package, run
+`evaluate-mlp-intervention` on held-out text. The command substitutes identity, full-information
+magnitude (the CLI's `oracle` arm), flat rank-16, overlapping-posting, or predictor-free DIP MLP
+outputs inside the trained source transformer and applies the thresholds documented in
+[evaluation](evaluation.md).
+The dense source MLP still
+executes inside this measurement harness, so its wall time is not a runtime benchmark.
+For learned arms, calibration trace token sequences are compared directly with tokenized
+evaluation sequences; any exact overlap blocks progression unless explicitly retained for a
+diagnostic run, which still cannot pass the serialization gate.
+
+A passing full-information magnitude reference is the standard screening trigger for spending
+effort on a router, not proof that no other K-record subset could do better. The serialization gate
+requires a reference measurement at the routed arm's K, but the reference need not pass if the
+routed arm itself passes causal quality. A passing routed all-layer arm is required before
+serialization. The checked SmolLM2 study first passes the reference among tested points at
+768/1,536 active records, but both learned routed arms fail even at 1,280 candidates. Those fits
+have now been repeated using all 1,112 available calibration states per layer and still fail.
+Corpus-scaled regularization and candidate expansion up to 1,472/1,536 records also fail the
+causal gate; that largest arm leaves too little traffic reduction to justify further expansion.
+Experimental global and targeted correction capsules also worsen held-out local MLP error, so no
+correction parameters are eligible for serialization.
+The sparse-teacher trainer writes a separate safetensors router/adapter experiment artifact and a
+gate report; it does not mutate the cached source model or compile the artifact. The first pilot
+fails every routed quality check, so this artifact is likewise ineligible for package inclusion.
+An audit also shows that its hard candidate selection blocks causal-loss gradients to the router,
+so a future training retry must use a differentiable soft-to-hard stage.
+
+The predictor-free DIP-inspired selector is the materially different arm that changes the quality
+decision. Top-magnitude input pruning and partial scoring come from DIP; candidate-only exact
+completion and contribution reranking are Engram extensions. After choosing 75% input coordinates,
+896 candidates, and K=768 on the development grid, the fixed configuration passes again on a
+sequence-disjoint confirmation corpus. `--evaluation-role confirmation` requires
+`--configuration-selection-traces` and rejects any exact token-sequence overlap.
+The current pipeline still has no DIP serializer: it needs a cache-aware gate/up layout, candidate
+completion metadata, and a native kernel before attention/controller work can depend on it. The
+quality pass authorizes that experimental systems implementation; it does not authorize compiling
+the old learned-router artifacts or claiming a runtime speedup.
 
 ## Runnable compiler
 

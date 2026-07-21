@@ -21,4 +21,4 @@ def test_practical_router_uses_separate_fit_and_validation_splits(tmp_path):
     overall = next(group for group in report["groups"] if group["scope"] == "all")
     assert overall["samples"] == 16
     assert 0.0 <= overall["metrics"]["candidate_recall"]["mean"] <= 1.0
-    assert report["end_to_end_logit_effect"]["status"] == "not_run"
+    assert report["end_to_end_logit_effect"]["status"] == "separate_evaluator_available"

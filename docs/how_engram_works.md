@@ -176,7 +176,7 @@ These arrays are written as independent NPY shards with shapes, dtypes, and SHA-
 Calibration traces may influence fitting. Validation traces are held out and used only to measure
 generalization.
 
-### Stage 3: measure the best possible sparsity
+### Stage 3: measure a full-information sparsity frontier
 
 Before evaluating an index, Engram computes every MLP activation for selected trace states. It
 ranks records by contribution magnitude:
@@ -187,7 +187,9 @@ abs(a_j(h)) * length(v_j)
 
 It then accumulates records in that order and measures how many are required to reconstruct 90%,
 95%, or 99% of the full MLP output energy. This is an oracle because it already knows every exact
-activation. It provides a bound: a practical router cannot outperform it at the same active count.
+activation. It is a useful full-information reference, but not a mathematical upper bound: vector
+contributions can cancel, so a different K-record subset can reconstruct the complete MLP output
+or preserve downstream behavior better.
 
 ### Stage 4: build and test a practical router
 
@@ -200,10 +202,50 @@ the resulting vectors, and stores cluster membership as CSR-style posting lists.
 4. compute exact SwiGLU activations for the surviving candidates;
 5. read and sum only the selected values.
 
-Recent experiments show that the baseline loses too many oracle records. An experimental router
-clusters gate and up keys separately, unions their postings, restores original key magnitudes, and
-uses exact contribution scoring inside the probed set. This improves recall, but its best measured
-result still probes too much of the layer. It is not yet the compiled default.
+Recent experiments show that the baseline loses too many oracle records. Directly supervised
+multi-label routing improves candidate recall, and a rank-16 factorization makes its scoring
+weights much smaller. Disjoint hierarchies, coverage-trained groups, multiple representatives,
+and learned overlapping postings have all been tested. None of the checked artifacts passes the
+downstream quality gate, so none is a compiled default. The learned fits used 128 of 1,112
+available calibration states per layer in the first comparison. Refitting on all 1,112 states
+raises flat-router recall at 1,280 candidates from 86.7% to 88.9% and overlap-router recall from
+85.8% to 86.8%, but neither reaches the 95% gate and downstream behavior remains far outside the
+declared limits.
+
+The subsequent screen caches the oracle memberships and sweeps ridge regularization without rerunning
+the transformer. λ=8,000 is best, but reaching 95% recall requires at least 1,408 candidates.
+Even 1,472 candidates—95.8% of all records—fails the causal gate. This shows that simply opening
+more postings or assigning per-layer budgets cannot rescue the current rank-16 representation
+while preserving the intended memory-traffic advantage.
+
+The decisive test substitutes sparse MLP outputs inside the original trained transformer. This
+keeps attention, residual connections, normalization, and the vocabulary head exact, allowing us
+to measure how local MLP error changes actual next-token probabilities. On SmolLM2-135M, the
+full-information magnitude top-256 reference already damages logits badly. The first tested
+magnitude-reference pass is top-768, which keeps half the records. At that active count, rank-16
+flat and overlapping-posting routers still miss too many records even after examining 1,280 of
+1,536 candidates. Near-dense candidate expansion fixes recall but not causal quality or useful
+traffic reduction. The gate therefore stops conversion
+before those experimental parameters are serialized; it does not claim that all possible sparse
+representations must fail.
+
+The first passing follow-up avoids predicting a hard oracle-membership label. Published Dynamic
+Input Pruning (DIP) motivates pruning the current MLP input and forming partial scores. Engram
+extends that idea with candidate-only exact completion and contribution-norm reranking:
+
+1. keep the `q` coordinates of the hidden vector with the largest absolute values;
+2. multiply only those coordinates by every gate/up record to get a partial SwiGLU score;
+3. keep `C` promising records;
+4. evaluate the omitted input coordinates only for those candidates, making their activations
+   exact;
+5. rerank the exact candidates and read the `K` selected down-projection values.
+
+This is predictor-free: it uses the source MLP weights rather than a separate learned router. On
+the current SmolLM2 study, retaining 75% of input coordinates, completing 896/1,536 candidates,
+and selecting K=768 passes both the development grid and a sequence-disjoint confirmation run.
+Its projected weight reads are 76.4% of a dense MLP. That is a real quality progression result,
+but only a modest traffic reduction; the cache-aware packed layout and native kernel needed to
+realize it have not yet been built.
 
 ### Stage 5: fit missing behavior
 
@@ -218,8 +260,26 @@ The intended conversion pipeline must also distill:
 - confidence and escalation policies from measured divergence;
 - optional correction capsules for repeatable failure regions.
 
+The correction-capsule experiment now fits state-selected local affine low-rank predictors to the
+exact dense-minus-routed MLP residual. Global 1/4/8-capsule layouts and targeted layouts trained on
+the hardest 10–40% of states were checked. The best global result worsens local relative L2 from
+0.207 to 0.259; a tight targeted result applies on 7.1% of states but still worsens it to 0.233.
+These experimental capsules therefore remain outside compiled packages.
+
+The next implemented training stage copies the source model into a frozen student and replaces
+each student MLP with a sparse training wrapper. Hard candidate selection uses the learned router;
+an auxiliary membership loss trains its rank-16 factors, while a rank-8 update to the sparse down
+projection receives local MLP, hidden-state, and output-logit distillation losses. Attention,
+normalization, embeddings, and original MLP weights never update. The artifact stores only these
+router and adapter tensors. The first 32-step pilot improves its training loss but fails held-out
+recall and causal quality, so it is not used by inference. A gradient audit also shows that hard
+candidate indices prevent the causal losses from training the router, making a differentiable
+soft-to-hard route a requirement before repeating that experiment.
+
 Those training stages are open work. The present compiler writes initialized or heuristic
-fallbacks and records that fact in its conversion report.
+fallbacks and records that fact in its conversion report. DIP now supplies a passing semantic
+substitution arm, so the immediate work is to serialize its packed layout and validate a native
+sparse kernel before attributing later failures to attention or controller distillation.
 
 ## 5. The converted format
 
@@ -330,7 +390,8 @@ The current loop is real and executable, but several inputs to it are not learne
 - the controller is initialized, not distilled from teacher state transitions;
 - episodic mixing is heuristic, not trained to match source attention;
 - correction capsules are empty;
-- sparse semantic routing recall is below the required level.
+- sparse semantic routing recall and downstream quality are below the required level;
+- no learned rank-16 or overlapping-posting router is serialized because the semantic gate fails.
 
 Consequently, successful package generation or Python/C++ parity proves that the systems pipeline
 works. It does not prove that Engram preserves the teacher model's language ability.
@@ -366,5 +427,7 @@ following on held-out workloads:
 - reproducible measurements across more than one model and dataset.
 
 Current results establish extraction correctness, format integrity, executable Python/native
-runtimes, and some trained-model MLP sparsity. They do not yet establish the quality or performance
-claims above.
+runtimes, and a trained-model causal MLP intervention frontier. That frontier is negative for the
+tested practical routers. For the magnitude reference on SmolLM2-135M, K=640 failed and K=768
+passed, so the threshold lies above 640 and at or below 768 on this corpus; intermediate counts
+were not tested. The quality and performance claims above remain unestablished.

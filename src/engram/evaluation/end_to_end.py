@@ -34,7 +34,7 @@ def evaluate_end_to_end(
     runtime = EngramRuntime(package)
     teacher_path = resolve_model_path(teacher)
     model = AutoModelForCausalLM.from_pretrained(
-        teacher_path, local_files_only=True, dtype=torch.float32, device_map=None
+        teacher_path, local_files_only=True, torch_dtype=torch.float32, device_map=None
     ).eval()
     records = [json.loads(line) for line in Path(dataset).read_text().splitlines() if line.strip()]
     if max_records is not None:

@@ -90,7 +90,7 @@ def _hf_trace(
     records = _load_dataset(dataset)[:samples]
     torch.manual_seed(seed)
     model = AutoModelForCausalLM.from_pretrained(
-        model_path, local_files_only=True, dtype=torch.float32, device_map=None
+        model_path, local_files_only=True, torch_dtype=torch.float32, device_map=None
     )
     model.eval()
     layers = model.model.layers

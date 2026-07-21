@@ -61,8 +61,8 @@ The first trained-model experiments used `HuggingFaceTB/SmolLM2-135M`:
   oracle's 0.335.
 - An experimental trace-calibrated router improves mean top-256 recall to 61.0% with 512
   candidates, and to 66.8% while examining about 641 records. Increasing calibration coverage
-  fourfold did not improve it, so the next step is a learned multi-label or coverage-optimized
-  partition rather than simply collecting more of the same traces.
+  fourfold did not improve that router, which motivated learned multi-label and
+  coverage-optimized follow-ups.
 - A learned multi-label ridge router reaches 65.9% recall with 512 candidates and 72.2% with 640.
   This confirms that direct oracle-membership supervision helps, but its dense scoring matrix is
   too expensive for production.
@@ -73,15 +73,47 @@ The first trained-model experiments used `HuggingFaceTB/SmolLM2-135M`:
   best configuration reached only 52.8% recall at 512 records, and the router-weight saving is
   small beside the selected key traffic.
 - Training groups directly for oracle coverage improves hierarchical recall to 54.6%. Multiple
-  representatives do not improve that result. The remaining partition constraint is too costly;
-  the next routing experiment should learn overlapping postings with a coverage objective.
+  representatives do not improve that result.
+- A trained-teacher intervention harness now replaces MLP outputs inside the original transformer
+  and measures final normalized-hidden-state drift, logit KL, top-1/top-5 agreement, and held-out
+  NLL. It verifies the identity path exactly before testing sparse arms.
+- The old top-256 target fails under the full-information magnitude reference: replacing all 30
+  MLPs raises KL by 0.648 and NLL by 0.668 nats/token, while preserving only 60.5% of teacher
+  top-1 choices. Magnitude top-K is not guaranteed to be the optimal K-record subset.
+  K=768—half of every layer's 1,536 records—is the first tested active count that passes the
+  declared progression thresholds (KL 0.032, top-1 92.3%, NLL +0.022, final-hidden rel-L2 0.092).
+- At K=768, full-corpus refits using all 1,112 calibration states per layer still fail after
+  examining 1,280 candidates. The flat rank-16 router reaches 88.9% recall, KL 0.789, and NLL
+  +0.764. Coverage-trained overlapping postings reach 86.8% recall, KL 1.149, and NLL +1.095,
+  while scanning about 1,667 posting entries to form 1,280 unique candidates. More calibration
+  data modestly improved recall but did not close the 95% recall or downstream-quality gaps.
+- A cached regularization sweep found a shallow optimum near λ=8,000. Raising the candidate
+  budget to 1,408 and 1,472 clears the recall gate at 95.4% and 97.8%, but causal substitution
+  still fails: the 1,472-candidate arm has KL 0.085, top-1 agreement 86.6%, NLL +0.055, and
+  final-hidden rel-L2 0.131. It reads 95.8% of record keys, leaving only about a 1.24× projected
+  key/value traffic reduction before router overhead. This rank-16 configuration is abandoned.
+- A predictor-free, DIP-inspired path now uses the source model's own gate/up weights on the
+  largest-magnitude input coordinates. Engram then exactly completes only its candidate records
+  and reranks them to K=768; that completion/reranking stage is an Engram extension to the
+  published DIP method. It requires no learned membership router. The recommended
+  75%-input/896-candidate arm passes both the development frontier and a separate untouched
+  confirmation corpus. Confirmation metrics are 99.0% candidate recall, KL 0.029, 91.0% top-1
+  agreement, NLL +0.033, and final-hidden rel-L2 0.090. Its logical float32 weight-read model is
+  76.4% of dense MLP traffic, a projected 1.31x reduction before indexes and cache effects.
 - The fitted rank-4 background operator worsened mean held-out error, so it is not currently a
   viable correction.
 
 The compiler and runtimes work, but the controller is initialized rather than distilled and the
 project has not demonstrated acceptable end-to-end language quality or its target memory-traffic
-reduction. The immediate research priority is improving semantic candidate recall before further
-compilation claims. See [architecture](docs/architecture.md), [evaluation](docs/evaluation.md),
+reduction. Learned rank-16, posting-group, residual-capsule, and first sparse-teacher artifacts
+remain blocked. The new predictor-free arm is the first realizable selector algorithm to clear the
+semantic quality prerequisite and is eligible for an experimental serialization path. It is not
+yet present in `.engram` packages or either runtime: the current evaluators execute dense matrix
+operations to validate selection quality and only project the reads of a future packed sparse
+kernel. The first sparse-teacher pilot also has an important training flaw: hard routing prevents
+its causal losses from updating the router, and its adapter barely moves. It should not be used as
+evidence against a future differentiable soft-to-hard distillation design.
+See [architecture](docs/architecture.md), [evaluation](docs/evaluation.md),
 and [limitations](docs/limitations.md) for the precise design and caveats. The latest routing
 measurement is documented in the [trace-calibrated recall report](reports/smollm2_calibrated_router/recall.md).
 The directly supervised follow-up is in the
@@ -92,6 +124,25 @@ The hierarchical follow-up and its negative result are in the
 [hierarchical routing report](reports/smollm2_hierarchical_router/recall.md).
 The direct coverage and multiple-representative experiments are in the
 [coverage-trained group report](reports/smollm2_coverage_groups/recall.md).
+The causal intervention frontier and router decisions are summarized in the
+[trained-teacher intervention decision](reports/smollm2_mlp_intervention/decision.md), with the
+machine-readable arm reports linked there. A
+[provenance-checked composite report](reports/smollm2_mlp_intervention_composite/mlp_intervention.json)
+applies the final gate across the separately executed arms.
+The cached [regularization sweep](reports/smollm2_rank_router_regularization_sweep/rank_router_regularization_sweep.md),
+[candidate frontier](reports/smollm2_rank_router_candidate_frontier/rank_router_regularization_sweep.md),
+and [near-dense causal check](reports/smollm2_mlp_intervention_rank16_lambda8000_frontier/mlp_intervention.md)
+record why the flat rank-16 configuration is no longer being pursued.
+The [global correction-capsule sweep](reports/smollm2_correction_capsule_sweep/correction_capsule_sweep.md)
+and [targeted tight-radius sweep](reports/smollm2_correction_capsule_targeted_tight_sweep/correction_capsule_sweep.md)
+record the negative residual-correction result.
+The [sparse-teacher pilot](reports/smollm2_sparse_teacher_epoch1/sparse_teacher_training.md)
+records the first trainable sparse-student result and its unchanged stop decision.
+The predictor-free [DIP trace sweep](reports/smollm2_dip_exact_completion_sweep/dip_exact_completion_sweep.md)
+and [causal frontier](reports/smollm2_mlp_intervention_dip_frontier/mlp_intervention.md)
+record its development selection and measured quality/projected scalar-read frontier. The
+[untouched confirmation report](reports/smollm2_mlp_intervention_dip_confirmation/mlp_intervention.md)
+freezes the 75%/896 configuration and verifies zero exact sequence overlap with the selection set.
 
 ## How conversion and inference work
 
@@ -156,7 +207,8 @@ cmake --build build
 The fixture is random and only validates the pipeline. To produce meaningful evidence,
 use a trained Llama-compatible Hugging Face model. Pass either a local directory or a
 Hub model ID. Hub models are downloaded automatically into the standard Hugging Face
-cache and reused on subsequent commands:
+cache and reused on subsequent commands. The current semantic format requires bias-free
+SwiGLU MLP projections and rejects checkpoints with `mlp_bias=true`:
 
 ```bash
 engram inspect --model HuggingFaceTB/SmolLM2-135M
@@ -169,12 +221,39 @@ engram analyze-mlp \
   --model HuggingFaceTB/SmolLM2-135M \
   --traces work/real-traces \
   --out reports/generated/real-model
-engram compile --model HuggingFaceTB/SmolLM2-135M --out work/local.engram
-engram evaluate-e2e --model work/local.engram \
-  --teacher HuggingFaceTB/SmolLM2-135M \
+engram evaluate-mlp-intervention \
+  --model HuggingFaceTB/SmolLM2-135M \
   --dataset /absolute/path/to/held-out.jsonl \
-  --out reports/generated/local-quality
+  --out reports/generated/mlp-quality \
+  --variants identity oracle \
+  --top-k 256 512 768 \
+  --layer-mode all
+engram sweep-dip \
+  --model HuggingFaceTB/SmolLM2-135M \
+  --validation-traces /absolute/path/to/validation-traces \
+  --out reports/generated/dip-sweep \
+  --input-fractions 0.5 0.625 0.75 \
+  --top-k 768 \
+  --candidates 896 1024 1152
+engram evaluate-mlp-intervention \
+  --model HuggingFaceTB/SmolLM2-135M \
+  --dataset /absolute/path/to/untouched-confirmation.jsonl \
+  --out reports/generated/dip-confirmation \
+  --variants identity oracle dip \
+  --input-fractions 0.75 \
+  --top-k 768 \
+  --candidates 896 \
+  --layer-mode all \
+  --evaluation-role confirmation \
+  --configuration-selection-traces /absolute/path/to/validation-traces
 ```
+
+A successful command exit is not a compilation claim. The generated intervention report applies
+explicit quality gates; routed arms must pass before their parameters are eligible for
+serialization. `engram gate-mlp-intervention --report PATH` reapplies the current declared
+thresholds to an existing report. Supplying several `--report` paths plus `--out DIRECTORY`
+creates a provenance-checked composite gate, which is useful when expensive arms were run in
+stages.
 
 For gated repositories, authenticate first with `hf auth login` or set `HF_TOKEN`.
 Existing local directories continue to work without network access.
@@ -231,6 +310,15 @@ held-out local checkpoint.
 The checked [Gate 5 random-fixture report](reports/milestone5_fixture/end_to_end_quality.md)
 validates that evaluator and records a negative result: zero category target accuracy and 93.75%
 repetition. Its small KL is an artifact of near-uniform random logits.
+
+The trained-teacher MLP intervention is narrower and more diagnostic than Gate 5: it keeps the
+trained transformer's attention, residual path, normalization, and vocabulary head exact while
+replacing only selected MLP outputs. The checked SmolLM2 result finds that full-information
+magnitude top-768 is the first tested selection that passes the declared progression thresholds,
+and all learned practical routers fail. Predictor-free DIP subsequently passes with 75% of input
+coordinates and 896 candidates. That unlocks experimental DIP serialization work, but it does not
+show that the current initialized compiled runtime preserves SmolLM2 quality: no DIP-packed model,
+native sparse kernel, trained controller, or trained-package Gate 5 result exists yet.
 
 ## Documentation
 

@@ -202,6 +202,13 @@ def evaluate_practical_routing(
         "ivf_minimum_probes": min(ivf_probes, min(ivf_clusters, inspection.intermediate_size)),
         "background": "fitted_low_rank_linear_residual",
         "backgrounds": fitted_backgrounds,
-        "end_to_end_logit_effect": {"status": "not_run", "reason": "transformer substitution evaluator pending"},
+        "end_to_end_logit_effect": {
+            "status": "separate_evaluator_available",
+            "command": "engram evaluate-mlp-intervention",
+            "reason": (
+                "Candidate proxy metrics do not imply language-model quality; run the "
+                "trained-teacher intervention gate for the selected router and budget."
+            ),
+        },
         "groups": output_groups,
     }

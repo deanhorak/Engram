@@ -37,3 +37,14 @@ def test_inspector_rejects_wrong_mlp_shape(tmp_path):
     np.savez(model / "weights.npz", **weights)
     with pytest.raises(ModelValidationError, match="has shape"):
         inspect_model(model)
+
+
+def test_inspector_rejects_bias_enabled_mlp_configuration(tmp_path):
+    model = create_tiny_fixture(tmp_path / "model")
+    config_path = model / "config.json"
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["mlp_bias"] = True
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+
+    with pytest.raises(ModelValidationError, match="mlp_bias=false"):
+        inspect_model(model)

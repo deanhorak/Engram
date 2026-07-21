@@ -59,3 +59,22 @@ def test_fit_validation_rejects_invalid_rank_and_mismatched_samples():
         LowRankLinearBackground.fit(inputs, residuals, rank=3)
     with pytest.raises(ValueError, match="sample count"):
         LowRankLinearBackground.fit(inputs, residuals[:3], rank=1)
+
+
+@pytest.mark.parametrize("samples,width,output", [(5, 8, 7), (12, 5, 7)])
+def test_adaptive_ridge_factorization_matches_dense_solution(samples, width, output):
+    rng = np.random.default_rng(samples)
+    inputs = rng.normal(size=(samples, width))
+    residuals = rng.normal(size=(samples, output))
+    fitted = LowRankLinearBackground.fit(inputs, residuals, rank=3, ridge=2.0)
+
+    centered_x = inputs - inputs.mean(axis=0)
+    centered_y = residuals - residuals.mean(axis=0)
+    gram = centered_x.T @ centered_x + 2.0 * np.eye(width)
+    coefficient = np.linalg.solve(gram, centered_x.T @ centered_y)
+    left, singular, right = np.linalg.svd(coefficient, full_matrices=False)
+    expected = (inputs - inputs.mean(axis=0)) @ (
+        (left[:, :3] * singular[:3]) @ right[:3]
+    ) + residuals.mean(axis=0)
+
+    np.testing.assert_allclose(fitted.predict(inputs), expected, rtol=1e-9, atol=1e-9)

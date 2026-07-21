@@ -166,6 +166,10 @@ def inspect_model(path: str | Path, *, hash_weights: bool = True) -> ModelInspec
     activation = config.get("hidden_act", "silu")
     if activation not in {"silu", "swish"}:
         raise ModelValidationError(f"unsupported MLP activation {activation!r}; expected SiLU")
+    if config.get("mlp_bias", False):
+        raise ModelValidationError(
+            "bias-enabled MLP projections are not supported; expected mlp_bias=false"
+        )
 
     fields = {}
     for key in ("hidden_size", "intermediate_size", "num_hidden_layers", "num_attention_heads", "vocab_size"):

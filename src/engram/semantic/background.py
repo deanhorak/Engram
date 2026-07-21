@@ -189,14 +189,44 @@ class LowRankLinearBackground:
         centered_y = y - output_mean
         if ridge == 0.0:
             coefficient, _, _, _ = np.linalg.lstsq(centered_x, centered_y, rcond=None)
+            left, singular_values, right = np.linalg.svd(coefficient, full_matrices=False)
+            input_factor = left[:, :rank] * singular_values[:rank]
+            output_factor = right[:rank, :]
+        elif centered_x.shape[0] <= centered_x.shape[1]:
+            gram = centered_x @ centered_x.T
+            gram.flat[:: gram.shape[0] + 1] += ridge
+            dual = np.linalg.solve(gram, centered_y)
+            left_basis, left_reduced = np.linalg.qr(centered_x.T, mode="reduced")
+            right_basis, right_reduced = np.linalg.qr(dual.T, mode="reduced")
+            core = left_reduced @ right_reduced.T
+            core_left, singular_values, core_right = np.linalg.svd(
+                core, full_matrices=False
+            )
+            input_factor = (
+                left_basis @ core_left[:, :rank]
+            ) * singular_values[:rank]
+            output_factor = core_right[:rank] @ right_basis.T
         else:
             gram = centered_x.T @ centered_x
             gram.flat[:: gram.shape[0] + 1] += ridge
             coefficient = np.linalg.solve(gram, centered_x.T @ centered_y)
-
-        left, singular_values, right = np.linalg.svd(coefficient, full_matrices=False)
-        input_factor = left[:, :rank] * singular_values[:rank]
-        output_factor = right[:rank, :]
+            if coefficient.shape[0] <= coefficient.shape[1]:
+                eigenvalues, eigenvectors = np.linalg.eigh(coefficient @ coefficient.T)
+                selected = np.argsort(eigenvalues, kind="stable")[-rank:][::-1]
+                singular_values = np.sqrt(np.maximum(eigenvalues[selected], 0.0))
+                left = eigenvectors[:, selected]
+                input_factor = left * singular_values
+                output_factor = np.zeros((rank, coefficient.shape[1]), dtype=np.float64)
+                nonzero = singular_values > np.finfo(np.float64).eps
+                output_factor[nonzero] = (
+                    left[:, nonzero].T @ coefficient
+                ) / singular_values[nonzero, None]
+            else:
+                eigenvalues, eigenvectors = np.linalg.eigh(coefficient.T @ coefficient)
+                selected = np.argsort(eigenvalues, kind="stable")[-rank:][::-1]
+                right = eigenvectors[:, selected]
+                input_factor = coefficient @ right
+                output_factor = right.T
         return cls(
             input_mean=input_mean,
             output_mean=output_mean,

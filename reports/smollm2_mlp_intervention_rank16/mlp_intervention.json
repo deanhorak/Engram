@@ -1,0 +1,3460 @@
+{
+  "arms": [
+    {
+      "candidate_count": null,
+      "gate": {
+        "checks": [
+          {
+            "actual": 0.0,
+            "comparison": "maximum",
+            "metric": "teacher_student_kl",
+            "passed": true,
+            "threshold": 1e-06
+          },
+          {
+            "actual": 0.0,
+            "comparison": "maximum",
+            "metric": "final_hidden_relative_l2",
+            "passed": true,
+            "threshold": 1e-06
+          },
+          {
+            "actual": 1.0,
+            "comparison": "minimum",
+            "metric": "teacher_top1_agreement",
+            "passed": true,
+            "threshold": 0.999999
+          },
+          {
+            "actual": 0.0,
+            "comparison": "maximum",
+            "metric": "absolute_nll_delta",
+            "passed": true,
+            "threshold": 1e-06
+          }
+        ],
+        "failed_metrics": [],
+        "passed": true,
+        "type": "instrumentation_sanity"
+      },
+      "layer_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "local_mlp": {
+        "mlp_output_cosine": {
+          "count": 15210,
+          "maximum": 1.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "minimum": 0.9999999999999998,
+          "p95": 1.0
+        },
+        "mlp_output_relative_l2": {
+          "count": 15210,
+          "maximum": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "tokens": 15210
+      },
+      "local_mlp_by_layer": [
+        {
+          "layer": 0,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 1,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 2,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 3,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 4,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 5,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 6,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 7,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 8,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 9,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 10,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 11,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 12,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 13,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 14,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 15,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 16,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 17,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 18,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 19,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 20,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 21,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 22,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 23,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 24,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 25,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 26,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 27,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 28,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        },
+        {
+          "layer": 29,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "tokens": 507
+        }
+      ],
+      "name": "identity_all_selected_layers",
+      "projected_accounting": {
+        "dense_mlp_weight_bytes_per_token": 318504960,
+        "kind": "dense_identity"
+      },
+      "quality": {
+        "final_hidden_cosine": {
+          "count": 507,
+          "maximum": 1.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "minimum": 0.9999999999999998,
+          "p95": 1.0
+        },
+        "final_hidden_relative_l2": {
+          "count": 507,
+          "maximum": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "nll_delta": {
+          "count": 491,
+          "maximum": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "student_nll": {
+          "count": 491,
+          "maximum": 16.939329147338867,
+          "mean": 3.176499797914646,
+          "median": 1.7890857458114624,
+          "minimum": 6.6756979322235566e-06,
+          "p95": 9.731781005859375
+        },
+        "student_perplexity": 23.96273218679623,
+        "teacher_nll": {
+          "count": 491,
+          "maximum": 16.939329147338867,
+          "mean": 3.176499797914646,
+          "median": 1.7890857458114624,
+          "minimum": 6.6756979322235566e-06,
+          "p95": 9.731781005859375
+        },
+        "teacher_student_kl": {
+          "count": 491,
+          "maximum": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "teacher_student_top5_overlap": {
+          "count": 491,
+          "maximum": 1.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "minimum": 1.0,
+          "p95": 1.0
+        },
+        "teacher_top1_agreement": {
+          "count": 491,
+          "maximum": 1.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "minimum": 1.0,
+          "p95": 1.0
+        },
+        "teacher_top5_contains_student_top1": {
+          "count": 491,
+          "maximum": 1.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "minimum": 1.0,
+          "p95": 1.0
+        }
+      },
+      "scope": "all",
+      "timing_valid": false,
+      "top_k": null,
+      "variant": "identity"
+    },
+    {
+      "candidate_count": 1024,
+      "gate": {
+        "checks": [
+          {
+            "actual": 1.6344551601546864,
+            "comparison": "maximum",
+            "metric": "teacher_student_kl",
+            "passed": false,
+            "threshold": 0.05
+          },
+          {
+            "actual": 0.39918533604887985,
+            "comparison": "minimum",
+            "metric": "teacher_top1_agreement",
+            "passed": false,
+            "threshold": 0.9
+          },
+          {
+            "actual": 1.6787861532784425,
+            "comparison": "maximum",
+            "metric": "nll_delta",
+            "passed": false,
+            "threshold": 0.05
+          },
+          {
+            "actual": 0.49542734533412214,
+            "comparison": "maximum",
+            "metric": "final_hidden_relative_l2",
+            "passed": false,
+            "threshold": 0.1
+          },
+          {
+            "actual": 0.7223889848145115,
+            "comparison": "minimum",
+            "metric": "candidate_recall",
+            "passed": false,
+            "threshold": 0.95
+          }
+        ],
+        "failed_metrics": [
+          "teacher_student_kl",
+          "teacher_top1_agreement",
+          "nll_delta",
+          "final_hidden_relative_l2",
+          "candidate_recall"
+        ],
+        "passed": false,
+        "type": "routed_quality"
+      },
+      "layer_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "local_mlp": {
+        "candidate_count": {
+          "count": 15210,
+          "maximum": 1024.0,
+          "mean": 1024.0,
+          "median": 1024.0,
+          "minimum": 1024.0,
+          "p95": 1024.0
+        },
+        "candidate_recall": {
+          "count": 15210,
+          "maximum": 1.0,
+          "mean": 0.7223889848145115,
+          "median": 0.7135416865348816,
+          "minimum": 0.6432291865348816,
+          "p95": 0.7903645634651184
+        },
+        "mlp_output_cosine": {
+          "count": 15210,
+          "maximum": 0.999999384716646,
+          "mean": 0.9189456642287309,
+          "median": 0.9208456676311916,
+          "minimum": 0.5432262083193636,
+          "p95": 0.9962473617521166
+        },
+        "mlp_output_relative_l2": {
+          "count": 15210,
+          "maximum": 0.8398630388589571,
+          "mean": 0.3737882165507116,
+          "median": 0.39187329890450157,
+          "minimum": 0.0011112386296276114,
+          "p95": 0.5408658595915599
+        },
+        "tokens": 15210
+      },
+      "local_mlp_by_layer": [
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.7163153350705931,
+            "median": 0.69921875,
+            "minimum": 0.6432291865348816,
+            "p95": 0.856119805574417
+          },
+          "layer": 0,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9999820196071398,
+            "mean": 0.9547515370941908,
+            "median": 0.9625492186301481,
+            "minimum": 0.70748808894848,
+            "p95": 0.9998906131277089
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.7532892398952327,
+            "mean": 0.28643042786342143,
+            "median": 0.3042346956841351,
+            "minimum": 0.0060068520887088285,
+            "p95": 0.5523957585687818
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9934895634651184,
+            "mean": 0.7061246726404751,
+            "median": 0.6927083134651184,
+            "minimum": 0.6497395634651184,
+            "p95": 0.8134114444255829
+          },
+          "layer": 1,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9999356874846408,
+            "mean": 0.9286595800951435,
+            "median": 0.932153266748345,
+            "minimum": 0.6282188114746109,
+            "p95": 0.9981212305809534
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.7784586545103362,
+            "mean": 0.3411847813692889,
+            "median": 0.3652730158331285,
+            "minimum": 0.01146618468224283,
+            "p95": 0.5147606169929767
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9583333134651184,
+            "mean": 0.7179487178311545,
+            "median": 0.703125,
+            "minimum": 0.6549479365348816,
+            "p95": 0.8213541746139525
+          },
+          "layer": 2,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9999992590726966,
+            "mean": 0.910167914628574,
+            "median": 0.9080631526745632,
+            "minimum": 0.6710925653715557,
+            "p95": 0.9999610764333006
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.7437326909973623,
+            "mean": 0.3889915858333335,
+            "median": 0.4206439596387137,
+            "minimum": 0.0012465731312092771,
+            "p95": 0.5397633586465038
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9739583134651184,
+            "mean": 0.7137933503946609,
+            "median": 0.6966145634651184,
+            "minimum": 0.6510416865348816,
+            "p95": 0.8841145634651184
+          },
+          "layer": 3,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9963092873557862,
+            "mean": 0.891125043541447,
+            "median": 0.8859866144395888,
+            "minimum": 0.5432262083193636,
+            "p95": 0.9882240424441164
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.8398630388589571,
+            "mean": 0.437390834823277,
+            "median": 0.46387636253409387,
+            "minimum": 0.08610884909988982,
+            "p95": 0.5707950567441501
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9518229365348816,
+            "mean": 0.7187140438213386,
+            "median": 0.703125,
+            "minimum": 0.6575520634651184,
+            "p95": 0.8880208134651184
+          },
+          "layer": 4,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9897171526896327,
+            "mean": 0.8932319669511871,
+            "median": 0.8908783528205199,
+            "minimum": 0.6010892295393906,
+            "p95": 0.982743922288487
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.7996716546384379,
+            "mean": 0.4370585923435878,
+            "median": 0.45502468524895456,
+            "minimum": 0.14402806061946782,
+            "p95": 0.5578372105794956
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9713541865348816,
+            "mean": 0.718932342599835,
+            "median": 0.703125,
+            "minimum": 0.66015625,
+            "p95": 0.8729166805744171
+          },
+          "layer": 5,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9898211799688583,
+            "mean": 0.8869105705053636,
+            "median": 0.8849961850826021,
+            "minimum": 0.6482456123563058,
+            "p95": 0.9842714085467983
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.7619937087334678,
+            "mean": 0.44860642943000867,
+            "median": 0.4672740510091371,
+            "minimum": 0.1447730418211499,
+            "p95": 0.5808129212963054
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9713541865348816,
+            "mean": 0.7190941400546764,
+            "median": 0.703125,
+            "minimum": 0.6666666865348816,
+            "p95": 0.8802083134651184
+          },
+          "layer": 6,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9950170942740865,
+            "mean": 0.8924968756408118,
+            "median": 0.891202578657478,
+            "minimum": 0.7475227564734644,
+            "p95": 0.9902170529327085
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.6642362457386793,
+            "mean": 0.4371496673470843,
+            "median": 0.4538755233185226,
+            "minimum": 0.10083669989006276,
+            "p95": 0.5621836712864898
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9817708134651184,
+            "mean": 0.7170421384730518,
+            "median": 0.7018229365348816,
+            "minimum": 0.6614583134651184,
+            "p95": 0.87890625
+          },
+          "layer": 7,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9996689241361587,
+            "mean": 0.9003871816541874,
+            "median": 0.8988611827923466,
+            "minimum": 0.6624074617567107,
+            "p95": 0.9991095063844844
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.7527169870496054,
+            "mean": 0.4156703931482066,
+            "median": 0.439894106008235,
+            "minimum": 0.025981418062113383,
+            "p95": 0.556926694802771
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9869791865348816,
+            "mean": 0.7209227069830283,
+            "median": 0.7018229365348816,
+            "minimum": 0.6666666865348816,
+            "p95": 0.9214843809604645
+          },
+          "layer": 8,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9999788042885114,
+            "mean": 0.9293834185305243,
+            "median": 0.9320000590931756,
+            "minimum": 0.6259394199413991,
+            "p95": 0.9999584850246888
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.7799045077453564,
+            "mean": 0.3495118512290262,
+            "median": 0.36344136854951803,
+            "minimum": 0.006956571668103722,
+            "p95": 0.4945935966973076
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9908854365348816,
+            "mean": 0.7240918807729462,
+            "median": 0.7057291865348816,
+            "minimum": 0.6666666865348816,
+            "p95": 0.9231770694255828
+          },
+          "layer": 9,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9999951811837621,
+            "mean": 0.9188217144024614,
+            "median": 0.9191986113962826,
+            "minimum": 0.777045563685164,
+            "p95": 0.9999852585420217
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.630582950444761,
+            "mean": 0.37373045888904727,
+            "median": 0.3972847428260767,
+            "minimum": 0.0033160154418420823,
+            "p95": 0.5198709820475598
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9752604365348816,
+            "mean": 0.7375570150051832,
+            "median": 0.7278645634651184,
+            "minimum": 0.68359375,
+            "p95": 0.8123697996139525
+          },
+          "layer": 10,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9999428027762579,
+            "mean": 0.9218256204184152,
+            "median": 0.9225344571188625,
+            "minimum": 0.7966698867095867,
+            "p95": 0.9921825890094079
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.6046031542194131,
+            "mean": 0.3711687715023631,
+            "median": 0.38637211007789857,
+            "minimum": 0.010866246697162572,
+            "p95": 0.5033846878940592
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.921875,
+            "mean": 0.7393342164846567,
+            "median": 0.734375,
+            "minimum": 0.6770833134651184,
+            "p95": 0.7899739444255829
+          },
+          "layer": 11,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9904378248235259,
+            "mean": 0.9145037246201088,
+            "median": 0.9181429161993487,
+            "minimum": 0.7502011511964831,
+            "p95": 0.971586096530009
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.7244983494586138,
+            "mean": 0.4117482026438307,
+            "median": 0.4022520707236448,
+            "minimum": 0.13865089782121934,
+            "p95": 0.559644411996918
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.8229166865348816,
+            "mean": 0.7241509506218062,
+            "median": 0.7213541865348816,
+            "minimum": 0.6783854365348816,
+            "p95": 0.7665364444255829
+          },
+          "layer": 12,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.97193092062031,
+            "mean": 0.9018082736825601,
+            "median": 0.9086170916301731,
+            "minimum": 0.631067517282617,
+            "p95": 0.9503150965228664
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.7835412584090253,
+            "mean": 0.4253900278915035,
+            "median": 0.4183410326460962,
+            "minimum": 0.23556307563584686,
+            "p95": 0.5436128608021594
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.796875,
+            "mean": 0.7322690664428696,
+            "median": 0.73046875,
+            "minimum": 0.6848958134651184,
+            "p95": 0.765625
+          },
+          "layer": 13,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9822399851409147,
+            "mean": 0.9163400853401655,
+            "median": 0.9195315404309893,
+            "minimum": 0.6775937058004217,
+            "p95": 0.9672142435548355
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.7386825866020793,
+            "mean": 0.39117097881637675,
+            "median": 0.3944620442492682,
+            "minimum": 0.1888567976776545,
+            "p95": 0.5260947449126389
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.8072916865348816,
+            "mean": 0.7316347176036421,
+            "median": 0.7291666865348816,
+            "minimum": 0.6744791865348816,
+            "p95": 0.7708333134651184
+          },
+          "layer": 14,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9939924296518478,
+            "mean": 0.9292836124591913,
+            "median": 0.9332159027762953,
+            "minimum": 0.7121695258725395,
+            "p95": 0.9806751580628233
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.7028928734161752,
+            "mean": 0.35776731959315045,
+            "median": 0.3617528281657318,
+            "minimum": 0.1107542625265765,
+            "p95": 0.5074852594160154
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.80859375,
+            "mean": 0.7340591097254254,
+            "median": 0.73046875,
+            "minimum": 0.6653645634651184,
+            "p95": 0.7799479365348816
+          },
+          "layer": 15,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.98573130592759,
+            "mean": 0.9168667370848974,
+            "median": 0.9206906452944396,
+            "minimum": 0.7495184641603415,
+            "p95": 0.9710548382042987
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.6620916052215324,
+            "mean": 0.3893491675849283,
+            "median": 0.3915900280562007,
+            "minimum": 0.16864374215451142,
+            "p95": 0.5248425639075556
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.81640625,
+            "mean": 0.7249342549952295,
+            "median": 0.72265625,
+            "minimum": 0.67578125,
+            "p95": 0.7708333134651184
+          },
+          "layer": 16,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9859726055460388,
+            "mean": 0.9011076863677029,
+            "median": 0.9028609684956259,
+            "minimum": 0.6939967109062504,
+            "p95": 0.9647128469240799
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.7231907742793415,
+            "mean": 0.4230214655324729,
+            "median": 0.4306545469004875,
+            "minimum": 0.16705261018630235,
+            "p95": 0.5545444141087348
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.8111979365348816,
+            "mean": 0.7255531940939863,
+            "median": 0.7213541865348816,
+            "minimum": 0.6770833134651184,
+            "p95": 0.7743489444255829
+          },
+          "layer": 17,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9869690140560855,
+            "mean": 0.9054286242679265,
+            "median": 0.9099253347929798,
+            "minimum": 0.7524357600826106,
+            "p95": 0.9630112074099957
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.6588315485516762,
+            "mean": 0.4144806050194147,
+            "median": 0.4154456504647232,
+            "minimum": 0.16092924903532754,
+            "p95": 0.547607598800593
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.8359375,
+            "mean": 0.7321766103513142,
+            "median": 0.7265625,
+            "minimum": 0.6861979365348816,
+            "p95": 0.7838541865348816
+          },
+          "layer": 18,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9904258766663743,
+            "mean": 0.9310153315936116,
+            "median": 0.9343668445098386,
+            "minimum": 0.8076128127353683,
+            "p95": 0.9772864498192257
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.5902950789696414,
+            "mean": 0.3548248341605877,
+            "median": 0.3577922871234664,
+            "minimum": 0.1387661279385222,
+            "p95": 0.48530152268371746
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.8619791865348816,
+            "mean": 0.7303300671558643,
+            "median": 0.7239583134651184,
+            "minimum": 0.6666666865348816,
+            "p95": 0.7899739444255829
+          },
+          "layer": 19,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9866463472752415,
+            "mean": 0.9104868748486711,
+            "median": 0.913630056904654,
+            "minimum": 0.73235739674215,
+            "p95": 0.9699164977850601
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.6820562288176298,
+            "mean": 0.4031754039715404,
+            "median": 0.408563428639993,
+            "minimum": 0.1632345044606958,
+            "p95": 0.5389732926095615
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.8580729365348816,
+            "mean": 0.7321355198262006,
+            "median": 0.7252604365348816,
+            "minimum": 0.6653645634651184,
+            "p95": 0.7921874940395355
+          },
+          "layer": 20,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9907550865509893,
+            "mean": 0.9276709789047713,
+            "median": 0.9315140512822615,
+            "minimum": 0.7896468272059669,
+            "p95": 0.9743962266533734
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.6135624224490221,
+            "mean": 0.36271332954629687,
+            "median": 0.3638527147350023,
+            "minimum": 0.13568239914061306,
+            "p95": 0.502531481867029
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.828125,
+            "mean": 0.7141888543698914,
+            "median": 0.7083333134651184,
+            "minimum": 0.65234375,
+            "p95": 0.7743489444255829
+          },
+          "layer": 21,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9934874402000331,
+            "mean": 0.8959012717005476,
+            "median": 0.9011248440038123,
+            "minimum": 0.7220244364114048,
+            "p95": 0.9604059255116258
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.691867873096641,
+            "mean": 0.4326688168909074,
+            "median": 0.4359810232496582,
+            "minimum": 0.11452006141368884,
+            "p95": 0.5819455874595355
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.8489583134651184,
+            "mean": 0.7238324912342095,
+            "median": 0.71875,
+            "minimum": 0.6744791865348816,
+            "p95": 0.7782551944255829
+          },
+          "layer": 22,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9907219818314477,
+            "mean": 0.9140826924376582,
+            "median": 0.917898519928053,
+            "minimum": 0.7493298167836964,
+            "p95": 0.9676282332180787
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.6622310734064191,
+            "mean": 0.3948239069037308,
+            "median": 0.3977666531694764,
+            "minimum": 0.1359056789162208,
+            "p95": 0.5299086221449326
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.8111979365348816,
+            "mean": 0.7153984834926839,
+            "median": 0.7083333134651184,
+            "minimum": 0.6666666865348816,
+            "p95": 0.7721354365348816
+          },
+          "layer": 23,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9918556851182829,
+            "mean": 0.9340343482746436,
+            "median": 0.9372140121400637,
+            "minimum": 0.7385102310747041,
+            "p95": 0.9814856664094195
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.6742613296543004,
+            "mean": 0.3471762335659213,
+            "median": 0.353117137858418,
+            "minimum": 0.12811320252915578,
+            "p95": 0.49075999315598695
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.8111979365348816,
+            "mean": 0.7118389436008897,
+            "median": 0.7083333134651184,
+            "minimum": 0.6614583134651184,
+            "p95": 0.7591145634651184
+          },
+          "layer": 24,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9903025194581971,
+            "mean": 0.9325515852313353,
+            "median": 0.9391180341629571,
+            "minimum": 0.7722494849309977,
+            "p95": 0.9822452149157271
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.6353194098607642,
+            "mean": 0.34682540700322,
+            "median": 0.344193187239679,
+            "minimum": 0.13914178521827816,
+            "p95": 0.5068495874561956
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.796875,
+            "mean": 0.6993856836823081,
+            "median": 0.6953125,
+            "minimum": 0.6484375,
+            "p95": 0.7447916865348816
+          },
+          "layer": 25,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9841424638407628,
+            "mean": 0.9081224062613446,
+            "median": 0.9100165304060508,
+            "minimum": 0.7295781452738292,
+            "p95": 0.9668354030728425
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.6862741983849213,
+            "mean": 0.408254769484053,
+            "median": 0.41463166431274256,
+            "minimum": 0.17757190829297373,
+            "p95": 0.5395453813451275
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.8111979365348816,
+            "mean": 0.7032097512213201,
+            "median": 0.6966145634651184,
+            "minimum": 0.6497395634651184,
+            "p95": 0.7548176944255829
+          },
+          "layer": 26,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9842217696333745,
+            "mean": 0.9064441923239054,
+            "median": 0.9137676027251771,
+            "minimum": 0.584698493245149,
+            "p95": 0.9649469401990711
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.8129412566758255,
+            "mean": 0.4096194744687517,
+            "median": 0.4065321810814986,
+            "minimum": 0.17695236289325547,
+            "p95": 0.5629034999995163
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.8203125,
+            "mean": 0.7104084484675932,
+            "median": 0.703125,
+            "minimum": 0.65234375,
+            "p95": 0.7786458134651184
+          },
+          "layer": 27,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9997412653778521,
+            "mean": 0.9342306712182131,
+            "median": 0.9459130996176889,
+            "minimum": 0.6657672300948824,
+            "p95": 0.9846006232205762
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.7491521374140495,
+            "mean": 0.3350646008920559,
+            "median": 0.32476288282814725,
+            "minimum": 0.022749633627381787,
+            "p95": 0.5399848576738051
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.8229166865348816,
+            "mean": 0.7121034684265859,
+            "median": 0.7057291865348816,
+            "minimum": 0.6640625,
+            "p95": 0.7721354365348816
+          },
+          "layer": 28,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.999999384716646,
+            "mean": 0.9646492106188012,
+            "median": 0.9694129981763348,
+            "minimum": 0.8311282543085328,
+            "p95": 0.9933662843736051
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.5560811909691458,
+            "mean": 0.24744008813775206,
+            "median": 0.24552856815955432,
+            "minimum": 0.0011112386296276114,
+            "p95": 0.3838554854700899
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1024.0,
+            "mean": 1024.0,
+            "median": 1024.0,
+            "minimum": 1024.0,
+            "p95": 1024.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.8619791865348816,
+            "mean": 0.764189368991927,
+            "median": 0.7591145634651184,
+            "minimum": 0.69921875,
+            "p95": 0.8151041865348816
+          },
+          "layer": 29,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9996859517154639,
+            "mean": 0.9960801961635652,
+            "median": 0.9982137250368299,
+            "minimum": 0.9381565322523536,
+            "p95": 0.9993588658859731
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.3500514450275687,
+            "mean": 0.07123807063620666,
+            "median": 0.06154261848075702,
+            "minimum": 0.025065052842803668,
+            "p95": 0.12486776902971111
+          },
+          "tokens": 507
+        }
+      ],
+      "name": "rank16_candidates_1024_top_768_all_selected_layers",
+      "projected_accounting": {
+        "active_record_fraction": 0.5,
+        "candidate_key_bytes_per_token": 141557760,
+        "candidate_record_fraction": 0.6666666666666666,
+        "kind": "rank16_router_plus_exact_candidate_rerank",
+        "router_macs_per_token": 1013760,
+        "router_parameter_bytes_per_invocation": 4239360,
+        "selected_value_bytes_per_token": 53084160
+      },
+      "quality": {
+        "final_hidden_cosine": {
+          "count": 507,
+          "maximum": 0.9803039743071552,
+          "mean": 0.8609238548357321,
+          "median": 0.8964047797140003,
+          "minimum": 0.09230180560035296,
+          "p95": 0.9662747853775109
+        },
+        "final_hidden_relative_l2": {
+          "count": 507,
+          "maximum": 1.1242337380102307,
+          "mean": 0.49542734533412214,
+          "median": 0.4651993066775246,
+          "minimum": 0.19751222484501965,
+          "p95": 0.8458545525152725
+        },
+        "nll_delta": {
+          "count": 491,
+          "maximum": 12.621795654296875,
+          "mean": 1.6787861532784425,
+          "median": 1.3069936037063599,
+          "minimum": -5.379828453063965,
+          "p95": 6.288167953491211
+        },
+        "student_nll": {
+          "count": 491,
+          "maximum": 17.654796600341797,
+          "mean": 4.855285953630986,
+          "median": 4.107288360595703,
+          "minimum": 8.618460560683161e-05,
+          "p95": 11.430877685546875
+        },
+        "student_perplexity": 128.4174073888329,
+        "teacher_nll": {
+          "count": 491,
+          "maximum": 16.939329147338867,
+          "mean": 3.176499797914646,
+          "median": 1.7890857458114624,
+          "minimum": 6.6756979322235566e-06,
+          "p95": 9.731781005859375
+        },
+        "teacher_student_kl": {
+          "count": 491,
+          "maximum": 7.817035675048828,
+          "mean": 1.6344551601546864,
+          "median": 1.0980534553527832,
+          "minimum": 0.00010111150913871825,
+          "p95": 5.727247714996338
+        },
+        "teacher_student_top5_overlap": {
+          "count": 491,
+          "maximum": 1.0,
+          "mean": 0.4386965480088702,
+          "median": 0.4000000059604645,
+          "minimum": 0.0,
+          "p95": 0.800000011920929
+        },
+        "teacher_top1_agreement": {
+          "count": 491,
+          "maximum": 1.0,
+          "mean": 0.39918533604887985,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 1.0
+        },
+        "teacher_top5_contains_student_top1": {
+          "count": 491,
+          "maximum": 1.0,
+          "mean": 0.6863543788187373,
+          "median": 1.0,
+          "minimum": 0.0,
+          "p95": 1.0
+        }
+      },
+      "scope": "all",
+      "timing_valid": false,
+      "top_k": 768,
+      "variant": "rank16"
+    },
+    {
+      "candidate_count": 1280,
+      "gate": {
+        "checks": [
+          {
+            "actual": 0.6496390416872334,
+            "comparison": "maximum",
+            "metric": "teacher_student_kl",
+            "passed": false,
+            "threshold": 0.05
+          },
+          {
+            "actual": 0.6191446028513238,
+            "comparison": "minimum",
+            "metric": "teacher_top1_agreement",
+            "passed": false,
+            "threshold": 0.9
+          },
+          {
+            "actual": 0.6695674007894694,
+            "comparison": "maximum",
+            "metric": "nll_delta",
+            "passed": false,
+            "threshold": 0.05
+          },
+          {
+            "actual": 0.3231488639840557,
+            "comparison": "maximum",
+            "metric": "final_hidden_relative_l2",
+            "passed": false,
+            "threshold": 0.1
+          },
+          {
+            "actual": 0.8674894360591517,
+            "comparison": "minimum",
+            "metric": "candidate_recall",
+            "passed": false,
+            "threshold": 0.95
+          }
+        ],
+        "failed_metrics": [
+          "teacher_student_kl",
+          "teacher_top1_agreement",
+          "nll_delta",
+          "final_hidden_relative_l2",
+          "candidate_recall"
+        ],
+        "passed": false,
+        "type": "routed_quality"
+      },
+      "layer_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "local_mlp": {
+        "candidate_count": {
+          "count": 15210,
+          "maximum": 1280.0,
+          "mean": 1280.0,
+          "median": 1280.0,
+          "minimum": 1280.0,
+          "p95": 1280.0
+        },
+        "candidate_recall": {
+          "count": 15210,
+          "maximum": 1.0,
+          "mean": 0.8674894360591517,
+          "median": 0.8606770634651184,
+          "minimum": 0.8125,
+          "p95": 0.921875
+        },
+        "mlp_output_cosine": {
+          "count": 15210,
+          "maximum": 0.9999999466663445,
+          "mean": 0.9576524174310933,
+          "median": 0.9602037138527666,
+          "minimum": 0.5264126066466633,
+          "p95": 0.9985030061774918
+        },
+        "mlp_output_relative_l2": {
+          "count": 15210,
+          "maximum": 0.8507717639098138,
+          "mean": 0.2696128346491131,
+          "median": 0.28007355903833764,
+          "minimum": 0.00032666198542782333,
+          "p95": 0.41327083840857975
+        },
+        "tokens": 15210
+      },
+      "local_mlp_by_layer": [
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.8616555712867301,
+            "median": 0.8515625,
+            "minimum": 0.81640625,
+            "p95": 0.940234375
+          },
+          "layer": 0,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.999989298967818,
+            "mean": 0.9766441065308419,
+            "median": 0.9867676205733334,
+            "minimum": 0.8364418067536288,
+            "p95": 0.9999375603664507
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.6079348366903407,
+            "mean": 0.19004115016714837,
+            "median": 0.17724286135519723,
+            "minimum": 0.004640034297516061,
+            "p95": 0.4589813909985814
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9973958134651184,
+            "mean": 0.8563393740023851,
+            "median": 0.8502604365348816,
+            "minimum": 0.81640625,
+            "p95": 0.921875
+          },
+          "layer": 1,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9999641878581564,
+            "mean": 0.9586765443155951,
+            "median": 0.962994482183247,
+            "minimum": 0.574022609801332,
+            "p95": 0.9990959083674359
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.8191664229693311,
+            "mean": 0.2573408014561521,
+            "median": 0.2707986199180515,
+            "minimum": 0.008527963785850955,
+            "p95": 0.4060868613462558
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.99609375,
+            "mean": 0.8622205799383055,
+            "median": 0.8541666865348816,
+            "minimum": 0.8151041865348816,
+            "p95": 0.9233073115348815
+          },
+          "layer": 2,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9999992705661467,
+            "mean": 0.9539470903632044,
+            "median": 0.9552429452300868,
+            "minimum": 0.8737325508140522,
+            "p95": 0.999986620264886
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.4890970907868314,
+            "mean": 0.28091062715048565,
+            "median": 0.29632597115237247,
+            "minimum": 0.0012466304006345076,
+            "p95": 0.41422513844192294
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9973958134651184,
+            "mean": 0.860962154479657,
+            "median": 0.8515625,
+            "minimum": 0.8203125,
+            "p95": 0.9631510496139526
+          },
+          "layer": 3,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9966899107179329,
+            "mean": 0.944882454351232,
+            "median": 0.9456697272247789,
+            "minimum": 0.5264126066466633,
+            "p95": 0.9907103409213741
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.8507717639098138,
+            "mean": 0.3148030321697061,
+            "median": 0.32560138228941365,
+            "minimum": 0.08137250656523158,
+            "p95": 0.4325157540078965
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9947916865348816,
+            "mean": 0.8638103016499702,
+            "median": 0.85546875,
+            "minimum": 0.8216145634651184,
+            "p95": 0.9635416865348816
+          },
+          "layer": 4,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9922742028504157,
+            "mean": 0.9463773730439363,
+            "median": 0.9467368450178295,
+            "minimum": 0.664952017966557,
+            "p95": 0.9881013255183111
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.747818501617757,
+            "mean": 0.3140326907535774,
+            "median": 0.3223710965176522,
+            "minimum": 0.12469347509870017,
+            "p95": 0.4185249356626036
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9973958134651184,
+            "mean": 0.8660523494084676,
+            "median": 0.8580729365348816,
+            "minimum": 0.8229166865348816,
+            "p95": 0.9670572996139526
+          },
+          "layer": 5,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9925279118523189,
+            "mean": 0.941983086350689,
+            "median": 0.9443111573067806,
+            "minimum": 0.8021692815911566,
+            "p95": 0.9892180107206935
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.5978006416728622,
+            "mean": 0.3252264691876425,
+            "median": 0.33054433143850565,
+            "minimum": 0.12272950408549521,
+            "p95": 0.4457913644510685
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9986979365348816,
+            "mean": 0.8658905543048941,
+            "median": 0.8580729365348816,
+            "minimum": 0.82421875,
+            "p95": 0.96484375
+          },
+          "layer": 6,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9961048144458682,
+            "mean": 0.9465802614043644,
+            "median": 0.9479463302901573,
+            "minimum": 0.846815839333486,
+            "p95": 0.9936668100279272
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.5332567638516932,
+            "mean": 0.31200019102015075,
+            "median": 0.31879887988492417,
+            "minimum": 0.08986539433092017,
+            "p95": 0.4205427371973951
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9986979365348816,
+            "mean": 0.8640773939428009,
+            "median": 0.85546875,
+            "minimum": 0.8151041865348816,
+            "p95": 0.96484375
+          },
+          "layer": 7,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9997272202630187,
+            "mean": 0.9492453655353916,
+            "median": 0.9512697370341688,
+            "minimum": 0.7314023096401476,
+            "p95": 0.9993370643234479
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.6820111236682864,
+            "mean": 0.2997148286409941,
+            "median": 0.30878949921431403,
+            "minimum": 0.02367996280344198,
+            "p95": 0.4238401887030033
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.8654745025982753,
+            "median": 0.8567708134651184,
+            "minimum": 0.8255208134651184,
+            "p95": 0.9739583134651184
+          },
+          "layer": 8,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9999787965695593,
+            "mean": 0.963300631495947,
+            "median": 0.9659105710854924,
+            "minimum": 0.7815450651911526,
+            "p95": 0.9999651375347072
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.6251996438840826,
+            "mean": 0.2525827226450055,
+            "median": 0.25961941666548605,
+            "minimum": 0.006900738399924094,
+            "p95": 0.36576352591603745
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9986979365348816,
+            "mean": 0.8681711244159902,
+            "median": 0.859375,
+            "minimum": 0.8294270634651184,
+            "p95": 0.9774739444255829
+          },
+          "layer": 9,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.999995259428237,
+            "mean": 0.9559973110213158,
+            "median": 0.9572051634185743,
+            "minimum": 0.8367184693784753,
+            "p95": 0.9999889918223432
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.5496221016606851,
+            "mean": 0.2763573045085063,
+            "median": 0.2900682611482903,
+            "minimum": 0.003347315031371219,
+            "p95": 0.39701792750846404
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9947916865348816,
+            "mean": 0.8745223126232742,
+            "median": 0.8671875,
+            "minimum": 0.8333333134651184,
+            "p95": 0.9337239384651184
+          },
+          "layer": 10,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9999529657631057,
+            "mean": 0.9587456810837632,
+            "median": 0.960181973178382,
+            "minimum": 0.85121348941777,
+            "p95": 0.9973483299759967
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.5255693731121106,
+            "mean": 0.27120971561033713,
+            "median": 0.2794679236494728,
+            "minimum": 0.010088968323818904,
+            "p95": 0.389020449081376
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9791666865348816,
+            "mean": 0.874797110609284,
+            "median": 0.8723958134651184,
+            "minimum": 0.8372395634651184,
+            "p95": 0.9097656309604645
+          },
+          "layer": 11,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9999998890862569,
+            "mean": 0.9536178031917538,
+            "median": 0.9552502528739789,
+            "minimum": 0.8441257376011103,
+            "p95": 0.9866432449138063
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.718544466128344,
+            "mean": 0.29140249680438884,
+            "median": 0.2976478332228502,
+            "minimum": 0.0004929248050166672,
+            "p95": 0.4261089028969624
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.8715431880668776,
+            "median": 0.8658854365348816,
+            "minimum": 0.828125,
+            "p95": 0.9045572996139526
+          },
+          "layer": 12,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9979336940747746,
+            "mean": 0.9510367598843019,
+            "median": 0.9538743958414585,
+            "minimum": 0.7900568610260891,
+            "p95": 0.9798238147320872
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.6142749857460136,
+            "mean": 0.30018022089922414,
+            "median": 0.30024471114327816,
+            "minimum": 0.06444465010654098,
+            "p95": 0.41320884874027974
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.8738314625779553,
+            "median": 0.8697916865348816,
+            "minimum": 0.8372395634651184,
+            "p95": 0.90234375
+          },
+          "layer": 13,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9989779473954448,
+            "mean": 0.9552683685167674,
+            "median": 0.95600002640121,
+            "minimum": 0.8782966939408252,
+            "p95": 0.9856575187315861
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.47814258852505964,
+            "mean": 0.28611784593561473,
+            "median": 0.294043170757738,
+            "minimum": 0.04520366079617893,
+            "p95": 0.4015107343846416
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.8730943876610705,
+            "median": 0.8684895634651184,
+            "minimum": 0.8307291865348816,
+            "p95": 0.9032551944255829
+          },
+          "layer": 14,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9993722120187856,
+            "mean": 0.9597821197825505,
+            "median": 0.9628538154346242,
+            "minimum": 0.8175288726516375,
+            "p95": 0.9916757934356646
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.5771049975654919,
+            "mean": 0.2688064407523515,
+            "median": 0.27175012703853135,
+            "minimum": 0.035634738524965175,
+            "p95": 0.38390821163887995
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.8745967904491537,
+            "median": 0.8684895634651184,
+            "minimum": 0.8268229365348816,
+            "p95": 0.9097656309604645
+          },
+          "layer": 15,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9986000401003361,
+            "mean": 0.9571332999083167,
+            "median": 0.9603474203388986,
+            "minimum": 0.8757896000057355,
+            "p95": 0.9884647599559507
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.4838949428222735,
+            "mean": 0.2782250404320976,
+            "median": 0.27950935582489045,
+            "minimum": 0.053361405804028476,
+            "p95": 0.4084809662965708
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.87024110320522,
+            "median": 0.8645833134651184,
+            "minimum": 0.82421875,
+            "p95": 0.9110676944255829
+          },
+          "layer": 16,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9980567827251331,
+            "mean": 0.9465962707486463,
+            "median": 0.9497196636997498,
+            "minimum": 0.834229216539154,
+            "p95": 0.9859508080669501
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.5559418267385472,
+            "mean": 0.30966226959034887,
+            "median": 0.313972950878183,
+            "minimum": 0.06322101510439693,
+            "p95": 0.44339083158910764
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.8720876488695013,
+            "median": 0.8671875,
+            "minimum": 0.8268229365348816,
+            "p95": 0.9097656309604645
+          },
+          "layer": 17,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9992284464936652,
+            "mean": 0.9538480017060452,
+            "median": 0.956582033337594,
+            "minimum": 0.8609806783040174,
+            "p95": 0.984647494667544
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.5127392249338228,
+            "mean": 0.2893146717503178,
+            "median": 0.29149724410947203,
+            "minimum": 0.04105882526618989,
+            "p95": 0.41000319072013697
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.8757935778864272,
+            "median": 0.8697916865348816,
+            "minimum": 0.8268229365348816,
+            "p95": 0.9162760496139526
+          },
+          "layer": 18,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9986376250979477,
+            "mean": 0.9662024330050136,
+            "median": 0.9687842013268633,
+            "minimum": 0.8541378589605689,
+            "p95": 0.9902710367488368
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.5200512765916785,
+            "mean": 0.24670025279087293,
+            "median": 0.24805385546417613,
+            "minimum": 0.05222726107801193,
+            "p95": 0.36748145992602593
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.8761659671333885,
+            "median": 0.8697916865348816,
+            "minimum": 0.8229166865348816,
+            "p95": 0.9227864444255829
+          },
+          "layer": 19,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9989097568769352,
+            "mean": 0.954231205650211,
+            "median": 0.9556886268606003,
+            "minimum": 0.8079265633717455,
+            "p95": 0.9904435267795731
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.5935752713218748,
+            "mean": 0.28502430606178897,
+            "median": 0.2950556497640752,
+            "minimum": 0.046691761905081695,
+            "p95": 0.4213864736823016
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.8778943746282739,
+            "median": 0.87109375,
+            "minimum": 0.8229166865348816,
+            "p95": 0.9315104305744171
+          },
+          "layer": 20,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9991436852389831,
+            "mean": 0.9657626287627439,
+            "median": 0.969057423385621,
+            "minimum": 0.8290428485822572,
+            "p95": 0.9914748931093925
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.55918877726355,
+            "mean": 0.24752885569186103,
+            "median": 0.2476097629887835,
+            "minimum": 0.0413856718180733,
+            "p95": 0.3705479077137625
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.8652870236534104,
+            "median": 0.8580729365348816,
+            "minimum": 0.81640625,
+            "p95": 0.9119791805744171
+          },
+          "layer": 21,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9995654057124967,
+            "mean": 0.9497962458412121,
+            "median": 0.952773696593361,
+            "minimum": 0.6911775519721293,
+            "p95": 0.9879725681674618
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.7227687268878019,
+            "mean": 0.29858754644957497,
+            "median": 0.304658214205502,
+            "minimum": 0.02948905247260651,
+            "p95": 0.4350666380819644
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.870148647819045,
+            "median": 0.86328125,
+            "minimum": 0.82421875,
+            "p95": 0.9141926884651184
+          },
+          "layer": 22,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9995109462792285,
+            "mean": 0.9596957740493838,
+            "median": 0.9613704367210394,
+            "minimum": 0.8626871560831247,
+            "p95": 0.9906647135286584
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.5062380738082988,
+            "mean": 0.26861187700292277,
+            "median": 0.27564319175979296,
+            "minimum": 0.03134050719225553,
+            "p95": 0.39422108541744827
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.8629910425086463,
+            "median": 0.8567708134651184,
+            "minimum": 0.8138020634651184,
+            "p95": 0.9010416865348816
+          },
+          "layer": 23,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9994272210411747,
+            "mean": 0.9641504105928211,
+            "median": 0.9685184471721305,
+            "minimum": 0.8427668495858824,
+            "p95": 0.9920899477668355
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.5386226451870453,
+            "mean": 0.2537736226508596,
+            "median": 0.24982219847718523,
+            "minimum": 0.03387555841226907,
+            "p95": 0.3794421141133711
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.860861995163754,
+            "median": 0.85546875,
+            "minimum": 0.8138020634651184,
+            "p95": 0.8984375
+          },
+          "layer": 24,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9994802349341387,
+            "mean": 0.9600400308932677,
+            "median": 0.9650406408003045,
+            "minimum": 0.82575425973991,
+            "p95": 0.9927279345671749
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.5654952126519966,
+            "mean": 0.26269652442658764,
+            "median": 0.2630468826433967,
+            "minimum": 0.03233247891698291,
+            "p95": 0.415537418236506
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 0.9986979365348816,
+            "mean": 0.8541332797185909,
+            "median": 0.8489583134651184,
+            "minimum": 0.8138020634651184,
+            "p95": 0.8880208134651184
+          },
+          "layer": 25,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9996443314785046,
+            "mean": 0.9507644461030341,
+            "median": 0.9532148459202744,
+            "minimum": 0.8315311490930528,
+            "p95": 0.9857390882766057
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.557998094160643,
+            "mean": 0.29680405983574826,
+            "median": 0.30245075490566314,
+            "minimum": 0.026676753929985298,
+            "p95": 0.4347486038512998
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.856110803474336,
+            "median": 0.8489583134651184,
+            "minimum": 0.81640625,
+            "p95": 0.8941406309604645
+          },
+          "layer": 26,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9997771129831586,
+            "mean": 0.9503525503319795,
+            "median": 0.9557008597908727,
+            "minimum": 0.7940299256805011,
+            "p95": 0.9866839917741489
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.6080541925904326,
+            "mean": 0.2968444493143763,
+            "median": 0.2946690436944045,
+            "minimum": 0.021126178650118312,
+            "p95": 0.44416211919231663
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.8608029249622037,
+            "median": 0.8541666865348816,
+            "minimum": 0.8229166865348816,
+            "p95": 0.9045572996139526
+          },
+          "layer": 27,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9999442530990833,
+            "mean": 0.9621435838854157,
+            "median": 0.9708569989540771,
+            "minimum": 0.7245771981943777,
+            "p95": 0.9926354188428788
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.6893852503763995,
+            "mean": 0.2522793542268019,
+            "median": 0.24021347851507868,
+            "minimum": 0.010559165381764388,
+            "p95": 0.4268002399532939
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.8600453033720012,
+            "median": 0.8528645634651184,
+            "minimum": 0.8125,
+            "p95": 0.9019531309604645
+          },
+          "layer": 28,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9999999466663445,
+            "mean": 0.9747165893782327,
+            "median": 0.9797833911692958,
+            "minimum": 0.7815713984539094,
+            "p95": 0.9961190866781535
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.6238422369409263,
+            "mean": 0.2043951259033519,
+            "median": 0.20023340125488168,
+            "minimum": 0.00032666198542782333,
+            "p95": 0.35093901474689115
+          },
+          "tokens": 507
+        },
+        {
+          "candidate_count": {
+            "count": 507,
+            "maximum": 1280.0,
+            "mean": 1280.0,
+            "median": 1280.0,
+            "minimum": 1280.0,
+            "p95": 1280.0
+          },
+          "candidate_recall": {
+            "count": 507,
+            "maximum": 1.0,
+            "mean": 0.8850802313646621,
+            "median": 0.87890625,
+            "minimum": 0.84375,
+            "p95": 0.9281250059604644
+          },
+          "layer": 29,
+          "mlp_output_cosine": {
+            "count": 507,
+            "maximum": 0.9999672551284335,
+            "mean": 0.9980540952048199,
+            "median": 0.9986433925093162,
+            "minimum": 0.9681690909040381,
+            "p95": 0.9996828524597489
+          },
+          "mlp_output_relative_l2": {
+            "count": 507,
+            "maximum": 0.25103562090742404,
+            "mean": 0.05721054564459747,
+            "median": 0.0530885675285667,
+            "minimum": 0.008112477798751726,
+            "p95": 0.10259075232843017
+          },
+          "tokens": 507
+        }
+      ],
+      "name": "rank16_candidates_1280_top_768_all_selected_layers",
+      "projected_accounting": {
+        "active_record_fraction": 0.5,
+        "candidate_key_bytes_per_token": 176947200,
+        "candidate_record_fraction": 0.8333333333333334,
+        "kind": "rank16_router_plus_exact_candidate_rerank",
+        "router_macs_per_token": 1013760,
+        "router_parameter_bytes_per_invocation": 4239360,
+        "selected_value_bytes_per_token": 53084160
+      },
+      "quality": {
+        "final_hidden_cosine": {
+          "count": 507,
+          "maximum": 0.9967260206452466,
+          "mean": 0.940934456346859,
+          "median": 0.9551313703519645,
+          "minimum": 0.14938067550980408,
+          "p95": 0.9868823932070466
+        },
+        "final_hidden_relative_l2": {
+          "count": 507,
+          "maximum": 1.0962557278113618,
+          "mean": 0.3231488639840557,
+          "median": 0.30175990479117404,
+          "minimum": 0.08121682700746163,
+          "p95": 0.5484794958290918
+        },
+        "nll_delta": {
+          "count": 491,
+          "maximum": 11.989591598510742,
+          "mean": 0.6695674007894694,
+          "median": 0.33880704641342163,
+          "minimum": -2.7226529121398926,
+          "p95": 3.2996647357940674
+        },
+        "student_nll": {
+          "count": 491,
+          "maximum": 17.335430145263672,
+          "mean": 3.8460672013371315,
+          "median": 2.8814964294433594,
+          "minimum": 5.960462772236497e-07,
+          "p95": 10.659116744995117
+        },
+        "student_perplexity": 46.808611918018556,
+        "teacher_nll": {
+          "count": 491,
+          "maximum": 16.939329147338867,
+          "mean": 3.176499797914646,
+          "median": 1.7890857458114624,
+          "minimum": 6.6756979322235566e-06,
+          "p95": 9.731781005859375
+        },
+        "teacher_student_kl": {
+          "count": 491,
+          "maximum": 7.091803550720215,
+          "mean": 0.6496390416872334,
+          "median": 0.3681563138961792,
+          "minimum": 2.3653699827264063e-05,
+          "p95": 2.2291940450668335
+        },
+        "teacher_student_top5_overlap": {
+          "count": 491,
+          "maximum": 1.0,
+          "mean": 0.6089613165425671,
+          "median": 0.6000000238418579,
+          "minimum": 0.0,
+          "p95": 1.0
+        },
+        "teacher_top1_agreement": {
+          "count": 491,
+          "maximum": 1.0,
+          "mean": 0.6191446028513238,
+          "median": 1.0,
+          "minimum": 0.0,
+          "p95": 1.0
+        },
+        "teacher_top5_contains_student_top1": {
+          "count": 491,
+          "maximum": 1.0,
+          "mean": 0.879837067209776,
+          "median": 1.0,
+          "minimum": 0.0,
+          "p95": 1.0
+        }
+      },
+      "scope": "all",
+      "timing_valid": false,
+      "top_k": 768,
+      "variant": "rank16"
+    }
+  ],
+  "baseline": {
+    "input_token_positions": 507,
+    "negative_log_likelihood": 3.176499797914646,
+    "next_token_positions": 491,
+    "perplexity": 23.96273218679623,
+    "sequences": 16,
+    "skipped_short_sequences": 0,
+    "unique_sequences": 16
+  },
+  "calibration": {
+    "calibration_sequence_count": 32,
+    "calibration_unique_sequence_count": 32,
+    "dataset_files_differ": true,
+    "dataset_hash": "383691c11c1f3670322abb768df4362aca54c2e917907bb68ae8d33f4cf002f3",
+    "evaluation_sequence_count": 16,
+    "evaluation_unique_sequence_count": 16,
+    "held_out_from_evaluation": true,
+    "overlapping_sequence_count": 0,
+    "rank": 16,
+    "record_level_disjoint": true,
+    "records_per_layer_limit": 128,
+    "regularization": 1000.0,
+    "separation_method": "exact_token_sequence_hashes",
+    "trace_path": "/home/dean/repos/engram/work/smollm2-135m-calibration-expanded"
+  },
+  "candidate_counts": [
+    1024,
+    1280
+  ],
+  "dataset_hash": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c",
+  "dataset_path": "/home/dean/repos/engram/tests/fixtures/validation_expanded.jsonl",
+  "experiment": "trained_teacher_mlp_intervention",
+  "gate_definition": {
+    "matched_magnitude_reference_policy": "a routed arm requires an all-layer magnitude-reference arm at the same top_k; the reference need not pass when the routed arm itself passes causal quality",
+    "maximum_final_hidden_relative_l2": 0.1,
+    "maximum_nll_delta": 0.05,
+    "maximum_teacher_student_kl": 0.05,
+    "minimum_evaluation_sequences": 8,
+    "minimum_next_token_positions": 256,
+    "minimum_routed_candidate_recall": 0.95,
+    "minimum_teacher_top1_agreement": 0.9,
+    "minimum_unique_evaluation_sequences": 8,
+    "scope": "logit and NLL means use held-out next-token positions; final-hidden, local MLP, and recall means use held-out input-token states; all-layer arms are required for progression"
+  },
+  "gate_summary": {
+    "data_separation_verified": true,
+    "development_decision": "stop_before_serialization",
+    "evidence_size_verified": true,
+    "instrumentation_sanity": true,
+    "oracle_viability": null,
+    "passing_oracle_arms": [],
+    "passing_routed_arms": [],
+    "routing_viability": false
+  },
+  "intermediate_size": 1536,
+  "layer_mode": "all",
+  "measurement_caveat": "Forward hooks replace MLP outputs after the dense Hugging Face MLP executes; quality metrics are valid, but evaluator wall time is not an inference benchmark.",
+  "model_path": "/home/dean/.cache/huggingface/hub/models--HuggingFaceTB--SmolLM2-135M/snapshots/93efa2f097d58c2a74874c7e644dbc9b0cee75a2",
+  "num_hidden_layers": 30,
+  "oracle_caveat": "The magnitude oracle uses all neuron activations to choose top-K and is not a realizable candidate-selection algorithm. Magnitude ranking is not the mathematically optimal K-subset when vector contributions can cancel, so this is a full-information reference rather than a theoretical quality ceiling.",
+  "quality_targets_met": false,
+  "schema_version": 1,
+  "selected_layers": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29
+  ],
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "status": "local_teacher_intervention_measurement",
+  "top_ks": [
+    768
+  ],
+  "variants": [
+    "identity",
+    "rank16"
+  ]
+}

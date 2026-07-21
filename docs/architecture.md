@@ -25,8 +25,9 @@ FFN(h) = sum_j a_j(h) v_j
 ```
 
 The Python implementation verifies this identity and the native scalar kernel provides an
-independent implementation. The magnitude oracle uses all activations to establish a
-sparsity upper-bound baseline before practical routing is attempted.
+independent implementation. The magnitude reference uses all activations to establish a
+full-information baseline before practical routing is attempted. It is not the optimal K-subset
+in general because vector contributions can cancel.
 
 ## Semantic-memory prototype
 
@@ -37,6 +38,35 @@ router clusters concatenated normalized gate/up geometry into a deterministic IV
 scores the small centroid table, scans only selected postings, and then evaluates the exact
 two-key SwiGLU expression only for candidates. A deterministic brute-force router remains for
 tests. A fitted low-rank linear operator models the residual left by the sparse read.
+
+Research-only learned routers include a direct multi-label ridge model, an equivalent direct
+low-rank fit, disjoint coverage groups, and bounded-replication overlapping postings with a
+low-rank group selector. None of those learned selectors passes the trained-teacher intervention
+gate on SmolLM2-135M. The first tested passing magnitude reference retains 768/1,536 records,
+which is already a weak sparsity result at that operating point.
+Full-corpus refits use all 1,112 available calibration states per layer. Their modest recall gains
+do not close either the 95% recall threshold or the much larger causal-quality gap, so they reject
+these router configurations rather than every possible sparse representation.
+
+The first realizable selector algorithm to pass is inspired by predictor-free Dynamic Input
+Pruning. The published method supplies dynamic top-magnitude input pruning and partial scoring;
+candidate-only exact completion and contribution-norm reranking are Engram extensions. For each
+state, it selects the `q` largest absolute hidden coordinates,
+reads only those gate/up columns for all `I` records, and computes a partial SwiGLU contribution
+score. It keeps `C` candidates, reads their omitted gate/up coordinates to recover exact
+activations, exactly reranks to `K`, and reads only those `K` down-projection columns. Its projected
+weight reads per layer are:
+
+```text
+2 * I * q + 2 * C * (H - q) + K * H
+```
+
+At `H=576`, `I=1,536`, `q=432`, `C=896`, and `K=768`, the arm passes both its development grid and
+a sequence-disjoint confirmation corpus, with 98.97% confirmation oracle-set recall. It projects
+to 76.39% of dense MLP weight traffic. The mathematical selector is implemented in the research
+code, but the compiled format does not yet contain DIP-packed weights and the native runtime has
+no gather/completion kernel. The current quality harness still executes the dense source MLP, so
+it is not a speed benchmark.
 
 ## Episodic-memory prototype
 
@@ -67,6 +97,21 @@ exact parity.
 
 ## Open architectural work
 
-The semantic and vocabulary proxies now use IVF in both runtimes, but still scan every coarse
-centroid and their tiny-fixture centroid traffic is unfavorable. Older-context retrieval still
-uses a linear candidate scan. Trained attention and controller distillation remain open.
+The semantic and vocabulary proxies use IVF in both runtimes, but still scan every coarse
+centroid and their tiny-fixture centroid traffic is unfavorable. Learned semantic routing remains
+blocked: full-corpus, corpus-scaled regularization, and candidate-budget sweeps did not close its
+gap, and the rank-16 arm fails causal quality while reading 95.8% of record keys. Predictor-free
+DIP changes that quality decision, but requires a cache-aware packed layout, native sparse kernel,
+measured DRAM traffic, and replication beyond one small model before compilation. Its 1.31x
+projected reduction is also far from the long-term 10x systems target. Global and failure-region
+low-rank correction capsules have been fitted, but every tested layout worsens held-out local MLP
+error and is rejected before causal integration.
+The first sparse-teacher trainer keeps two model copies: an immutable dense teacher and a student
+whose attention, normalization, embeddings, and original MLP tensors are frozen. Trainable
+rank-16 router factors receive oracle-membership BCE supervision; rank-8 sparse down adapters
+receive local MLP, hidden-state, and logit-distillation gradients. Only these tensors are written
+to a safetensors experiment artifact. The first 32-step pilot fails the progression gate, and a
+subsequent audit shows that its hard route prevents those causal losses from reaching the router.
+Older-context retrieval still uses a linear candidate scan. Trained attention and controller
+distillation remain open; the DIP quality pass makes systems implementation and replication the
+next semantic work rather than another blind learned-router fit.
