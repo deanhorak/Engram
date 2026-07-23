@@ -359,6 +359,13 @@ def write_mlp_intervention_report(
     )
     for arm in report["arms"]:
         quality = arm["quality"]
+        recall_policy = arm.get("gate", {}).get("candidate_recall", {})
+        if recall_policy.get("applicable") is False:
+            recall = "N/A (full converted width)"
+        elif "candidate_recall" in arm["local_mlp"]:
+            recall = _fmt(arm["local_mlp"]["candidate_recall"]["mean"])
+        else:
+            recall = "-"
         lines.append(
             "| {name} | {scope} | {layers} | {input_fraction} | {candidates} | {recall} | {score_mass} | {mlp} | {hidden} | {kl} | {top1} | {nll} | {gate} |".format(
                 name=arm["name"],
@@ -370,11 +377,7 @@ def write_mlp_intervention_report(
                     else "-"
                 ),
                 candidates=arm.get("candidate_count") or "-",
-                recall=(
-                    _fmt(arm["local_mlp"]["candidate_recall"]["mean"])
-                    if "candidate_recall" in arm["local_mlp"]
-                    else "-"
-                ),
+                recall=recall,
                 score_mass=(
                     _fmt(arm["local_mlp"]["oracle_score_mass_recall"]["mean"])
                     if "oracle_score_mass_recall" in arm["local_mlp"]

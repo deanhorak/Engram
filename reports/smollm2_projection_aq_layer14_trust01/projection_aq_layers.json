@@ -1,0 +1,424 @@
+{
+  "experiment": "projection_local_activation_aware_aq_layer_screen",
+  "layers": {
+    "14": {
+      "codec_profile": "projection_2x7_scale6",
+      "configuration": {
+        "batch_size": 128,
+        "checkpoint_interval": 16,
+        "cosine_weight": 0.1,
+        "device": "cuda",
+        "fit_iterations": 12,
+        "fit_sample_limit": 65536,
+        "gate_projection_weight": 0.025,
+        "hidden_size": 576,
+        "intermediate_size": 1536,
+        "learning_rate": 0.002,
+        "p_steps_per_cycle": 64,
+        "seed": 14,
+        "selection_records": 512,
+        "up_projection_weight": 0.025,
+        "v_change_fraction": 0.01,
+        "v_cycles": 3,
+        "v_max_records": 1024
+      },
+      "cycles": [
+        {
+          "artifact": {
+            "checksum": "f1c01cf0799f7ae1cfa74d78e9da9bf7e4d8bb3355b79a38cc3f7fb4e5f88ca6",
+            "dense_q4_bytes": 1327104,
+            "exact_round_trip": true,
+            "fraction_of_dense_q4": 0.4498456790123457,
+            "metrics_source": "checksum_validated_serialized_reload_decode",
+            "path": "reports/smollm2_projection_aq_layer14_trust01/layer_14/cycle_01.projection-aq",
+            "serialized_bytes": 596992
+          },
+          "cycle": 1,
+          "p": {
+            "best_selection_training_objective": 0.3251355290412903,
+            "checkpoints": [
+              {
+                "selection_training_objective": 0.43211910128593445,
+                "step": 0
+              },
+              {
+                "selection_training_objective": 0.3512800633907318,
+                "step": 16
+              },
+              {
+                "selection_training_objective": 0.3341962397098541,
+                "step": 32
+              },
+              {
+                "selection_training_objective": 0.32809609174728394,
+                "step": 48
+              },
+              {
+                "selection_training_objective": 0.3251355290412903,
+                "step": 64
+              }
+            ],
+            "final_minibatch_loss": 0.3453787565231323,
+            "fixed_codes_and_scale_indices": true,
+            "initial_minibatch_loss": 0.4206477999687195,
+            "initial_selection_training_objective": 0.43211910128593445
+          },
+          "selection": {
+            "after_p_training_objective": 0.3251355290412903,
+            "after_v_training_objective": 0.3089029788970947,
+            "before_training_objective": 0.43211910128593445,
+            "cycle_update_accepted": true,
+            "selected_training_objective": 0.3089029788970947,
+            "source": "fixed_training_subset_never_validation"
+          },
+          "strict_reloaded_training": {
+            "gate_projection_nmse": 0.06936141503547033,
+            "mean_cosine_similarity": 0.8313010073907208,
+            "mean_relative_l2": 0.5532668541563908,
+            "output_nmse": 0.28628608427368174,
+            "p95_relative_l2": 0.6713157892227173,
+            "up_projection_nmse": 0.12555380486893294
+          },
+          "strict_reloaded_validation": {
+            "gate_projection_nmse": 0.08953199076471179,
+            "mean_cosine_similarity": 0.7977100351466192,
+            "mean_relative_l2": 0.6060039362966212,
+            "output_nmse": 0.35432794564295067,
+            "p95_relative_l2": 0.7016291618347168,
+            "up_projection_nmse": 0.15209686195662026
+          },
+          "v": {
+            "code_changes_by_projection": [
+              2304,
+              2304,
+              2304
+            ],
+            "code_changes_proposed_by_projection": [
+              196334,
+              193352,
+              209389
+            ],
+            "down_score": "exact_current_output_residual_with_activation_hessian_diagonal",
+            "gate_up_score": "exact_block_hessian_with_current_preactivation_residual",
+            "maximum_change_fraction_per_coordinate_block": 0.01,
+            "nonlinear_candidate_forwards": 0,
+            "scale_index_changes_by_projection": [
+              16,
+              16,
+              16
+            ],
+            "scale_index_changes_proposed_by_projection": [
+              1378,
+              1384,
+              1437
+            ],
+            "total_code_changes": 6912,
+            "total_code_changes_proposed": 599075,
+            "total_scale_index_changes": 48,
+            "total_scale_index_changes_proposed": 4199,
+            "training_records": 1024
+          }
+        },
+        {
+          "artifact": {
+            "checksum": "ad650a6454ba8ce2a54156491aad0f82df32fe66e1aaad1dda3fbbd79852c852",
+            "dense_q4_bytes": 1327104,
+            "exact_round_trip": true,
+            "fraction_of_dense_q4": 0.4498456790123457,
+            "metrics_source": "checksum_validated_serialized_reload_decode",
+            "path": "reports/smollm2_projection_aq_layer14_trust01/layer_14/cycle_02.projection-aq",
+            "serialized_bytes": 596992
+          },
+          "cycle": 2,
+          "p": {
+            "best_selection_training_objective": 0.2888783812522888,
+            "checkpoints": [
+              {
+                "selection_training_objective": 0.3089029788970947,
+                "step": 0
+              },
+              {
+                "selection_training_objective": 0.2939554452896118,
+                "step": 16
+              },
+              {
+                "selection_training_objective": 0.2908051908016205,
+                "step": 32
+              },
+              {
+                "selection_training_objective": 0.2898710072040558,
+                "step": 48
+              },
+              {
+                "selection_training_objective": 0.2888783812522888,
+                "step": 64
+              }
+            ],
+            "final_minibatch_loss": 0.30023646354675293,
+            "fixed_codes_and_scale_indices": true,
+            "initial_minibatch_loss": 0.29864469170570374,
+            "initial_selection_training_objective": 0.3089029788970947
+          },
+          "selection": {
+            "after_p_training_objective": 0.2888783812522888,
+            "after_v_training_objective": 0.27846404910087585,
+            "before_training_objective": 0.3089029788970947,
+            "cycle_update_accepted": true,
+            "selected_training_objective": 0.27846404910087585,
+            "source": "fixed_training_subset_never_validation"
+          },
+          "strict_reloaded_training": {
+            "gate_projection_nmse": 0.06180461657562789,
+            "mean_cosine_similarity": 0.8476574426458683,
+            "mean_relative_l2": 0.5255976463740808,
+            "output_nmse": 0.25612525153093707,
+            "p95_relative_l2": 0.661876380443573,
+            "up_projection_nmse": 0.11209477591923746
+          },
+          "strict_reloaded_validation": {
+            "gate_projection_nmse": 0.08648422899977824,
+            "mean_cosine_similarity": 0.804177222364152,
+            "mean_relative_l2": 0.5956204854319448,
+            "output_nmse": 0.3400744548508168,
+            "p95_relative_l2": 0.7093979120254517,
+            "up_projection_nmse": 0.14668207107346454
+          },
+          "v": {
+            "code_changes_by_projection": [
+              2304,
+              2304,
+              2304
+            ],
+            "code_changes_proposed_by_projection": [
+              183150,
+              174025,
+              205710
+            ],
+            "down_score": "exact_current_output_residual_with_activation_hessian_diagonal",
+            "gate_up_score": "exact_block_hessian_with_current_preactivation_residual",
+            "maximum_change_fraction_per_coordinate_block": 0.01,
+            "nonlinear_candidate_forwards": 0,
+            "scale_index_changes_by_projection": [
+              16,
+              16,
+              16
+            ],
+            "scale_index_changes_proposed_by_projection": [
+              1318,
+              1383,
+              1389
+            ],
+            "total_code_changes": 6912,
+            "total_code_changes_proposed": 562885,
+            "total_scale_index_changes": 48,
+            "total_scale_index_changes_proposed": 4090,
+            "training_records": 1024
+          }
+        },
+        {
+          "artifact": {
+            "checksum": "fc07451871e00e528318a8a5db714ae3a338a6484772b2e0ed9a57b98f89bbe6",
+            "dense_q4_bytes": 1327104,
+            "exact_round_trip": true,
+            "fraction_of_dense_q4": 0.4498456790123457,
+            "metrics_source": "checksum_validated_serialized_reload_decode",
+            "path": "reports/smollm2_projection_aq_layer14_trust01/layer_14/cycle_03.projection-aq",
+            "serialized_bytes": 596992
+          },
+          "cycle": 3,
+          "p": {
+            "best_selection_training_objective": 0.26874685287475586,
+            "checkpoints": [
+              {
+                "selection_training_objective": 0.27846404910087585,
+                "step": 0
+              },
+              {
+                "selection_training_objective": 0.27120307087898254,
+                "step": 16
+              },
+              {
+                "selection_training_objective": 0.2694292962551117,
+                "step": 32
+              },
+              {
+                "selection_training_objective": 0.2693759500980377,
+                "step": 48
+              },
+              {
+                "selection_training_objective": 0.26874685287475586,
+                "step": 64
+              }
+            ],
+            "final_minibatch_loss": 0.258619487285614,
+            "fixed_codes_and_scale_indices": true,
+            "initial_minibatch_loss": 0.26463180780410767,
+            "initial_selection_training_objective": 0.27846404910087585
+          },
+          "selection": {
+            "after_p_training_objective": 0.26874685287475586,
+            "after_v_training_objective": 0.26114851236343384,
+            "before_training_objective": 0.27846404910087585,
+            "cycle_update_accepted": true,
+            "selected_training_objective": 0.26114851236343384,
+            "source": "fixed_training_subset_never_validation"
+          },
+          "strict_reloaded_training": {
+            "gate_projection_nmse": 0.056811872263139475,
+            "mean_cosine_similarity": 0.8562050318432739,
+            "mean_relative_l2": 0.5101261351774156,
+            "output_nmse": 0.24021538918135674,
+            "p95_relative_l2": 0.6555309295654297,
+            "up_projection_nmse": 0.10361225914461426
+          },
+          "strict_reloaded_validation": {
+            "gate_projection_nmse": 0.084029236152303,
+            "mean_cosine_similarity": 0.8081087396551141,
+            "mean_relative_l2": 0.5895362158928217,
+            "output_nmse": 0.33390624320917855,
+            "p95_relative_l2": 0.7105863094329834,
+            "up_projection_nmse": 0.14341776733625713
+          },
+          "v": {
+            "code_changes_by_projection": [
+              2304,
+              2304,
+              2304
+            ],
+            "code_changes_proposed_by_projection": [
+              167877,
+              154947,
+              201880
+            ],
+            "down_score": "exact_current_output_residual_with_activation_hessian_diagonal",
+            "gate_up_score": "exact_block_hessian_with_current_preactivation_residual",
+            "maximum_change_fraction_per_coordinate_block": 0.01,
+            "nonlinear_candidate_forwards": 0,
+            "scale_index_changes_by_projection": [
+              16,
+              16,
+              16
+            ],
+            "scale_index_changes_proposed_by_projection": [
+              1300,
+              1371,
+              1403
+            ],
+            "total_code_changes": 6912,
+            "total_code_changes_proposed": 524704,
+            "total_scale_index_changes": 48,
+            "total_scale_index_changes_proposed": 4074,
+            "training_records": 1024
+          }
+        }
+      ],
+      "experiment": "projection_local_activation_aware_aq_boundaries",
+      "final": {
+        "artifact": {
+          "checksum": "fc07451871e00e528318a8a5db714ae3a338a6484772b2e0ed9a57b98f89bbe6",
+          "dense_q4_bytes": 1327104,
+          "exact_round_trip": true,
+          "fraction_of_dense_q4": 0.4498456790123457,
+          "metrics_source": "checksum_validated_serialized_reload_decode",
+          "path": "reports/smollm2_projection_aq_layer14_trust01/layer_14/cycle_03.projection-aq",
+          "serialized_bytes": 596992
+        },
+        "strict_reloaded_training": {
+          "gate_projection_nmse": 0.056811872263139475,
+          "mean_cosine_similarity": 0.8562050318432739,
+          "mean_relative_l2": 0.5101261351774156,
+          "output_nmse": 0.24021538918135674,
+          "p95_relative_l2": 0.6555309295654297,
+          "up_projection_nmse": 0.10361225914461426
+        },
+        "strict_reloaded_validation": {
+          "gate_projection_nmse": 0.084029236152303,
+          "mean_cosine_similarity": 0.8081087396551141,
+          "mean_relative_l2": 0.5895362158928217,
+          "output_nmse": 0.33390624320917855,
+          "p95_relative_l2": 0.7105863094329834,
+          "up_projection_nmse": 0.14341776733625713
+        },
+        "validation_mean_relative_l2_absolute_improvement": 0.056411143175155054,
+        "validation_mean_relative_l2_fractional_improvement": 0.08733086742014001
+      },
+      "initial": {
+        "artifact": {
+          "checksum": "a3f65cedf8f6809f7223f9dd293ac6e87b0bf0d83f733ee80912d7cbb90e3509",
+          "dense_q4_bytes": 1327104,
+          "exact_round_trip": true,
+          "fraction_of_dense_q4": 0.4498456790123457,
+          "metrics_source": "checksum_validated_serialized_reload_decode",
+          "path": "reports/smollm2_projection_aq_layer14_trust01/layer_14/initial.projection-aq",
+          "serialized_bytes": 596992
+        },
+        "strict_reloaded_training": {
+          "gate_projection_nmse": 0.10104466440170379,
+          "mean_cosine_similarity": 0.7642410321277566,
+          "mean_relative_l2": 0.6484668551056529,
+          "output_nmse": 0.4020079701492315,
+          "p95_relative_l2": 0.7402471899986267,
+          "up_projection_nmse": 0.16350635359715712
+        },
+        "strict_reloaded_validation": {
+          "gate_projection_nmse": 0.1049893508495966,
+          "mean_cosine_similarity": 0.7660868380369092,
+          "mean_relative_l2": 0.6459473590679767,
+          "output_nmse": 0.40908123990038053,
+          "p95_relative_l2": 0.7599350214004517,
+          "up_projection_nmse": 0.16654492066891124
+        },
+        "training_objective": 0.4321976423864274
+      },
+      "objective": "output_nmse + 0.1*cosine_distance + 0.025*gate_projection_nmse + 0.025*up_projection_nmse",
+      "schema_version": 1,
+      "screen": {
+        "checks": {
+          "cold_traffic": true,
+          "mean_cosine_similarity": false,
+          "mean_relative_l2": false,
+          "p95_relative_l2": false
+        },
+        "criteria": {
+          "maximum_fraction_of_dense_q4": 0.45,
+          "maximum_mean_relative_l2": 0.08,
+          "maximum_p95_relative_l2": 0.18,
+          "minimum_mean_cosine_similarity": 0.99
+        },
+        "passed": false,
+        "scope": "held_out_cached_mlp_boundary_not_causal_gate"
+      },
+      "traffic": {
+        "all_codebooks_and_scale_metadata_included": true,
+        "dense_q4_bytes": 1327104,
+        "fraction_of_dense_q4": 0.4498456790123457,
+        "serialized_artifact_bytes": 596992,
+        "storage_components": {
+          "codebooks": 12288,
+          "header_and_checksum": 256,
+          "packed_codes": 580608,
+          "packed_scale_indices": 3456,
+          "scale_codebooks": 384,
+          "set_mapping": 0,
+          "total": 596992
+        },
+        "strictly_below_45_percent": true
+      },
+      "validity": {
+        "all_reported_metrics_use_serialized_reloaded_decode": true,
+        "oracle_is_not_deployable": true,
+        "validation_was_not_used_for_checkpoint_selection": true
+      }
+    }
+  },
+  "model": "/home/dean/.cache/huggingface/hub/models--HuggingFaceTB--SmolLM2-135M/snapshots/93efa2f097d58c2a74874c7e644dbc9b0cee75a2",
+  "model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "schema_version": 1,
+  "screen": {
+    "all_layers_strictly_below_45_percent_dense_q4": true,
+    "passed": false,
+    "scope": "held_out_cached_mlp_boundaries_not_causal_gate"
+  },
+  "training_dataset_hash": "cd4ad21a5a381a9fb9b03134c68944be055dc47578d817fc3484c0d4491e19c0",
+  "validation_dataset_hash": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c"
+}

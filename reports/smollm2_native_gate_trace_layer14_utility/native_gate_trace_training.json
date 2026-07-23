@@ -1,0 +1,235 @@
+{
+  "artifact": {
+    "format": "safetensors_full_gate_up_down_weights_selected_layers",
+    "path": "/home/dean/repos/engram/reports/smollm2_native_gate_trace_layer14_utility/native_gate_trace_student.safetensors",
+    "sha256": "f8796c92c846884a065860215b8aa7fb904e8d1884068d7055b31bdb41ef3a9a"
+  },
+  "configuration": {
+    "batch_size": 8,
+    "calibration_records_limit": 128,
+    "dense_shadow_weight": 0.25,
+    "device": "cpu",
+    "input_fraction": 0.625,
+    "layers": [
+      14
+    ],
+    "learning_rate": 0.0001,
+    "steps": 16,
+    "temperature": 1.0,
+    "top_k": 512,
+    "utility_weight": 0.25,
+    "validation_records_limit": 128
+  },
+  "data_separation": {
+    "held_out": true,
+    "method": "exact_token_sequence_hashes",
+    "overlapping_sequences": 0
+  },
+  "experiment": "native_gate_cached_trace_pretraining",
+  "layers": [
+    {
+      "after": {
+        "dense_shadow_relative_l2": {
+          "count": 128,
+          "maximum": 0.05384880649737381,
+          "mean": 0.02055054872900627,
+          "median": 0.018592765153098014,
+          "minimum": 0.005798189112892622,
+          "p95": 0.04157666281926459
+        },
+        "hard_cosine": {
+          "count": 128,
+          "maximum": 0.9831326660466457,
+          "mean": 0.9090499910276184,
+          "median": 0.9092667039294473,
+          "minimum": 0.8037132558295724,
+          "p95": 0.9793956780044789
+        },
+        "hard_relative_l2": {
+          "count": 128,
+          "maximum": 0.607518988300322,
+          "mean": 0.40979365332783424,
+          "median": 0.4226914820071825,
+          "minimum": 0.1858748898125197,
+          "p95": 0.5318621748399677
+        }
+      },
+      "before": {
+        "dense_shadow_relative_l2": {
+          "count": 128,
+          "maximum": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "hard_cosine": {
+          "count": 128,
+          "maximum": 0.9810870493201509,
+          "mean": 0.9070120504790249,
+          "median": 0.9075020124067634,
+          "minimum": 0.8070613729557488,
+          "p95": 0.9783397313521358
+        },
+        "hard_relative_l2": {
+          "count": 128,
+          "maximum": 0.6019867827889097,
+          "mean": 0.4146026701185762,
+          "median": 0.42645056144000304,
+          "minimum": 0.19439155107757086,
+          "p95": 0.5350637364961306
+        }
+      },
+      "history": [
+        {
+          "dense_shadow": 0.0,
+          "sparse": 0.12220495194196701,
+          "step": 1,
+          "total": 0.28250059485435486,
+          "utility_ranking": 0.6411826014518738
+        },
+        {
+          "dense_shadow": 1.5059842553455383e-05,
+          "sparse": 0.1795375496149063,
+          "step": 2,
+          "total": 0.3456520736217499,
+          "utility_ranking": 0.6644430160522461
+        },
+        {
+          "dense_shadow": 4.3500309402588755e-05,
+          "sparse": 0.16666392982006073,
+          "step": 3,
+          "total": 0.3301734924316406,
+          "utility_ranking": 0.6539947986602783
+        },
+        {
+          "dense_shadow": 3.2308213121723384e-05,
+          "sparse": 0.14636218547821045,
+          "step": 4,
+          "total": 0.3148798942565918,
+          "utility_ranking": 0.6740385293960571
+        },
+        {
+          "dense_shadow": 7.635969086550176e-05,
+          "sparse": 0.18369534611701965,
+          "step": 5,
+          "total": 0.3498506546020508,
+          "utility_ranking": 0.664544939994812
+        },
+        {
+          "dense_shadow": 9.526900976197794e-05,
+          "sparse": 0.1213996559381485,
+          "step": 6,
+          "total": 0.28148525953292847,
+          "utility_ranking": 0.640247106552124
+        },
+        {
+          "dense_shadow": 0.0004383278137538582,
+          "sparse": 0.15973109006881714,
+          "step": 7,
+          "total": 0.32273584604263306,
+          "utility_ranking": 0.6515806317329407
+        },
+        {
+          "dense_shadow": 0.0003878689603880048,
+          "sparse": 0.14600756764411926,
+          "step": 8,
+          "total": 0.30650749802589417,
+          "utility_ranking": 0.6416118741035461
+        },
+        {
+          "dense_shadow": 0.0004168511659372598,
+          "sparse": 0.14331656694412231,
+          "step": 9,
+          "total": 0.3106938898563385,
+          "utility_ranking": 0.6690924167633057
+        },
+        {
+          "dense_shadow": 0.0003795596130657941,
+          "sparse": 0.1642385572195053,
+          "step": 10,
+          "total": 0.3244580030441284,
+          "utility_ranking": 0.6404982209205627
+        },
+        {
+          "dense_shadow": 0.00023486296413466334,
+          "sparse": 0.112965889275074,
+          "step": 11,
+          "total": 0.27842622995376587,
+          "utility_ranking": 0.66160649061203
+        },
+        {
+          "dense_shadow": 0.0004875841550529003,
+          "sparse": 0.17686621844768524,
+          "step": 12,
+          "total": 0.3452892303466797,
+          "utility_ranking": 0.6732044816017151
+        },
+        {
+          "dense_shadow": 0.0004137181967962533,
+          "sparse": 0.14600151777267456,
+          "step": 13,
+          "total": 0.30727890133857727,
+          "utility_ranking": 0.6446958184242249
+        },
+        {
+          "dense_shadow": 0.0005118355620652437,
+          "sparse": 0.12359082698822021,
+          "step": 14,
+          "total": 0.2864741086959839,
+          "utility_ranking": 0.6510213613510132
+        },
+        {
+          "dense_shadow": 0.0007955715409480035,
+          "sparse": 0.1899988204240799,
+          "step": 15,
+          "total": 0.35633385181427,
+          "utility_ranking": 0.6645445823669434
+        },
+        {
+          "dense_shadow": 0.0007696732063777745,
+          "sparse": 0.13437095284461975,
+          "step": 16,
+          "total": 0.2946770191192627,
+          "utility_ranking": 0.6404546499252319
+        }
+      ],
+      "layer": 14,
+      "relative_improvement": 0.011599097491018555,
+      "training_states": 128,
+      "validation_states": 128
+    }
+  ],
+  "projected_traffic": {
+    "active_records": 512,
+    "dense_weight_bytes": 10616832,
+    "fraction_of_dense": 0.4305555555555556,
+    "gate_weight_bytes": 2211840,
+    "hidden_size": 576,
+    "input_coordinates": 360,
+    "input_fraction": 0.625,
+    "intermediate_size": 1536,
+    "selected_up_down_weight_bytes": 2359296,
+    "total_weight_bytes": 4571136
+  },
+  "schema_version": 1,
+  "screen": {
+    "caveat": "Cached-boundary training does not expose the student to its own transformer state drift and cannot pass the all-layer causal gate.",
+    "checks": {
+      "active_record_budget": true,
+      "dense_shadow_retention": true,
+      "held_out_sparse_improvement": false,
+      "input_coordinate_budget": true,
+      "projected_traffic": true
+    },
+    "decision": "revise_native_gate_trace_objective",
+    "passed": false
+  },
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "status": "layerwise_trace_only_training",
+  "summary": {
+    "dense_shadow_relative_l2_after": 0.02055054872900627,
+    "hard_relative_l2_after": 0.40979365332783424,
+    "hard_relative_l2_before": 0.4146026701185762
+  }
+}

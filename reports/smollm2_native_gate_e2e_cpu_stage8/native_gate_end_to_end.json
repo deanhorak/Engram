@@ -1,0 +1,254 @@
+{
+  "artifact": {
+    "format": "full_gate_up_down_weights_per_layer_required_after_basis_training",
+    "written": false
+  },
+  "configuration": {
+    "anneal_steps": 6,
+    "batch_size": 1,
+    "device": "cpu",
+    "device_neutral_semantics": true,
+    "learning_rate": 1e-05,
+    "loss_weights": {
+      "dense_shadow": 0.25,
+      "hidden": 0.25,
+      "local": 1.0,
+      "logit": 0.25,
+      "utility": 0.1
+    },
+    "save_artifact": false,
+    "steps": 8,
+    "target_input_fraction": 0.625,
+    "target_top_k": 512,
+    "temperature": 1.0,
+    "warmup_steps": 2
+  },
+  "data_separation": {
+    "held_out": true,
+    "method": "exact_token_sequence_hashes",
+    "overlapping_sequences": 0,
+    "training_dataset_hash": "383691c11c1f3670322abb768df4362aca54c2e917907bb68ae8d33f4cf002f3",
+    "training_sequences": 8,
+    "validation_dataset_hash": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c",
+    "validation_sequences": 16
+  },
+  "experiment": "progressive_end_to_end_native_gate_training",
+  "gate": {
+    "checks": {
+      "active_record_budget": true,
+      "evidence_size": true,
+      "final_hidden_relative_l2": false,
+      "input_coordinate_budget": true,
+      "nll_delta": false,
+      "projected_traffic": true,
+      "teacher_student_kl": false,
+      "teacher_top1_agreement": false
+    },
+    "decision": "continue_training_or_stop_before_serialization",
+    "passed": false
+  },
+  "metrics": {
+    "final_hidden_cosine": {
+      "count": 507,
+      "maximum": 0.9724734876878652,
+      "mean": 0.8533750724933304,
+      "median": 0.8821062742338451,
+      "minimum": 0.14871707469948367,
+      "p95": 0.9514232189096049
+    },
+    "final_hidden_relative_l2": {
+      "count": 507,
+      "maximum": 1.0536247947567363,
+      "mean": 0.5100869906868064,
+      "median": 0.4880888331489828,
+      "minimum": 0.23319298320044723,
+      "p95": 0.7839549632335926
+    },
+    "local_mlp_relative_l2": {
+      "count": 15210,
+      "maximum": 9.408398920792058,
+      "mean": 0.6999022579093994,
+      "median": 0.7182719005218522,
+      "minimum": 0.0014271487070301827,
+      "p95": 1.0282674478890663
+    },
+    "nll_delta": {
+      "count": 491,
+      "maximum": 9.145469665527344,
+      "mean": 1.211354073903821,
+      "median": 0.850487232208252,
+      "minimum": -10.015634536743164,
+      "p95": 4.406832218170166
+    },
+    "student_nll": {
+      "count": 491,
+      "maximum": 17.6063289642334,
+      "mean": 4.3878538721977725,
+      "median": 3.3863565921783447,
+      "minimum": 0.0005180685548111796,
+      "p95": 11.920455932617188
+    },
+    "teacher_nll": {
+      "count": 491,
+      "maximum": 16.939329147338867,
+      "mean": 3.176499797914646,
+      "median": 1.7890857458114624,
+      "minimum": 6.6756979322235566e-06,
+      "p95": 9.731781005859375
+    },
+    "teacher_student_kl": {
+      "count": 491,
+      "maximum": 6.699169158935547,
+      "mean": 1.2536174993812204,
+      "median": 0.838625431060791,
+      "minimum": 0.0008761475328356028,
+      "p95": 4.076232194900513
+    },
+    "teacher_student_top5_overlap": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.49164970562074434,
+      "median": 0.4000000059604645,
+      "minimum": 0.0,
+      "p95": 0.800000011920929
+    },
+    "teacher_top1_agreement": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.48065173116089616,
+      "median": 0.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    },
+    "teacher_top5_contains_student_top1": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.7678207739307535,
+      "median": 1.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    }
+  },
+  "projected_traffic": {
+    "active_records": 512,
+    "dense_weight_bytes": 10616832,
+    "fraction_of_dense": 0.4305555555555556,
+    "gate_weight_bytes": 2211840,
+    "hidden_size": 576,
+    "input_coordinates": 360,
+    "input_fraction": 0.625,
+    "intermediate_size": 1536,
+    "selected_up_down_weight_bytes": 2359296,
+    "total_weight_bytes": 4571136
+  },
+  "schema_version": 1,
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "status": "measured_local_model",
+  "training": {
+    "history": [
+      {
+        "dense_shadow": 4.759053828101711e-12,
+        "hidden": 1.4029615143240637e-12,
+        "input_coordinates": 576,
+        "input_fraction": 1.0,
+        "local": 5.529386410546566e-12,
+        "logit": 3.90726633270333e-08,
+        "step": 1,
+        "top_k": 1536,
+        "total": 9.775235731979137e-09,
+        "utility_ranking": 0.0
+      },
+      {
+        "dense_shadow": 2.004243697228958e-06,
+        "hidden": 2.5813178581302054e-06,
+        "input_coordinates": 576,
+        "input_fraction": 1.0,
+        "local": 2.0042441519763088e-06,
+        "logit": 0.0006309407181106508,
+        "step": 2,
+        "top_k": 1536,
+        "total": 0.0001608858146937564,
+        "utility_ranking": 0.0
+      },
+      {
+        "dense_shadow": 0.001111647579818964,
+        "hidden": 8.647666982142255e-05,
+        "input_coordinates": 540,
+        "input_fraction": 0.9375,
+        "local": 0.0018531145760789514,
+        "logit": 0.0017766705714166164,
+        "step": 3,
+        "top_k": 1365,
+        "total": 0.020237945020198822,
+        "utility_ranking": 0.17641130089759827
+      },
+      {
+        "dense_shadow": 0.009583691135048866,
+        "hidden": 0.0006569176912307739,
+        "input_coordinates": 504,
+        "input_fraction": 0.875,
+        "local": 0.01506652869284153,
+        "logit": 0.01868748851120472,
+        "step": 4,
+        "top_k": 1195,
+        "total": 0.04788175970315933,
+        "utility_ranking": 0.2558320462703705
+      },
+      {
+        "dense_shadow": 0.058937955647706985,
+        "hidden": 0.028234008699655533,
+        "input_coordinates": 468,
+        "input_fraction": 0.8125,
+        "local": 0.07651754468679428,
+        "logit": 0.6060047149658203,
+        "step": 5,
+        "top_k": 1024,
+        "total": 0.2824375033378601,
+        "utility_ranking": 0.3262580633163452
+      },
+      {
+        "dense_shadow": 0.09493983536958694,
+        "hidden": 0.008472262881696224,
+        "input_coordinates": 432,
+        "input_fraction": 0.75,
+        "local": 0.13033324480056763,
+        "logit": 0.22535328567028046,
+        "step": 6,
+        "top_k": 853,
+        "total": 0.25085610151290894,
+        "utility_ranking": 0.3833151161670685
+      },
+      {
+        "dense_shadow": 0.20929540693759918,
+        "hidden": 0.03690812736749649,
+        "input_coordinates": 396,
+        "input_fraction": 0.6875,
+        "local": 0.2638344466686249,
+        "logit": 1.1003319025039673,
+        "step": 7,
+        "top_k": 683,
+        "total": 0.6515986919403076,
+        "utility_ranking": 0.5113043189048767
+      },
+      {
+        "dense_shadow": 0.3538486659526825,
+        "hidden": 0.0375836081802845,
+        "input_coordinates": 360,
+        "input_fraction": 0.625,
+        "local": 0.4164688289165497,
+        "logit": 1.2562769651412964,
+        "step": 8,
+        "top_k": 512,
+        "total": 0.8918266296386719,
+        "utility_ranking": 0.6343055963516235
+      }
+    ],
+    "records": 8
+  },
+  "validation": {
+    "hard_sparse_path_only": true,
+    "input_token_positions": 507,
+    "next_token_positions": 491,
+    "records": 16
+  }
+}

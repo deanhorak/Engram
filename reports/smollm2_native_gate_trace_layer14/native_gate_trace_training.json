@@ -1,0 +1,218 @@
+{
+  "artifact": {
+    "format": "safetensors_full_gate_up_down_weights_selected_layers",
+    "path": "/home/dean/repos/engram/reports/smollm2_native_gate_trace_layer14/native_gate_trace_student.safetensors",
+    "sha256": "bf60741276dda1ef4b7c2bbd0e8be593a5dad046d2c5aa4b1ff52713e6b5a031"
+  },
+  "configuration": {
+    "batch_size": 8,
+    "calibration_records_limit": 128,
+    "dense_shadow_weight": 0.25,
+    "device": "cpu",
+    "input_fraction": 0.625,
+    "layers": [
+      14
+    ],
+    "learning_rate": 0.0001,
+    "steps": 16,
+    "temperature": 1.0,
+    "top_k": 512,
+    "validation_records_limit": 128
+  },
+  "data_separation": {
+    "held_out": true,
+    "method": "exact_token_sequence_hashes",
+    "overlapping_sequences": 0
+  },
+  "experiment": "native_gate_cached_trace_pretraining",
+  "layers": [
+    {
+      "after": {
+        "dense_shadow_relative_l2": {
+          "count": 128,
+          "maximum": 0.052614784444941914,
+          "mean": 0.020500605191954784,
+          "median": 0.018386971631182157,
+          "minimum": 0.005566579475667585,
+          "p95": 0.0413038737867699
+        },
+        "hard_cosine": {
+          "count": 128,
+          "maximum": 0.9831872577037415,
+          "mean": 0.9088494753363601,
+          "median": 0.9091670564775844,
+          "minimum": 0.8038494613947034,
+          "p95": 0.9792708798638405
+        },
+        "hard_relative_l2": {
+          "count": 128,
+          "maximum": 0.6073228293122928,
+          "mean": 0.41020799036887756,
+          "median": 0.4233521488739031,
+          "minimum": 0.1865026933388242,
+          "p95": 0.5329481376944311
+        }
+      },
+      "before": {
+        "dense_shadow_relative_l2": {
+          "count": 128,
+          "maximum": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "hard_cosine": {
+          "count": 128,
+          "maximum": 0.9810870493201509,
+          "mean": 0.9070120504790249,
+          "median": 0.9075020124067634,
+          "minimum": 0.8070613729557488,
+          "p95": 0.9783397313521358
+        },
+        "hard_relative_l2": {
+          "count": 128,
+          "maximum": 0.6019867827889097,
+          "mean": 0.4146026701185762,
+          "median": 0.42645056144000304,
+          "minimum": 0.19439155107757086,
+          "p95": 0.5350637364961306
+        }
+      },
+      "history": [
+        {
+          "dense_shadow": 0.0,
+          "sparse": 0.12220495194196701,
+          "step": 1,
+          "total": 0.12220495194196701
+        },
+        {
+          "dense_shadow": 1.5388814063044265e-05,
+          "sparse": 0.17964892089366913,
+          "step": 2,
+          "total": 0.17965276539325714
+        },
+        {
+          "dense_shadow": 4.664851076086052e-05,
+          "sparse": 0.16673623025417328,
+          "step": 3,
+          "total": 0.16674789786338806
+        },
+        {
+          "dense_shadow": 3.3201627957168967e-05,
+          "sparse": 0.14595898985862732,
+          "step": 4,
+          "total": 0.1459672898054123
+        },
+        {
+          "dense_shadow": 8.171991066774353e-05,
+          "sparse": 0.18328271806240082,
+          "step": 5,
+          "total": 0.18330314755439758
+        },
+        {
+          "dense_shadow": 9.868181950878352e-05,
+          "sparse": 0.12122133374214172,
+          "step": 6,
+          "total": 0.12124600261449814
+        },
+        {
+          "dense_shadow": 0.0004830981488339603,
+          "sparse": 0.15935073792934418,
+          "step": 7,
+          "total": 0.1594715118408203
+        },
+        {
+          "dense_shadow": 0.0004186337173450738,
+          "sparse": 0.14551597833633423,
+          "step": 8,
+          "total": 0.14562064409255981
+        },
+        {
+          "dense_shadow": 0.0004393741546664387,
+          "sparse": 0.14370156824588776,
+          "step": 9,
+          "total": 0.1438114047050476
+        },
+        {
+          "dense_shadow": 0.0003825872263405472,
+          "sparse": 0.1647709459066391,
+          "step": 10,
+          "total": 0.1648665964603424
+        },
+        {
+          "dense_shadow": 0.000242868612986058,
+          "sparse": 0.11234705150127411,
+          "step": 11,
+          "total": 0.11240776628255844
+        },
+        {
+          "dense_shadow": 0.000486303266370669,
+          "sparse": 0.17679230868816376,
+          "step": 12,
+          "total": 0.17691388726234436
+        },
+        {
+          "dense_shadow": 0.0004199781105853617,
+          "sparse": 0.14603783190250397,
+          "step": 13,
+          "total": 0.14614282548427582
+        },
+        {
+          "dense_shadow": 0.0005206081550568342,
+          "sparse": 0.1232944056391716,
+          "step": 14,
+          "total": 0.12342455983161926
+        },
+        {
+          "dense_shadow": 0.0008442110847681761,
+          "sparse": 0.189285546541214,
+          "step": 15,
+          "total": 0.18949660658836365
+        },
+        {
+          "dense_shadow": 0.0007872293354012072,
+          "sparse": 0.13462655246257782,
+          "step": 16,
+          "total": 0.13482336699962616
+        }
+      ],
+      "layer": 14,
+      "relative_improvement": 0.010599738174483469,
+      "training_states": 128,
+      "validation_states": 128
+    }
+  ],
+  "projected_traffic": {
+    "active_records": 512,
+    "dense_weight_bytes": 10616832,
+    "fraction_of_dense": 0.4305555555555556,
+    "gate_weight_bytes": 2211840,
+    "hidden_size": 576,
+    "input_coordinates": 360,
+    "input_fraction": 0.625,
+    "intermediate_size": 1536,
+    "selected_up_down_weight_bytes": 2359296,
+    "total_weight_bytes": 4571136
+  },
+  "schema_version": 1,
+  "screen": {
+    "caveat": "Cached-boundary training does not expose the student to its own transformer state drift and cannot pass the all-layer causal gate.",
+    "checks": {
+      "active_record_budget": true,
+      "dense_shadow_retention": true,
+      "held_out_sparse_improvement": false,
+      "input_coordinate_budget": true,
+      "projected_traffic": true
+    },
+    "decision": "revise_native_gate_trace_objective",
+    "passed": false
+  },
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "status": "layerwise_trace_only_training",
+  "summary": {
+    "dense_shadow_relative_l2_after": 0.020500605191954784,
+    "hard_relative_l2_after": 0.41020799036887756,
+    "hard_relative_l2_before": 0.4146026701185762
+  }
+}

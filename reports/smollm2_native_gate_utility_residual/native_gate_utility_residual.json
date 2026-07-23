@@ -1,0 +1,1573 @@
+{
+  "baseline": {
+    "exact_contribution_oracle_relative_l2": {
+      "count": 3840,
+      "maximum": 0.35833651544087225,
+      "mean": 0.1903467346986102,
+      "median": 0.1991929020942672,
+      "minimum": 0.0006551206876730658,
+      "p95": 0.2786412660210238
+    },
+    "native_gate_local_relative_l2": {
+      "count": 3840,
+      "maximum": 0.69482589925962,
+      "mean": 0.3855101271874518,
+      "median": 0.4056251357827435,
+      "minimum": 0.0014483438685995108,
+      "p95": 0.5566588285493992
+    },
+    "projected_traffic": {
+      "active_records": 512,
+      "dense_weight_bytes": 10616832,
+      "fraction_of_dense": 0.4305555555555556,
+      "gate_weight_bytes": 2211840,
+      "hidden_size": 576,
+      "input_coordinates": 360,
+      "input_fraction": 0.625,
+      "intermediate_size": 1536,
+      "selected_up_down_weight_bytes": 2359296,
+      "total_weight_bytes": 4571136
+    }
+  },
+  "configuration": {
+    "blends": [
+      0.25,
+      0.5,
+      1.0
+    ],
+    "calibration_records_limit": 128,
+    "input_fraction": 0.625,
+    "ranks": [
+      8,
+      16
+    ],
+    "regularization": 1000.0,
+    "target": "centered_clipped_log_exact_utility_minus_partial_gate_utility",
+    "top_k": 512,
+    "validation_records_limit": 128
+  },
+  "configurations": [
+    {
+      "blend": 0.5,
+      "metrics": {
+        "exact_contribution_oracle_recall": {
+          "count": 3840,
+          "maximum": 0.8359375,
+          "mean": 0.61685791015625,
+          "median": 0.607421875,
+          "minimum": 0.453125,
+          "p95": 0.74609375
+        },
+        "local_cosine": {
+          "count": 3840,
+          "maximum": 0.9999995453103369,
+          "mean": 0.925085421362534,
+          "median": 0.9305995592835075,
+          "minimum": 0.7159344197176073,
+          "p95": 0.9967458660181823
+        },
+        "local_relative_l2": {
+          "count": 3840,
+          "maximum": 0.7009299316299118,
+          "mean": 0.3551442123920868,
+          "median": 0.3679158549506031,
+          "minimum": 0.0012285485888872618,
+          "p95": 0.5380451462449642
+        }
+      },
+      "projected_traffic": {
+        "base_native_gate_bytes": 4571136,
+        "dense_weight_bytes": 10616832,
+        "fraction_of_dense": 0.44386574074074076,
+        "predictor_bytes": 141312,
+        "total_weight_bytes": 4712448
+      },
+      "rank": 16,
+      "screen": {
+        "checks": {
+          "active_record_budget": true,
+          "input_coordinate_budget": true,
+          "material_local_improvement": false,
+          "projected_traffic": true
+        },
+        "passed": false
+      }
+    },
+    {
+      "blend": 0.5,
+      "metrics": {
+        "exact_contribution_oracle_recall": {
+          "count": 3840,
+          "maximum": 0.833984375,
+          "mean": 0.6154001871744792,
+          "median": 0.607421875,
+          "minimum": 0.458984375,
+          "p95": 0.7403320312499995
+        },
+        "local_cosine": {
+          "count": 3840,
+          "maximum": 0.9999995483911687,
+          "mean": 0.9247220574151606,
+          "median": 0.9299593733528434,
+          "minimum": 0.7161872351174464,
+          "p95": 0.9967230181856712
+        },
+        "local_relative_l2": {
+          "count": 3840,
+          "maximum": 0.7004767842655284,
+          "mean": 0.3561189007829239,
+          "median": 0.3697141626541135,
+          "minimum": 0.001218343617810681,
+          "p95": 0.5395797998756062
+        }
+      },
+      "projected_traffic": {
+        "base_native_gate_bytes": 4571136,
+        "dense_weight_bytes": 10616832,
+        "fraction_of_dense": 0.4375,
+        "predictor_bytes": 73728,
+        "total_weight_bytes": 4644864
+      },
+      "rank": 8,
+      "screen": {
+        "checks": {
+          "active_record_budget": true,
+          "input_coordinate_budget": true,
+          "material_local_improvement": false,
+          "projected_traffic": true
+        },
+        "passed": false
+      }
+    },
+    {
+      "blend": 1.0,
+      "metrics": {
+        "exact_contribution_oracle_recall": {
+          "count": 3840,
+          "maximum": 0.91796875,
+          "mean": 0.6173024495442708,
+          "median": 0.6015625,
+          "minimum": 0.443359375,
+          "p95": 0.77734375
+        },
+        "local_cosine": {
+          "count": 3840,
+          "maximum": 0.9999997057004221,
+          "mean": 0.9222429880418026,
+          "median": 0.9292551858857929,
+          "minimum": 0.7207151260044848,
+          "p95": 0.9971087717642061
+        },
+        "local_relative_l2": {
+          "count": 3840,
+          "maximum": 0.6959138212126483,
+          "mean": 0.35989708196960435,
+          "median": 0.3716298302786236,
+          "minimum": 0.0010742087212542379,
+          "p95": 0.5524778670046947
+        }
+      },
+      "projected_traffic": {
+        "base_native_gate_bytes": 4571136,
+        "dense_weight_bytes": 10616832,
+        "fraction_of_dense": 0.44386574074074076,
+        "predictor_bytes": 141312,
+        "total_weight_bytes": 4712448
+      },
+      "rank": 16,
+      "screen": {
+        "checks": {
+          "active_record_budget": true,
+          "input_coordinate_budget": true,
+          "material_local_improvement": false,
+          "projected_traffic": true
+        },
+        "passed": false
+      }
+    },
+    {
+      "blend": 1.0,
+      "metrics": {
+        "exact_contribution_oracle_recall": {
+          "count": 3840,
+          "maximum": 0.91796875,
+          "mean": 0.6163304646809896,
+          "median": 0.6015625,
+          "minimum": 0.447265625,
+          "p95": 0.7734375
+        },
+        "local_cosine": {
+          "count": 3840,
+          "maximum": 0.9999997090618891,
+          "mean": 0.9223522776861943,
+          "median": 0.9290362612422725,
+          "minimum": 0.7077319080383468,
+          "p95": 0.9970775226026971
+        },
+        "local_relative_l2": {
+          "count": 3840,
+          "maximum": 0.7107995462561623,
+          "mean": 0.3599059060628255,
+          "median": 0.3726036513732427,
+          "minimum": 0.0010688036247638916,
+          "p95": 0.5498109169217598
+        }
+      },
+      "projected_traffic": {
+        "base_native_gate_bytes": 4571136,
+        "dense_weight_bytes": 10616832,
+        "fraction_of_dense": 0.4375,
+        "predictor_bytes": 73728,
+        "total_weight_bytes": 4644864
+      },
+      "rank": 8,
+      "screen": {
+        "checks": {
+          "active_record_budget": true,
+          "input_coordinate_budget": true,
+          "material_local_improvement": false,
+          "projected_traffic": true
+        },
+        "passed": false
+      }
+    },
+    {
+      "blend": 0.25,
+      "metrics": {
+        "exact_contribution_oracle_recall": {
+          "count": 3840,
+          "maximum": 0.78515625,
+          "mean": 0.6071568806966146,
+          "median": 0.6015625,
+          "minimum": 0.470703125,
+          "p95": 0.7032226562499995
+        },
+        "local_cosine": {
+          "count": 3840,
+          "maximum": 0.9999994987621802,
+          "mean": 0.9227719482838485,
+          "median": 0.9270803139147585,
+          "minimum": 0.7254914465789384,
+          "p95": 0.9961459857423083
+        },
+        "local_relative_l2": {
+          "count": 3840,
+          "maximum": 0.6896254579459082,
+          "mean": 0.3624833423612489,
+          "median": 0.3769406738093498,
+          "minimum": 0.0012745734847216218,
+          "p95": 0.539111311485317
+        }
+      },
+      "projected_traffic": {
+        "base_native_gate_bytes": 4571136,
+        "dense_weight_bytes": 10616832,
+        "fraction_of_dense": 0.44386574074074076,
+        "predictor_bytes": 141312,
+        "total_weight_bytes": 4712448
+      },
+      "rank": 16,
+      "screen": {
+        "checks": {
+          "active_record_budget": true,
+          "input_coordinate_budget": true,
+          "material_local_improvement": false,
+          "projected_traffic": true
+        },
+        "passed": false
+      }
+    },
+    {
+      "blend": 0.25,
+      "metrics": {
+        "exact_contribution_oracle_recall": {
+          "count": 3840,
+          "maximum": 0.78125,
+          "mean": 0.6059483846028646,
+          "median": 0.599609375,
+          "minimum": 0.46875,
+          "p95": 0.705078125
+        },
+        "local_cosine": {
+          "count": 3840,
+          "maximum": 0.9999995004938271,
+          "mean": 0.9224120816249571,
+          "median": 0.9264798528017977,
+          "minimum": 0.7271392673085212,
+          "p95": 0.9962078713202867
+        },
+        "local_relative_l2": {
+          "count": 3840,
+          "maximum": 0.6877662310939164,
+          "mean": 0.3633844897825128,
+          "median": 0.37830192076463287,
+          "minimum": 0.0012750025120478788,
+          "p95": 0.5409659102053959
+        }
+      },
+      "projected_traffic": {
+        "base_native_gate_bytes": 4571136,
+        "dense_weight_bytes": 10616832,
+        "fraction_of_dense": 0.4375,
+        "predictor_bytes": 73728,
+        "total_weight_bytes": 4644864
+      },
+      "rank": 8,
+      "screen": {
+        "checks": {
+          "active_record_budget": true,
+          "input_coordinate_budget": true,
+          "material_local_improvement": false,
+          "projected_traffic": true
+        },
+        "passed": false
+      }
+    }
+  ],
+  "data_separation": {
+    "held_out": true,
+    "method": "exact_token_sequence_hashes",
+    "overlapping_sequences": 0
+  },
+  "experiment": "native_gate_low_rank_utility_residual_shadow",
+  "layers": [
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.16290121546870878,
+          "oracle_recall": 0.6647491455078125,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.1618803159087519,
+          "oracle_recall": 0.6697540283203125,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.1655509981608872,
+          "oracle_recall": 0.6690521240234375,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.16332553084159537,
+          "oracle_recall": 0.6656036376953125,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.1618418438845105,
+          "oracle_recall": 0.6717529296875,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.1663898813043814,
+          "oracle_recall": 0.67059326171875,
+          "rank": 16
+        }
+      ],
+      "layer": 0
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.33527482199348063,
+          "oracle_recall": 0.6083831787109375,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.334882293813269,
+          "oracle_recall": 0.6138458251953125,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.3435883860933142,
+          "oracle_recall": 0.6129913330078125,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.33493390674686896,
+          "oracle_recall": 0.6092681884765625,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.3346936071295875,
+          "oracle_recall": 0.6148223876953125,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.3456900064358682,
+          "oracle_recall": 0.6134033203125,
+          "rank": 16
+        }
+      ],
+      "layer": 1
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.40015532848625834,
+          "oracle_recall": 0.587799072265625,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.39330169404737597,
+          "oracle_recall": 0.5950775146484375,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.39608926968541736,
+          "oracle_recall": 0.5952606201171875,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.39960380052196226,
+          "oracle_recall": 0.588592529296875,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.3923858481943181,
+          "oracle_recall": 0.596435546875,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.39645720388910977,
+          "oracle_recall": 0.5966796875,
+          "rank": 16
+        }
+      ],
+      "layer": 2
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.4601739186009536,
+          "oracle_recall": 0.5899505615234375,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.45495767566191925,
+          "oracle_recall": 0.595672607421875,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.4608704784667361,
+          "oracle_recall": 0.5949554443359375,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.46063799024957786,
+          "oracle_recall": 0.590667724609375,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.45491420201814037,
+          "oracle_recall": 0.5962677001953125,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.4613703981069961,
+          "oracle_recall": 0.5946502685546875,
+          "rank": 16
+        }
+      ],
+      "layer": 3
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.49439206755838716,
+          "oracle_recall": 0.5600738525390625,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.489840788161148,
+          "oracle_recall": 0.564605712890625,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.49403374502629827,
+          "oracle_recall": 0.5627593994140625,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.493619256507998,
+          "oracle_recall": 0.5604400634765625,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4892685923559278,
+          "oracle_recall": 0.565032958984375,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.4942529895944091,
+          "oracle_recall": 0.563079833984375,
+          "rank": 16
+        }
+      ],
+      "layer": 4
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.5046159992326328,
+          "oracle_recall": 0.542755126953125,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.5015507092527767,
+          "oracle_recall": 0.5470733642578125,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.50702708391686,
+          "oracle_recall": 0.5457916259765625,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.5031524758173321,
+          "oracle_recall": 0.5439453125,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.5003255590235618,
+          "oracle_recall": 0.547882080078125,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.5066123904880009,
+          "oracle_recall": 0.5461578369140625,
+          "rank": 16
+        }
+      ],
+      "layer": 5
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.47816911368979736,
+          "oracle_recall": 0.5512542724609375,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.47248003439308317,
+          "oracle_recall": 0.5569915771484375,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.4778167014775999,
+          "oracle_recall": 0.5543365478515625,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.476405494546935,
+          "oracle_recall": 0.552581787109375,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.47213373568189543,
+          "oracle_recall": 0.5578460693359375,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.4774879929241363,
+          "oracle_recall": 0.55499267578125,
+          "rank": 16
+        }
+      ],
+      "layer": 6
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.4486499771003587,
+          "oracle_recall": 0.5596160888671875,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4460801656997321,
+          "oracle_recall": 0.5663909912109375,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.45308756449714843,
+          "oracle_recall": 0.567047119140625,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.4489770328988961,
+          "oracle_recall": 0.561126708984375,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.44610509921013564,
+          "oracle_recall": 0.567169189453125,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.45478481030085427,
+          "oracle_recall": 0.5666961669921875,
+          "rank": 16
+        }
+      ],
+      "layer": 7
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.3602629217624215,
+          "oracle_recall": 0.582000732421875,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.35423908386790176,
+          "oracle_recall": 0.5895843505859375,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.35944718092421624,
+          "oracle_recall": 0.589263916015625,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.3594358803255897,
+          "oracle_recall": 0.5821533203125,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.3532284653514092,
+          "oracle_recall": 0.5900115966796875,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.3604300588238284,
+          "oracle_recall": 0.5879364013671875,
+          "rank": 16
+        }
+      ],
+      "layer": 8
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.41908282944065955,
+          "oracle_recall": 0.5830230712890625,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4145682925289983,
+          "oracle_recall": 0.592254638671875,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.4190348466145922,
+          "oracle_recall": 0.5952606201171875,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.4183118525022068,
+          "oracle_recall": 0.5832672119140625,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.41248368049798856,
+          "oracle_recall": 0.593597412109375,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.41882039828990575,
+          "oracle_recall": 0.5950927734375,
+          "rank": 16
+        }
+      ],
+      "layer": 9
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.43088004403498115,
+          "oracle_recall": 0.5806121826171875,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.42205714715290377,
+          "oracle_recall": 0.5921630859375,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.42677350766643074,
+          "oracle_recall": 0.5953521728515625,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.42982409528541876,
+          "oracle_recall": 0.5814361572265625,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.42117350047967383,
+          "oracle_recall": 0.59271240234375,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.42695363108945805,
+          "oracle_recall": 0.594879150390625,
+          "rank": 16
+        }
+      ],
+      "layer": 10
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.44340017680239163,
+          "oracle_recall": 0.5833892822265625,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.43721132270844054,
+          "oracle_recall": 0.588348388671875,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.44006119660247567,
+          "oracle_recall": 0.587554931640625,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.4419772567593295,
+          "oracle_recall": 0.5848846435546875,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4377695752390852,
+          "oracle_recall": 0.590484619140625,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.44206513021291377,
+          "oracle_recall": 0.5891876220703125,
+          "rank": 16
+        }
+      ],
+      "layer": 11
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.4547990126718163,
+          "oracle_recall": 0.587554931640625,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.45032197324495243,
+          "oracle_recall": 0.593902587890625,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.4549192817618647,
+          "oracle_recall": 0.59661865234375,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.45415154584957373,
+          "oracle_recall": 0.58905029296875,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.44863180265206976,
+          "oracle_recall": 0.595184326171875,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.4561515668582802,
+          "oracle_recall": 0.59625244140625,
+          "rank": 16
+        }
+      ],
+      "layer": 12
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.43900340947389305,
+          "oracle_recall": 0.578765869140625,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4337177182169211,
+          "oracle_recall": 0.585693359375,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.4421576705355438,
+          "oracle_recall": 0.583740234375,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.4389861620055172,
+          "oracle_recall": 0.5800323486328125,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.43409859978009835,
+          "oracle_recall": 0.5859222412109375,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.44393165246988775,
+          "oracle_recall": 0.5831298828125,
+          "rank": 16
+        }
+      ],
+      "layer": 13
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.39363588208110367,
+          "oracle_recall": 0.6036834716796875,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.3881840315174194,
+          "oracle_recall": 0.6120147705078125,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.39203064866160464,
+          "oracle_recall": 0.6132965087890625,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.39209786637566635,
+          "oracle_recall": 0.604095458984375,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.3866104323721222,
+          "oracle_recall": 0.6136322021484375,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.3925105283041427,
+          "oracle_recall": 0.61346435546875,
+          "rank": 16
+        }
+      ],
+      "layer": 14
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.4256413372589314,
+          "oracle_recall": 0.6023406982421875,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4153144519640779,
+          "oracle_recall": 0.612579345703125,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.420510359678521,
+          "oracle_recall": 0.611663818359375,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.42359474516624696,
+          "oracle_recall": 0.6036376953125,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4136604575618702,
+          "oracle_recall": 0.6138916015625,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.4201819766290872,
+          "oracle_recall": 0.6138916015625,
+          "rank": 16
+        }
+      ],
+      "layer": 15
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.4316078371620045,
+          "oracle_recall": 0.6011810302734375,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4219562796017027,
+          "oracle_recall": 0.609619140625,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.4291125220289355,
+          "oracle_recall": 0.6092529296875,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.4297887069627624,
+          "oracle_recall": 0.6022186279296875,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.41861073508608954,
+          "oracle_recall": 0.610992431640625,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.427532200397834,
+          "oracle_recall": 0.60943603515625,
+          "rank": 16
+        }
+      ],
+      "layer": 16
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.41214766724551855,
+          "oracle_recall": 0.6154327392578125,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4035458902253504,
+          "oracle_recall": 0.62451171875,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.40332622777070215,
+          "oracle_recall": 0.6257171630859375,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.41267044314207524,
+          "oracle_recall": 0.616302490234375,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4025340300316256,
+          "oracle_recall": 0.625823974609375,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.40336502933958723,
+          "oracle_recall": 0.62689208984375,
+          "rank": 16
+        }
+      ],
+      "layer": 17
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.33154236232556034,
+          "oracle_recall": 0.63189697265625,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.32233321564630646,
+          "oracle_recall": 0.6417999267578125,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.32339049916354884,
+          "oracle_recall": 0.6454315185546875,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.32983379862595286,
+          "oracle_recall": 0.6342010498046875,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.32031443201931736,
+          "oracle_recall": 0.6441802978515625,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.3218147338286594,
+          "oracle_recall": 0.647247314453125,
+          "rank": 16
+        }
+      ],
+      "layer": 18
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.381172267856113,
+          "oracle_recall": 0.6145477294921875,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.3646509332230372,
+          "oracle_recall": 0.627777099609375,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.36464516518887913,
+          "oracle_recall": 0.6315460205078125,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.3784088648952951,
+          "oracle_recall": 0.61492919921875,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.36240804007948096,
+          "oracle_recall": 0.629425048828125,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.3624221306488059,
+          "oracle_recall": 0.6323394775390625,
+          "rank": 16
+        }
+      ],
+      "layer": 19
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.3086106493354999,
+          "oracle_recall": 0.64404296875,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.29596672160281023,
+          "oracle_recall": 0.658111572265625,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.29609926141548965,
+          "oracle_recall": 0.66156005859375,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.3077017783494179,
+          "oracle_recall": 0.645416259765625,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.29472589638374325,
+          "oracle_recall": 0.659515380859375,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.2950876531741486,
+          "oracle_recall": 0.6634674072265625,
+          "rank": 16
+        }
+      ],
+      "layer": 20
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.36899899051974716,
+          "oracle_recall": 0.61016845703125,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.35742613403190804,
+          "oracle_recall": 0.6214599609375,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.359287338333924,
+          "oracle_recall": 0.622955322265625,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.3678069700671731,
+          "oracle_recall": 0.611236572265625,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.356038271216254,
+          "oracle_recall": 0.6226043701171875,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.3587047938722423,
+          "oracle_recall": 0.6241912841796875,
+          "rank": 16
+        }
+      ],
+      "layer": 21
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.3322041186812138,
+          "oracle_recall": 0.626373291015625,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.3162563577513675,
+          "oracle_recall": 0.6390228271484375,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.31884208542936954,
+          "oracle_recall": 0.6413421630859375,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.33137915089965475,
+          "oracle_recall": 0.6278228759765625,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.31577440187238975,
+          "oracle_recall": 0.641265869140625,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.3181904406046149,
+          "oracle_recall": 0.643280029296875,
+          "rank": 16
+        }
+      ],
+      "layer": 22
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.2957650427237857,
+          "oracle_recall": 0.5997772216796875,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.2822882225173506,
+          "oracle_recall": 0.61279296875,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.2860262189370959,
+          "oracle_recall": 0.6126251220703125,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.29429382987705105,
+          "oracle_recall": 0.6014556884765625,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.2810202542393202,
+          "oracle_recall": 0.6161956787109375,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.2859277451932082,
+          "oracle_recall": 0.615325927734375,
+          "rank": 16
+        }
+      ],
+      "layer": 23
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.26772416116596864,
+          "oracle_recall": 0.6205596923828125,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.2600394417569503,
+          "oracle_recall": 0.629669189453125,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.26238808553804444,
+          "oracle_recall": 0.6280517578125,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.2672002106318325,
+          "oracle_recall": 0.622772216796875,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.25834145745093595,
+          "oracle_recall": 0.6318359375,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.26141942003090296,
+          "oracle_recall": 0.63067626953125,
+          "rank": 16
+        }
+      ],
+      "layer": 24
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.31547836749205516,
+          "oracle_recall": 0.618377685546875,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.3085963958902914,
+          "oracle_recall": 0.625640869140625,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.3118445935276647,
+          "oracle_recall": 0.624725341796875,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.31359157864487963,
+          "oracle_recall": 0.6208343505859375,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.3067679666076033,
+          "oracle_recall": 0.6284942626953125,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.3107816984554278,
+          "oracle_recall": 0.6275177001953125,
+          "rank": 16
+        }
+      ],
+      "layer": 25
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.2890498874730417,
+          "oracle_recall": 0.629547119140625,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.2807942308939434,
+          "oracle_recall": 0.6408843994140625,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.28346120083680604,
+          "oracle_recall": 0.642578125,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.2879300621890843,
+          "oracle_recall": 0.6324615478515625,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.2799952255510374,
+          "oracle_recall": 0.6432952880859375,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.28224982498336204,
+          "oracle_recall": 0.6442413330078125,
+          "rank": 16
+        }
+      ],
+      "layer": 26
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.23964205107944433,
+          "oracle_recall": 0.6572418212890625,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.2347818893629963,
+          "oracle_recall": 0.6675872802734375,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.23997639397145631,
+          "oracle_recall": 0.66619873046875,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.2392448437680079,
+          "oracle_recall": 0.6580047607421875,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.23455898462354385,
+          "oracle_recall": 0.669036865234375,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.24013719999454186,
+          "oracle_recall": 0.667724609375,
+          "rank": 16
+        }
+      ],
+      "layer": 27
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.18884488940705035,
+          "oracle_recall": 0.647430419921875,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.1841578516860254,
+          "oracle_recall": 0.6598968505859375,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.1875190136449605,
+          "oracle_recall": 0.66162109375,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.18822598198127855,
+          "oracle_recall": 0.6492462158203125,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.18382652251344322,
+          "oracle_recall": 0.6617889404296875,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.1870931231816345,
+          "oracle_recall": 0.66424560546875,
+          "rank": 16
+        }
+      ],
+      "layer": 28
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.08770834535160468,
+          "oracle_recall": 0.6959228515625,
+          "rank": 8
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.08018576115800544,
+          "oracle_recall": 0.7272796630859375,
+          "rank": 8
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.07825965632837997,
+          "oracle_recall": 0.741363525390625,
+          "rank": 8
+        },
+        {
+          "blend": 0.25,
+          "local_relative_l2": 0.08738915840228785,
+          "oracle_recall": 0.697021484375,
+          "rank": 16
+        },
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.08008515265542607,
+          "oracle_recall": 0.7286376953125,
+          "rank": 16
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.07809584966190133,
+          "oracle_recall": 0.742401123046875,
+          "rank": 16
+        }
+      ],
+      "layer": 29
+    }
+  ],
+  "schema_version": 1,
+  "screen": {
+    "criterion": "at_least_10_percent_local_error_reduction_at_no_more_than_45_percent_dense_traffic",
+    "decision": "reject_low_rank_utility_residual",
+    "passed": false
+  },
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "status": "trace_only_feasibility_screen"
+}

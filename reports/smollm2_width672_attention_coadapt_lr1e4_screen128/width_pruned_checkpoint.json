@@ -1,0 +1,27 @@
+{
+  "completed_steps": 128,
+  "configuration": {
+    "backbone_learning_rate": 0.0001,
+    "batch_size": 1,
+    "coadapt_backbone": true,
+    "hidden_weight": 1.0,
+    "learning_rate": 3e-05,
+    "local_weight": 0.05,
+    "logit_weight": 1.0,
+    "replacement_steps": 1,
+    "schema_version": 1,
+    "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+    "target_width": 672,
+    "training_dataset_hash": "cd4ad21a5a381a9fb9b03134c68944be055dc47578d817fc3484c0d4491e19c0",
+    "validation_dataset_hash": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c"
+  },
+  "device_neutral": true,
+  "lineage": {
+    "backbone_parameters_restored": false,
+    "history_restored": false,
+    "mode": "parameters_only",
+    "optimizer_restored": false,
+    "path": "/home/dean/repos/engram/reports/smollm2_width672_expanded_stage128/width_pruned_checkpoint.pt",
+    "sha256": "53698eab84f5f52b37013bce9b75f87d1cc5409ca7e4ba6bf94cf1db9539620f"
+  }
+}

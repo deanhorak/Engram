@@ -1,0 +1,205 @@
+{
+  "artifact": {
+    "format": "safetensors_router_and_mergeable_gate_up_down_lora",
+    "path": "/home/dean/repos/engram/reports/smollm2_locality_gradient_diagnostic/sparse_student.safetensors",
+    "sha256": "b37583fce0abf15fd7e0e6d69751351527258aa50a90c7252d488449b7c1b404"
+  },
+  "configuration": {
+    "adapter_rank": 8,
+    "batch_size": 1,
+    "cache_line_records": 16,
+    "candidate_count": 512,
+    "epochs": 1,
+    "gradient_diagnostics": true,
+    "input_fraction": 0.625,
+    "learning_rate": 0.0001,
+    "loss_weights": {
+      "hidden": 0.25,
+      "local": 1.0,
+      "locality": 1.0,
+      "logit": 0.25,
+      "router": 0.1
+    },
+    "router_learning_rate": 0.001,
+    "router_rank": 16,
+    "router_regularization": 8000.0,
+    "routing_mode": "hardware_ste",
+    "temperature": 1.0,
+    "top_k": 512
+  },
+  "data_separation": {
+    "calibration_sequences": 32,
+    "held_out": true,
+    "method": "exact_token_sequence_hashes",
+    "overlapping_sequences": 0,
+    "training_dataset_hash": "55af4d5a2a57b5a1a2ac2614ee22b63ac9033202d2ccff76bb833b1e08bb221e",
+    "training_sequences": 1,
+    "training_validation_overlapping_sequences": 0,
+    "validation_sequences": 1
+  },
+  "experiment": "hardware_aware_sparse_teacher_finetuning",
+  "gate": {
+    "checks": {
+      "cache_adjusted_traffic": true,
+      "candidate_recall": false,
+      "evidence_size": false,
+      "final_hidden_relative_l2": false,
+      "hardware_budget": true,
+      "nll_delta": false,
+      "teacher_student_kl": false,
+      "teacher_top1_agreement": false
+    },
+    "decision": "stop_before_serialization",
+    "passed": false
+  },
+  "metrics": {
+    "candidate_cache_line_fraction": {
+      "count": 540,
+      "maximum": 1.0,
+      "mean": 0.9985725308641976,
+      "median": 1.0,
+      "minimum": 0.9791666666666666,
+      "p95": 1.0
+    },
+    "candidate_cache_lines": {
+      "count": 540,
+      "maximum": 96.0,
+      "mean": 95.86296296296297,
+      "median": 96.0,
+      "minimum": 94.0,
+      "p95": 96.0
+    },
+    "candidate_recall": {
+      "count": 540,
+      "maximum": 0.994140625,
+      "mean": 0.8999095775462963,
+      "median": 0.8984375,
+      "minimum": 0.720703125,
+      "p95": 0.9415039062499999
+    },
+    "final_hidden_cosine": {
+      "count": 18,
+      "maximum": 0.9951209120509982,
+      "mean": 0.9800962592663177,
+      "median": 0.9814415812450519,
+      "minimum": 0.9360118927646973,
+      "p95": 0.9946399498809985
+    },
+    "final_hidden_relative_l2": {
+      "count": 18,
+      "maximum": 0.3523007983346925,
+      "mean": 0.1931784122878507,
+      "median": 0.1923097924133595,
+      "minimum": 0.09953317072805629,
+      "p95": 0.2718465025780132
+    },
+    "local_mlp_relative_l2": {
+      "count": 540,
+      "maximum": 0.6033407224294293,
+      "mean": 0.3281485766346876,
+      "median": 0.34449657267058076,
+      "minimum": 0.001871552788408123,
+      "p95": 0.49370660584077836
+    },
+    "nll_delta": {
+      "count": 17,
+      "maximum": 2.858841896057129,
+      "mean": 0.0895732597393148,
+      "median": 0.06314373016357422,
+      "minimum": -0.903874397277832,
+      "p95": 1.0351284027099594
+    },
+    "student_nll": {
+      "count": 17,
+      "maximum": 12.414226531982422,
+      "mean": 4.822285799419179,
+      "median": 4.644958019256592,
+      "minimum": 0.19727686047554016,
+      "p95": 10.163492584228514
+    },
+    "teacher_nll": {
+      "count": 17,
+      "maximum": 12.772673606872559,
+      "mean": 4.732712532667553,
+      "median": 3.8958661556243896,
+      "minimum": 0.23935483396053314,
+      "p95": 10.184667015075682
+    },
+    "teacher_student_kl": {
+      "count": 17,
+      "maximum": 0.8956626653671265,
+      "mean": 0.12212356892140473,
+      "median": 0.06786960363388062,
+      "minimum": 0.017226696014404297,
+      "p95": 0.3151432752609248
+    },
+    "teacher_student_top5_overlap": {
+      "count": 17,
+      "maximum": 1.0,
+      "mean": 0.8470588326454163,
+      "median": 0.800000011920929,
+      "minimum": 0.6000000238418579,
+      "p95": 1.0
+    },
+    "teacher_top1_agreement": {
+      "count": 17,
+      "maximum": 1.0,
+      "mean": 0.8823529411764706,
+      "median": 1.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    },
+    "teacher_top5_contains_student_top1": {
+      "count": 17,
+      "maximum": 1.0,
+      "mean": 1.0,
+      "median": 1.0,
+      "minimum": 1.0,
+      "p95": 1.0
+    }
+  },
+  "projected_traffic": {
+    "cache_adjusted_fraction_of_dense": 0.7774209104938272,
+    "cache_adjusted_weight_bytes_per_token_layer": 8253747.2,
+    "dense_over_sparse_reduction": 1.6363636363636365,
+    "dense_weight_bytes_per_token_layer": 10616832,
+    "fraction_of_dense": 0.6111111111111112,
+    "input_coordinates": 360,
+    "weight_bytes_per_token_layer": 6488064
+  },
+  "schema_version": 2,
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "status": "measured_local_model",
+  "training": {
+    "batch_size": 1,
+    "gradient_diagnostics": {
+      "causal_objective_l2": 0.013436720706522465,
+      "cosine": 0.03679736331105232,
+      "equal_norm_locality_weight": 269.48553466796875,
+      "locality_objective_l2": 4.9860638682730496e-05,
+      "scope": "first_training_batch_router_parameters"
+    },
+    "history": [
+      {
+        "batch": 0,
+        "epoch": 0,
+        "hidden": 0.008187527768313885,
+        "local": 0.11908033490180969,
+        "locality": 0.9985893368721008,
+        "logit": 0.12144909799098969,
+        "record_start": 0,
+        "records": 1,
+        "router": 0.4024040102958679,
+        "total": 1.190319299697876
+      }
+    ],
+    "records": 1,
+    "router_initialization_cache_reused": true,
+    "steps": 1
+  },
+  "validation": {
+    "input_token_positions": 18,
+    "next_token_positions": 17,
+    "records": 1
+  }
+}

@@ -5,6 +5,7 @@ from engram.evaluation.gates import (
     combine_mlp_intervention_reports,
     evaluate_mlp_arm_gate,
 )
+from engram.evaluation.report import write_mlp_intervention_report
 
 
 def _arm(
@@ -27,11 +28,27 @@ def _arm(
         arm["local_mlp"]["candidate_recall"] = {"mean": recall}
     if variant != "identity":
         arm["top_k"] = 1
-    if variant not in {"identity", "oracle"}:
+    if variant not in {"identity", "oracle", "shared_basis"}:
         arm["candidate_count"] = 1
-    if variant == "dip":
+    if variant in {"dip", "dip_paq"}:
         arm["input_fraction"] = 0.75
+    if variant == "dip_paq":
+        arm["projected_accounting"] = {"cold_fraction_of_dense_q4": 0.44}
     return arm
+
+
+def _full_width_scope(width=10):
+    return {
+        "mode": "full_converted_width",
+        "converted_width": width,
+        "scored_width": width,
+        "candidate_shortlist": False,
+        "authentication": {
+            "source": "strict_reloaded_artifact_header_and_manifest",
+            "verified": True,
+            "sha256": "a" * 64,
+        },
+    }
 
 
 def _base(num_hidden_layers=1):
@@ -90,6 +107,187 @@ def test_routed_gate_requires_candidate_recall_and_sets_stop_decision():
     assert gated["arms"][1]["gate"]["failed_metrics"] == ["candidate_recall"]
 
 
+def test_shared_basis_authenticates_full_width_and_marks_recall_not_applicable(
+    tmp_path,
+):
+    identity = _arm("identity", kl=0.0, top1=1.0, nll_delta=0.0, residual=0.0)
+    oracle = _arm("oracle", kl=0.01, top1=0.99, nll_delta=0.01, residual=0.02)
+    shared = _arm(
+        "shared_basis",
+        kl=0.01,
+        top1=0.99,
+        nll_delta=0.01,
+        residual=0.02,
+    )
+    shared["selection_scope"] = _full_width_scope()
+    shared["projected_accounting"] = {"cold_fraction_of_dense_q4": 0.44}
+    report = apply_mlp_intervention_gates(
+        {
+            **_base(),
+            "status": "test",
+            "calibration": _held_out_calibration(),
+            "measurement_caveat": "test",
+            "arms": [identity, oracle, shared],
+        }
+    )
+
+    gated = report["arms"][2]
+    recall = gated["gate"]["candidate_recall"]
+    recall_check = next(
+        check
+        for check in gated["gate"]["checks"]
+        if check["metric"] == "candidate_recall"
+    )
+    assert recall == {
+        "applicable": False,
+        "status": "not_applicable",
+        "selection_scope": "full_converted_width",
+        "selection_scope_authenticated": True,
+        "reason": "all_converted_records_are_scored_without_a_candidate_shortlist",
+    }
+    assert recall_check["actual"] is None
+    assert recall_check["comparison"] == "not_applicable"
+    assert recall_check["passed"] is True
+    assert gated["candidate_recall_applicable"] is False
+    assert "candidate_recall" not in gated["local_mlp"]
+    assert report["gate_summary"]["passing_routed_arms"] == []
+    assert report["gate_summary"]["passing_full_width_arms"] == ["shared_basis"]
+    assert report["quality_targets_met"] is True
+    assert report["gate_summary"]["development_decision"] == (
+        "eligible_for_full_width_artifact_confirmation"
+    )
+
+    report["baseline"].update(
+        {
+            "negative_log_likelihood": 1.0,
+            "perplexity": 2.0,
+        }
+    )
+    for arm in report["arms"]:
+        arm["local_mlp"].setdefault("mlp_output_relative_l2", {"mean": 0.0})
+    _, markdown_path = write_mlp_intervention_report(report, tmp_path)
+    assert "N/A (full converted width)" in markdown_path.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda arm: arm.pop("selection_scope"),
+        lambda arm: arm.__setitem__("selection_scope", "full_converted_width"),
+        lambda arm: arm["selection_scope"]["authentication"].__setitem__(
+            "verified", False
+        ),
+        lambda arm: arm["selection_scope"].__setitem__(
+            "candidate_shortlist", True
+        ),
+        lambda arm: arm["selection_scope"].__setitem__("scored_width", 9),
+        lambda arm: arm["selection_scope"]["authentication"].__setitem__(
+            "sha256", "not-a-sha"
+        ),
+    ],
+)
+def test_shared_basis_recall_exemption_requires_authenticated_full_width(mutate):
+    shared = _arm(
+        "shared_basis",
+        kl=0.01,
+        top1=0.99,
+        nll_delta=0.01,
+        residual=0.02,
+    )
+    shared["selection_scope"] = _full_width_scope()
+    shared["projected_accounting"] = {"cold_fraction_of_dense_q4": 0.44}
+    mutate(shared)
+
+    with pytest.raises(ValueError, match="selection_scope|artifact|strict-reload"):
+        apply_mlp_intervention_gates(
+            {
+                **_base(),
+                "calibration": _held_out_calibration(),
+                "arms": [shared],
+            }
+        )
+
+
+def test_full_width_scope_rejects_fabricated_recall_or_candidate_shortlist():
+    shared = _arm(
+        "shared_basis",
+        kl=0.01,
+        top1=0.99,
+        nll_delta=0.01,
+        residual=0.02,
+    )
+    shared["selection_scope"] = _full_width_scope()
+    shared["projected_accounting"] = {"cold_fraction_of_dense_q4": 0.44}
+    shared["local_mlp"]["candidate_recall"] = {"mean": 1.0}
+    with pytest.raises(ValueError, match="candidate_recall must be omitted"):
+        apply_mlp_intervention_gates(
+            {
+                **_base(),
+                "calibration": _held_out_calibration(),
+                "arms": [shared],
+            }
+        )
+
+    shared["local_mlp"].pop("candidate_recall")
+    shared["candidate_count"] = 10
+    with pytest.raises(ValueError, match="must omit candidate_count"):
+        apply_mlp_intervention_gates(
+            {
+                **_base(),
+                "calibration": _held_out_calibration(),
+                "arms": [shared],
+            }
+        )
+
+
+def test_routed_candidate_scope_cannot_opt_out_of_recall():
+    routed = _arm(
+        "rank16", kl=0.01, top1=0.99, nll_delta=0.01, residual=0.02
+    )
+    routed["selection_scope"] = {
+        "mode": "routed_candidates",
+        "candidate_shortlist": True,
+    }
+    routed["candidate_recall_applicable"] = False
+
+    with pytest.raises(ValueError, match="candidate_recall_applicable"):
+        apply_mlp_intervention_gates(
+            {
+                **_base(),
+                "calibration": _held_out_calibration(),
+                "arms": [routed],
+            }
+        )
+
+    routed.pop("candidate_recall_applicable")
+    with pytest.raises(ValueError, match="candidate_recall"):
+        apply_mlp_intervention_gates(
+            {
+                **_base(),
+                "calibration": _held_out_calibration(),
+                "arms": [routed],
+            }
+        )
+
+
+def test_shared_basis_gate_requires_worst_case_physical_traffic_pass():
+    shared = _arm(
+        "shared_basis",
+        kl=0.01,
+        top1=0.99,
+        nll_delta=0.01,
+        residual=0.02,
+    )
+    shared["selection_scope"] = _full_width_scope()
+    shared["projected_accounting"] = {"cold_fraction_of_dense_q4": 0.451}
+
+    result = evaluate_mlp_arm_gate(shared, intermediate_size=10)
+
+    assert result["passed"] is False
+    assert result["failed_metrics"] == ["cold_fraction_of_dense_q4"]
+    assert result["candidate_recall"]["applicable"] is False
+
+
 def test_predictor_free_dip_does_not_require_calibration_provenance():
     identity = _arm("identity", kl=0.0, top1=1.0, nll_delta=0.0, residual=0.0)
     oracle = _arm("oracle", kl=0.01, top1=0.99, nll_delta=0.01, residual=0.02)
@@ -115,6 +313,18 @@ def test_dip_gate_rejects_missing_input_fraction():
 
     with pytest.raises(ValueError, match="input_fraction"):
         apply_mlp_intervention_gates({**_base(), "arms": [dip]})
+
+
+def test_quantized_dip_gate_requires_cold_traffic_pass():
+    passing = _arm(
+        "dip_paq", kl=0.01, top1=0.99, nll_delta=0.01, residual=0.02, recall=0.99
+    )
+    assert evaluate_mlp_arm_gate(passing)["passed"] is True
+
+    passing["projected_accounting"]["cold_fraction_of_dense_q4"] = 0.451
+    result = evaluate_mlp_arm_gate(passing)
+    assert result["passed"] is False
+    assert result["failed_metrics"] == ["cold_fraction_of_dense_q4"]
 
 
 def test_invalid_learned_calibration_does_not_block_passing_dip():

@@ -1,0 +1,294 @@
+{
+  "artifact": {
+    "format": "engram_width_pruned_mlp_v1",
+    "written": false
+  },
+  "configuration": {
+    "batch_size": 1,
+    "device": "cpu",
+    "device_neutral_artifact": true,
+    "learning_rate": 1e-05,
+    "loss_weights": {
+      "hidden": 0.25,
+      "local": 1.0,
+      "logit": 0.25
+    },
+    "replacement_order": "deepest_first",
+    "steps": 0,
+    "target_width": 672
+  },
+  "data_separation": {
+    "method": "exact_token_sequence_hashes",
+    "overlapping_sequences": 0,
+    "training_dataset_hash": "383691c11c1f3670322abb768df4362aca54c2e917907bb68ae8d33f4cf002f3",
+    "validation_dataset_hash": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c"
+  },
+  "experiment": "progressive_width_pruned_distillation",
+  "gate": {
+    "checks": {
+      "all_layers_compact": true,
+      "evidence_size": true,
+      "final_hidden_relative_l2": false,
+      "nll_delta": false,
+      "projected_traffic": true,
+      "teacher_student_kl": false,
+      "teacher_top1_agreement": false
+    },
+    "decision": "continue_width_distillation_or_stop",
+    "passed": false
+  },
+  "initialization": [
+    {
+      "layer": 0,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 1,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 2,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 3,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 4,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 5,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 6,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 7,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 8,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 9,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 10,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 11,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 12,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 13,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 14,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 15,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 16,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 17,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 18,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 19,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 20,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 21,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 22,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 23,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 24,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 25,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 26,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 27,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 28,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 29,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    }
+  ],
+  "metrics": {
+    "final_hidden_cosine": {
+      "count": 507,
+      "maximum": 0.982383923094446,
+      "mean": 0.8240780621165398,
+      "median": 0.857254559524222,
+      "minimum": 0.19273762114901932,
+      "p95": 0.9554146500380648
+    },
+    "final_hidden_relative_l2": {
+      "count": 507,
+      "maximum": 1.279312025543511,
+      "mean": 0.5708225179585616,
+      "median": 0.5459869661691643,
+      "minimum": 0.18764556886208666,
+      "p95": 0.9759401032514511
+    },
+    "local_mlp_relative_l2": {
+      "count": 15210,
+      "maximum": 5.112849529705624,
+      "mean": 0.8376550571035083,
+      "median": 0.8612335672733555,
+      "minimum": 0.0017452364471881537,
+      "p95": 1.1952481183958925
+    },
+    "nll_delta": {
+      "count": 491,
+      "maximum": 14.734514236450195,
+      "mean": 1.995186333754414,
+      "median": 1.3068933486938477,
+      "minimum": -3.9234533309936523,
+      "p95": 7.0206592082977295
+    },
+    "student_nll": {
+      "count": 491,
+      "maximum": 16.62912368774414,
+      "mean": 5.171686129197286,
+      "median": 4.501011848449707,
+      "minimum": 4.8874615458771586e-05,
+      "p95": 11.925585269927979
+    },
+    "teacher_nll": {
+      "count": 491,
+      "maximum": 16.939329147338867,
+      "mean": 3.176499797914646,
+      "median": 1.7890857458114624,
+      "minimum": 6.6756979322235566e-06,
+      "p95": 9.731781005859375
+    },
+    "teacher_student_kl": {
+      "count": 491,
+      "maximum": 13.951510429382324,
+      "mean": 1.989057090539104,
+      "median": 1.3228825330734253,
+      "minimum": 4.524353425949812e-05,
+      "p95": 5.810073375701904
+    },
+    "teacher_student_top5_overlap": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.40651732109593275,
+      "median": 0.4000000059604645,
+      "minimum": 0.0,
+      "p95": 0.800000011920929
+    },
+    "teacher_top1_agreement": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.37474541751527496,
+      "median": 0.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    },
+    "teacher_top5_contains_student_top1": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.639511201629328,
+      "median": 1.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    }
+  },
+  "projected_traffic": {
+    "dense_weight_bytes": 10616832,
+    "fraction_of_dense": 0.4375,
+    "hidden_size": 576,
+    "source_intermediate_size": 1536,
+    "target_intermediate_size": 672,
+    "weight_bytes": 4644864
+  },
+  "schema_version": 1,
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "training": {
+    "history": [],
+    "records": 1
+  },
+  "validation": {
+    "all_layers_compact": true,
+    "input_token_positions": 507,
+    "next_token_positions": 491,
+    "records": 16
+  }
+}

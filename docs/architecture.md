@@ -1,5 +1,9 @@
 # Architecture
 
+For the current implementation/evidence boundary, see
+[Project status](status.md). No semantic representation described here has yet
+passed causal quality and the 45% physical cold-traffic limit together.
+
 Engram's target runtime combines a shared recurrent controller, fixed sparse semantic
 memory derived from SwiGLU records, hybrid local/recurrent/retrieval episodic memory, an
 indexed vocabulary projection, transition caching, and uncertainty-triggered corrections.
@@ -63,10 +67,12 @@ weight reads per layer are:
 
 At `H=576`, `I=1,536`, `q=432`, `C=896`, and `K=768`, the arm passes both its development grid and
 a sequence-disjoint confirmation corpus, with 98.97% confirmation oracle-set recall. It projects
-to 76.39% of dense MLP weight traffic. The mathematical selector is implemented in the research
-code, but the compiled format does not yet contain DIP-packed weights and the native runtime has
-no gather/completion kernel. The current quality harness still executes the dense source MLP, so
-it is not a speed benchmark.
+to 76.39% of dense MLP scalar reads. A separate version-2 experimental package stores gate/up
+weights coordinate-major and down weights record-major; Python and native candidate-only readers
+have exact selection parity. Cache-line amplification raises the estimate to 83.33%. The checked
+optimized float32 kernel cycles all 30 layers but is still 15.4% slower than dense, so it remains
+outside the compiled runtime. This isolates the current blocker as systems efficiency rather than
+selector quality.
 
 ## Episodic-memory prototype
 
@@ -112,6 +118,74 @@ rank-16 router factors receive oracle-membership BCE supervision; rank-8 sparse 
 receive local MLP, hidden-state, and logit-distillation gradients. Only these tensors are written
 to a safetensors experiment artifact. The first 32-step pilot fails the progression gate, and a
 subsequent audit shows that its hard route prevents those causal losses from reaching the router.
+The replacement hardware-aware wrapper uses an exact hard sparse forward at
+`q<=62.5%`, `C/K<=512` and a sigmoid straight-through backward estimator. Causal losses can now
+update router factors, and an expected cache-line-occupancy term trains candidate locality. The
+dense oracle is detached supervision only. This design passes unit gradient checks, but its
+complete 32/16 run fails the held-out progression gate. The trainer now batches masked sequences, caches
+router initialization, separates router-calibration and student-training datasets, and trains
+mergeable gate/up/down LoRA, but a broader-corpus stage does not improve every causal metric.
+Candidate-set packing and whole-line selection also fail their trace screens, so this specific
+individual-record locality formulation is stopped.
+Corrected LoRA scaling and resumable checkpoints support a full 128-sequence follow-up. A rank-32
+hidden residual improves several causal metrics slightly but has effectively zero alignment with
+the omitted MLP output and remains far outside the gate, so it is disabled by default. Oracle
+cache-line bounds and a sequence-disjoint layer-adaptive confirmation also fail. Further work must
+co-train structured sparsity with the MLP basis; the frozen-neuron low-budget path is blocked. A
+trace-only whole-block screen now rejects static 64-, 32-, and 16-record expert groupings before
+end-to-end training: even the finest full-information greedy reference has 0.438 local relative
+L2 at 512 active records. The next bounded architecture is native gate-based channel routing with
+hardware-grouped selection and a sparse forward throughout training.
+That native-gate shadow now projects to 43.06% dense traffic at q=62.5%/K=512 and confirms that
+input pruning adds little error; gate-only utility prediction is the blocker. The exact hard-forward
+training wrapper works, but its representative cached-boundary run improves only 2.55%. The next
+test must therefore be progressive end-to-end co-training rather than layer-local fitting. That
+trainer must remain functional on CPU; optional CUDA acceleration must not affect the model format,
+hard sparse semantics, gate criteria, or CPU inference implementation.
+The trainer is now implemented with those properties, including dense-to-sparse scheduling and
+device-neutral resume checkpoints. Its eight-step CPU stage fails to improve all held-out causal
+metrics together, so availability of the mechanism does not yet justify scaling the same objective.
+A deployable low-rank utility residual now supplies the missing up-dependent selection signal
+without reading dense up weights. Rank 16 adds 141,312 bytes of per-token-layer weight traffic,
+bringing q=62.5%/K=512 to 44.39% of dense. The per-layer factors and bias are stored in safetensors,
+validated against the source-model hash, and registered as fixed wrapper state. This nearly halves
+causal KL but does not pass the final gate. Because the factors were fitted on teacher states, the
+next architectural test is an on-policy refit using states generated by the sparse student itself.
+That refit improves controlled same-state local error by only 0.38%, so it is rejected. A
+traffic-neutral K=640 redistribution and exact selected-gate completion also fail. Because the
+full-information K=512 oracle itself misses the causal gate, the next architecture must alter the
+MLP basis: progressively distill a structured sparse or fixed-width student with full MLP updates
+on substantially more real-token data. This is a training-time change; the target remains a packed,
+contiguous CPU inference representation below 45% dense MLP traffic.
+
+`engram train-width-pruned-student` implements that fixed-width test. Each student MLP owns frozen
+dense buffers for progressive replacement and trainable compact gate, up, and down matrices. The
+compact matrices are initialized from trace contribution rankings or deterministic weight
+geometry, then optimized against teacher MLP outputs, intermediate hidden states, and logits.
+Validation forces all layers into compact mode. A 672/1,536 width ratio reads 43.75% of the dense
+MLP weights with contiguous matrices and requires no runtime router. Checkpoints are device-neutral;
+`--resume` restores optimizer/history on the same corpus, while `--initial-checkpoint` transfers
+only compact parameters to a different, provenance-checked corpus. The first full-corpus result
+fails the semantic gate, so this representation is experimental and is not emitted by the package
+compiler.
+
+For the cheaper local-capacity screen, `engram trace --mlp-only --tokens-per-sequence N` executes
+each complete sequence but stores only a seeded sample of exact MLP inputs/outputs. It omits all
+attention tensors and records the sampling policy in the checksummed trace manifest.
+`engram evaluate-width-local-ceiling` then fits selected compact layers entirely from these cached
+boundaries. This separates the compact basis's approximation capacity from accumulated causal
+state drift and avoids repeated teacher-transformer execution.
+
+Later work tested the remaining compact and nonparametric alternatives. A
+layer-adaptive 672/704-width Q4 student produces a complete, independently
+reloaded 44.9334%-traffic artifact, but its frozen 3M-position checkpoint has
+KL 0.8866, top-1 agreement 0.5659, NLL delta +0.8838, and final-hidden L2
+0.4245. Exact input/output memory also fails to scale: adding one million
+pretraining prototypes to 233,005 local prototypes lowers layer-14 LLE-32
+error only from 0.327526 to 0.321854. These results close the tested
+single-compact-MLP and prototype-density architectures; they are not compiler
+inputs.
+
 Older-context retrieval still uses a linear candidate scan. Trained attention and controller
-distillation remain open; the DIP quality pass makes systems implementation and replication the
-next semantic work rather than another blind learned-router fit.
+distillation remain open. The DIP quality pass still needs systems replication, while the separate
+low-budget research path must clear semantic quality before any compilation attempt.

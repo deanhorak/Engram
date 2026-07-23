@@ -1,0 +1,277 @@
+{
+  "artifact": {
+    "format": "safetensors_router_and_mlp_down_adapters_only",
+    "path": "/home/dean/repos/engram/reports/smollm2_hardware_sparse_full/sparse_student.safetensors",
+    "sha256": "52c1c3c4fbe01f0a2b68c7dab2283af1208d86d994fba965beed84acaed6a396"
+  },
+  "configuration": {
+    "adapter_rank": 8,
+    "batch_size": 4,
+    "cache_line_records": 16,
+    "candidate_count": 512,
+    "epochs": 1,
+    "input_fraction": 0.625,
+    "learning_rate": 0.0001,
+    "loss_weights": {
+      "hidden": 0.25,
+      "local": 1.0,
+      "locality": 0.05,
+      "logit": 0.25,
+      "router": 0.1
+    },
+    "router_rank": 16,
+    "router_regularization": 8000.0,
+    "routing_mode": "hardware_ste",
+    "temperature": 1.0,
+    "top_k": 512
+  },
+  "data_separation": {
+    "calibration_sequences": 32,
+    "held_out": true,
+    "method": "exact_token_sequence_hashes",
+    "overlapping_sequences": 0,
+    "validation_sequences": 16
+  },
+  "experiment": "hardware_aware_sparse_teacher_finetuning",
+  "gate": {
+    "checks": {
+      "cache_adjusted_traffic": true,
+      "candidate_recall": false,
+      "evidence_size": true,
+      "final_hidden_relative_l2": false,
+      "hardware_budget": true,
+      "nll_delta": false,
+      "teacher_student_kl": false,
+      "teacher_top1_agreement": false
+    },
+    "decision": "stop_before_serialization",
+    "passed": false
+  },
+  "metrics": {
+    "candidate_cache_line_fraction": {
+      "count": 15210,
+      "maximum": 1.0,
+      "mean": 0.9985796077142232,
+      "median": 1.0,
+      "minimum": 0.96875,
+      "p95": 1.0
+    },
+    "candidate_cache_lines": {
+      "count": 15210,
+      "maximum": 96.0,
+      "mean": 95.86364234056542,
+      "median": 96.0,
+      "minimum": 93.0,
+      "p95": 96.0
+    },
+    "candidate_recall": {
+      "count": 15210,
+      "maximum": 0.99609375,
+      "mean": 0.8958689030654174,
+      "median": 0.89453125,
+      "minimum": 0.720703125,
+      "p95": 0.92578125
+    },
+    "final_hidden_cosine": {
+      "count": 507,
+      "maximum": 0.997226752994304,
+      "mean": 0.9776652226529146,
+      "median": 0.9829971006534394,
+      "minimum": 0.7554770455766743,
+      "p95": 0.9935224762377624
+    },
+    "final_hidden_relative_l2": {
+      "count": 507,
+      "maximum": 0.6906744752888402,
+      "mean": 0.1987550620315666,
+      "median": 0.18517353279520077,
+      "minimum": 0.07451770185939266,
+      "p95": 0.3304917341832405
+    },
+    "local_mlp_relative_l2": {
+      "count": 15210,
+      "maximum": 1.7785065935644344,
+      "mean": 0.3691515248078694,
+      "median": 0.3834740937292728,
+      "minimum": 0.0006826637951656156,
+      "p95": 0.5572943225716391
+    },
+    "nll_delta": {
+      "count": 491,
+      "maximum": 4.553765296936035,
+      "mean": 0.12612248086316885,
+      "median": 0.05594047158956528,
+      "minimum": -1.9081966876983643,
+      "p95": 1.1436431407928467
+    },
+    "student_nll": {
+      "count": 491,
+      "maximum": 15.754094123840332,
+      "mean": 3.302622397600937,
+      "median": 1.9925823211669922,
+      "minimum": 3.218599158572033e-05,
+      "p95": 10.111935138702393
+    },
+    "teacher_nll": {
+      "count": 491,
+      "maximum": 16.9393310546875,
+      "mean": 3.1764999165416223,
+      "median": 1.7890883684158325,
+      "minimum": 6.6756979322235566e-06,
+      "p95": 9.73177433013916
+    },
+    "teacher_student_kl": {
+      "count": 491,
+      "maximum": 3.2806873321533203,
+      "mean": 0.1658782309778499,
+      "median": 0.10076729953289032,
+      "minimum": 1.7198826753883623e-05,
+      "p95": 0.5299875140190125
+    },
+    "teacher_student_top5_overlap": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.778411416105486,
+      "median": 0.800000011920929,
+      "minimum": 0.0,
+      "p95": 1.0
+    },
+    "teacher_top1_agreement": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.7678207739307535,
+      "median": 1.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    },
+    "teacher_top5_contains_student_top1": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.9735234215885947,
+      "median": 1.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    }
+  },
+  "projected_traffic": {
+    "cache_adjusted_fraction_of_dense": 0.7774226797063335,
+    "cache_adjusted_weight_bytes_per_token_layer": 8253765.983431952,
+    "dense_over_sparse_reduction": 1.6363636363636365,
+    "dense_weight_bytes_per_token_layer": 10616832,
+    "fraction_of_dense": 0.6111111111111112,
+    "input_coordinates": 360,
+    "weight_bytes_per_token_layer": 6488064
+  },
+  "schema_version": 2,
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "status": "measured_local_model",
+  "training": {
+    "batch_size": 4,
+    "history": [
+      {
+        "batch": 0,
+        "epoch": 0,
+        "hidden": 0.004817167297005653,
+        "local": 0.1007104143500328,
+        "locality": 0.9778019189834595,
+        "logit": 0.1046307384967804,
+        "record_start": 0,
+        "records": 4,
+        "router": 0.4284440279006958,
+        "total": 0.21980687975883484
+      },
+      {
+        "batch": 1,
+        "epoch": 0,
+        "hidden": 0.005328265484422445,
+        "local": 0.10736363381147385,
+        "locality": 0.9777348041534424,
+        "logit": 0.15906307101249695,
+        "record_start": 4,
+        "records": 4,
+        "router": 0.4260720908641815,
+        "total": 0.23995542526245117
+      },
+      {
+        "batch": 2,
+        "epoch": 0,
+        "hidden": 0.00811539776623249,
+        "local": 0.14307281374931335,
+        "locality": 0.9777334332466125,
+        "logit": 0.1397060602903366,
+        "record_start": 8,
+        "records": 4,
+        "router": 0.4049089848995209,
+        "total": 0.2694057524204254
+      },
+      {
+        "batch": 3,
+        "epoch": 0,
+        "hidden": 0.007958415895700455,
+        "local": 0.1357470154762268,
+        "locality": 0.9778915047645569,
+        "logit": 0.2010914385318756,
+        "record_start": 12,
+        "records": 4,
+        "router": 0.40627390146255493,
+        "total": 0.2775314450263977
+      },
+      {
+        "batch": 4,
+        "epoch": 0,
+        "hidden": 0.005329443141818047,
+        "local": 0.10944576561450958,
+        "locality": 0.9776769280433655,
+        "logit": 0.1289091855287552,
+        "record_start": 16,
+        "records": 4,
+        "router": 0.4172710180282593,
+        "total": 0.23361638188362122
+      },
+      {
+        "batch": 5,
+        "epoch": 0,
+        "hidden": 0.005090950056910515,
+        "local": 0.11608497053384781,
+        "locality": 0.9777987003326416,
+        "logit": 0.11529817432165146,
+        "record_start": 20,
+        "records": 4,
+        "router": 0.41613972187042236,
+        "total": 0.23668617010116577
+      },
+      {
+        "batch": 6,
+        "epoch": 0,
+        "hidden": 0.006691891234368086,
+        "local": 0.13886421918869019,
+        "locality": 0.9777019023895264,
+        "logit": 0.11178091913461685,
+        "record_start": 24,
+        "records": 4,
+        "router": 0.40746748447418213,
+        "total": 0.2581142783164978
+      },
+      {
+        "batch": 7,
+        "epoch": 0,
+        "hidden": 0.007757970597594976,
+        "local": 0.14108051359653473,
+        "locality": 0.9775432348251343,
+        "logit": 0.16515128314495087,
+        "record_start": 28,
+        "records": 4,
+        "router": 0.40888550877571106,
+        "total": 0.2740735411643982
+      }
+    ],
+    "records": 32,
+    "router_initialization_cache_reused": true,
+    "steps": 8
+  },
+  "validation": {
+    "input_token_positions": 507,
+    "next_token_positions": 491,
+    "records": 16
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "objective": "minimize_sum_of_individual_layer_teacher_student_kl",
+  "selection_dataset": "tests/fixtures/validation.jsonl",
+  "selection_sequences": 4,
+  "candidate_budgets": [256, 384, 512, 640, 768],
+  "target_total_records": 15360,
+  "target_mean_records": 512,
+  "layer_top_ks": [
+    768, 640, 512, 384, 384, 512, 512, 512, 384, 512,
+    640, 512, 512, 512, 384, 512, 512, 512, 384, 512,
+    512, 512, 640, 512, 512, 384, 384, 512, 512, 768
+  ],
+  "distribution": {"256": 0, "384": 7, "512": 18, "640": 3, "768": 2},
+  "predicted_sum_individual_kl": 0.08918583486273055,
+  "uniform_sum_individual_kl": 0.1013591171149288,
+  "predicted_reduction": 0.12010051585586767,
+  "confirmation_report": "../smollm2_mlp_intervention_oracle_adaptive512_causal/mlp_intervention.json",
+  "decision": "rejected_after_sequence_disjoint_confirmation"
+}

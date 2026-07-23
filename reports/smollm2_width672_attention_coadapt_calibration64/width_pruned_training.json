@@ -1,0 +1,4423 @@
+{
+  "artifact": {
+    "format": "engram_width_pruned_coadapted_v2",
+    "path": "/home/dean/repos/engram/reports/smollm2_width672_attention_coadapt_calibration64/width_pruned_student.safetensors",
+    "reloaded_before_validation": true,
+    "sha256": "2b8dc26a22cbfc95e89677ec7f63f9aaa8199a55fdd34ab4d6c4a3daa6db1690",
+    "tensors": 301,
+    "written": true
+  },
+  "configuration": {
+    "backbone_learning_rate": 3e-05,
+    "backbone_trainable_parameters": 26577216,
+    "batch_size": 4,
+    "checkpoint_every": 32,
+    "coadapt_backbone": true,
+    "coadapt_embeddings_and_head": false,
+    "device": "cuda",
+    "device_neutral_artifact": true,
+    "incremental_mlp_traffic_from_backbone": 0,
+    "initialized_from_checkpoint": true,
+    "learning_rate": 1e-05,
+    "local_batch_size": 32,
+    "local_learning_rate": 0.0003,
+    "local_warmup_steps": 0,
+    "loss_weights": {
+      "hidden": 2.0,
+      "local": 0.05,
+      "logit": 1.0
+    },
+    "replacement_order": "deepest_first",
+    "replacement_steps": 1,
+    "resumed": true,
+    "steps": 512,
+    "target_width": 672
+  },
+  "data_separation": {
+    "method": "exact_token_sequence_hashes",
+    "overlapping_sequences": 0,
+    "training_dataset_hash": "383691c11c1f3670322abb768df4362aca54c2e917907bb68ae8d33f4cf002f3",
+    "validation_dataset_hash": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c"
+  },
+  "experiment": "progressive_width_pruned_distillation",
+  "gate": {
+    "checks": {
+      "all_layers_compact": true,
+      "evidence_size": true,
+      "final_hidden_relative_l2": false,
+      "nll_delta": false,
+      "projected_traffic": true,
+      "serialized_reload": true,
+      "teacher_student_kl": false,
+      "teacher_top1_agreement": false
+    },
+    "decision": "continue_width_distillation_or_stop",
+    "passed": false
+  },
+  "initialization": [
+    {
+      "layer": 0,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 1,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 2,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 3,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 4,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 5,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 6,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 7,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 8,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 9,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 10,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 11,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 12,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 13,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 14,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 15,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 16,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 17,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 18,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 19,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 20,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 21,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 22,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 23,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 24,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 25,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 26,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 27,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 28,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 29,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    }
+  ],
+  "local_warmup": [],
+  "metrics": {
+    "final_hidden_cosine": {
+      "count": 507,
+      "maximum": 0.9981985986273435,
+      "mean": 0.9244020296090821,
+      "median": 0.9429820244804127,
+      "minimum": 0.5144839516071915,
+      "p95": 0.9857486338084617
+    },
+    "final_hidden_relative_l2": {
+      "count": 507,
+      "maximum": 1.1215887751798757,
+      "mean": 0.3627158144913735,
+      "median": 0.34003167905691745,
+      "minimum": 0.05999793051596211,
+      "p95": 0.6536009572101552
+    },
+    "local_mlp_relative_l2": {
+      "count": 15210,
+      "maximum": 1.5464773948886998,
+      "mean": 0.6886269367608219,
+      "median": 0.7176280092271892,
+      "minimum": 0.0034627168325714517,
+      "p95": 0.9753887665187958
+    },
+    "nll_delta": {
+      "count": 491,
+      "maximum": 12.092586517333984,
+      "mean": 0.7062799133305546,
+      "median": 0.24539756774902344,
+      "minimum": -3.310795783996582,
+      "p95": 3.781305432319641
+    },
+    "student_nll": {
+      "count": 491,
+      "maximum": 17.235797882080078,
+      "mean": 3.8827792997469617,
+      "median": 2.885934352874756,
+      "minimum": 9.298280929215252e-06,
+      "p95": 10.639070510864258
+    },
+    "teacher_nll": {
+      "count": 491,
+      "maximum": 16.9393310546875,
+      "mean": 3.176499389278373,
+      "median": 1.789088249206543,
+      "minimum": 6.6756979322235566e-06,
+      "p95": 9.73177719116211
+    },
+    "teacher_student_kl": {
+      "count": 491,
+      "maximum": 11.883600234985352,
+      "mean": 0.8405189450925545,
+      "median": 0.47833776473999023,
+      "minimum": 1.2055060324200895e-05,
+      "p95": 2.903120279312134
+    },
+    "teacher_student_top5_overlap": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.5832994014874495,
+      "median": 0.6000000238418579,
+      "minimum": 0.0,
+      "p95": 1.0
+    },
+    "teacher_top1_agreement": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.6089613034623218,
+      "median": 1.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    },
+    "teacher_top5_contains_student_top1": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.8574338085539714,
+      "median": 1.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    }
+  },
+  "projected_traffic": {
+    "dense_weight_bytes": 10616832,
+    "fraction_of_dense": 0.4375,
+    "hidden_size": 576,
+    "source_intermediate_size": 1536,
+    "target_intermediate_size": 672,
+    "weight_bytes": 4644864
+  },
+  "schema_version": 1,
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "training": {
+    "checkpoint": {
+      "device_neutral": true,
+      "path": "/home/dean/repos/engram/reports/smollm2_width672_attention_coadapt_calibration64/width_pruned_checkpoint.pt",
+      "written": true
+    },
+    "completed_before_resume": 64,
+    "history": [
+      {
+        "converted_layers": 30,
+        "hidden": 0.03459855914115906,
+        "local": 0.3964550793170929,
+        "logit": 0.7375988960266113,
+        "step": 1,
+        "total": 0.8266187906265259
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02997364103794098,
+        "local": 0.419277548789978,
+        "logit": 1.0334258079528809,
+        "step": 2,
+        "total": 1.1143369674682617
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.028985342010855675,
+        "local": 0.3541620969772339,
+        "logit": 0.6449014544487,
+        "step": 3,
+        "total": 0.7205802202224731
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.029624002054333687,
+        "local": 0.3510468304157257,
+        "logit": 0.7930396199226379,
+        "step": 4,
+        "total": 0.8698399662971497
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.04932846873998642,
+        "local": 0.554302990436554,
+        "logit": 1.4696382284164429,
+        "step": 5,
+        "total": 1.5960103273391724
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.04154008999466896,
+        "local": 0.5483486652374268,
+        "logit": 1.249671459197998,
+        "step": 6,
+        "total": 1.3601690530776978
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03088165633380413,
+        "local": 0.4457368552684784,
+        "logit": 0.5013285875320435,
+        "step": 7,
+        "total": 0.5853787660598755
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.033240608870983124,
+        "local": 0.443083792924881,
+        "logit": 0.673102080821991,
+        "step": 8,
+        "total": 0.7617374658584595
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03054424375295639,
+        "local": 0.3814275562763214,
+        "logit": 0.5537794232368469,
+        "step": 9,
+        "total": 0.633939266204834
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02819995954632759,
+        "local": 0.4055609703063965,
+        "logit": 0.7929432392120361,
+        "step": 10,
+        "total": 0.869621217250824
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02651069313287735,
+        "local": 0.34182608127593994,
+        "logit": 0.4258379638195038,
+        "step": 11,
+        "total": 0.4959506392478943
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02851356379687786,
+        "local": 0.3449864685535431,
+        "logit": 0.5422072410583496,
+        "step": 12,
+        "total": 0.6164836883544922
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.04630286991596222,
+        "local": 0.5426909327507019,
+        "logit": 1.2900949716567993,
+        "step": 13,
+        "total": 1.4098352193832397
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03948749601840973,
+        "local": 0.5368383526802063,
+        "logit": 1.0920803546905518,
+        "step": 14,
+        "total": 1.1978973150253296
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.030045289546251297,
+        "local": 0.4428701400756836,
+        "logit": 0.3769586980342865,
+        "step": 15,
+        "total": 0.45919278264045715
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.032435424625873566,
+        "local": 0.43764346837997437,
+        "logit": 0.5612939596176147,
+        "step": 16,
+        "total": 0.6480469703674316
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02918182499706745,
+        "local": 0.3772817850112915,
+        "logit": 0.5071197152137756,
+        "step": 17,
+        "total": 0.5843474864959717
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.027477268129587173,
+        "local": 0.3990565240383148,
+        "logit": 0.6768203377723694,
+        "step": 18,
+        "total": 0.7517277002334595
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.025725536048412323,
+        "local": 0.336294949054718,
+        "logit": 0.30586978793144226,
+        "step": 19,
+        "total": 0.3741356134414673
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02644236944615841,
+        "local": 0.3401937782764435,
+        "logit": 0.39147114753723145,
+        "step": 20,
+        "total": 0.46136558055877686
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.04483417794108391,
+        "local": 0.5329610705375671,
+        "logit": 1.1264150142669678,
+        "step": 21,
+        "total": 1.2427314519882202
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03871907293796539,
+        "local": 0.5284444689750671,
+        "logit": 0.9492514729499817,
+        "step": 22,
+        "total": 1.0531117916107178
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.029594914987683296,
+        "local": 0.4408400356769562,
+        "logit": 0.30241915583610535,
+        "step": 23,
+        "total": 0.3836509883403778
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03177589550614357,
+        "local": 0.4353022575378418,
+        "logit": 0.46829676628112793,
+        "step": 24,
+        "total": 0.5536136627197266
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02811821922659874,
+        "local": 0.3744584023952484,
+        "logit": 0.4712444841861725,
+        "step": 25,
+        "total": 0.5462038516998291
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026990339159965515,
+        "local": 0.39427924156188965,
+        "logit": 0.5830146074295044,
+        "step": 26,
+        "total": 0.6567092537879944
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.025339655578136444,
+        "local": 0.333285927772522,
+        "logit": 0.2205396145582199,
+        "step": 27,
+        "total": 0.2878832221031189
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02580893412232399,
+        "local": 0.3373037576675415,
+        "logit": 0.29736799001693726,
+        "step": 28,
+        "total": 0.3658510446548462
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.043091487139463425,
+        "local": 0.5268250703811646,
+        "logit": 0.9997958540916443,
+        "step": 29,
+        "total": 1.112320065498352
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03779708221554756,
+        "local": 0.5214008688926697,
+        "logit": 0.8160656094551086,
+        "step": 30,
+        "total": 0.9177297949790955
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.029118046164512634,
+        "local": 0.4373614490032196,
+        "logit": 0.2536965012550354,
+        "step": 31,
+        "total": 0.33380067348480225
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03116724081337452,
+        "local": 0.4322059154510498,
+        "logit": 0.3892774283885956,
+        "step": 32,
+        "total": 0.47322219610214233
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.027044951915740967,
+        "local": 0.37199556827545166,
+        "logit": 0.43826231360435486,
+        "step": 33,
+        "total": 0.5109519958496094
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02654259279370308,
+        "local": 0.3904717266559601,
+        "logit": 0.5093563199043274,
+        "step": 34,
+        "total": 0.5819650888442993
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02522203139960766,
+        "local": 0.33146682381629944,
+        "logit": 0.16378319263458252,
+        "step": 35,
+        "total": 0.230800598859787
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.025403637439012527,
+        "local": 0.3350569009780884,
+        "logit": 0.2320932298898697,
+        "step": 36,
+        "total": 0.2996533513069153
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.0414816178381443,
+        "local": 0.523252010345459,
+        "logit": 0.8911077380180359,
+        "step": 37,
+        "total": 1.00023353099823
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03691478073596954,
+        "local": 0.5161210894584656,
+        "logit": 0.6974356770515442,
+        "step": 38,
+        "total": 0.7970712780952454
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.028790181502699852,
+        "local": 0.4337761104106903,
+        "logit": 0.21724256873130798,
+        "step": 39,
+        "total": 0.2965117394924164
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.030740264803171158,
+        "local": 0.42910000681877136,
+        "logit": 0.3195238411426544,
+        "step": 40,
+        "total": 0.40245938301086426
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026387684047222137,
+        "local": 0.3701992928981781,
+        "logit": 0.4096072316169739,
+        "step": 41,
+        "total": 0.4808925688266754
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026204027235507965,
+        "local": 0.38750335574150085,
+        "logit": 0.4526250660419464,
+        "step": 42,
+        "total": 0.5244082808494568
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024938570335507393,
+        "local": 0.3298170268535614,
+        "logit": 0.1260318011045456,
+        "step": 43,
+        "total": 0.192399799823761
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02508389763534069,
+        "local": 0.33316296339035034,
+        "logit": 0.19320893287658691,
+        "step": 44,
+        "total": 0.26003485918045044
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.040445439517498016,
+        "local": 0.520389199256897,
+        "logit": 0.790642261505127,
+        "step": 45,
+        "total": 0.8975526094436646
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03630944341421127,
+        "local": 0.5120965242385864,
+        "logit": 0.5926268696784973,
+        "step": 46,
+        "total": 0.6908506155014038
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02850145660340786,
+        "local": 0.43115484714508057,
+        "logit": 0.18863847851753235,
+        "step": 47,
+        "total": 0.2671991288661957
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03053974360227585,
+        "local": 0.42815691232681274,
+        "logit": 0.265768826007843,
+        "step": 48,
+        "total": 0.3482561707496643
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.025733062997460365,
+        "local": 0.36863672733306885,
+        "logit": 0.38406169414520264,
+        "step": 49,
+        "total": 0.4539596438407898
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.025779176503419876,
+        "local": 0.3843994140625,
+        "logit": 0.4006345272064209,
+        "step": 50,
+        "total": 0.4714128375053406
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02469070814549923,
+        "local": 0.32781049609184265,
+        "logit": 0.1025925949215889,
+        "step": 51,
+        "total": 0.1683645248413086
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024986304342746735,
+        "local": 0.33180880546569824,
+        "logit": 0.17097344994544983,
+        "step": 52,
+        "total": 0.2375364899635315
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03942003473639488,
+        "local": 0.52004075050354,
+        "logit": 0.7052388787269592,
+        "step": 53,
+        "total": 0.8100810050964355
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.035620979964733124,
+        "local": 0.510319709777832,
+        "logit": 0.5059301257133484,
+        "step": 54,
+        "total": 0.6026880741119385
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.028321649879217148,
+        "local": 0.4287000000476837,
+        "logit": 0.16697657108306885,
+        "step": 55,
+        "total": 0.24505487084388733
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.030354710295796394,
+        "local": 0.42825740575790405,
+        "logit": 0.22632825374603271,
+        "step": 56,
+        "total": 0.3084505498409271
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.025324326008558273,
+        "local": 0.36758100986480713,
+        "logit": 0.36037254333496094,
+        "step": 57,
+        "total": 0.4294002652168274
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.025426167994737625,
+        "local": 0.38199999928474426,
+        "logit": 0.35380199551582336,
+        "step": 58,
+        "total": 0.42375433444976807
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024585576727986336,
+        "local": 0.32660552859306335,
+        "logit": 0.09207955747842789,
+        "step": 59,
+        "total": 0.15758098661899567
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024969110265374184,
+        "local": 0.3305188715457916,
+        "logit": 0.1464257687330246,
+        "step": 60,
+        "total": 0.21288993954658508
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03869303688406944,
+        "local": 0.5189213156700134,
+        "logit": 0.6333333253860474,
+        "step": 61,
+        "total": 0.7366654872894287
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03527521342039108,
+        "local": 0.5086946487426758,
+        "logit": 0.43935275077819824,
+        "step": 62,
+        "total": 0.5353379249572754
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.0280888844281435,
+        "local": 0.4267236590385437,
+        "logit": 0.14905193448066711,
+        "step": 63,
+        "total": 0.226565882563591
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03020031936466694,
+        "local": 0.4266321063041687,
+        "logit": 0.19920320808887482,
+        "step": 64,
+        "total": 0.28093546628952026
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.025068264454603195,
+        "local": 0.36640822887420654,
+        "logit": 0.337178498506546,
+        "step": 65,
+        "total": 0.40563544631004333
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02541930414736271,
+        "local": 0.38210174441337585,
+        "logit": 0.33070138096809387,
+        "step": 66,
+        "total": 0.40064507722854614
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024376099929213524,
+        "local": 0.32525551319122314,
+        "logit": 0.08402737975120544,
+        "step": 67,
+        "total": 0.14904235303401947
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024666016921401024,
+        "local": 0.32863301038742065,
+        "logit": 0.13126206398010254,
+        "step": 68,
+        "total": 0.19702574610710144
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03785243630409241,
+        "local": 0.5188825726509094,
+        "logit": 0.5716192126274109,
+        "step": 69,
+        "total": 0.67326819896698
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03482012823224068,
+        "local": 0.5082165002822876,
+        "logit": 0.3911897838115692,
+        "step": 70,
+        "total": 0.48624086380004883
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.027941426262259483,
+        "local": 0.42460450530052185,
+        "logit": 0.13543598353862762,
+        "step": 71,
+        "total": 0.21254906058311462
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.030027180910110474,
+        "local": 0.42520806193351746,
+        "logit": 0.1812552660703659,
+        "step": 72,
+        "total": 0.26257002353668213
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02472456358373165,
+        "local": 0.3651719093322754,
+        "logit": 0.315199077129364,
+        "step": 73,
+        "total": 0.38290679454803467
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024951793253421783,
+        "local": 0.3792994022369385,
+        "logit": 0.2997566759586334,
+        "step": 74,
+        "total": 0.3686252236366272
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024516642093658447,
+        "local": 0.3245616555213928,
+        "logit": 0.07517939805984497,
+        "step": 75,
+        "total": 0.14044076204299927
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02464914694428444,
+        "local": 0.3282267451286316,
+        "logit": 0.12010283023118973,
+        "step": 76,
+        "total": 0.18581247329711914
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.037562236189842224,
+        "local": 0.5168974995613098,
+        "logit": 0.5246837735176086,
+        "step": 77,
+        "total": 0.6256531476974487
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.034759052097797394,
+        "local": 0.505890965461731,
+        "logit": 0.3574199676513672,
+        "step": 78,
+        "total": 0.45223262906074524
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.027749499306082726,
+        "local": 0.42349526286125183,
+        "logit": 0.1237976998090744,
+        "step": 79,
+        "total": 0.20047146081924438
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.029850460588932037,
+        "local": 0.4235875904560089,
+        "logit": 0.16972990334033966,
+        "step": 80,
+        "total": 0.25061020255088806
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024605268612504005,
+        "local": 0.3642563819885254,
+        "logit": 0.2956126928329468,
+        "step": 81,
+        "total": 0.36303603649139404
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024894556030631065,
+        "local": 0.3786315619945526,
+        "logit": 0.27787017822265625,
+        "step": 82,
+        "total": 0.34659087657928467
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023856857791543007,
+        "local": 0.3224695920944214,
+        "logit": 0.06596416234970093,
+        "step": 83,
+        "total": 0.12980136275291443
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024521490558981895,
+        "local": 0.32688677310943604,
+        "logit": 0.11266281455755234,
+        "step": 84,
+        "total": 0.17805013060569763
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.037045687437057495,
+        "local": 0.5217764377593994,
+        "logit": 0.49374571442604065,
+        "step": 85,
+        "total": 0.5939258933067322
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03448183834552765,
+        "local": 0.5094860196113586,
+        "logit": 0.3380795121192932,
+        "step": 86,
+        "total": 0.43251749873161316
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.027571549639105797,
+        "local": 0.4214107096195221,
+        "logit": 0.11468788981437683,
+        "step": 87,
+        "total": 0.190901517868042
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02971166931092739,
+        "local": 0.42214158177375793,
+        "logit": 0.1554422676563263,
+        "step": 88,
+        "total": 0.23597268760204315
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024244150146842003,
+        "local": 0.3628483712673187,
+        "logit": 0.2763887643814087,
+        "step": 89,
+        "total": 0.3430194854736328
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024628493934869766,
+        "local": 0.3778596520423889,
+        "logit": 0.25597408413887024,
+        "step": 90,
+        "total": 0.3241240382194519
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023775506764650345,
+        "local": 0.32087942957878113,
+        "logit": 0.060850467532873154,
+        "step": 91,
+        "total": 0.12444545328617096
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024163268506526947,
+        "local": 0.3254043757915497,
+        "logit": 0.10738985240459442,
+        "step": 92,
+        "total": 0.17198660969734192
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03681456297636032,
+        "local": 0.5149797797203064,
+        "logit": 0.45872262120246887,
+        "step": 93,
+        "total": 0.5581007599830627
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03441755846142769,
+        "local": 0.5037055611610413,
+        "logit": 0.31708067655563354,
+        "step": 94,
+        "total": 0.4111010730266571
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.027424104511737823,
+        "local": 0.420152872800827,
+        "logit": 0.1072414219379425,
+        "step": 95,
+        "total": 0.18309727311134338
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.029518645256757736,
+        "local": 0.42056363821029663,
+        "logit": 0.14482338726520538,
+        "step": 96,
+        "total": 0.2248888611793518
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024133523926138878,
+        "local": 0.36204084753990173,
+        "logit": 0.26059490442276,
+        "step": 97,
+        "total": 0.32696399092674255
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02448504976928234,
+        "local": 0.3765294551849365,
+        "logit": 0.23817217350006104,
+        "step": 98,
+        "total": 0.3059687614440918
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023699333891272545,
+        "local": 0.3207882046699524,
+        "logit": 0.06285230070352554,
+        "step": 99,
+        "total": 0.12629038095474243
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02403973415493965,
+        "local": 0.3249364495277405,
+        "logit": 0.10567879676818848,
+        "step": 100,
+        "total": 0.17000508308410645
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03657318279147148,
+        "local": 0.5176677703857422,
+        "logit": 0.4285190999507904,
+        "step": 101,
+        "total": 0.5275488495826721
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03417935222387314,
+        "local": 0.504531741142273,
+        "logit": 0.2945454716682434,
+        "step": 102,
+        "total": 0.3881307542324066
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.027275260537862778,
+        "local": 0.4182813763618469,
+        "logit": 0.10146737843751907,
+        "step": 103,
+        "total": 0.1769319772720337
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.029378267005085945,
+        "local": 0.41919881105422974,
+        "logit": 0.13700386881828308,
+        "step": 104,
+        "total": 0.2167203426361084
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023880958557128906,
+        "local": 0.360952764749527,
+        "logit": 0.24434241652488708,
+        "step": 105,
+        "total": 0.31015196442604065
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02425658144056797,
+        "local": 0.37525561451911926,
+        "logit": 0.22446027398109436,
+        "step": 106,
+        "total": 0.2917362153530121
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023783104494214058,
+        "local": 0.3188461363315582,
+        "logit": 0.054479725658893585,
+        "step": 107,
+        "total": 0.11798824369907379
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02417750470340252,
+        "local": 0.32309335470199585,
+        "logit": 0.09374819695949554,
+        "step": 108,
+        "total": 0.1582578718662262
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.036311935633420944,
+        "local": 0.5139045119285583,
+        "logit": 0.40161409974098206,
+        "step": 109,
+        "total": 0.4999331831932068
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03399413451552391,
+        "local": 0.5017266273498535,
+        "logit": 0.2761021852493286,
+        "step": 110,
+        "total": 0.36917680501937866
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.027093248441815376,
+        "local": 0.4166705310344696,
+        "logit": 0.09663642197847366,
+        "step": 111,
+        "total": 0.17165644466876984
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02925553359091282,
+        "local": 0.4182155132293701,
+        "logit": 0.13036008179187775,
+        "step": 112,
+        "total": 0.20978191494941711
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023655742406845093,
+        "local": 0.3601784110069275,
+        "logit": 0.2291935533285141,
+        "step": 113,
+        "total": 0.2945139408111572
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024191895499825478,
+        "local": 0.3753999173641205,
+        "logit": 0.22667106986045837,
+        "step": 114,
+        "total": 0.29382485151290894
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023554138839244843,
+        "local": 0.3184114694595337,
+        "logit": 0.05344298481941223,
+        "step": 115,
+        "total": 0.11647183448076248
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02411501854658127,
+        "local": 0.3218028247356415,
+        "logit": 0.08935239166021347,
+        "step": 116,
+        "total": 0.15367257595062256
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03612501174211502,
+        "local": 0.5179544687271118,
+        "logit": 0.3836379051208496,
+        "step": 117,
+        "total": 0.4817856550216675
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03382060304284096,
+        "local": 0.5039705634117126,
+        "logit": 0.26074713468551636,
+        "step": 118,
+        "total": 0.3535868525505066
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026979507878422737,
+        "local": 0.4150656461715698,
+        "logit": 0.092310331761837,
+        "step": 119,
+        "total": 0.16702263057231903
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02911558747291565,
+        "local": 0.41692423820495605,
+        "logit": 0.12799039483070374,
+        "step": 120,
+        "total": 0.20706778764724731
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023551851511001587,
+        "local": 0.3593475818634033,
+        "logit": 0.2174362987279892,
+        "step": 121,
+        "total": 0.28250738978385925
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024028796702623367,
+        "local": 0.3741477131843567,
+        "logit": 0.2027861773967743,
+        "step": 122,
+        "total": 0.269551157951355
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02354322001338005,
+        "local": 0.317274272441864,
+        "logit": 0.04670519754290581,
+        "step": 123,
+        "total": 0.10965535044670105
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02368343062698841,
+        "local": 0.3207727074623108,
+        "logit": 0.08461491018533707,
+        "step": 124,
+        "total": 0.1480204164981842
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.036037836223840714,
+        "local": 0.5116548538208008,
+        "logit": 0.3671547472476959,
+        "step": 125,
+        "total": 0.4648131728172302
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.033746570348739624,
+        "local": 0.4988316297531128,
+        "logit": 0.25358250737190247,
+        "step": 126,
+        "total": 0.3460172414779663
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026831215247511864,
+        "local": 0.41347911953926086,
+        "logit": 0.08908462524414062,
+        "step": 127,
+        "total": 0.16342100501060486
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.029010411351919174,
+        "local": 0.41589343547821045,
+        "logit": 0.12055545300245285,
+        "step": 128,
+        "total": 0.19937095046043396
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02337462827563286,
+        "local": 0.3584221601486206,
+        "logit": 0.20624101161956787,
+        "step": 129,
+        "total": 0.27091139554977417
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.0238591767847538,
+        "local": 0.37305617332458496,
+        "logit": 0.19229289889335632,
+        "step": 130,
+        "total": 0.258664071559906
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023137236014008522,
+        "local": 0.31592926383018494,
+        "logit": 0.04636286571621895,
+        "step": 131,
+        "total": 0.108433797955513
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02353888563811779,
+        "local": 0.3192296624183655,
+        "logit": 0.08079348504543304,
+        "step": 132,
+        "total": 0.1438327431678772
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03572752699255943,
+        "local": 0.5147497653961182,
+        "logit": 0.3447905480861664,
+        "step": 133,
+        "total": 0.44198310375213623
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03352486342191696,
+        "local": 0.5006175637245178,
+        "logit": 0.23499906063079834,
+        "step": 134,
+        "total": 0.3270796537399292
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.0267073642462492,
+        "local": 0.41227978467941284,
+        "logit": 0.08633407205343246,
+        "step": 135,
+        "total": 0.16036278009414673
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02889295108616352,
+        "local": 0.41486856341362,
+        "logit": 0.12059179693460464,
+        "step": 136,
+        "total": 0.1991211175918579
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02318006008863449,
+        "local": 0.3577807545661926,
+        "logit": 0.19594214856624603,
+        "step": 137,
+        "total": 0.26019132137298584
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023744845762848854,
+        "local": 0.3729588985443115,
+        "logit": 0.18253643810749054,
+        "step": 138,
+        "total": 0.24867406487464905
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023202719166874886,
+        "local": 0.3157193064689636,
+        "logit": 0.0480186901986599,
+        "step": 139,
+        "total": 0.11021009087562561
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023507270961999893,
+        "local": 0.31861892342567444,
+        "logit": 0.0781649574637413,
+        "step": 140,
+        "total": 0.14111045002937317
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.035701412707567215,
+        "local": 0.512404203414917,
+        "logit": 0.3281968832015991,
+        "step": 141,
+        "total": 0.42521992325782776
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03345351666212082,
+        "local": 0.4983598291873932,
+        "logit": 0.2244168370962143,
+        "step": 142,
+        "total": 0.3162418603897095
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026638539507985115,
+        "local": 0.4111311137676239,
+        "logit": 0.08330774307250977,
+        "step": 143,
+        "total": 0.15714138746261597
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02883775718510151,
+        "local": 0.41443514823913574,
+        "logit": 0.11321690678596497,
+        "step": 144,
+        "total": 0.19161418080329895
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023335635662078857,
+        "local": 0.35717785358428955,
+        "logit": 0.1886761635541916,
+        "step": 145,
+        "total": 0.2532063126564026
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023729776963591576,
+        "local": 0.37168118357658386,
+        "logit": 0.1749877631664276,
+        "step": 146,
+        "total": 0.24103137850761414
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02305617183446884,
+        "local": 0.31433945894241333,
+        "logit": 0.042453665286302567,
+        "step": 147,
+        "total": 0.10428298264741898
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023213855922222137,
+        "local": 0.31687629222869873,
+        "logit": 0.07735377550125122,
+        "step": 148,
+        "total": 0.13962531089782715
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03540389612317085,
+        "local": 0.5122575759887695,
+        "logit": 0.31427860260009766,
+        "step": 149,
+        "total": 0.4106992781162262
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03328529745340347,
+        "local": 0.4982873201370239,
+        "logit": 0.21651111543178558,
+        "step": 150,
+        "total": 0.30799609422683716
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026478292420506477,
+        "local": 0.4092493951320648,
+        "logit": 0.08102981001138687,
+        "step": 151,
+        "total": 0.15444886684417725
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.028731737285852432,
+        "local": 0.4129579961299896,
+        "logit": 0.1073824018239975,
+        "step": 152,
+        "total": 0.18549376726150513
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02297697588801384,
+        "local": 0.3564038574695587,
+        "logit": 0.1832185536623001,
+        "step": 153,
+        "total": 0.24699270725250244
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02350333146750927,
+        "local": 0.3712206482887268,
+        "logit": 0.1684880256652832,
+        "step": 154,
+        "total": 0.23405572772026062
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023083196952939034,
+        "local": 0.31380847096443176,
+        "logit": 0.043492838740348816,
+        "step": 155,
+        "total": 0.10534965991973877
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023117834702134132,
+        "local": 0.3160663843154907,
+        "logit": 0.07365299761295319,
+        "step": 156,
+        "total": 0.13569198548793793
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03537192568182945,
+        "local": 0.5102461576461792,
+        "logit": 0.29891377687454224,
+        "step": 157,
+        "total": 0.3951699435710907
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03322936221957207,
+        "local": 0.49654170870780945,
+        "logit": 0.20792338252067566,
+        "step": 158,
+        "total": 0.2992091774940491
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026418210938572884,
+        "local": 0.40873149037361145,
+        "logit": 0.07823426276445389,
+        "step": 159,
+        "total": 0.15150725841522217
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.028616687282919884,
+        "local": 0.4122586250305176,
+        "logit": 0.10315924882888794,
+        "step": 160,
+        "total": 0.1810055524110794
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023027457296848297,
+        "local": 0.35607975721359253,
+        "logit": 0.17725184559822083,
+        "step": 161,
+        "total": 0.24111074209213257
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023471759632229805,
+        "local": 0.3706732988357544,
+        "logit": 0.16249334812164307,
+        "step": 162,
+        "total": 0.22797054052352905
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022746838629245758,
+        "local": 0.3128274977207184,
+        "logit": 0.042229898273944855,
+        "step": 163,
+        "total": 0.10336495190858841
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022904466837644577,
+        "local": 0.3145436644554138,
+        "logit": 0.06789674609899521,
+        "step": 164,
+        "total": 0.12943285703659058
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.0352599173784256,
+        "local": 0.5107247829437256,
+        "logit": 0.2870093584060669,
+        "step": 165,
+        "total": 0.38306543231010437
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.033123619854450226,
+        "local": 0.49668198823928833,
+        "logit": 0.19882427155971527,
+        "step": 166,
+        "total": 0.2899056077003479
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02623971551656723,
+        "local": 0.4072493314743042,
+        "logit": 0.07612135261297226,
+        "step": 167,
+        "total": 0.14896324276924133
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02850986458361149,
+        "local": 0.4113994538784027,
+        "logit": 0.09965349733829498,
+        "step": 168,
+        "total": 0.1772432029247284
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022788213565945625,
+        "local": 0.35520580410957336,
+        "logit": 0.17081478238105774,
+        "step": 169,
+        "total": 0.23415149748325348
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023296788334846497,
+        "local": 0.3696923851966858,
+        "logit": 0.1565088927745819,
+        "step": 170,
+        "total": 0.22158709168434143
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02265150658786297,
+        "local": 0.3119615912437439,
+        "logit": 0.03875049576163292,
+        "step": 171,
+        "total": 0.09965158998966217
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022779444232583046,
+        "local": 0.3135896325111389,
+        "logit": 0.06388264894485474,
+        "step": 172,
+        "total": 0.12512102723121643
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03511117398738861,
+        "local": 0.5098518133163452,
+        "logit": 0.278054416179657,
+        "step": 173,
+        "total": 0.3737693428993225
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03301825746893883,
+        "local": 0.4957888424396515,
+        "logit": 0.19238530099391937,
+        "step": 174,
+        "total": 0.28321126103401184
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026156507432460785,
+        "local": 0.40628188848495483,
+        "logit": 0.07420001178979874,
+        "step": 175,
+        "total": 0.14682713150978088
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02841290831565857,
+        "local": 0.41037771105766296,
+        "logit": 0.09660148620605469,
+        "step": 176,
+        "total": 0.17394618690013885
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02265835367143154,
+        "local": 0.35453054308891296,
+        "logit": 0.165073424577713,
+        "step": 177,
+        "total": 0.22811666131019592
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023199446499347687,
+        "local": 0.3693646192550659,
+        "logit": 0.15164735913276672,
+        "step": 178,
+        "total": 0.2165144830942154
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022552253678441048,
+        "local": 0.31116801500320435,
+        "logit": 0.03698766976594925,
+        "step": 179,
+        "total": 0.09765058010816574
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022678380832076073,
+        "local": 0.3125363886356354,
+        "logit": 0.06186314672231674,
+        "step": 180,
+        "total": 0.12284673005342484
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03503404185175896,
+        "local": 0.5085011720657349,
+        "logit": 0.26869356632232666,
+        "step": 181,
+        "total": 0.36418670415878296
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03291885554790497,
+        "local": 0.494780570268631,
+        "logit": 0.18694306910037994,
+        "step": 182,
+        "total": 0.2775198221206665
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.0260614026337862,
+        "local": 0.40532615780830383,
+        "logit": 0.07220663130283356,
+        "step": 183,
+        "total": 0.14459574222564697
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.028336074203252792,
+        "local": 0.4098883867263794,
+        "logit": 0.09538543969392776,
+        "step": 184,
+        "total": 0.17255201935768127
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02275938354432583,
+        "local": 0.35427963733673096,
+        "logit": 0.16022400557994843,
+        "step": 185,
+        "total": 0.2234567552804947
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023212112486362457,
+        "local": 0.3687327206134796,
+        "logit": 0.14723165333271027,
+        "step": 186,
+        "total": 0.21209251880645752
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022540539503097534,
+        "local": 0.310575932264328,
+        "logit": 0.035232655704021454,
+        "step": 187,
+        "total": 0.09584253281354904
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.0225931815803051,
+        "local": 0.3115793466567993,
+        "logit": 0.06288951635360718,
+        "step": 188,
+        "total": 0.12365484237670898
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03486643359065056,
+        "local": 0.5096021890640259,
+        "logit": 0.26221293210983276,
+        "step": 189,
+        "total": 0.3574259281158447
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03281618282198906,
+        "local": 0.49479249119758606,
+        "logit": 0.18488572537899017,
+        "step": 190,
+        "total": 0.2752577066421509
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02596132829785347,
+        "local": 0.4039258658885956,
+        "logit": 0.0708579495549202,
+        "step": 191,
+        "total": 0.14297690987586975
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.028222709894180298,
+        "local": 0.40825656056404114,
+        "logit": 0.0920257568359375,
+        "step": 192,
+        "total": 0.1688840091228485
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022515639662742615,
+        "local": 0.35343554615974426,
+        "logit": 0.15685084462165833,
+        "step": 193,
+        "total": 0.2195539027452469
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02300122380256653,
+        "local": 0.36781349778175354,
+        "logit": 0.1449728012084961,
+        "step": 194,
+        "total": 0.20936593413352966
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022508300840854645,
+        "local": 0.30969080328941345,
+        "logit": 0.034730199724435806,
+        "step": 195,
+        "total": 0.09523133933544159
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022535329684615135,
+        "local": 0.31018561124801636,
+        "logit": 0.06212281063199043,
+        "step": 196,
+        "total": 0.12270274758338928
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03477812930941582,
+        "local": 0.5063430666923523,
+        "logit": 0.24973055720329285,
+        "step": 197,
+        "total": 0.344603955745697
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03275056183338165,
+        "local": 0.49298837780952454,
+        "logit": 0.17542403936386108,
+        "step": 198,
+        "total": 0.26557457447052
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.025874881073832512,
+        "local": 0.40345996618270874,
+        "logit": 0.06903381645679474,
+        "step": 199,
+        "total": 0.1409565806388855
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02818377874791622,
+        "local": 0.4086906611919403,
+        "logit": 0.09172232449054718,
+        "step": 200,
+        "total": 0.16852441430091858
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02251579239964485,
+        "local": 0.3532446324825287,
+        "logit": 0.15271605551242828,
+        "step": 201,
+        "total": 0.21540987491607666
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022997114807367325,
+        "local": 0.3675915002822876,
+        "logit": 0.14611203968524933,
+        "step": 202,
+        "total": 0.21048584580421448
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02269037999212742,
+        "local": 0.3096071481704712,
+        "logit": 0.034572407603263855,
+        "step": 203,
+        "total": 0.09543352574110031
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022683801129460335,
+        "local": 0.3098334074020386,
+        "logit": 0.05814998969435692,
+        "step": 204,
+        "total": 0.11900926381349564
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03471262753009796,
+        "local": 0.5066869258880615,
+        "logit": 0.2420160323381424,
+        "step": 205,
+        "total": 0.33677563071250916
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03265588358044624,
+        "local": 0.4930594563484192,
+        "logit": 0.1694205403327942,
+        "step": 206,
+        "total": 0.25938528776168823
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02576502040028572,
+        "local": 0.40182018280029297,
+        "logit": 0.0678827092051506,
+        "step": 207,
+        "total": 0.13950376212596893
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02801198698580265,
+        "local": 0.40616297721862793,
+        "logit": 0.09153930842876434,
+        "step": 208,
+        "total": 0.16787143051624298
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022483710199594498,
+        "local": 0.3526116907596588,
+        "logit": 0.1490352600812912,
+        "step": 209,
+        "total": 0.21163326501846313
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022927749902009964,
+        "local": 0.36690834164619446,
+        "logit": 0.14117614924907684,
+        "step": 210,
+        "total": 0.20537707209587097
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022389551624655724,
+        "local": 0.3083260953426361,
+        "logit": 0.03339839726686478,
+        "step": 211,
+        "total": 0.09359380602836609
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023110339418053627,
+        "local": 0.3090479373931885,
+        "logit": 0.056647151708602905,
+        "step": 212,
+        "total": 0.11832022666931152
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03463193029165268,
+        "local": 0.5069263577461243,
+        "logit": 0.23802299797534943,
+        "step": 213,
+        "total": 0.3326331675052643
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03259669616818428,
+        "local": 0.4928354024887085,
+        "logit": 0.1678185909986496,
+        "step": 214,
+        "total": 0.25765377283096313
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02569490671157837,
+        "local": 0.40178391337394714,
+        "logit": 0.06677553802728653,
+        "step": 215,
+        "total": 0.1382545530796051
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.028064100071787834,
+        "local": 0.40719035267829895,
+        "logit": 0.08548588305711746,
+        "step": 216,
+        "total": 0.16197359561920166
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022339750081300735,
+        "local": 0.35183069109916687,
+        "logit": 0.14590027928352356,
+        "step": 217,
+        "total": 0.2081713080406189
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022837981581687927,
+        "local": 0.3661750853061676,
+        "logit": 0.13488073647022247,
+        "step": 218,
+        "total": 0.19886545836925507
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022601649165153503,
+        "local": 0.30814406275749207,
+        "logit": 0.03191804885864258,
+        "step": 219,
+        "total": 0.09252855181694031
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02291049435734749,
+        "local": 0.308619886636734,
+        "logit": 0.05304962769150734,
+        "step": 220,
+        "total": 0.11430160701274872
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03451940417289734,
+        "local": 0.5049908757209778,
+        "logit": 0.23586790263652802,
+        "step": 221,
+        "total": 0.33015626668930054
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03248768299818039,
+        "local": 0.49193137884140015,
+        "logit": 0.17406104505062103,
+        "step": 222,
+        "total": 0.26363298296928406
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.025614487007260323,
+        "local": 0.399849534034729,
+        "logit": 0.06589697301387787,
+        "step": 223,
+        "total": 0.13711842894554138
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02787638269364834,
+        "local": 0.4048193693161011,
+        "logit": 0.08407136797904968,
+        "step": 224,
+        "total": 0.16006509959697723
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022411895915865898,
+        "local": 0.3514630198478699,
+        "logit": 0.14211030304431915,
+        "step": 225,
+        "total": 0.2045072466135025
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02283608354628086,
+        "local": 0.3655911386013031,
+        "logit": 0.13244040310382843,
+        "step": 226,
+        "total": 0.19639211893081665
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022161224856972694,
+        "local": 0.30703243613243103,
+        "logit": 0.031211944296956062,
+        "step": 227,
+        "total": 0.09088601917028427
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022547293454408646,
+        "local": 0.30743879079818726,
+        "logit": 0.05148144066333771,
+        "step": 228,
+        "total": 0.11194796860218048
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03440795838832855,
+        "local": 0.504862904548645,
+        "logit": 0.2236102968454361,
+        "step": 229,
+        "total": 0.3176693618297577
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.032384295016527176,
+        "local": 0.4909801483154297,
+        "logit": 0.15680618584156036,
+        "step": 230,
+        "total": 0.2461237907409668
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.025519192218780518,
+        "local": 0.3998434841632843,
+        "logit": 0.06388727575540543,
+        "step": 231,
+        "total": 0.13491782546043396
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02785852551460266,
+        "local": 0.40511354804039,
+        "logit": 0.08114033192396164,
+        "step": 232,
+        "total": 0.15711306035518646
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022194745019078255,
+        "local": 0.3514525294303894,
+        "logit": 0.1398274451494217,
+        "step": 233,
+        "total": 0.20178955793380737
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022687409073114395,
+        "local": 0.3654848337173462,
+        "logit": 0.1290699690580368,
+        "step": 234,
+        "total": 0.19271902740001678
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02223430573940277,
+        "local": 0.3066630959510803,
+        "logit": 0.03043496422469616,
+        "step": 235,
+        "total": 0.09023673087358475
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022314295172691345,
+        "local": 0.3070494532585144,
+        "logit": 0.05046478286385536,
+        "step": 236,
+        "total": 0.11044584214687347
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.034357357770204544,
+        "local": 0.5058915019035339,
+        "logit": 0.21734541654586792,
+        "step": 237,
+        "total": 0.31135469675064087
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.032385632395744324,
+        "local": 0.49134498834609985,
+        "logit": 0.154765322804451,
+        "step": 238,
+        "total": 0.2441038340330124
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02543695829808712,
+        "local": 0.39870697259902954,
+        "logit": 0.06213487312197685,
+        "step": 239,
+        "total": 0.13294413685798645
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02775704301893711,
+        "local": 0.4043336808681488,
+        "logit": 0.07985267788171768,
+        "step": 240,
+        "total": 0.1555834412574768
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02222553826868534,
+        "local": 0.35089030861854553,
+        "logit": 0.13623109459877014,
+        "step": 241,
+        "total": 0.1982266902923584
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022648876532912254,
+        "local": 0.36475473642349243,
+        "logit": 0.12533855438232422,
+        "step": 242,
+        "total": 0.1888740360736847
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022114403545856476,
+        "local": 0.3058936893939972,
+        "logit": 0.030135218054056168,
+        "step": 243,
+        "total": 0.0896587073802948
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02223896235227585,
+        "local": 0.3061249554157257,
+        "logit": 0.04966645687818527,
+        "step": 244,
+        "total": 0.10945063084363937
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03430132195353508,
+        "local": 0.504031777381897,
+        "logit": 0.21176475286483765,
+        "step": 245,
+        "total": 0.30556899309158325
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03227454423904419,
+        "local": 0.4899645149707794,
+        "logit": 0.14893457293510437,
+        "step": 246,
+        "total": 0.2379818856716156
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.025364603847265244,
+        "local": 0.39779219031333923,
+        "logit": 0.061062317341566086,
+        "step": 247,
+        "total": 0.13168112933635712
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.027672983705997467,
+        "local": 0.40339726209640503,
+        "logit": 0.07858668267726898,
+        "step": 248,
+        "total": 0.15410250425338745
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02213597483932972,
+        "local": 0.35039106011390686,
+        "logit": 0.13265226781368256,
+        "step": 249,
+        "total": 0.19444376230239868
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02258460968732834,
+        "local": 0.364100843667984,
+        "logit": 0.12251948565244675,
+        "step": 250,
+        "total": 0.18589374423027039
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022182071581482887,
+        "local": 0.30545055866241455,
+        "logit": 0.02954864501953125,
+        "step": 251,
+        "total": 0.08918531239032745
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02232358604669571,
+        "local": 0.30565837025642395,
+        "logit": 0.048808012157678604,
+        "step": 252,
+        "total": 0.10873810201883316
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.034215621650218964,
+        "local": 0.5045599937438965,
+        "logit": 0.20804430544376373,
+        "step": 253,
+        "total": 0.301703542470932
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03220967948436737,
+        "local": 0.4907067120075226,
+        "logit": 0.1469315141439438,
+        "step": 254,
+        "total": 0.23588621616363525
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02529645897448063,
+        "local": 0.3973301947116852,
+        "logit": 0.06063904985785484,
+        "step": 255,
+        "total": 0.13109847903251648
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.027667460963129997,
+        "local": 0.4030849039554596,
+        "logit": 0.07893162965774536,
+        "step": 256,
+        "total": 0.15442079305648804
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022083541378378868,
+        "local": 0.34986305236816406,
+        "logit": 0.13204729557037354,
+        "step": 257,
+        "total": 0.19370752573013306
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02254592999815941,
+        "local": 0.3637568950653076,
+        "logit": 0.12133904546499252,
+        "step": 258,
+        "total": 0.18461874127388
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022033032029867172,
+        "local": 0.3048168122768402,
+        "logit": 0.02954680658876896,
+        "step": 259,
+        "total": 0.08885370939970016
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022504694759845734,
+        "local": 0.30523452162742615,
+        "logit": 0.04917033389210701,
+        "step": 260,
+        "total": 0.10944144427776337
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03431473672389984,
+        "local": 0.5030249357223511,
+        "logit": 0.21055245399475098,
+        "step": 261,
+        "total": 0.3043331801891327
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03223072364926338,
+        "local": 0.4890761077404022,
+        "logit": 0.1524600088596344,
+        "step": 262,
+        "total": 0.24137526750564575
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.025266021490097046,
+        "local": 0.3963327705860138,
+        "logit": 0.06054237112402916,
+        "step": 263,
+        "total": 0.13089105486869812
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.027549829334020615,
+        "local": 0.40195462107658386,
+        "logit": 0.08172912150621414,
+        "step": 264,
+        "total": 0.15692651271820068
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022085100412368774,
+        "local": 0.34950941801071167,
+        "logit": 0.12778306007385254,
+        "step": 265,
+        "total": 0.18942873179912567
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02250361070036888,
+        "local": 0.36304908990859985,
+        "logit": 0.1177113875746727,
+        "step": 266,
+        "total": 0.18087106943130493
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022125208750367165,
+        "local": 0.3043232560157776,
+        "logit": 0.02876289002597332,
+        "step": 267,
+        "total": 0.0882294699549675
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022384557873010635,
+        "local": 0.30437999963760376,
+        "logit": 0.04734271392226219,
+        "step": 268,
+        "total": 0.10733082890510559
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.034057505428791046,
+        "local": 0.50525963306427,
+        "logit": 0.20462766289710999,
+        "step": 269,
+        "total": 0.2980056405067444
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.032103266566991806,
+        "local": 0.49088993668556213,
+        "logit": 0.14403828978538513,
+        "step": 270,
+        "total": 0.2327893227338791
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02516334317624569,
+        "local": 0.3956787884235382,
+        "logit": 0.06118415296077728,
+        "step": 271,
+        "total": 0.13129478693008423
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.027507808059453964,
+        "local": 0.40146949887275696,
+        "logit": 0.07569026947021484,
+        "step": 272,
+        "total": 0.1507793664932251
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02194373682141304,
+        "local": 0.3491009473800659,
+        "logit": 0.1272020787000656,
+        "step": 273,
+        "total": 0.1885446012020111
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022398147732019424,
+        "local": 0.36291271448135376,
+        "logit": 0.11652757972478867,
+        "step": 274,
+        "total": 0.1794695109128952
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02179023064672947,
+        "local": 0.303584486246109,
+        "logit": 0.028266601264476776,
+        "step": 275,
+        "total": 0.08702628314495087
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022060133516788483,
+        "local": 0.30372920632362366,
+        "logit": 0.04610840603709221,
+        "step": 276,
+        "total": 0.10541513562202454
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.034029923379421234,
+        "local": 0.5018622875213623,
+        "logit": 0.1983916461467743,
+        "step": 277,
+        "total": 0.2915446162223816
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03201831504702568,
+        "local": 0.48826491832733154,
+        "logit": 0.13945256173610687,
+        "step": 278,
+        "total": 0.22790244221687317
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.025099970400333405,
+        "local": 0.3948925733566284,
+        "logit": 0.058169495314359665,
+        "step": 279,
+        "total": 0.12811405956745148
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02741868607699871,
+        "local": 0.4010809659957886,
+        "logit": 0.07704297453165054,
+        "step": 280,
+        "total": 0.15193438529968262
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021982673555612564,
+        "local": 0.3490934371948242,
+        "logit": 0.1241547241806984,
+        "step": 281,
+        "total": 0.1855747401714325
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022380024194717407,
+        "local": 0.36255088448524475,
+        "logit": 0.11385226249694824,
+        "step": 282,
+        "total": 0.1767398566007614
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02190294861793518,
+        "local": 0.3031977415084839,
+        "logit": 0.027875341475009918,
+        "step": 283,
+        "total": 0.08684112131595612
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022088008001446724,
+        "local": 0.3030863106250763,
+        "logit": 0.045340608805418015,
+        "step": 284,
+        "total": 0.1046709418296814
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03389457240700722,
+        "local": 0.5020634531974792,
+        "logit": 0.19028142094612122,
+        "step": 285,
+        "total": 0.28317373991012573
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.031914807856082916,
+        "local": 0.487848699092865,
+        "logit": 0.13421280682086945,
+        "step": 286,
+        "total": 0.2224348485469818
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024986138567328453,
+        "local": 0.3940715491771698,
+        "logit": 0.057941894978284836,
+        "step": 287,
+        "total": 0.127617746591568
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02734226919710636,
+        "local": 0.3999747931957245,
+        "logit": 0.07188575714826584,
+        "step": 288,
+        "total": 0.14656904339790344
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02186419628560543,
+        "local": 0.34848979115486145,
+        "logit": 0.12248290330171585,
+        "step": 289,
+        "total": 0.18363578617572784
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02227305993437767,
+        "local": 0.3618355095386505,
+        "logit": 0.11171576380729675,
+        "step": 290,
+        "total": 0.17435365915298462
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02170521952211857,
+        "local": 0.3024647533893585,
+        "logit": 0.02831205166876316,
+        "step": 291,
+        "total": 0.08684572577476501
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021898752078413963,
+        "local": 0.3024291396141052,
+        "logit": 0.04482441768050194,
+        "step": 292,
+        "total": 0.10374337434768677
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03390020877122879,
+        "local": 0.5024155974388123,
+        "logit": 0.18629398941993713,
+        "step": 293,
+        "total": 0.2792151868343353
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.031915564090013504,
+        "local": 0.4878585934638977,
+        "logit": 0.13153764605522156,
+        "step": 294,
+        "total": 0.2197616994380951
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024950141087174416,
+        "local": 0.393589586019516,
+        "logit": 0.05595522001385689,
+        "step": 295,
+        "total": 0.12553498148918152
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02728826366364956,
+        "local": 0.39996543526649475,
+        "logit": 0.07101953029632568,
+        "step": 296,
+        "total": 0.14559432864189148
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021862052381038666,
+        "local": 0.34837114810943604,
+        "logit": 0.11990344524383545,
+        "step": 297,
+        "total": 0.18104609847068787
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02223169431090355,
+        "local": 0.3615815043449402,
+        "logit": 0.11042766273021698,
+        "step": 298,
+        "total": 0.17297013103961945
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02173234336078167,
+        "local": 0.30207228660583496,
+        "logit": 0.02818087302148342,
+        "step": 299,
+        "total": 0.08674917370080948
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021708954125642776,
+        "local": 0.3017703592777252,
+        "logit": 0.044749967753887177,
+        "step": 300,
+        "total": 0.10325638949871063
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03381222113966942,
+        "local": 0.5011091828346252,
+        "logit": 0.18271613121032715,
+        "step": 301,
+        "total": 0.27539604902267456
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03182540461421013,
+        "local": 0.487100213766098,
+        "logit": 0.12897618114948273,
+        "step": 302,
+        "total": 0.21698200702667236
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024840056896209717,
+        "local": 0.3924379050731659,
+        "logit": 0.05554790049791336,
+        "step": 303,
+        "total": 0.12484990805387497
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.027180200442671776,
+        "local": 0.39825141429901123,
+        "logit": 0.07175185531377792,
+        "step": 304,
+        "total": 0.14602482318878174
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021863572299480438,
+        "local": 0.34792909026145935,
+        "logit": 0.11828073114156723,
+        "step": 305,
+        "total": 0.1794043332338333
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.022216105833649635,
+        "local": 0.3611195683479309,
+        "logit": 0.11505249887704849,
+        "step": 306,
+        "total": 0.17754068970680237
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02151157148182392,
+        "local": 0.3011762201786041,
+        "logit": 0.02772625721991062,
+        "step": 307,
+        "total": 0.08580821007490158
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021770097315311432,
+        "local": 0.3009800314903259,
+        "logit": 0.04611029848456383,
+        "step": 308,
+        "total": 0.10469949245452881
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03377551957964897,
+        "local": 0.5020233392715454,
+        "logit": 0.18011251091957092,
+        "step": 309,
+        "total": 0.2727647125720978
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03178408741950989,
+        "local": 0.48710647225379944,
+        "logit": 0.12662295997142792,
+        "step": 310,
+        "total": 0.21454645693302155
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024855146184563637,
+        "local": 0.3925302028656006,
+        "logit": 0.05584685504436493,
+        "step": 311,
+        "total": 0.12518365681171417
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02724168449640274,
+        "local": 0.39918360114097595,
+        "logit": 0.0723649114370346,
+        "step": 312,
+        "total": 0.146807461977005
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021758664399385452,
+        "local": 0.34714773297309875,
+        "logit": 0.11752580106258392,
+        "step": 313,
+        "total": 0.17840051651000977
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02212970331311226,
+        "local": 0.3602735102176666,
+        "logit": 0.10777752101421356,
+        "step": 314,
+        "total": 0.17005060613155365
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021574098616838455,
+        "local": 0.30080753564834595,
+        "logit": 0.02649684064090252,
+        "step": 315,
+        "total": 0.08468541502952576
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021617986261844635,
+        "local": 0.3006608486175537,
+        "logit": 0.04767787456512451,
+        "step": 316,
+        "total": 0.10594689100980759
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.033663831651210785,
+        "local": 0.49799367785453796,
+        "logit": 0.18849153816699982,
+        "step": 317,
+        "total": 0.2807188928127289
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03169378638267517,
+        "local": 0.4857410192489624,
+        "logit": 0.1298699826002121,
+        "step": 318,
+        "total": 0.21754461526870728
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02472483366727829,
+        "local": 0.3907274305820465,
+        "logit": 0.056983478367328644,
+        "step": 319,
+        "total": 0.1259695291519165
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02702740952372551,
+        "local": 0.3963855803012848,
+        "logit": 0.0772671177983284,
+        "step": 320,
+        "total": 0.1511412262916565
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021785598248243332,
+        "local": 0.34702086448669434,
+        "logit": 0.11370741575956345,
+        "step": 321,
+        "total": 0.17462965846061707
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.0221099816262722,
+        "local": 0.3601764142513275,
+        "logit": 0.10392332822084427,
+        "step": 322,
+        "total": 0.16615211963653564
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021517962217330933,
+        "local": 0.30026376247406006,
+        "logit": 0.025775065645575523,
+        "step": 323,
+        "total": 0.08382418006658554
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021735839545726776,
+        "local": 0.29999738931655884,
+        "logit": 0.04651523008942604,
+        "step": 324,
+        "total": 0.1049867793917656
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.033708348870277405,
+        "local": 0.5022827386856079,
+        "logit": 0.17631475627422333,
+        "step": 325,
+        "total": 0.2688455879688263
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.031703270971775055,
+        "local": 0.4868505597114563,
+        "logit": 0.12383052706718445,
+        "step": 326,
+        "total": 0.2115795910358429
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024739764630794525,
+        "local": 0.3916894495487213,
+        "logit": 0.05590023472905159,
+        "step": 327,
+        "total": 0.12496423721313477
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.027018854394555092,
+        "local": 0.3970150947570801,
+        "logit": 0.06736598908901215,
+        "step": 328,
+        "total": 0.1412544548511505
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021623238921165466,
+        "local": 0.34700578451156616,
+        "logit": 0.11306019127368927,
+        "step": 329,
+        "total": 0.17365695536136627
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021995877847075462,
+        "local": 0.3597913086414337,
+        "logit": 0.10379742830991745,
+        "step": 330,
+        "total": 0.1657787561416626
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021571967750787735,
+        "local": 0.2999330163002014,
+        "logit": 0.02552817575633526,
+        "step": 331,
+        "total": 0.08366876095533371
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02142713963985443,
+        "local": 0.29918888211250305,
+        "logit": 0.043274663388729095,
+        "step": 332,
+        "total": 0.10108838975429535
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03352772444486618,
+        "local": 0.497977614402771,
+        "logit": 0.17064078152179718,
+        "step": 333,
+        "total": 0.26259511709213257
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03160586953163147,
+        "local": 0.4845244586467743,
+        "logit": 0.12078903615474701,
+        "step": 334,
+        "total": 0.2082270085811615
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024596475064754486,
+        "local": 0.3898327350616455,
+        "logit": 0.052963364869356155,
+        "step": 335,
+        "total": 0.12164795398712158
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026994837448000908,
+        "local": 0.396339476108551,
+        "logit": 0.06984002143144608,
+        "step": 336,
+        "total": 0.14364667236804962
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021630793809890747,
+        "local": 0.34612584114074707,
+        "logit": 0.11132776737213135,
+        "step": 337,
+        "total": 0.17189565300941467
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021968325600028038,
+        "local": 0.3588869273662567,
+        "logit": 0.10669253021478653,
+        "step": 338,
+        "total": 0.1685735285282135
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021221540868282318,
+        "local": 0.29902663826942444,
+        "logit": 0.025417814031243324,
+        "step": 339,
+        "total": 0.08281222730875015
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02139735408127308,
+        "local": 0.2986413538455963,
+        "logit": 0.04100687429308891,
+        "step": 340,
+        "total": 0.09873364865779877
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03349468857049942,
+        "local": 0.4988812506198883,
+        "logit": 0.16650044918060303,
+        "step": 341,
+        "total": 0.25843387842178345
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.031522173434495926,
+        "local": 0.48509863018989563,
+        "logit": 0.11735706031322479,
+        "step": 342,
+        "total": 0.20465633273124695
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024593250826001167,
+        "local": 0.38976776599884033,
+        "logit": 0.051744382828474045,
+        "step": 343,
+        "total": 0.12041927874088287
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02689104527235031,
+        "local": 0.3955793082714081,
+        "logit": 0.06853654235601425,
+        "step": 344,
+        "total": 0.1420975923538208
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02177792228758335,
+        "local": 0.34666895866394043,
+        "logit": 0.11194164305925369,
+        "step": 345,
+        "total": 0.17283093929290771
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02200080268085003,
+        "local": 0.3590737283229828,
+        "logit": 0.10110452026128769,
+        "step": 346,
+        "total": 0.16305981576442719
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021201731637120247,
+        "local": 0.2986956536769867,
+        "logit": 0.0250253863632679,
+        "step": 347,
+        "total": 0.08236363530158997
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021284522488713264,
+        "local": 0.29806873202323914,
+        "logit": 0.040277834981679916,
+        "step": 348,
+        "total": 0.09775032103061676
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03339896351099014,
+        "local": 0.4996352791786194,
+        "logit": 0.16604813933372498,
+        "step": 349,
+        "total": 0.2578278183937073
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03149440512061119,
+        "local": 0.4852505028247833,
+        "logit": 0.11778479814529419,
+        "step": 350,
+        "total": 0.20503613352775574
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024534394964575768,
+        "local": 0.38918036222457886,
+        "logit": 0.0510382205247879,
+        "step": 351,
+        "total": 0.11956603080034256
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.0269059669226408,
+        "local": 0.3954927623271942,
+        "logit": 0.06419804692268372,
+        "step": 352,
+        "total": 0.13778461515903473
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.0215313583612442,
+        "local": 0.34544724225997925,
+        "logit": 0.10749486088752747,
+        "step": 353,
+        "total": 0.16782993078231812
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021874507889151573,
+        "local": 0.35830268263816833,
+        "logit": 0.09889136999845505,
+        "step": 354,
+        "total": 0.16055551171302795
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02130774036049843,
+        "local": 0.29823821783065796,
+        "logit": 0.025307374075055122,
+        "step": 355,
+        "total": 0.08283476531505585
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021397778764367104,
+        "local": 0.2977358102798462,
+        "logit": 0.04198339954018593,
+        "step": 356,
+        "total": 0.09966574609279633
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.033481158316135406,
+        "local": 0.49776074290275574,
+        "logit": 0.17094910144805908,
+        "step": 357,
+        "total": 0.2627994418144226
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03149404004216194,
+        "local": 0.4837016463279724,
+        "logit": 0.1235777884721756,
+        "step": 358,
+        "total": 0.21075095236301422
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024474063888192177,
+        "local": 0.38813185691833496,
+        "logit": 0.05052216351032257,
+        "step": 359,
+        "total": 0.1188768818974495
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026815619319677353,
+        "local": 0.39442864060401917,
+        "logit": 0.06380992382764816,
+        "step": 360,
+        "total": 0.13716259598731995
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021685678511857986,
+        "local": 0.34533730149269104,
+        "logit": 0.10609817504882812,
+        "step": 361,
+        "total": 0.1667363941669464
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021871939301490784,
+        "local": 0.35775521397590637,
+        "logit": 0.0970892384648323,
+        "step": 362,
+        "total": 0.15872088074684143
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02145986258983612,
+        "local": 0.2980967164039612,
+        "logit": 0.024669837206602097,
+        "step": 363,
+        "total": 0.08249439299106598
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021620173007249832,
+        "local": 0.29722610116004944,
+        "logit": 0.039685118943452835,
+        "step": 364,
+        "total": 0.09778676927089691
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03326782211661339,
+        "local": 0.4984406530857086,
+        "logit": 0.15887853503227234,
+        "step": 365,
+        "total": 0.250336229801178
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.031360283493995667,
+        "local": 0.4843289256095886,
+        "logit": 0.11356068402528763,
+        "step": 366,
+        "total": 0.20049768686294556
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02441631257534027,
+        "local": 0.38804692029953003,
+        "logit": 0.050299715250730515,
+        "step": 367,
+        "total": 0.11853468418121338
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02677728421986103,
+        "local": 0.39435383677482605,
+        "logit": 0.06153270602226257,
+        "step": 368,
+        "total": 0.13480496406555176
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02145267091691494,
+        "local": 0.3453136086463928,
+        "logit": 0.10459184646606445,
+        "step": 369,
+        "total": 0.16476286947727203
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02176540531218052,
+        "local": 0.35786184668540955,
+        "logit": 0.09892387688159943,
+        "step": 370,
+        "total": 0.16034778952598572
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02099800482392311,
+        "local": 0.29715099930763245,
+        "logit": 0.024165818467736244,
+        "step": 371,
+        "total": 0.08101937919855118
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02116655744612217,
+        "local": 0.29641541838645935,
+        "logit": 0.0376242995262146,
+        "step": 372,
+        "total": 0.09477818757295609
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03326506167650223,
+        "local": 0.4977947473526001,
+        "logit": 0.15728460252285004,
+        "step": 373,
+        "total": 0.2487044632434845
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03135282173752785,
+        "local": 0.4835367500782013,
+        "logit": 0.11146176606416702,
+        "step": 374,
+        "total": 0.19834424555301666
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024348922073841095,
+        "local": 0.38721203804016113,
+        "logit": 0.049134280532598495,
+        "step": 375,
+        "total": 0.11719273030757904
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026674728840589523,
+        "local": 0.39388325810432434,
+        "logit": 0.06117356941103935,
+        "step": 376,
+        "total": 0.13421718776226044
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021473154425621033,
+        "local": 0.34469500184059143,
+        "logit": 0.10259076952934265,
+        "step": 377,
+        "total": 0.1627718210220337
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02173561230301857,
+        "local": 0.35716599225997925,
+        "logit": 0.10248968005180359,
+        "step": 378,
+        "total": 0.16381920874118805
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020946260541677475,
+        "local": 0.29670873284339905,
+        "logit": 0.02389751933515072,
+        "step": 379,
+        "total": 0.08062547445297241
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02094634622335434,
+        "local": 0.29577934741973877,
+        "logit": 0.037204355001449585,
+        "step": 380,
+        "total": 0.09388601779937744
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03319632261991501,
+        "local": 0.49669840931892395,
+        "logit": 0.15402644872665405,
+        "step": 381,
+        "total": 0.2452540099620819
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03125840052962303,
+        "local": 0.4826783537864685,
+        "logit": 0.10905610024929047,
+        "step": 382,
+        "total": 0.1957068145275116
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02427735924720764,
+        "local": 0.3867185413837433,
+        "logit": 0.0491088442504406,
+        "step": 383,
+        "total": 0.11699949204921722
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026631085202097893,
+        "local": 0.39331915974617004,
+        "logit": 0.06131795793771744,
+        "step": 384,
+        "total": 0.1342460811138153
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.0214241873472929,
+        "local": 0.3445298671722412,
+        "logit": 0.10123122483491898,
+        "step": 385,
+        "total": 0.16130608320236206
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021720975637435913,
+        "local": 0.357217937707901,
+        "logit": 0.0923895463347435,
+        "step": 386,
+        "total": 0.15369239449501038
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020912589505314827,
+        "local": 0.29616835713386536,
+        "logit": 0.02348119579255581,
+        "step": 387,
+        "total": 0.08011479675769806
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020895281806588173,
+        "local": 0.2953256070613861,
+        "logit": 0.03698968142271042,
+        "step": 388,
+        "total": 0.09354652464389801
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03317511826753616,
+        "local": 0.49808284640312195,
+        "logit": 0.15212732553482056,
+        "step": 389,
+        "total": 0.24338170886039734
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.031216802075505257,
+        "local": 0.4832020699977875,
+        "logit": 0.10732218623161316,
+        "step": 390,
+        "total": 0.19391590356826782
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02423342876136303,
+        "local": 0.3863558769226074,
+        "logit": 0.04871774837374687,
+        "step": 391,
+        "total": 0.11650240421295166
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026597727090120316,
+        "local": 0.39304810762405396,
+        "logit": 0.05981387943029404,
+        "step": 392,
+        "total": 0.13266173005104065
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02137003466486931,
+        "local": 0.34402140974998474,
+        "logit": 0.10133755952119827,
+        "step": 393,
+        "total": 0.16127869486808777
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021680112928152084,
+        "local": 0.3563099801540375,
+        "logit": 0.09332651644945145,
+        "step": 394,
+        "total": 0.1545022428035736
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020885266363620758,
+        "local": 0.29577842354774475,
+        "logit": 0.024145254865288734,
+        "step": 395,
+        "total": 0.0807047113776207
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02084239013493061,
+        "local": 0.29465335607528687,
+        "logit": 0.03847469761967659,
+        "step": 396,
+        "total": 0.09489214420318604
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03306646645069122,
+        "local": 0.49453285336494446,
+        "logit": 0.1555013656616211,
+        "step": 397,
+        "total": 0.24636094272136688
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.031127136200666428,
+        "local": 0.4813332259654999,
+        "logit": 0.1084006130695343,
+        "step": 398,
+        "total": 0.1947215497493744
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02414517104625702,
+        "local": 0.38527733087539673,
+        "logit": 0.04825570434331894,
+        "step": 399,
+        "total": 0.11580990999937057
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026499522849917412,
+        "local": 0.39182791113853455,
+        "logit": 0.05997444689273834,
+        "step": 400,
+        "total": 0.13256488740444183
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.0213759932667017,
+        "local": 0.344021201133728,
+        "logit": 0.09840001165866852,
+        "step": 401,
+        "total": 0.1583530604839325
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02165735699236393,
+        "local": 0.3562852144241333,
+        "logit": 0.08954890072345734,
+        "step": 402,
+        "total": 0.1506778746843338
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020844262093305588,
+        "local": 0.29533445835113525,
+        "logit": 0.023409733548760414,
+        "step": 403,
+        "total": 0.0798649787902832
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020793311297893524,
+        "local": 0.29440614581108093,
+        "logit": 0.04298499599099159,
+        "step": 404,
+        "total": 0.09929192066192627
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.033077120780944824,
+        "local": 0.49969303607940674,
+        "logit": 0.15992498397827148,
+        "step": 405,
+        "total": 0.25106388330459595
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.031117554754018784,
+        "local": 0.4836703836917877,
+        "logit": 0.11010335385799408,
+        "step": 406,
+        "total": 0.19652198255062103
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024135837331414223,
+        "local": 0.38534030318260193,
+        "logit": 0.04749342426657677,
+        "step": 407,
+        "total": 0.1150321215391159
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02646697871387005,
+        "local": 0.3921254575252533,
+        "logit": 0.0575115792453289,
+        "step": 408,
+        "total": 0.13005180656909943
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021260477602481842,
+        "local": 0.34355980157852173,
+        "logit": 0.09795476496219635,
+        "step": 409,
+        "total": 0.15765371918678284
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021560808643698692,
+        "local": 0.355924129486084,
+        "logit": 0.088616743683815,
+        "step": 410,
+        "total": 0.14953456819057465
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02077299915254116,
+        "local": 0.2948410212993622,
+        "logit": 0.02388142980635166,
+        "step": 411,
+        "total": 0.08016947656869888
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020764252170920372,
+        "local": 0.29365891218185425,
+        "logit": 0.04461821913719177,
+        "step": 412,
+        "total": 0.10082966834306717
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03294914588332176,
+        "local": 0.4943147897720337,
+        "logit": 0.14911934733390808,
+        "step": 413,
+        "total": 0.23973338305950165
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.031043766066432,
+        "local": 0.48042765259742737,
+        "logit": 0.10614322125911713,
+        "step": 414,
+        "total": 0.19225212931632996
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02403329685330391,
+        "local": 0.3839820623397827,
+        "logit": 0.04637846723198891,
+        "step": 415,
+        "total": 0.11364416778087616
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02636588178575039,
+        "local": 0.3906345069408417,
+        "logit": 0.05744507163763046,
+        "step": 416,
+        "total": 0.12970855832099915
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02125139720737934,
+        "local": 0.3431017994880676,
+        "logit": 0.09581305086612701,
+        "step": 417,
+        "total": 0.15547093749046326
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021497191861271858,
+        "local": 0.3551402688026428,
+        "logit": 0.08693289756774902,
+        "step": 418,
+        "total": 0.14768429100513458
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02077137678861618,
+        "local": 0.2944328784942627,
+        "logit": 0.022953582927584648,
+        "step": 419,
+        "total": 0.07921797782182693
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02073841169476509,
+        "local": 0.29326990246772766,
+        "logit": 0.03577598184347153,
+        "step": 420,
+        "total": 0.09191630035638809
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.032917313277721405,
+        "local": 0.49551862478256226,
+        "logit": 0.14363116025924683,
+        "step": 421,
+        "total": 0.23424172401428223
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03099900670349598,
+        "local": 0.481294721364975,
+        "logit": 0.10153041034936905,
+        "step": 422,
+        "total": 0.18759316205978394
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024056337773799896,
+        "local": 0.3845820426940918,
+        "logit": 0.04565456509590149,
+        "step": 423,
+        "total": 0.11299633979797363
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026369711384177208,
+        "local": 0.3916710615158081,
+        "logit": 0.05736050754785538,
+        "step": 424,
+        "total": 0.1296834945678711
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021223263815045357,
+        "local": 0.34335216879844666,
+        "logit": 0.09430854022502899,
+        "step": 425,
+        "total": 0.1539226770401001
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021481821313500404,
+        "local": 0.35530486702919006,
+        "logit": 0.08563446998596191,
+        "step": 426,
+        "total": 0.14636334776878357
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02071980945765972,
+        "local": 0.2941209375858307,
+        "logit": 0.023387916386127472,
+        "step": 427,
+        "total": 0.07953358441591263
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02069750428199768,
+        "local": 0.29239898920059204,
+        "logit": 0.03497643768787384,
+        "step": 428,
+        "total": 0.09099139273166656
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03283210098743439,
+        "local": 0.4951314926147461,
+        "logit": 0.14462442696094513,
+        "step": 429,
+        "total": 0.2350451946258545
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.030912157148122787,
+        "local": 0.480540007352829,
+        "logit": 0.1012364998459816,
+        "step": 430,
+        "total": 0.1870878040790558
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023939110338687897,
+        "local": 0.38290807604789734,
+        "logit": 0.046077173203229904,
+        "step": 431,
+        "total": 0.1131007969379425
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02630259096622467,
+        "local": 0.3895755410194397,
+        "logit": 0.05889264494180679,
+        "step": 432,
+        "total": 0.130976602435112
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02117326483130455,
+        "local": 0.3427734673023224,
+        "logit": 0.0951143354177475,
+        "step": 433,
+        "total": 0.15459954738616943
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.0214418713003397,
+        "local": 0.35472172498703003,
+        "logit": 0.08555370569229126,
+        "step": 434,
+        "total": 0.14617353677749634
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020759016275405884,
+        "local": 0.29381123185157776,
+        "logit": 0.02180229127407074,
+        "step": 435,
+        "total": 0.07801088690757751
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020744463428854942,
+        "local": 0.292697548866272,
+        "logit": 0.03585955500602722,
+        "step": 436,
+        "total": 0.091983363032341
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03291420638561249,
+        "local": 0.49554553627967834,
+        "logit": 0.1583789587020874,
+        "step": 437,
+        "total": 0.24898464977741241
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.030988961458206177,
+        "local": 0.48113882541656494,
+        "logit": 0.10971517115831375,
+        "step": 438,
+        "total": 0.19575002789497375
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.024000076577067375,
+        "local": 0.38376250863075256,
+        "logit": 0.045328810811042786,
+        "step": 439,
+        "total": 0.1125170886516571
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02628094144165516,
+        "local": 0.39069607853889465,
+        "logit": 0.05919327214360237,
+        "step": 440,
+        "total": 0.13128995895385742
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021175481379032135,
+        "local": 0.3425366282463074,
+        "logit": 0.09209422767162323,
+        "step": 441,
+        "total": 0.15157201886177063
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021411316469311714,
+        "local": 0.35425329208374023,
+        "logit": 0.08344221115112305,
+        "step": 442,
+        "total": 0.14397750794887543
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020669663324952126,
+        "local": 0.2930862009525299,
+        "logit": 0.022011617198586464,
+        "step": 443,
+        "total": 0.07800525426864624
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020639926195144653,
+        "local": 0.29109689593315125,
+        "logit": 0.03720640391111374,
+        "step": 444,
+        "total": 0.09304109960794449
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03271282836794853,
+        "local": 0.4942668676376343,
+        "logit": 0.14230147004127502,
+        "step": 445,
+        "total": 0.23244047164916992
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.030819492414593697,
+        "local": 0.4804610311985016,
+        "logit": 0.101772740483284,
+        "step": 446,
+        "total": 0.18743477761745453
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023844504728913307,
+        "local": 0.38189488649368286,
+        "logit": 0.045448943972587585,
+        "step": 447,
+        "total": 0.11223269999027252
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026207510381937027,
+        "local": 0.3891809284687042,
+        "logit": 0.05494841933250427,
+        "step": 448,
+        "total": 0.12682248651981354
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021079765632748604,
+        "local": 0.342077374458313,
+        "logit": 0.09176397323608398,
+        "step": 449,
+        "total": 0.1510273814201355
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02134695276618004,
+        "local": 0.35411977767944336,
+        "logit": 0.08282973617315292,
+        "step": 450,
+        "total": 0.1432296335697174
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020645631477236748,
+        "local": 0.29299962520599365,
+        "logit": 0.02213010936975479,
+        "step": 451,
+        "total": 0.07807135581970215
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02050863206386566,
+        "local": 0.2918207049369812,
+        "logit": 0.039319198578596115,
+        "step": 452,
+        "total": 0.09492749720811844
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.032711874693632126,
+        "local": 0.49385157227516174,
+        "logit": 0.13902166485786438,
+        "step": 453,
+        "total": 0.22913798689842224
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.030817069113254547,
+        "local": 0.4794418513774872,
+        "logit": 0.09805050492286682,
+        "step": 454,
+        "total": 0.1836567372083664
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023842358961701393,
+        "local": 0.38217267394065857,
+        "logit": 0.04402640834450722,
+        "step": 455,
+        "total": 0.1108197569847107
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.0261200200766325,
+        "local": 0.3888051509857178,
+        "logit": 0.05419932305812836,
+        "step": 456,
+        "total": 0.12587961554527283
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02111029624938965,
+        "local": 0.3419281840324402,
+        "logit": 0.08980976790189743,
+        "step": 457,
+        "total": 0.14912676811218262
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021300217136740685,
+        "local": 0.3535292446613312,
+        "logit": 0.08166442066431046,
+        "step": 458,
+        "total": 0.14194130897521973
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02047548070549965,
+        "local": 0.29213494062423706,
+        "logit": 0.02271672710776329,
+        "step": 459,
+        "total": 0.0782744362950325
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02036456950008869,
+        "local": 0.28995081782341003,
+        "logit": 0.03699631243944168,
+        "step": 460,
+        "total": 0.09222298860549927
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03264059126377106,
+        "local": 0.49289077520370483,
+        "logit": 0.135833278298378,
+        "step": 461,
+        "total": 0.22575899958610535
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.030745897442102432,
+        "local": 0.4788924753665924,
+        "logit": 0.09598797559738159,
+        "step": 462,
+        "total": 0.18142439424991608
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02377632074058056,
+        "local": 0.38160863518714905,
+        "logit": 0.043609555810689926,
+        "step": 463,
+        "total": 0.11024263501167297
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026118701323866844,
+        "local": 0.3888985216617584,
+        "logit": 0.05385684594511986,
+        "step": 464,
+        "total": 0.125539168715477
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020997244864702225,
+        "local": 0.3418532609939575,
+        "logit": 0.08859729766845703,
+        "step": 465,
+        "total": 0.14768445491790771
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021270187571644783,
+        "local": 0.3536442518234253,
+        "logit": 0.08075094223022461,
+        "step": 466,
+        "total": 0.1409735381603241
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02044820412993431,
+        "local": 0.29195666313171387,
+        "logit": 0.02139648050069809,
+        "step": 467,
+        "total": 0.0768907219171524
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020376721397042274,
+        "local": 0.2901100814342499,
+        "logit": 0.032832928001880646,
+        "step": 468,
+        "total": 0.0880918800830841
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03262399882078171,
+        "local": 0.4939901530742645,
+        "logit": 0.134322389960289,
+        "step": 469,
+        "total": 0.22426989674568176
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.030705509707331657,
+        "local": 0.4791660010814667,
+        "logit": 0.09475290030241013,
+        "step": 470,
+        "total": 0.1801222264766693
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023712489753961563,
+        "local": 0.38086771965026855,
+        "logit": 0.04337460547685623,
+        "step": 471,
+        "total": 0.10984297096729279
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026003366336226463,
+        "local": 0.38766783475875854,
+        "logit": 0.054390694946050644,
+        "step": 472,
+        "total": 0.12578082084655762
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02095886319875717,
+        "local": 0.3410359025001526,
+        "logit": 0.08964811265468597,
+        "step": 473,
+        "total": 0.14861762523651123
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021210798993706703,
+        "local": 0.35262829065322876,
+        "logit": 0.08164642751216888,
+        "step": 474,
+        "total": 0.1416994333267212
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020478444173932076,
+        "local": 0.2914922833442688,
+        "logit": 0.02073887549340725,
+        "step": 475,
+        "total": 0.07627037912607193
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.0204499252140522,
+        "local": 0.28936895728111267,
+        "logit": 0.03268749639391899,
+        "step": 476,
+        "total": 0.08805578947067261
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03256319835782051,
+        "local": 0.492056667804718,
+        "logit": 0.1336304098367691,
+        "step": 477,
+        "total": 0.22335964441299438
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03064129315316677,
+        "local": 0.47811946272850037,
+        "logit": 0.09555186331272125,
+        "step": 478,
+        "total": 0.18074041604995728
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023660019040107727,
+        "local": 0.3807666301727295,
+        "logit": 0.04280383512377739,
+        "step": 479,
+        "total": 0.10916221141815186
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.026026232168078423,
+        "local": 0.3880447447299957,
+        "logit": 0.05488895624876022,
+        "step": 480,
+        "total": 0.12634366750717163
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02117191255092621,
+        "local": 0.3411881923675537,
+        "logit": 0.08695575594902039,
+        "step": 481,
+        "total": 0.14635899662971497
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021305026486516,
+        "local": 0.3528538644313812,
+        "logit": 0.07894398272037506,
+        "step": 482,
+        "total": 0.1391967236995697
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020648997277021408,
+        "local": 0.2912834882736206,
+        "logit": 0.020426131784915924,
+        "step": 483,
+        "total": 0.07628829777240753
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020606011152267456,
+        "local": 0.2892557978630066,
+        "logit": 0.03265155851840973,
+        "step": 484,
+        "total": 0.08832637220621109
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03255176544189453,
+        "local": 0.49491745233535767,
+        "logit": 0.1443893313407898,
+        "step": 485,
+        "total": 0.23423874378204346
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03062484972178936,
+        "local": 0.4795961380004883,
+        "logit": 0.10416639596223831,
+        "step": 486,
+        "total": 0.18939590454101562
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02362724207341671,
+        "local": 0.3799152672290802,
+        "logit": 0.04259056597948074,
+        "step": 487,
+        "total": 0.10884081572294235
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.025942804291844368,
+        "local": 0.38707953691482544,
+        "logit": 0.05169670656323433,
+        "step": 488,
+        "total": 0.12293629348278046
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020909439772367477,
+        "local": 0.3408142030239105,
+        "logit": 0.08650027960538864,
+        "step": 489,
+        "total": 0.14535987377166748
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021154893562197685,
+        "local": 0.3523520231246948,
+        "logit": 0.07815059274435043,
+        "step": 490,
+        "total": 0.138077974319458
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020830577239394188,
+        "local": 0.29135018587112427,
+        "logit": 0.020575053989887238,
+        "step": 491,
+        "total": 0.07680371403694153
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02133912593126297,
+        "local": 0.28945139050483704,
+        "logit": 0.03216342628002167,
+        "step": 492,
+        "total": 0.08931425213813782
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03244902566075325,
+        "local": 0.49085545539855957,
+        "logit": 0.137674942612648,
+        "step": 493,
+        "total": 0.22711576521396637
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.030557595193386078,
+        "local": 0.47703054547309875,
+        "logit": 0.09779039025306702,
+        "step": 494,
+        "total": 0.18275710940361023
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023564772680401802,
+        "local": 0.37961748242378235,
+        "logit": 0.041876018047332764,
+        "step": 495,
+        "total": 0.1079864352941513
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.025893965736031532,
+        "local": 0.3867659270763397,
+        "logit": 0.05134150758385658,
+        "step": 496,
+        "total": 0.12246774137020111
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020927004516124725,
+        "local": 0.340561181306839,
+        "logit": 0.08458617329597473,
+        "step": 497,
+        "total": 0.1434682458639145
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021110467612743378,
+        "local": 0.3519119620323181,
+        "logit": 0.07677994668483734,
+        "step": 498,
+        "total": 0.1365964710712433
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.0203710850328207,
+        "local": 0.29032424092292786,
+        "logit": 0.020178787410259247,
+        "step": 499,
+        "total": 0.07543717324733734
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020301831886172295,
+        "local": 0.2882188558578491,
+        "logit": 0.03070707432925701,
+        "step": 500,
+        "total": 0.08572167903184891
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03238694742321968,
+        "local": 0.4912847876548767,
+        "logit": 0.1287159025669098,
+        "step": 501,
+        "total": 0.21805404126644135
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03047863394021988,
+        "local": 0.47675180435180664,
+        "logit": 0.09103000909090042,
+        "step": 502,
+        "total": 0.1758248656988144
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.023551473394036293,
+        "local": 0.3792719542980194,
+        "logit": 0.04181862622499466,
+        "step": 503,
+        "total": 0.10788517445325851
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.025838622823357582,
+        "local": 0.38637682795524597,
+        "logit": 0.050564996898174286,
+        "step": 504,
+        "total": 0.12156108766794205
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02086656540632248,
+        "local": 0.34046050906181335,
+        "logit": 0.08387970924377441,
+        "step": 505,
+        "total": 0.14263586699962616
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.021084493026137352,
+        "local": 0.35199931263923645,
+        "logit": 0.07638011127710342,
+        "step": 506,
+        "total": 0.136149063706398
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020277859643101692,
+        "local": 0.2900068163871765,
+        "logit": 0.020465373992919922,
+        "step": 507,
+        "total": 0.07552143931388855
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.020140327513217926,
+        "local": 0.2877782881259918,
+        "logit": 0.030575037002563477,
+        "step": 508,
+        "total": 0.08524461090564728
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.032289694994688034,
+        "local": 0.4916260838508606,
+        "logit": 0.12897911667823792,
+        "step": 509,
+        "total": 0.21813981235027313
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.03041434846818447,
+        "local": 0.47677889466285706,
+        "logit": 0.09019261598587036,
+        "step": 510,
+        "total": 0.17486025393009186
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02348000556230545,
+        "local": 0.3785947263240814,
+        "logit": 0.041811924427747726,
+        "step": 511,
+        "total": 0.10770167410373688
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.02583206631243229,
+        "local": 0.38604819774627686,
+        "logit": 0.050547655671834946,
+        "step": 512,
+        "total": 0.1215142011642456
+      }
+    ],
+    "initial_checkpoint": {
+      "backbone_parameters_restored": true,
+      "history_restored": false,
+      "mode": "parameters_only",
+      "optimizer_restored": false,
+      "path": "/home/dean/repos/engram/reports/smollm2_width672_attention_coadapt_full_epoch/width_pruned_checkpoint.pt",
+      "sha256": "3eb46de8d644758ff27af7103f4c32cffa27fd6ad3fe9930fdbe4f6609334884"
+    },
+    "records": 32
+  },
+  "validation": {
+    "all_layers_compact": true,
+    "input_token_positions": 507,
+    "next_token_positions": 491,
+    "records": 16
+  }
+}

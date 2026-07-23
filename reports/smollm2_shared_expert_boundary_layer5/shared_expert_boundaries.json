@@ -1,0 +1,344 @@
+{
+  "artifact": {
+    "path": "/home/dean/repos/engram/reports/smollm2_shared_expert_boundary_layer5/shared_expert_boundaries.safetensors",
+    "sha256": "1737ff0043a34605a139896c8864b1139bbe20e34f40975f455e1d328de0dc75"
+  },
+  "configuration": {
+    "active_experts": 32,
+    "anneal_steps": 64,
+    "batch_size": 128,
+    "cosine_weight": 0.1,
+    "dense_anchor_weight": 0.1,
+    "device": "cuda",
+    "evaluation_interval": 32,
+    "experts": 96,
+    "grouping_iterations": 12,
+    "layers": [
+      5
+    ],
+    "learning_rate": 0.0001,
+    "max_train_records": 4096,
+    "max_validation_records": 2048,
+    "maximum_mean_relative_l2": 0.2,
+    "oracle_batch_size": 64,
+    "records_per_expert": 16,
+    "route_weight": 0.1,
+    "router_learning_rate": 0.001,
+    "router_regularization": 3000.0,
+    "router_warmup_steps": 32,
+    "settle_steps": 128,
+    "shared_records": 128,
+    "start_active_experts": 48,
+    "start_temperature": 1.0,
+    "temperature": 0.5
+  },
+  "data_separation": {
+    "held_out_from_gradient_training": true,
+    "overlapping_sequences": 0,
+    "training_dataset_hash": "cd4ad21a5a381a9fb9b03134c68944be055dc47578d817fc3484c0d4491e19c0",
+    "validation_dataset_hash": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c"
+  },
+  "experiment": "shared_expert_teacher_boundary_training",
+  "layers": [
+    {
+      "best": {
+        "cosine": {
+          "count": 446,
+          "maximum": 0.9206078548944612,
+          "mean": 0.7587477850789843,
+          "median": 0.766368046511708,
+          "minimum": 0.4503488791260815,
+          "p95": 0.9008447609414554
+        },
+        "expert_target_recall": 0.46475619077682495,
+        "relative_l2": {
+          "count": 446,
+          "maximum": 0.893777395525991,
+          "mean": 0.6409976746189961,
+          "median": 0.6473861851925313,
+          "minimum": 0.3932211554134947,
+          "p95": 0.8007716199142106
+        },
+        "step": 224
+      },
+      "evaluations": [
+        {
+          "cosine": {
+            "count": 446,
+            "maximum": 0.9116583005101228,
+            "mean": 0.7441590718666717,
+            "median": 0.7492026831819437,
+            "minimum": 0.41937753926359284,
+            "p95": 0.8805391211134871
+          },
+          "expert_target_recall": 0.47554653882980347,
+          "relative_l2": {
+            "count": 446,
+            "maximum": 0.9078405257546023,
+            "mean": 0.6601003790226327,
+            "median": 0.6666778164055671,
+            "minimum": 0.4113505725543076,
+            "p95": 0.8130000585833671
+          },
+          "step": 0
+        },
+        {
+          "cosine": {
+            "count": 446,
+            "maximum": 0.9068609144245793,
+            "mean": 0.7432849823199463,
+            "median": 0.7483266940676477,
+            "minimum": 0.41673354774488064,
+            "p95": 0.8797316312801242
+          },
+          "expert_target_recall": 0.4709221124649048,
+          "relative_l2": {
+            "count": 446,
+            "maximum": 0.9090476069523835,
+            "mean": 0.6613103301004094,
+            "median": 0.6661347277828118,
+            "minimum": 0.4216566080347496,
+            "p95": 0.8110471823959723
+          },
+          "step": 32
+        },
+        {
+          "cosine": {
+            "count": 446,
+            "maximum": 0.9121373619913871,
+            "mean": 0.7456208745309969,
+            "median": 0.7515897423076898,
+            "minimum": 0.4269997384095662,
+            "p95": 0.8842342419765168
+          },
+          "expert_target_recall": 0.4708520472049713,
+          "relative_l2": {
+            "count": 446,
+            "maximum": 0.9042517492365578,
+            "mean": 0.6579285449342693,
+            "median": 0.6648566152812505,
+            "minimum": 0.41247507108746734,
+            "p95": 0.8133505931806955
+          },
+          "step": 64
+        },
+        {
+          "cosine": {
+            "count": 446,
+            "maximum": 0.9113879589719922,
+            "mean": 0.7503149841404965,
+            "median": 0.7566632522022487,
+            "minimum": 0.4541213556353916,
+            "p95": 0.8887351563090756
+          },
+          "expert_target_recall": 0.47008129954338074,
+          "relative_l2": {
+            "count": 446,
+            "maximum": 0.8912034567593183,
+            "mean": 0.6521718199399418,
+            "median": 0.6610401866076101,
+            "minimum": 0.4121554327264589,
+            "p95": 0.8120881343407804
+          },
+          "step": 96
+        },
+        {
+          "cosine": {
+            "count": 446,
+            "maximum": 0.919295724088069,
+            "mean": 0.7535192084816648,
+            "median": 0.7605016781003768,
+            "minimum": 0.4494642307101468,
+            "p95": 0.8932577516125711
+          },
+          "expert_target_recall": 0.4694506824016571,
+          "relative_l2": {
+            "count": 446,
+            "maximum": 0.8941913798472033,
+            "mean": 0.6480715459883136,
+            "median": 0.6549334898739206,
+            "minimum": 0.39412483652821223,
+            "p95": 0.8096224117283313
+          },
+          "step": 128
+        },
+        {
+          "cosine": {
+            "count": 446,
+            "maximum": 0.9261742741886134,
+            "mean": 0.7568846945204479,
+            "median": 0.7646745203478261,
+            "minimum": 0.44665228858414646,
+            "p95": 0.8955493575537301
+          },
+          "expert_target_recall": 0.4694506824016571,
+          "relative_l2": {
+            "count": 446,
+            "maximum": 0.894757529383494,
+            "mean": 0.643960945579969,
+            "median": 0.6511505647729232,
+            "minimum": 0.377864554118984,
+            "p95": 0.7985717960843336
+          },
+          "step": 160
+        },
+        {
+          "cosine": {
+            "count": 446,
+            "maximum": 0.9201154162500016,
+            "mean": 0.7573335832737383,
+            "median": 0.7657202219196875,
+            "minimum": 0.4493292992236517,
+            "p95": 0.898532371003528
+          },
+          "expert_target_recall": 0.4672785997390747,
+          "relative_l2": {
+            "count": 446,
+            "maximum": 0.8939193710693167,
+            "mean": 0.6429104262890436,
+            "median": 0.6479279978223917,
+            "minimum": 0.39267457647589926,
+            "p95": 0.8075827951236517
+          },
+          "step": 192
+        },
+        {
+          "cosine": {
+            "count": 446,
+            "maximum": 0.9206078548944612,
+            "mean": 0.7587477850789843,
+            "median": 0.766368046511708,
+            "minimum": 0.4503488791260815,
+            "p95": 0.9008447609414554
+          },
+          "expert_target_recall": 0.46475619077682495,
+          "relative_l2": {
+            "count": 446,
+            "maximum": 0.893777395525991,
+            "mean": 0.6409976746189961,
+            "median": 0.6473861851925313,
+            "minimum": 0.3932211554134947,
+            "p95": 0.8007716199142106
+          },
+          "step": 224
+        }
+      ],
+      "final": {
+        "cosine": {
+          "count": 446,
+          "maximum": 0.9206078548944612,
+          "mean": 0.7587477850789843,
+          "median": 0.766368046511708,
+          "minimum": 0.4503488791260815,
+          "p95": 0.9008447609414554
+        },
+        "expert_target_recall": 0.46475619077682495,
+        "relative_l2": {
+          "count": 446,
+          "maximum": 0.893777395525991,
+          "mean": 0.6409976746189961,
+          "median": 0.6473861851925313,
+          "minimum": 0.3932211554134947,
+          "p95": 0.8007716199142106
+        },
+        "step": 224
+      },
+      "initial": {
+        "cosine": {
+          "count": 446,
+          "maximum": 0.9116583005101228,
+          "mean": 0.7441590718666717,
+          "median": 0.7492026831819437,
+          "minimum": 0.41937753926359284,
+          "p95": 0.8805391211134871
+        },
+        "expert_target_recall": 0.47554653882980347,
+        "relative_l2": {
+          "count": 446,
+          "maximum": 0.9078405257546023,
+          "mean": 0.6601003790226327,
+          "median": 0.6666778164055671,
+          "minimum": 0.4113505725543076,
+          "p95": 0.8130000585833671
+        },
+        "step": 0
+      },
+      "initial_dense_parity_relative_l2": {
+        "count": 446,
+        "maximum": 7.160251842010982e-07,
+        "mean": 4.647570748180779e-07,
+        "median": 4.6714743902382796e-07,
+        "minimum": 3.4041587835788476e-07,
+        "p95": 5.282895443815283e-07
+      },
+      "layer": 5,
+      "training_first": {
+        "active_experts": 48,
+        "active_physical_records": 896,
+        "cosine": 0.0,
+        "dense_anchor": 0.0,
+        "loss": 0.6607031226158142,
+        "phase": "router_warmup",
+        "reconstruction": 0.0,
+        "route": 0.6607031226158142,
+        "step": 1,
+        "temperature": 1.0
+      },
+      "training_last": {
+        "active_experts": 32,
+        "active_physical_records": 640,
+        "cosine": 0.12281878292560577,
+        "dense_anchor": 0.04205615818500519,
+        "loss": 0.19926416873931885,
+        "phase": "settle",
+        "reconstruction": 0.17958128452301025,
+        "route": 0.6559876799583435,
+        "step": 224,
+        "temperature": 0.5
+      },
+      "training_records": 4096,
+      "validation_records": 446
+    }
+  ],
+  "layout": {
+    "duplicate_shared_records": true,
+    "initial_dense_equivalence": "shared + all experts == source dense MLP",
+    "initial_expert_duplicate_down_scale": 0.5,
+    "initial_shared_down_scale": 0.5
+  },
+  "projected_traffic": {
+    "active_experts": 32,
+    "active_physical_records": 640,
+    "cache_line_bytes": 64,
+    "dense_q4_bytes": 1327104,
+    "expert_block_q4_bytes": 13824,
+    "expert_id_uint16_bytes": 64,
+    "experts": 96,
+    "fraction_of_dense_q4": 0.4376929012345679,
+    "q4_bits": 4,
+    "records_per_expert": 16,
+    "router_bias_fp16_bytes": 192,
+    "router_metadata_cache_aligned_bytes": 256,
+    "router_weight_q4_bytes": 27648,
+    "selected_expert_weight_q4_bytes": 442368,
+    "shared_records": 128,
+    "shared_weight_q4_bytes": 110592,
+    "total_bytes": 580864
+  },
+  "schema_version": 1,
+  "screen": {
+    "checks": {
+      "every_layer_improved": true,
+      "exact_initial_dense_parity": true,
+      "mean_relative_l2": false,
+      "projected_traffic": true
+    },
+    "decision": "reject_or_continue_boundary_optimization",
+    "passed": false,
+    "selection_caveat": "The held-out boundary split selects checkpoints; the causal gate still requires untouched sequence-level intervention confirmation."
+  },
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "summary": {
+    "mean_best_relative_l2": 0.6409976746189961
+  }
+}

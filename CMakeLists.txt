@@ -7,6 +7,7 @@ option(ENGRAM_BUILD_TESTS "Build native tests" ON)
 add_library(engram_kernels STATIC
   native/src/controller.cpp
   native/src/cpu_features.cpp
+  native/src/dip.cpp
   native/src/episodic.cpp
   native/src/npy.cpp
   native/src/package.cpp
@@ -42,13 +43,17 @@ add_executable(engram-bench native/src/bench.cpp)
 target_link_libraries(engram-bench PRIVATE engram_kernels)
 target_compile_features(engram-bench PRIVATE cxx_std_20)
 
+add_executable(engram-dip-bench native/src/dip_bench.cpp)
+target_link_libraries(engram-dip-bench PRIVATE engram_kernels)
+target_compile_features(engram-dip-bench PRIVATE cxx_std_20)
+
 if(ENGRAM_BUILD_TESTS)
   enable_testing()
   add_executable(engram_native_tests native/tests/test_swiglu.cpp)
   target_link_libraries(engram_native_tests PRIVATE engram_kernels)
   add_test(NAME engram_native_tests COMMAND engram_native_tests)
 
-  foreach(test_name IN ITEMS controller episodic npy package semantic semantic_ivf semantic_quantized thread_pool transition_cache vector_kernels vocabulary vocabulary_ivf)
+  foreach(test_name IN ITEMS controller dip episodic npy package semantic semantic_ivf semantic_quantized thread_pool transition_cache vector_kernels vocabulary vocabulary_ivf)
     add_executable(engram_native_${test_name}_tests native/tests/test_${test_name}.cpp)
     target_link_libraries(engram_native_${test_name}_tests PRIVATE engram_kernels)
     add_test(NAME engram_native_${test_name}_tests COMMAND engram_native_${test_name}_tests)

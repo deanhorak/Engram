@@ -1,5 +1,16 @@
 # Limitations
 
+- The central limitation is unchanged: no serialized representation jointly
+  passes the all-layer causal gate and complete cold MLP traffic at or below
+  45% of dense ideal Q4. DIP is a quality-only pass at 83.33% cache-line
+  traffic; the mild-width compact-Q4 artifact is a traffic-only pass with
+  KL 0.887, top-1 0.566, NLL +0.884, and hidden L2 0.425 after 3M positions.
+  See [Project status](status.md).
+- Exact nonparametric output memory is not a hidden solution to this gap.
+  Adding one million independent pretraining records to 233,005 local
+  prototypes improves layer-14 LLE-32 error only from 0.327526 to 0.321854
+  (1.73%), below both frozen progression requirements. The exact search has no
+  deployable index or traffic claim.
 - The Cognitive Executive currently has deterministic policy, revisioned SQLite/JSONL/in-memory
   event stores, a worker capability registry, resource accounting, matched outcome observation,
   adapter protocols, and calibration metrics. It has no durable knowledge store, strategy
@@ -44,11 +55,15 @@
   +0.033, final-hidden relative L2 0.090, and 0.990 candidate recall. This still covers only one
   135M-parameter model and a small generated corpus; another model and broader natural data are
   required before generalization.
-- DIP currently exists only as a mathematical selection primitive and dense quality evaluator.
-  Its 76.4%-of-dense float32 weight-read figure assumes a packed sparse kernel can read each
-  requested scalar once. It excludes activations, index/sort traffic, cache-line amplification,
-  and weight-repacking costs. There is no native kernel, measured latency, or measured DRAM result.
-  The projected 1.31x reduction is also far short of Engram's long-term 10x target.
+- DIP now has a versioned coordinate-major experimental package, mmap loader, Python reference,
+  and candidate-only native kernel. The optimistic scalar count is 76.4% of dense; counting
+  touched 64-byte lines gives 83.3%. An alternating-order benchmark over all 30 serialized layers
+  measures the best streamed kernel at 37.673 ms per complete 30-layer pass versus 32.639 ms
+  dense: `0.863x`,
+  or about 15.4% slower. Hardware-counter DRAM traffic, hand-written SIMD/threaded kernels,
+  whole-model latency, and replication remain absent. A block-16 layout is
+  not a workaround: it reduced fresh-confirmation recall to 85.2%. The path remains outside the
+  default runtime and far from the long-term 10x target.
 - The low-rank background is implemented, but the checked random-fixture Gate 2 experiment
   overfits badly (mean relative L2 rises from 0.693 without it to 7.09 with it).
 - Real-model tracing loads the source model in CPU float32. Layer-at-a-time source execution
@@ -64,21 +79,75 @@
   fitted by the compiler. The research fitter now targets exact routed-read residuals and hard
   regions, but all checked global and targeted layouts worsen held-out local MLP error; no fitted
   capsule is serialized.
-- Sparse-teacher fine-tuning is implemented only as a pilot trainer. It freezes all base weights
-  and trains router factors plus sparse down adapters. The checked run has only 32 optimizer steps,
-  no hyperparameter/seed replication, and fails every routed quality check. The hard
-  `argsort`/gather route also prevents local, hidden, and logit losses from reaching the router;
-  only its auxiliary membership loss trains router scores, and the adapter movement is negligible.
-  Its safetensors file is an experiment artifact, not a supported compiled-package input.
+- The original sparse-teacher pilot has only 32 optimizer steps, no hyperparameter/seed
+  replication, and fails every routed quality check. Its hard route prevented causal gradients
+  from reaching the router. The replacement hardware-aware trainer fixes that graph with a
+  hard-forward/soft-backward estimator and executes the requested `q<=62.5%`, `C/K<=512` sparse
+  path. A complete 32-sequence/16-held-out run has now completed. At initialization, 512 candidates
+  touch 95.84/96 gate/up cache-line groups, raising projected total traffic from 61.1% to about
+  77.7% of dense. Neither trainer's safetensors output is a supported compiled-package input.
+- The complete replacement run also fails its causal gate: recall 0.8959, KL 0.1659, top-1 0.7678,
+  NLL delta +0.1261, and final-hidden relative L2 0.1988. Balanced permutations cannot cluster a
+  one-third independent candidate set into materially fewer lines, while selecting complete lines
+  damages recall/local reconstruction. Gate/up/down LoRA and a broader 2,048-token stage did not
+  improve all held-out metrics together. More epochs on the same objective are not justified.
+- Held-out exact top-512 membership itself touches 95.86 of 96 contiguous 16-record lines on
+  average. Even an impossible perfect group selector that knows the oracle set in advance can
+  retain only 91.75% of it with 80 lines; 88 lines are required for 96.65% mean coverage. Candidate
+  locality cannot supply a material traffic win for the current static record order. The opt-in
+  v3 dual layout increases package storage by 66.7% and is slower than coordinate-major completion;
+  it is retained only as a rejected diagnostic.
+- Corrected LoRA scaling plus a rank-32 hidden-output residual was trained on all 128 local-source
+  sequences and evaluated on the full held-out set. It improves the earlier low-budget result but
+  still fails: KL 0.152, top-1 0.780, NLL delta +0.100, and hidden L2 0.193. The residual correction
+  has 0.18% relative norm and 0.0014 cosine with the exact missing output; it is disabled by default.
+  Adapter learning rates of 3e-4 and 1e-3 are unstable on matched bounded screens.
+- A same-total layer-adaptive exact-oracle schedule was selected on four disjoint sequences using
+  individual-layer causal sensitivity. Its 16-sequence confirmation is slightly worse than uniform
+  K=512 (KL 0.134, top-1 0.786, NLL +0.110, hidden L2 0.185). This does not prove every possible
+  adaptive policy fails, but it rejects the current fixed schedule and magnitude objective.
+- Static contiguous expert grouping also fails before end-to-end training. Across 24×64/top-8,
+  48×32/top-16, and 96×16/top-32 layouts, a full-information greedy residual oracle has mean local
+  relative-L2 error 0.547, 0.497, and 0.438 at the same 512-record budget. Learned routers are worse.
+  This rejects these frozen-basis initializations, not jointly trained native channel sparsity.
+- Native-gate channel sparsity has not passed either. Its exact contribution K=512 reference has
+  0.190 local relative L2, but the realizable q=62.5% gate route has 0.386. A 64-step cached-trace
+  layer-14 pretrain improves 0.4146 to only 0.4040 and therefore fails its 10% screening threshold.
+  Full end-to-end progressive co-training and later compact-model training have run. The host's
+  RTX 3050 is available for bounded training and trace capture. CUDA remains an optional
+  development accelerator, not a deployment requirement; literature at much larger token budgets
+  does not substitute for Engram evidence.
+- The progressive end-to-end trainer now works on CPU and supports resumable device-neutral
+  checkpoints, but its first full-evidence stage is deliberately tiny. Eight steps improve top-1
+  agreement from 0.460 to 0.481 and local L2 from 0.702 to 0.700 while worsening KL from 1.235 to
+  1.254, NLL from +1.202 to +1.211, and hidden L2 from 0.508 to 0.510. This is neither a quality pass
+  nor evidence that substantially longer CPU training will succeed.
+- A rank-16 utility residual materially improves the actual all-layer sparse path at 44.39%
+  projected traffic: KL 0.629, top-1 0.599, NLL +0.583, and hidden L2 0.363. This is still far from
+  the final 0.05/0.90/+0.05/0.10 quality thresholds. Eight progressive steps do not improve the
+  result consistently. The residual was fitted on dense-teacher trace states; its behavior after
+  on-policy recalibration to sparse-student state drift remains unmeasured.
+- On-policy recalibration is now measured and improves its controlled same-state local error by
+  only 0.38%. A traffic-neutral K=640 development arm also fails causally. Fixed-width layer-14
+  distillation reduces local error only to roughly 0.45 with the original cached states. The
+  subsequent all-layer 672-wide student uses 2,048 real sequences and a full epoch, yet still has
+  KL 1.177, top-1 0.475, NLL delta +1.055, hidden L2 0.426, and local L2 0.705 at 43.75% traffic.
+  These results rule out a cheap routing fix and the current narrow fixed-width objective. They do
+  not rule out a more expressive co-adapted structured basis or substantially larger pretraining.
+- A teacher-boundary fit removes causal state drift as an explanation for the fixed-width failure.
+  After 2,048 local steps on 4,096 boundaries, five representative layers average 0.346 held-out
+  relative L2; middle layers remain at 0.45–0.50. The screen samples five layers rather than all 30
+  and uses repository-derived text rather than a web-scale pretraining distribution, so it rejects
+  uniform width 672 for the current project evidence—not every possible compact architecture.
 - The development Xeon E5-2695 v2 lacks AVX2. AVX2 code must use runtime dispatch and be
   executed on a Haswell-or-newer host or suitable CI runner.
 - Hardware performance counters are unavailable on the development host. DRAM and energy
   claims cannot be measured here.
 - Trained SmolLM2 semantic-routing and causal MLP-intervention reports are checked in, but no
   trained end-to-end compiled Gate 5 run exists. Learned-router artifacts remain blocked; the
-  predictor-free DIP arm is quality-eligible but has not been serialized or implemented in the
-  compiled runtimes. Attention/controller distillation and trained-package compilation remain
-  pending.
+  predictor-free DIP arm is quality-eligible and has an experimental serializer/kernel, but that
+  kernel fails latency and is not integrated into the compiled runtimes. Attention/controller
+  distillation and trained-package compilation remain pending.
   Engram downloads a model when a Hub ID is supplied explicitly; this can require substantial
   disk space, and gated models still require Hugging Face authentication and license acceptance.
 - Synthetic Gate 3 mean relative L2 is 0.456 for the heuristic hybrid; retrieval/copying

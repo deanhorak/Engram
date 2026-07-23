@@ -1,0 +1,878 @@
+{
+  "baseline": {
+    "dense_gate_channel_cosine": {
+      "count": 3840,
+      "maximum": 0.9999992767176201,
+      "mean": 0.9176192511603721,
+      "median": 0.9194270042507141,
+      "minimum": 0.7067036917862789,
+      "p95": 0.9956911216362586
+    },
+    "dense_gate_channel_relative_l2": {
+      "count": 3840,
+      "maximum": 0.7090896825617711,
+      "mean": 0.3749425359946288,
+      "median": 0.39614284498637753,
+      "minimum": 0.001203952417848622,
+      "p95": 0.5474808467855935
+    },
+    "dense_gate_exact_contribution_oracle_recall": {
+      "count": 3840,
+      "maximum": 0.759765625,
+      "mean": 0.5929906209309895,
+      "median": 0.587890625,
+      "minimum": 0.4609375,
+      "p95": 0.67578125
+    },
+    "dense_shadow_relative_l2": {
+      "count": 3840,
+      "maximum": 8.545913272426406e-07,
+      "mean": 4.405663823321758e-07,
+      "median": 4.520189937725428e-07,
+      "minimum": 4.903604974020516e-08,
+      "p95": 5.454902281039745e-07
+    },
+    "exact_contribution_oracle_relative_l2": {
+      "count": 3840,
+      "maximum": 0.35833651544087225,
+      "mean": 0.1903467346986102,
+      "median": 0.1991929020942672,
+      "minimum": 0.0006551206876730658,
+      "p95": 0.2786412660210238
+    }
+  },
+  "configuration": {
+    "completion": "none",
+    "input_fractions": [
+      0.5,
+      0.625,
+      1.0
+    ],
+    "selection_score": "absolute_silu_gate_times_down_column_norm",
+    "top_k": 512,
+    "validation_records_limit": 128
+  },
+  "configurations": [
+    {
+      "input_fraction": 0.5,
+      "metrics": {
+        "exact_contribution_oracle_recall": {
+          "count": 3840,
+          "maximum": 0.74609375,
+          "mean": 0.580707295735677,
+          "median": 0.576171875,
+          "minimum": 0.447265625,
+          "p95": 0.6563476562499995
+        },
+        "local_cosine": {
+          "count": 3840,
+          "maximum": 0.9999992848014374,
+          "mean": 0.9067475508767653,
+          "median": 0.9086081318915973,
+          "minimum": 0.7077916965243928,
+          "p95": 0.9943096492043962
+        },
+        "local_relative_l2": {
+          "count": 3840,
+          "maximum": 0.7066126324271551,
+          "mean": 0.40235609583334564,
+          "median": 0.423362270275768,
+          "minimum": 0.002302291220046615,
+          "p95": 0.5709022172257213
+        }
+      },
+      "projected_traffic": {
+        "active_records": 512,
+        "dense_weight_bytes": 10616832,
+        "fraction_of_dense": 0.3888888888888889,
+        "gate_weight_bytes": 1769472,
+        "hidden_size": 576,
+        "input_coordinates": 288,
+        "input_fraction": 0.5,
+        "intermediate_size": 1536,
+        "selected_up_down_weight_bytes": 2359296,
+        "total_weight_bytes": 4128768
+      },
+      "screen": {
+        "checks": {
+          "active_record_budget": true,
+          "input_coordinate_budget": true,
+          "local_pretraining_screen": false,
+          "projected_traffic": true
+        },
+        "passed": false
+      }
+    },
+    {
+      "input_fraction": 0.625,
+      "metrics": {
+        "exact_contribution_oracle_recall": {
+          "count": 3840,
+          "maximum": 0.76171875,
+          "mean": 0.5880671183268229,
+          "median": 0.583984375,
+          "minimum": 0.45703125,
+          "p95": 0.66796875
+        },
+        "local_cosine": {
+          "count": 3840,
+          "maximum": 0.99999927889873,
+          "mean": 0.9135238130473693,
+          "median": 0.9155661894691854,
+          "minimum": 0.7203203308758057,
+          "p95": 0.99491197523218
+        },
+        "local_relative_l2": {
+          "count": 3840,
+          "maximum": 0.69482589925962,
+          "mean": 0.3855101271874518,
+          "median": 0.4056251357827435,
+          "minimum": 0.0014483438685995108,
+          "p95": 0.5566588285493992
+        }
+      },
+      "projected_traffic": {
+        "active_records": 512,
+        "dense_weight_bytes": 10616832,
+        "fraction_of_dense": 0.4305555555555556,
+        "gate_weight_bytes": 2211840,
+        "hidden_size": 576,
+        "input_coordinates": 360,
+        "input_fraction": 0.625,
+        "intermediate_size": 1536,
+        "selected_up_down_weight_bytes": 2359296,
+        "total_weight_bytes": 4571136
+      },
+      "screen": {
+        "checks": {
+          "active_record_budget": true,
+          "input_coordinate_budget": true,
+          "local_pretraining_screen": false,
+          "projected_traffic": true
+        },
+        "passed": false
+      }
+    },
+    {
+      "input_fraction": 1.0,
+      "metrics": {
+        "exact_contribution_oracle_recall": {
+          "count": 3840,
+          "maximum": 0.759765625,
+          "mean": 0.5929906209309895,
+          "median": 0.587890625,
+          "minimum": 0.4609375,
+          "p95": 0.67578125
+        },
+        "local_cosine": {
+          "count": 3840,
+          "maximum": 0.9999992767176201,
+          "mean": 0.9176192511603721,
+          "median": 0.9194270042507141,
+          "minimum": 0.7067036917862789,
+          "p95": 0.9956911216362586
+        },
+        "local_relative_l2": {
+          "count": 3840,
+          "maximum": 0.7090896825617711,
+          "mean": 0.3749425359946288,
+          "median": 0.39614284498637753,
+          "minimum": 0.001203952417848622,
+          "p95": 0.5474808467855935
+        }
+      },
+      "projected_traffic": {
+        "active_records": 512,
+        "dense_weight_bytes": 10616832,
+        "fraction_of_dense": 0.5555555555555556,
+        "gate_weight_bytes": 3538944,
+        "hidden_size": 576,
+        "input_coordinates": 576,
+        "input_fraction": 1.0,
+        "intermediate_size": 1536,
+        "selected_up_down_weight_bytes": 2359296,
+        "total_weight_bytes": 5898240
+      },
+      "screen": {
+        "checks": {
+          "active_record_budget": true,
+          "input_coordinate_budget": false,
+          "local_pretraining_screen": false,
+          "projected_traffic": false
+        },
+        "passed": false
+      }
+    }
+  ],
+  "experiment": "native_gate_channel_shadow",
+  "layers": [
+    {
+      "dense_gate_oracle_recall": 0.666015625,
+      "dense_gate_relative_l2": 0.15291039135271234,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.6360931396484375,
+          "relative_l2": 0.19568464855759327
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.6536712646484375,
+          "relative_l2": 0.16865291128897358
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.666015625,
+          "relative_l2": 0.15291039135271234
+        }
+      },
+      "layer": 0
+    },
+    {
+      "dense_gate_oracle_recall": 0.606475830078125,
+      "dense_gate_relative_l2": 0.32433486944845336,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.5903472900390625,
+          "relative_l2": 0.3677511041667339
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.6001434326171875,
+          "relative_l2": 0.3409070134068335
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.606475830078125,
+          "relative_l2": 0.32433486944845336
+        }
+      },
+      "layer": 1
+    },
+    {
+      "dense_gate_oracle_recall": 0.579620361328125,
+      "dense_gate_relative_l2": 0.4017522657783942,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.5672607421875,
+          "relative_l2": 0.43540851432129657
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.5758514404296875,
+          "relative_l2": 0.41308949333844835
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.579620361328125,
+          "relative_l2": 0.4017522657783942
+        }
+      },
+      "layer": 2
+    },
+    {
+      "dense_gate_oracle_recall": 0.5829620361328125,
+      "dense_gate_relative_l2": 0.4595020110388256,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.5702972412109375,
+          "relative_l2": 0.49278013346715493
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.578369140625,
+          "relative_l2": 0.47345103081053597
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.5829620361328125,
+          "relative_l2": 0.4595020110388256
+        }
+      },
+      "layer": 3
+    },
+    {
+      "dense_gate_oracle_recall": 0.5549468994140625,
+      "dense_gate_relative_l2": 0.4986063155543631,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.5442352294921875,
+          "relative_l2": 0.5233677287792872
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.550445556640625,
+          "relative_l2": 0.506591856680054
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.5549468994140625,
+          "relative_l2": 0.4986063155543631
+        }
+      },
+      "layer": 4
+    },
+    {
+      "dense_gate_oracle_recall": 0.534637451171875,
+      "dense_gate_relative_l2": 0.5080078586203923,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.5251312255859375,
+          "relative_l2": 0.531004183551076
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.5299224853515625,
+          "relative_l2": 0.5178874375685294
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.534637451171875,
+          "relative_l2": 0.5080078586203923
+        }
+      },
+      "layer": 5
+    },
+    {
+      "dense_gate_oracle_recall": 0.546051025390625,
+      "dense_gate_relative_l2": 0.4841120797742785,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.5335540771484375,
+          "relative_l2": 0.5092992844690396
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.5408935546875,
+          "relative_l2": 0.49343114080434103
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.546051025390625,
+          "relative_l2": 0.4841120797742785
+        }
+      },
+      "layer": 6
+    },
+    {
+      "dense_gate_oracle_recall": 0.5513153076171875,
+      "dense_gate_relative_l2": 0.45518564050213267,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.54229736328125,
+          "relative_l2": 0.47897779048774486
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.5481414794921875,
+          "relative_l2": 0.46320055530195314
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.5513153076171875,
+          "relative_l2": 0.45518564050213267
+        }
+      },
+      "layer": 7
+    },
+    {
+      "dense_gate_oracle_recall": 0.570220947265625,
+      "dense_gate_relative_l2": 0.3714327381482772,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.5567626953125,
+          "relative_l2": 0.4015117082592915
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.5651092529296875,
+          "relative_l2": 0.38218490846749914
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.570220947265625,
+          "relative_l2": 0.3714327381482772
+        }
+      },
+      "layer": 8
+    },
+    {
+      "dense_gate_oracle_recall": 0.5680694580078125,
+      "dense_gate_relative_l2": 0.4280797550869462,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.5588226318359375,
+          "relative_l2": 0.4557073821530943
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.5646820068359375,
+          "relative_l2": 0.43956322419681815
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.5680694580078125,
+          "relative_l2": 0.4280797550869462
+        }
+      },
+      "layer": 9
+    },
+    {
+      "dense_gate_oracle_recall": 0.564208984375,
+      "dense_gate_relative_l2": 0.4510347237872592,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.553924560546875,
+          "relative_l2": 0.47375723860202235
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.5593719482421875,
+          "relative_l2": 0.45909392208932565
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.564208984375,
+          "relative_l2": 0.4510347237872592
+        }
+      },
+      "layer": 10
+    },
+    {
+      "dense_gate_oracle_recall": 0.5755157470703125,
+      "dense_gate_relative_l2": 0.4565845034137197,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.567626953125,
+          "relative_l2": 0.4753728520555921
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.5723114013671875,
+          "relative_l2": 0.464728294622484
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.5755157470703125,
+          "relative_l2": 0.4565845034137197
+        }
+      },
+      "layer": 11
+    },
+    {
+      "dense_gate_oracle_recall": 0.5790557861328125,
+      "dense_gate_relative_l2": 0.46244050733604847,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.5696868896484375,
+          "relative_l2": 0.4875745513216039
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.5762939453125,
+          "relative_l2": 0.47136559452507926
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.5790557861328125,
+          "relative_l2": 0.46244050733604847
+        }
+      },
+      "layer": 12
+    },
+    {
+      "dense_gate_oracle_recall": 0.5706634521484375,
+      "dense_gate_relative_l2": 0.4473929287694962,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.562225341796875,
+          "relative_l2": 0.46898450413560844
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.5667572021484375,
+          "relative_l2": 0.4549250550030872
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.5706634521484375,
+          "relative_l2": 0.4473929287694962
+        }
+      },
+      "layer": 13
+    },
+    {
+      "dense_gate_oracle_recall": 0.5928192138671875,
+      "dense_gate_relative_l2": 0.40832369993028617,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.5838775634765625,
+          "relative_l2": 0.4313239756096219
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.589569091796875,
+          "relative_l2": 0.4146026637019222
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.5928192138671875,
+          "relative_l2": 0.40832369993028617
+        }
+      },
+      "layer": 14
+    },
+    {
+      "dense_gate_oracle_recall": 0.58966064453125,
+      "dense_gate_relative_l2": 0.4459844777812083,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.579681396484375,
+          "relative_l2": 0.4668671336564598
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.5850677490234375,
+          "relative_l2": 0.45610938983947225
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.58966064453125,
+          "relative_l2": 0.4459844777812083
+        }
+      },
+      "layer": 15
+    },
+    {
+      "dense_gate_oracle_recall": 0.589599609375,
+      "dense_gate_relative_l2": 0.4423378517235296,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.5805816650390625,
+          "relative_l2": 0.4652964467011226
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.5868988037109375,
+          "relative_l2": 0.45270856538198795
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.589599609375,
+          "relative_l2": 0.4423378517235296
+        }
+      },
+      "layer": 16
+    },
+    {
+      "dense_gate_oracle_recall": 0.6034698486328125,
+      "dense_gate_relative_l2": 0.43790589476978087,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.5931549072265625,
+          "relative_l2": 0.4630845590227696
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.599456787109375,
+          "relative_l2": 0.446465093998607
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.6034698486328125,
+          "relative_l2": 0.43790589476978087
+        }
+      },
+      "layer": 17
+    },
+    {
+      "dense_gate_oracle_recall": 0.62188720703125,
+      "dense_gate_relative_l2": 0.3396871204530282,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.6109161376953125,
+          "relative_l2": 0.3638703192434617
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.6186981201171875,
+          "relative_l2": 0.348464778608259
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.62188720703125,
+          "relative_l2": 0.3396871204530282
+        }
+      },
+      "layer": 18
+    },
+    {
+      "dense_gate_oracle_recall": 0.5994873046875,
+      "dense_gate_relative_l2": 0.39844893023220074,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.5893402099609375,
+          "relative_l2": 0.4216142985125846
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.59527587890625,
+          "relative_l2": 0.4067093959437325
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.5994873046875,
+          "relative_l2": 0.39844893023220074
+        }
+      },
+      "layer": 19
+    },
+    {
+      "dense_gate_oracle_recall": 0.6271820068359375,
+      "dense_gate_relative_l2": 0.3224581556423984,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.6181640625,
+          "relative_l2": 0.3451091525897269
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.62384033203125,
+          "relative_l2": 0.33115825719724246
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.6271820068359375,
+          "relative_l2": 0.3224581556423984
+        }
+      },
+      "layer": 20
+    },
+    {
+      "dense_gate_oracle_recall": 0.59295654296875,
+      "dense_gate_relative_l2": 0.3973340442778809,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.58209228515625,
+          "relative_l2": 0.4249543127234138
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.5886383056640625,
+          "relative_l2": 0.40689228147660417
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.59295654296875,
+          "relative_l2": 0.3973340442778809
+        }
+      },
+      "layer": 21
+    },
+    {
+      "dense_gate_oracle_recall": 0.6060791015625,
+      "dense_gate_relative_l2": 0.36340015960439886,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.5935211181640625,
+          "relative_l2": 0.38869532300364645
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.60198974609375,
+          "relative_l2": 0.3724711189686034
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.6060791015625,
+          "relative_l2": 0.36340015960439886
+        }
+      },
+      "layer": 22
+    },
+    {
+      "dense_gate_oracle_recall": 0.5684661865234375,
+      "dense_gate_relative_l2": 0.3452332177475232,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.5580596923828125,
+          "relative_l2": 0.3679011217116779
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.564178466796875,
+          "relative_l2": 0.3551704812094302
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.5684661865234375,
+          "relative_l2": 0.3452332177475232
+        }
+      },
+      "layer": 23
+    },
+    {
+      "dense_gate_oracle_recall": 0.599853515625,
+      "dense_gate_relative_l2": 0.2867912353734514,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.587188720703125,
+          "relative_l2": 0.31491761178375066
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.5946807861328125,
+          "relative_l2": 0.2983386987809503
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.599853515625,
+          "relative_l2": 0.2867912353734514
+        }
+      },
+      "layer": 24
+    },
+    {
+      "dense_gate_oracle_recall": 0.6065216064453125,
+      "dense_gate_relative_l2": 0.3305379076304054,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.588714599609375,
+          "relative_l2": 0.3679608232823895
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.5981597900390625,
+          "relative_l2": 0.3470673090212422
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.6065216064453125,
+          "relative_l2": 0.3305379076304054
+        }
+      },
+      "layer": 25
+    },
+    {
+      "dense_gate_oracle_recall": 0.612213134765625,
+      "dense_gate_relative_l2": 0.30483962051635066,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.5947113037109375,
+          "relative_l2": 0.34355957578544705
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.6045989990234375,
+          "relative_l2": 0.3207719594957035
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.612213134765625,
+          "relative_l2": 0.30483962051635066
+        }
+      },
+      "layer": 26
+    },
+    {
+      "dense_gate_oracle_recall": 0.643280029296875,
+      "dense_gate_relative_l2": 0.23954398233080604,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.6261444091796875,
+          "relative_l2": 0.2772932278987388
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.6360626220703125,
+          "relative_l2": 0.2553531647414229
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.643280029296875,
+          "relative_l2": 0.23954398233080604
+        }
+      },
+      "layer": 27
+    },
+    {
+      "dense_gate_oracle_recall": 0.6323089599609375,
+      "dense_gate_relative_l2": 0.1896845603831574,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.6154327392578125,
+          "relative_l2": 0.21979612989629035
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.62469482421875,
+          "relative_l2": 0.20239233835354767
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.6323089599609375,
+          "relative_l2": 0.1896845603831574
+        }
+      },
+      "layer": 28
+    },
+    {
+      "dense_gate_oracle_recall": 0.6541748046875,
+      "dense_gate_relative_l2": 0.09438863283115782,
+      "input_sparse": {
+        "0.5": {
+          "input_coordinates": 288,
+          "oracle_recall": 0.6413726806640625,
+          "relative_l2": 0.11125723925212891
+        },
+        "0.625": {
+          "input_coordinates": 360,
+          "oracle_recall": 0.6482391357421875,
+          "relative_l2": 0.10155588080086474
+        },
+        "1.0": {
+          "input_coordinates": 576,
+          "oracle_recall": 0.6541748046875,
+          "relative_l2": 0.09438863283115782
+        }
+      },
+      "layer": 29
+    }
+  ],
+  "schema_version": 1,
+  "screen": {
+    "caveat": "The exact up projection is evaluated densely only to vectorize this shadow measurement; projected inference traffic counts selected up/down rows only. This is not an all-layer causal intervention.",
+    "decision": "native_gate_requires_coadaptation_before_gate_claim",
+    "passed": false
+  },
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "status": "trace_only_feasibility_screen"
+}

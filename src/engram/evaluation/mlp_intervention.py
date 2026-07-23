@@ -34,7 +34,14 @@ from engram.semantic.swiglu import neuron_activations
 from engram.tracing.format import TraceReader
 from engram.utils import percentile, sha256_file, sha256_json
 
-SUPPORTED_VARIANTS = ("identity", "oracle", "rank16", "overlap", "dip")
+SUPPORTED_VARIANTS = (
+    "identity",
+    "oracle",
+    "rank16",
+    "overlap",
+    "dip",
+    "dip_paq",
+)
 SUPPORTED_LAYER_MODES = ("all", "individual", "both")
 SUPPORTED_EVALUATION_ROLES = ("development", "confirmation")
 
@@ -244,13 +251,19 @@ class _Arm:
     posting_groups: int | None = None
     posting_size: int | None = None
     input_fraction: float | None = None
+    layer_top_ks: tuple[int, ...] | None = None
+    quantization: str | None = None
 
     @property
     def name(self) -> str:
         if self.variant == "identity":
             prefix = "identity"
         elif self.variant == "oracle":
-            prefix = f"oracle_top_{self.top_k}"
+            prefix = (
+                f"oracle_layer_adaptive_mean_{self.top_k}"
+                if self.layer_top_ks is not None
+                else f"oracle_top_{self.top_k}"
+            )
         elif self.variant == "rank16":
             prefix = (
                 f"rank{self.rank}_candidates_{self.candidate_count}_top_{self.top_k}"
@@ -260,17 +273,48 @@ class _Arm:
                 f"overlap_rank{self.rank}_{self.posting_groups}x{self.posting_size}_"
                 f"candidates_{self.candidate_count}_top_{self.top_k}"
             )
-        else:
+        elif self.variant == "dip":
             fraction = format(float(self.input_fraction), ".12g").replace(".", "p")
             prefix = (
                 f"dip_input_{fraction}_candidates_{self.candidate_count}_"
                 f"top_{self.top_k}"
+            )
+        else:
+            assert self.variant == "dip_paq"
+            fraction = format(float(self.input_fraction), ".12g").replace(".", "p")
+            prefix = (
+                f"dip_paq_{self.quantization}_input_{fraction}_"
+                f"candidates_{self.candidate_count}_top_{self.top_k}"
             )
         if self.scope == "individual":
             return f"{prefix}_layer_{self.layer_indices[0]}"
         if len(self.layer_indices) == 1:
             return f"{prefix}_selected_layer_{self.layer_indices[0]}"
         return f"{prefix}_all_selected_layers"
+
+
+@dataclass(frozen=True)
+class _PAQLayer:
+    """Decoded tensors plus physical storage metadata for one PAQ MLP layer.
+
+    The tensors intentionally remain decoded float32 in this quality harness.
+    The associated encodings are the source of byte accounting; evaluator wall
+    time is not a compressed-kernel benchmark.
+    """
+
+    gate: Any
+    up: Any
+    down_records: Any
+    group_size: int
+    groups_per_record: int
+    num_codebooks: int
+    code_bits: int
+    encoded_bits_per_weight: float
+    codebook_bytes: int
+    scale_bytes_per_gate_record: int
+    scale_bytes_per_up_record: int
+    scale_bytes_per_down_record: int
+    codec: str
 
 
 def _load_layer_states(reader: TraceReader, layer: int, limit: int) -> np.ndarray:
@@ -380,6 +424,81 @@ def _fit_overlap_routers(
                     )
                 )
     return routers
+
+
+def _fit_paq_layers(
+    model: Any,
+    layer_indices: Sequence[int],
+    *,
+    group_size: int,
+    num_codebooks: int,
+    codebook_size: int,
+    iterations: int,
+    sample_limit: int | None,
+    seed: int,
+    torch: Any,
+) -> dict[int, _PAQLayer]:
+    """Fit record-local product/additive codecs without modifying the teacher."""
+
+    from engram.semantic.product_quantization import (
+        decode_product_additive,
+        fit_product_additive,
+    )
+
+    result: dict[int, _PAQLayer] = {}
+    code_bits = max(1, (codebook_size - 1).bit_length())
+    bits_per_weight = num_codebooks * code_bits / group_size
+    for layer_index in layer_indices:
+        module = model.model.layers[layer_index].mlp
+        matrices = {
+            "gate": module.gate_proj.weight.detach().float().cpu().numpy(),
+            "up": module.up_proj.weight.detach().float().cpu().numpy(),
+            "down": module.down_proj.weight.detach().float().cpu().numpy().T,
+        }
+        encodings = {
+            name: fit_product_additive(
+                matrix,
+                group_size=group_size,
+                num_codebooks=num_codebooks,
+                codebook_size=codebook_size,
+                iterations=iterations,
+                sample_limit=sample_limit,
+                seed=seed + layer_index * 11 + offset,
+                per_record_scale=True,
+            )
+            for offset, (name, matrix) in enumerate(matrices.items())
+        }
+        decoded = {
+            name: torch.from_numpy(decode_product_additive(encoding))
+            for name, encoding in encodings.items()
+        }
+        records = matrices["gate"].shape[0]
+
+        def scale_bytes_per_record(name: str) -> int:
+            scales = encodings[name].record_scales
+            return 0 if scales is None else int(scales.nbytes // records)
+
+        result[layer_index] = _PAQLayer(
+            gate=decoded["gate"],
+            up=decoded["up"],
+            down_records=decoded["down"],
+            group_size=group_size,
+            groups_per_record=encodings["gate"].metadata.groups,
+            num_codebooks=num_codebooks,
+            code_bits=code_bits,
+            encoded_bits_per_weight=bits_per_weight,
+            codebook_bytes=sum(
+                int(encoding.codebooks.nbytes) for encoding in encodings.values()
+            ),
+            scale_bytes_per_gate_record=scale_bytes_per_record("gate"),
+            scale_bytes_per_up_record=scale_bytes_per_record("up"),
+            scale_bytes_per_down_record=scale_bytes_per_record("down"),
+            codec=(
+                f"product_additive_{num_codebooks}x{code_bits}_g{group_size}_"
+                "fp16_scale"
+            ),
+        )
+    return result
 
 
 def _candidate_ids(
@@ -508,6 +627,88 @@ def _sparse_replacement(
     masked.scatter_(1, active_ids, active_values)
     replacement = module.down_proj(masked).reshape(*original_shape[:-1], -1)
     return replacement, hits, score_mass_recall
+
+
+def _paq_dip_replacement(
+    module: Any,
+    quantized: _PAQLayer,
+    hidden: Any,
+    *,
+    input_fraction: float,
+    candidate_count: int,
+    top_k: int,
+    torch: Any,
+) -> tuple[Any, Any, Any]:
+    """Execute DIP selection and reconstruction entirely with decoded PAQ weights.
+
+    Dense source weights are consulted only for the diagnostic oracle-membership
+    recall.  Candidate generation, exact candidate completion, reranking, and
+    the returned MLP output all use the quantized representation.
+    """
+
+    original_shape = hidden.shape
+    flat_hidden = hidden.reshape(-1, original_shape[-1]).float()
+    gate = quantized.gate.to(device=flat_hidden.device, dtype=flat_hidden.dtype)
+    up = quantized.up.to(device=flat_hidden.device, dtype=flat_hidden.dtype)
+    down_records = quantized.down_records.to(
+        device=flat_hidden.device, dtype=flat_hidden.dtype
+    )
+
+    q = _input_coordinate_count(original_shape[-1], input_fraction)
+    coordinate_ids = torch.argsort(
+        torch.abs(flat_hidden), dim=1, descending=True, stable=True
+    )[:, :q]
+    partial_hidden = torch.zeros_like(flat_hidden)
+    partial_hidden.scatter_(
+        1, coordinate_ids, flat_hidden.gather(1, coordinate_ids)
+    )
+    partial_activations = module.act_fn(partial_hidden @ gate.T) * (
+        partial_hidden @ up.T
+    )
+    quantized_value_norms = torch.linalg.vector_norm(down_records, dim=1)
+    proxy_scores = torch.abs(partial_activations) * quantized_value_norms.unsqueeze(0)
+    candidate_ids = torch.argsort(
+        proxy_scores, dim=1, descending=True, stable=True
+    )[:, :candidate_count]
+
+    quantized_activations = module.act_fn(flat_hidden @ gate.T) * (flat_hidden @ up.T)
+    candidate_ids_by_index = torch.sort(candidate_ids, dim=1).values
+    quantized_scores = (
+        torch.abs(quantized_activations) * quantized_value_norms.unsqueeze(0)
+    )
+    candidate_scores = quantized_scores.gather(1, candidate_ids_by_index)
+    local_order = torch.argsort(
+        candidate_scores, dim=1, descending=True, stable=True
+    )[:, :top_k]
+    active_ids = candidate_ids_by_index.gather(1, local_order)
+    active_values = quantized_activations.gather(1, active_ids)
+    selected_down = down_records[active_ids]
+    replacement = torch.sum(active_values.unsqueeze(-1) * selected_down, dim=1)
+
+    # Full-precision work below is diagnostics only and is deliberately excluded
+    # from the proposed inference traffic.
+    exact_activations = module.act_fn(module.gate_proj(flat_hidden)) * module.up_proj(
+        flat_hidden
+    )
+    exact_value_norms = torch.linalg.vector_norm(
+        module.down_proj.weight.detach().to(dtype=flat_hidden.dtype), dim=0
+    )
+    exact_scores = torch.abs(exact_activations) * exact_value_norms.unsqueeze(0)
+    oracle_ids = torch.argsort(
+        exact_scores, dim=1, descending=True, stable=True
+    )[:, :top_k]
+    candidate_mask = torch.zeros_like(exact_scores, dtype=torch.bool)
+    candidate_mask.scatter_(1, candidate_ids, True)
+    hits = candidate_mask.gather(1, oracle_ids).sum(dim=1)
+    oracle_scores = exact_scores.gather(1, oracle_ids)
+    captured = oracle_scores * candidate_mask.gather(1, oracle_ids)
+    oracle_mass = oracle_scores.sum(dim=1)
+    score_mass_recall = torch.where(
+        oracle_mass > 0,
+        captured.sum(dim=1) / oracle_mass,
+        torch.ones_like(oracle_mass),
+    )
+    return replacement.reshape(*original_shape[:-1], -1), hits, score_mass_recall
 
 
 def _quality_metrics(
@@ -653,6 +854,7 @@ def _make_arms(
     rank: int,
     posting_groups: int,
     posting_size: int,
+    paq_label: str,
 ) -> list[_Arm]:
     arms: list[_Arm] = []
     if "identity" in variants:
@@ -668,7 +870,12 @@ def _make_arms(
                 _Arm("oracle", scope_layers, scope, top_k)
                 for scope, scope_layers in scopes
             )
-        if "rank16" in variants or "overlap" in variants or "dip" in variants:
+        if (
+            "rank16" in variants
+            or "overlap" in variants
+            or "dip" in variants
+            or "dip_paq" in variants
+        ):
             for candidate_count in candidate_counts:
                 for variant in ("rank16", "overlap"):
                     if variant in variants:
@@ -698,6 +905,20 @@ def _make_arms(
                             )
                             for scope, scope_layers in scopes
                         )
+                if "dip_paq" in variants:
+                    for input_fraction in input_fractions:
+                        arms.extend(
+                            _Arm(
+                                "dip_paq",
+                                scope_layers,
+                                scope,
+                                top_k,
+                                candidate_count,
+                                input_fraction=input_fraction,
+                                quantization=paq_label,
+                            )
+                            for scope, scope_layers in scopes
+                        )
     return arms
 
 
@@ -707,13 +928,20 @@ def _evaluate_arm(
     arm: _Arm,
     routers: dict[tuple[int, int], LowRankMultiLabelRouter],
     overlap_routers: dict[tuple[int, int, int], OverlappingCoverageRouter],
+    paq_layers: dict[int, _PAQLayer],
     *,
     hidden_size: int,
     intermediate_size: int,
+    paq_cacheline_amplification: float,
     torch: Any,
     device: str,
 ) -> dict[str, Any]:
     local_by_layer = {index: _LocalAccumulator() for index in arm.layer_indices}
+    layer_top_k = (
+        dict(zip(arm.layer_indices, arm.layer_top_ks, strict=True))
+        if arm.layer_top_ks is not None
+        else {}
+    )
     quality: dict[str, list[float]] = defaultdict(list)
     handles = []
 
@@ -757,17 +985,38 @@ def _evaluate_arm(
                         candidate_count=arm.candidate_count,
                         torch=torch,
                     )
+                elif arm.variant == "dip_paq":
+                    assert arm.candidate_count is not None
+                    assert arm.input_fraction is not None
+                    replacement, hits, score_mass_recall = _paq_dip_replacement(
+                        module,
+                        paq_layers[layer_index],
+                        hidden,
+                        input_fraction=arm.input_fraction,
+                        candidate_count=arm.candidate_count,
+                        top_k=layer_top_k.get(layer_index, arm.top_k),
+                        torch=torch,
+                    )
+                    accumulator.add_recall(
+                        hits,
+                        top_k=layer_top_k.get(layer_index, arm.top_k),
+                        candidate_count=arm.candidate_count,
+                        score_mass_recall=score_mass_recall,
+                    )
+                    accumulator.add_outputs(replacement, output)
+                    return replacement.to(dtype=output.dtype, device=output.device)
+                active_top_k = layer_top_k.get(layer_index, arm.top_k)
                 replacement, hits, score_mass_recall = _sparse_replacement(
                     module,
                     hidden,
-                    top_k=arm.top_k,
+                    top_k=active_top_k,
                     candidate_ids=candidates,
                     torch=torch,
                 )
                 if hits is not None:
                     accumulator.add_recall(
                         hits,
-                        top_k=arm.top_k,
+                        top_k=active_top_k,
                         candidate_count=arm.candidate_count,
                         score_mass_recall=score_mass_recall,
                     )
@@ -835,13 +1084,19 @@ def _evaluate_arm(
         }
     elif arm.variant == "oracle":
         assert arm.top_k is not None
+        active_records = (
+            sum(arm.layer_top_ks)
+            if arm.layer_top_ks is not None
+            else len(arm.layer_indices) * arm.top_k
+        )
         projected = {
             "kind": "full_information_magnitude_reference_only",
-            "active_record_fraction": arm.top_k / intermediate_size,
-            "selected_value_bytes_per_token": len(arm.layer_indices)
-            * arm.top_k
-            * hidden_size
-            * 4,
+            "active_record_fraction": active_records
+            / (len(arm.layer_indices) * intermediate_size),
+            "selected_value_bytes_per_token": active_records * hidden_size * 4,
+            "layer_top_ks": list(arm.layer_top_ks)
+            if arm.layer_top_ks is not None
+            else None,
             "candidate_selection_cost": "unavailable oracle; deliberately not estimated",
         }
     elif arm.variant == "rank16":
@@ -900,8 +1155,7 @@ def _evaluate_arm(
             * hidden_size
             * 4,
         }
-    else:
-        assert arm.variant == "dip"
+    elif arm.variant == "dip":
         assert arm.top_k is not None and arm.candidate_count is not None
         assert arm.input_fraction is not None
         input_coordinates = _input_coordinate_count(hidden_size, arm.input_fraction)
@@ -941,14 +1195,118 @@ def _evaluate_arm(
             "projected_weight_traffic_reduction": dense_bytes / total_bytes,
             "accounting_formula_scalar_reads_per_layer": "2*I*q + 2*C*(H-q) + K*H",
         }
+    else:
+        assert arm.variant == "dip_paq"
+        assert arm.top_k is not None and arm.candidate_count is not None
+        assert arm.input_fraction is not None
+        layers = len(arm.layer_indices)
+        input_coordinates = _input_coordinate_count(hidden_size, arm.input_fraction)
+        traffic = projected_dip_traffic(
+            hidden_size,
+            intermediate_size,
+            input_fraction=arm.input_fraction,
+            candidate_count=arm.candidate_count,
+            top_k=arm.top_k,
+            bytes_per_element=1,
+        )
+        packed_code_bytes = 0
+        physical_code_bytes = 0
+        scale_bytes = 0
+        codebook_bytes = 0
+        norm_bytes = 0
+        index_bytes = 0
+        codecs: set[str] = set()
+        for layer_index in arm.layer_indices:
+            layer = paq_layers[layer_index]
+            codecs.add(layer.codec)
+            # A PAQ code identifies an entire subvector.  Arbitrary top-|x|
+            # coordinates normally touch every group, so the strict traffic
+            # bound reads all gate/up code pairs once and the selected down
+            # records.  Candidate completion reuses the already fetched key
+            # codes; charging scalar q elements here would be falsely low.
+            layer_code_count = (
+                (2 * intermediate_size + arm.top_k)
+                * layer.groups_per_record
+                * layer.num_codebooks
+            )
+            layer_code_bytes = math.ceil(
+                layer_code_count * layer.code_bits / 8.0
+            )
+            packed_code_bytes += layer_code_bytes
+            physical_code_bytes += math.ceil(
+                layer_code_bytes * paq_cacheline_amplification
+            )
+            scale_bytes += intermediate_size * (
+                layer.scale_bytes_per_gate_record
+                + layer.scale_bytes_per_up_record
+            ) + arm.top_k * layer.scale_bytes_per_down_record
+            codebook_bytes += layer.codebook_bytes
+            # One cached FP16 norm per down record supports proxy scoring.
+            norm_bytes += intermediate_size * 2
+            # uint16 coordinate, candidate, and selected-record IDs.
+            index_bytes += (
+                input_coordinates + arm.candidate_count + arm.top_k
+            ) * 2
+        dense_q4_bytes = layers * (3 * hidden_size * intermediate_size // 2)
+        warm_bytes = physical_code_bytes + scale_bytes + norm_bytes + index_bytes
+        cold_bytes = warm_bytes + codebook_bytes
+        projected = {
+            "kind": "dynamic_input_pruning_plus_product_additive_quantized_records",
+            "codec": sorted(codecs),
+            "active_record_fraction": arm.top_k / intermediate_size,
+            "candidate_record_fraction": arm.candidate_count / intermediate_size,
+            "input_fraction": arm.input_fraction,
+            "input_coordinate_count": input_coordinates,
+            "encoded_bits_per_weight": paq_layers[
+                arm.layer_indices[0]
+            ].encoded_bits_per_weight,
+            "group_size": paq_layers[arm.layer_indices[0]].group_size,
+            "groups_per_record": paq_layers[
+                arm.layer_indices[0]
+            ].groups_per_record,
+            "code_access_policy": (
+                "strict arbitrary-coordinate bound: all gate/up subvector codes "
+                "plus selected down-record codes"
+            ),
+            "logical_packed_code_bytes_per_token": packed_code_bytes,
+            "cacheline_amplification": paq_cacheline_amplification,
+            "physical_packed_code_bytes_per_token": physical_code_bytes,
+            "record_scale_bytes_per_token": scale_bytes,
+            "down_norm_bytes_per_token": norm_bytes,
+            "index_bytes_per_token": index_bytes,
+            "codebook_cold_bytes_per_token": codebook_bytes,
+            "warm_total_bytes_per_token": warm_bytes,
+            "cold_total_bytes_per_token": cold_bytes,
+            "dense_q4_mlp_bytes_per_token": dense_q4_bytes,
+            "warm_fraction_of_dense_q4": warm_bytes / dense_q4_bytes,
+            "cold_fraction_of_dense_q4": cold_bytes / dense_q4_bytes,
+            "projected_weight_traffic_fraction": cold_bytes / dense_q4_bytes,
+            "traffic_gate_maximum_fraction": 0.45,
+            "traffic_gate_passed": cold_bytes / dense_q4_bytes <= 0.45,
+            "algorithmic_scalar_work_formula_per_layer": (
+                "2*I*q + 2*C*(H-q) + K*H"
+            ),
+            "packed_code_read_formula_per_layer": (
+                "(2*I + K)*ceil(H/group_size)*num_codebooks*code_bits"
+            ),
+            "accounting_policy": (
+                "cold gate includes bit-packed codes with measured DIP cache-line "
+                "amplification, FP16 record scales, FP16 down norms, uint16 indices, "
+                "and all layer-local FP16 codebooks; baseline is dense Q4 MLP weights"
+            ),
+        }
     return {
         "name": arm.name,
         "variant": arm.variant,
         "scope": arm.scope,
         "layer_indices": list(arm.layer_indices),
         "top_k": arm.top_k,
+        "layer_top_ks": list(arm.layer_top_ks)
+        if arm.layer_top_ks is not None
+        else None,
         "candidate_count": arm.candidate_count,
         "input_fraction": arm.input_fraction,
+        "quantization": arm.quantization,
         "quality": metric_summary,
         "local_mlp": combined.summary(),
         "local_mlp_by_layer": local_layers,
@@ -993,6 +1351,14 @@ def evaluate_mlp_interventions(
     allow_calibration_overlap: bool = False,
     evaluation_role: str = "development",
     configuration_selection_traces: str | Path | None = None,
+    layer_top_ks: Sequence[int] | None = None,
+    paq_group_size: int = 8,
+    paq_codebooks: int = 2,
+    paq_codebook_size: int = 128,
+    paq_iterations: int = 8,
+    paq_sample_limit: int | None = 8192,
+    paq_seed: int = 73,
+    paq_cacheline_amplification: float = 12.0 / 11.0,
 ) -> dict[str, Any]:
     """Measure teacher-forced quality after replacing selected transformer MLPs.
 
@@ -1007,6 +1373,19 @@ def evaluate_mlp_interventions(
 
     try:
         import torch
+        import transformers.utils as transformers_utils
+        import transformers.utils.import_utils as transformers_imports
+
+        if transformers_imports.is_sklearn_available():
+            try:
+                import sklearn  # noqa: F401
+            except ImportError:
+
+                def sklearn_unavailable() -> bool:
+                    return False
+
+                transformers_imports.is_sklearn_available = sklearn_unavailable
+                transformers_utils.is_sklearn_available = sklearn_unavailable
         from transformers import AutoModelForCausalLM, AutoTokenizer
     except ImportError as exc:
         raise RuntimeError(
@@ -1051,7 +1430,9 @@ def evaluate_mlp_interventions(
     ):
         raise ValueError("top_ks must lie within the intermediate size")
     learned_variants = {"rank16", "overlap"}.intersection(normalized_variants)
-    candidate_variants = {"rank16", "overlap", "dip"}.intersection(normalized_variants)
+    candidate_variants = {"rank16", "overlap", "dip", "dip_paq"}.intersection(
+        normalized_variants
+    )
     if candidate_variants:
         if not candidate_values or any(
             value <= 0 or value > inspection.intermediate_size
@@ -1064,7 +1445,7 @@ def evaluate_mlp_interventions(
             for top_k in top_k_values
         ):
             raise ValueError("every candidate_count must be at least every top_k")
-    if "dip" in normalized_variants and (
+    if {"dip", "dip_paq"}.intersection(normalized_variants) and (
         not input_fraction_values
         or any(
             not math.isfinite(value) or value <= 0.0 or value > 1.0
@@ -1072,8 +1453,34 @@ def evaluate_mlp_interventions(
         )
     ):
         raise ValueError("input_fractions must be finite and lie in (0, 1]")
-    if configuration_selection_traces is not None and "dip" not in normalized_variants:
-        raise ValueError("configuration_selection_traces requires the DIP variant")
+    if (
+        configuration_selection_traces is not None
+        and not {"dip", "dip_paq"}.intersection(normalized_variants)
+        and layer_top_ks is None
+    ):
+        raise ValueError(
+            "configuration_selection_traces requires DIP or layer_top_ks"
+        )
+    if "dip_paq" in normalized_variants:
+        for name, value in (
+            ("paq_group_size", paq_group_size),
+            ("paq_codebooks", paq_codebooks),
+            ("paq_codebook_size", paq_codebook_size),
+            ("paq_iterations", paq_iterations),
+        ):
+            if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+                raise ValueError(f"{name} must be a positive integer")
+        if paq_codebooks > 2:
+            raise ValueError("paq_codebooks must be one or two")
+        if paq_codebook_size > 256:
+            raise ValueError("paq_codebook_size must not exceed 256")
+        if paq_sample_limit is not None and paq_sample_limit <= 0:
+            raise ValueError("paq_sample_limit must be positive when provided")
+        if (
+            not math.isfinite(paq_cacheline_amplification)
+            or paq_cacheline_amplification < 1.0
+        ):
+            raise ValueError("paq_cacheline_amplification must be finite and >= 1")
     if evaluation_role == "confirmation" and configuration_selection_traces is None:
         raise ValueError(
             "confirmation evaluation requires configuration_selection_traces"
@@ -1109,6 +1516,23 @@ def evaluate_mlp_interventions(
             for value in layer_indices
         ):
             raise ValueError("layers must contain valid layer indices")
+    adaptive_top_ks = (
+        tuple(int(value) for value in layer_top_ks)
+        if layer_top_ks is not None
+        else None
+    )
+    if adaptive_top_ks is not None:
+        if len(adaptive_top_ks) != len(layer_indices) or any(
+            value <= 0 or value > inspection.intermediate_size
+            for value in adaptive_top_ks
+        ):
+            raise ValueError(
+                "layer_top_ks must provide one valid active count per selected layer"
+            )
+        if set(normalized_variants) - {"identity"}:
+            raise ValueError(
+                "layer_top_ks must be evaluated with the identity variant only"
+            )
 
     records = _load_jsonl(dataset_path, max_records)
     loaded_model = AutoModelForCausalLM.from_pretrained(
@@ -1242,6 +1666,23 @@ def evaluate_mlp_interventions(
             "evaluation sequence provenance count differs from executed examples"
         )
     baseline["unique_sequences"] = len(set(evaluation_sequence_hashes))
+    paq_layers: dict[int, _PAQLayer] = {}
+    paq_label = (
+        f"{paq_codebooks}x{max(1, (paq_codebook_size - 1).bit_length())}"
+        f"_g{paq_group_size}"
+    )
+    if "dip_paq" in normalized_variants:
+        paq_layers = _fit_paq_layers(
+            loaded_model,
+            layer_indices,
+            group_size=paq_group_size,
+            num_codebooks=paq_codebooks,
+            codebook_size=paq_codebook_size,
+            iterations=paq_iterations,
+            sample_limit=paq_sample_limit,
+            seed=paq_seed,
+            torch=torch,
+        )
     arms = _make_arms(
         normalized_variants,
         layer_mode,
@@ -1252,7 +1693,19 @@ def evaluate_mlp_interventions(
         rank=rank,
         posting_groups=posting_groups,
         posting_size=posting_size,
+        paq_label=paq_label,
     )
+    if adaptive_top_ks is not None:
+        adaptive_mean = sum(adaptive_top_ks) / len(adaptive_top_ks)
+        arms.append(
+            _Arm(
+                "oracle",
+                layer_indices,
+                "all",
+                int(round(adaptive_mean)),
+                layer_top_ks=adaptive_top_ks,
+            )
+        )
     results = [
         _evaluate_arm(
             loaded_model,
@@ -1260,8 +1713,10 @@ def evaluate_mlp_interventions(
             arm,
             routers,
             overlap_routers,
+            paq_layers,
             hidden_size=inspection.hidden_size,
             intermediate_size=inspection.intermediate_size,
+            paq_cacheline_amplification=paq_cacheline_amplification,
             torch=torch,
             device=device,
         )
@@ -1283,9 +1738,29 @@ def evaluate_mlp_interventions(
         "layer_mode": layer_mode,
         "variants": list(normalized_variants),
         "top_ks": list(top_k_values),
+        "layer_top_ks": list(adaptive_top_ks)
+        if adaptive_top_ks is not None
+        else None,
         "candidate_counts": list(candidate_values) if candidate_variants else [],
         "input_fractions": (
-            list(input_fraction_values) if "dip" in normalized_variants else []
+            list(input_fraction_values)
+            if {"dip", "dip_paq"}.intersection(normalized_variants)
+            else []
+        ),
+        "product_additive_quantization": (
+            {
+                "group_size": paq_group_size,
+                "num_codebooks": paq_codebooks,
+                "codebook_size": paq_codebook_size,
+                "iterations": paq_iterations,
+                "sample_limit": paq_sample_limit,
+                "seed": paq_seed,
+                "cacheline_amplification": paq_cacheline_amplification,
+                "quality_execution": "decoded_float32_from_bit_packed_encoding",
+                "timing_valid": False,
+            }
+            if "dip_paq" in normalized_variants
+            else None
         ),
         "rank": rank if learned_variants else None,
         "calibration": calibration_metadata,

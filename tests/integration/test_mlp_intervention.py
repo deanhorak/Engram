@@ -13,8 +13,8 @@ except (ImportError, RuntimeError) as error:
         allow_module_level=True,
     )
 
-from engram.evaluation.mlp_intervention import evaluate_mlp_interventions
-from engram.tracing.teacher import capture_teacher_traces
+from engram.evaluation.mlp_intervention import evaluate_mlp_interventions  # noqa: E402
+from engram.tracing.teacher import capture_teacher_traces  # noqa: E402
 
 
 def _tiny_teacher(path):
@@ -75,6 +75,31 @@ def test_identity_and_full_oracle_match_tiny_teacher(tmp_path):
         assert arm["local_mlp"]["mlp_output_relative_l2"]["mean"] == pytest.approx(
             0.0, abs=1e-7
         )
+
+
+def test_layer_adaptive_oracle_preserves_budget_and_full_width_parity(tmp_path):
+    model_path = tmp_path / "teacher"
+    dataset = tmp_path / "validation.jsonl"
+    _tiny_teacher(model_path)
+    _dataset(dataset)
+
+    report = evaluate_mlp_interventions(
+        model_path,
+        dataset,
+        variants=("identity",),
+        layer_mode="all",
+        layer_top_ks=(12, 12),
+    )
+
+    assert report["layer_top_ks"] == [12, 12]
+    adaptive = report["arms"][1]
+    assert adaptive["variant"] == "oracle"
+    assert adaptive["top_k"] == 12
+    assert adaptive["layer_top_ks"] == [12, 12]
+    assert adaptive["projected_accounting"]["active_record_fraction"] == 1.0
+    assert adaptive["quality"]["teacher_student_kl"]["mean"] == pytest.approx(
+        0.0, abs=1e-7
+    )
 
 
 def test_partial_oracle_and_rank_router_produce_finite_quality_metrics(tmp_path):
@@ -217,6 +242,49 @@ def test_dip_is_predictor_free_deterministic_and_accounts_projected_reads(tmp_pa
         repeated = second_by_name[arm["name"]]
         assert repeated["local_mlp"] == arm["local_mlp"]
         assert repeated["quality"] == arm["quality"]
+
+
+def test_product_additive_dip_executes_quantized_weights_and_accounts_cold_bytes(
+    tmp_path,
+):
+    model_path = tmp_path / "teacher"
+    dataset = tmp_path / "validation.jsonl"
+    _tiny_teacher(model_path)
+    _dataset(dataset)
+
+    report = evaluate_mlp_interventions(
+        model_path,
+        dataset,
+        variants=("identity", "oracle", "dip_paq"),
+        top_ks=(12,),
+        candidate_counts=(12,),
+        input_fractions=(1.0,),
+        layers=(0,),
+        layer_mode="all",
+        paq_group_size=4,
+        paq_codebooks=2,
+        paq_codebook_size=8,
+        paq_iterations=2,
+        paq_sample_limit=16,
+        paq_seed=19,
+    )
+
+    arm = next(item for item in report["arms"] if item["variant"] == "dip_paq")
+    assert arm["quantization"] == "2x3_g4"
+    assert arm["local_mlp"]["candidate_recall"]["mean"] == 1.0
+    assert math_is_finite(arm["quality"]["teacher_student_kl"]["mean"])
+    accounting = arm["projected_accounting"]
+    assert accounting["encoded_bits_per_weight"] == 1.5
+    assert accounting["logical_packed_code_bytes_per_token"] > 0
+    assert accounting["physical_packed_code_bytes_per_token"] >= accounting[
+        "logical_packed_code_bytes_per_token"
+    ]
+    assert accounting["codebook_cold_bytes_per_token"] > 0
+    assert accounting["cold_total_bytes_per_token"] > accounting[
+        "warm_total_bytes_per_token"
+    ]
+    assert accounting["dense_q4_mlp_bytes_per_token"] == 144
+    assert accounting["traffic_gate_passed"] is False
 
 
 @pytest.mark.parametrize("input_fraction", (0.0, -0.1, 1.1, float("nan")))

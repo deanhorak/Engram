@@ -1,5 +1,21 @@
 # Evaluation
 
+## Current combined-gate decision
+
+As of 2026-07-23, no candidate passes the causal quality thresholds and the
+complete physical cold-traffic threshold together. Predictor-free DIP passes
+quality on an untouched confirmation corpus but reaches 83.33% cache-line
+traffic and is slower than dense in the checked native benchmark. The
+serialized mild-width compact-Q4 student reaches 44.9334% traffic but fails
+quality after 3,000,093 training positions. The latest 1M-prototype
+output-memory experiment is layer-local only and fails its predeclared
+progression screen.
+
+See [Project status](status.md) and the
+[machine-readable snapshot](../reports/semantic_gate_status_2026-07-23/summary.json).
+The sections below define the individual experiments and preserve their
+historical evidence.
+
 ## Gate 1 definition
 
 For each traced state and layer, all neuron activations are computed. Records are sorted by
@@ -30,7 +46,10 @@ then replaces selected `layer.mlp` outputs with one of five arms:
 The evaluator can run all-layer interventions separately from one-layer-at-a-time attribution. Local
 MLP error compares the replacement with the exact MLP at the same, possibly drifted, input. Final
 normalized-hidden-state drift and logits compare with a separate untouched teacher pass. The
-checked reports currently use all-layer mode; one-layer attribution has not yet been checked in.
+checked adaptive-budget selection report uses one-layer attribution at five active counts.
+`--layer-top-k` adds one all-layer magnitude-reference arm with a fixed per-layer schedule; its
+mean active count must be integral, and confirmation reports require a sequence-disjoint
+configuration-selection trace corpus.
 Next-token metrics use logits at positions `[:-1]` and targets at `[1:]`. Final-hidden metrics use
 all input-token states, while local MLP error and candidate recall use all input-token/layer states;
 the JSON statistics record each population count explicitly.
@@ -95,6 +114,137 @@ delta +0.343, and final-hidden relative L2 0.250. It therefore remains stopped b
 serialization. A later gradient audit found that the hard top-K route prevents the local, hidden,
 and logit losses from updating router scores, while the adapter update is negligible; this pilot
 does not test a differentiable soft-to-hard sparse student.
+
+The replacement hardware-aware trainer does test that missing mechanism. Unit tests require
+nonzero router gradients from causal output and locality losses with membership BCE absent. Its
+real-model smoke arm fixes `q=62.5%`, `C=K=512`, reports both scalar and 64-byte-line-adjusted
+traffic, and retains the same held-out causal thresholds. One training record is sufficient only
+to validate execution and reporting; it is explicitly below the evidence floor for a quality
+decision.
+
+The complete hardware-aware run uses all 32 training and 16 held-out sequences. It passes the
+evidence and hardware-budget checks but fails recall and every causal-quality check: recall 0.8959,
+KL 0.1659, top-1 0.7678, NLL delta +0.1261, and final-hidden relative L2 0.1988. Its candidates
+occupy 99.86% of physical gate/up line groups. Follow-up storage-permutation, complete-line,
+blend-scale, three-projection LoRA, and broader-corpus screens do not justify another full run.
+
+Later diagnostics close the remaining low-budget variants. Exact top-512 membership itself touches
+95.86/96 contiguous record lines; a perfect 80-line selector can cover only 91.75% of those records.
+Correcting LoRA initialization/scaling and adding a rank-32 residual improves the complete run to
+KL 0.152, top-1 0.780, NLL +0.100, and hidden L2 0.193, still a full failure. The residual has
+negligible alignment with the omitted output, and higher learning rates are unstable. Finally, a
+same-total layer-adaptive schedule chosen from individual-layer causal measurements on four
+separate sequences fails confirmation with KL 0.134, top-1 0.786, NLL +0.110, and hidden L2 0.185.
+The next experiment must co-train structured sparsity with the MLP basis rather than retune this
+post-hoc selector.
+
+Before committing to that expensive run, `engram evaluate-structured-experts` now performs a
+trace-only shadow screen. It clusters records by held-out-safe calibration contribution profiles,
+applies one lossless gate/up/down permutation, constructs contiguous expert blocks, and compares a
+full-information greedy-residual block reference with a fitted linear block router. Dense-shadow
+parity, exact active records, and projected physical traffic are checked separately. This is not an
+all-layer intervention and cannot pass the causal gate.
+
+At exactly 512 active records, 64-, 32-, and 16-record blocks produce greedy-reference local
+relative-L2 errors of 0.547, 0.497, and 0.438. Their fitted-router errors are 0.655, 0.638, and
+0.624. All fail the 0.20 local pretraining screen. The finest layout also reaches 35.42% projected
+dense traffic with its full router, just above the 35% screen. Static grouping is therefore stopped;
+the next feasibility experiment must train native channel routing and the MLP basis together.
+
+The native-gate shadow evaluates that alternative without a predictor or exact-completion pass.
+It computes either the full gate or the gate on top-magnitude input coordinates, selects 512
+channels from gate utility, and evaluates exact up/down projections only for those channels. The
+exact contribution top-512 reference has local relative L2 0.190. Dense-gate selection is 0.375;
+q=62.5% and q=50% are 0.386 and 0.402 at 43.06% and 38.89% ideal traffic. This isolates learned
+channel utility as the main problem.
+
+`engram train-native-gate-traces` trains selected MLP layers on cached teacher boundaries through
+the exact hard sparse forward and uses a dense surrogate only for backward selection gradients.
+Its representative layer-14 arm improves held-out error from 0.4146 to 0.4040 after 64 steps and
+keeps dense-shadow error at 0.0339, but misses the declared 10% improvement screen. The artifact is
+diagnostic and cannot enter serialization. Cached-boundary tuning is stopped before an all-layer
+run; only end-to-end causal training can test the remaining hypothesis.
+
+`engram train-native-gate-e2e` performs that causal experiment on either CPU or an optional CUDA
+device with identical semantics. It progressively anneals q/K, freezes non-MLP parameters, and
+validates only at the final hard budget. Full MLP/optimizer checkpoints are device-neutral and may
+resume to a larger requested total step count. A `steps=0` run supplies the matched control.
+
+On all 16 expanded-validation sequences, the untrained q=62.5%/K=512 control has KL 1.235, top-1
+0.460, NLL +1.202, hidden L2 0.508, and local L2 0.702. Eight progressive CPU steps change these to
+1.254, 0.481, +1.211, 0.510, and 0.700. The run passes evidence and traffic checks but not causal
+quality; because the metrics move in opposing directions, it does not trigger a longer run.
+
+`engram evaluate-native-gate-residual` fits a continuous low-rank correction to the difference
+between partial-gate log utility and exact contribution log utility. Predictor parameters count as
+traffic. On 512 calibration states per layer, rank 16/blend 0.8 reaches local L2 0.338 and exact
+top-512 recall 0.643 at 44.39% of dense traffic, passing the declared 10% local-improvement screen.
+The evaluator writes provenance-bound per-layer tensors; `train-native-gate-e2e
+--utility-residual ...` consumes them in the actual hard sparse path.
+
+On the same 16-sequence causal set, that untrained residual path reaches KL 0.629, top-1 0.599,
+NLL +0.583, hidden L2 0.363, and local L2 0.625. These are large improvements over the native-gate
+control but remain outside the final thresholds. Eight matched progressive steps produce
+0.640/0.605/+0.604/0.363/0.626, rejecting longer training with the unchanged objective. The next
+screen must refit residuals on sparse-student states and then repeat this exact held-out gate.
+
+That refit has now been screened and rejected: on sequence-disjoint sparse-student trajectories it
+changes same-state local L2 only from 0.35117 to 0.34983. The larger causal local metric also
+contains accumulated state drift, but this controlled comparison shows that state-distribution
+mismatch is not the main selector limitation. No causal evaluation of the refitted artifact is
+justified.
+
+A development-only q=43.75%/K=640/rank-23 composition uses 44.25% projected traffic and passes its
+local screen, but worsens KL and NLL relative to K=512 while remaining outside every final quality
+threshold. The original K cap is not revised. Together with the failing full-information K=512
+oracle, this closes the frozen-basis routing branch. Further Milestone 2 evaluation must concern a
+co-adapted structured/width-pruned MLP trained on a materially larger corpus.
+
+### Fixed-width co-adapted student
+
+The next controlled experiment replaces every 1,536-wide SmolLM2 SwiGLU with a trainable
+672-wide layer. This is a router-free, contiguous representation at 43.75% of dense MLP weight
+traffic. The student freezes non-MLP transformer components and trains local-MLP, hidden-state,
+and logit-distillation losses. A deterministic corpus builder round-robins 2,048 sequences
+(258,899 token positions) across 129 repository prose/code files. Exact token-sequence hashes
+confirm no overlap with the expanded validation set.
+
+Parameter-only checkpoint transfer from the 128-sequence pilot prevents optimizer/history leakage
+into the new corpus. All held-out metrics improve through a complete 2,048-step epoch, but remain
+far outside the gate:
+
+| Training state | KL | Top-1 | NLL delta | Hidden rel-L2 | Local MLP rel-L2 |
+|---|---:|---:|---:|---:|---:|
+| 128-sequence pilot, 128 steps | 1.5499 | 0.4175 | +1.5254 | 0.4896 | 0.7636 |
+| Expanded corpus, 512 steps | 1.3445 | 0.4460 | +1.2723 | 0.4537 | 0.7310 |
+| Expanded corpus, 1,024 steps | 1.2660 | 0.4521 | +1.1604 | 0.4418 | 0.7189 |
+| Expanded corpus, 2,048 steps | 1.1773 | 0.4745 | +1.0553 | 0.4260 | 0.7053 |
+| Required gate | <=0.05 | >=0.90 | <=+0.05 | <=0.10 | diagnostic |
+
+This rejects additional blind epochs of the same fixed-width configuration. Before another causal
+run, Engram should fit compact layers on a larger sample of cached teacher boundaries and measure
+the attainable per-layer approximation ceiling. If that ceiling remains poor, the next design must
+spend the same byte budget on a more expressive structured basis rather than more optimization of
+width 672.
+
+The follow-up ceiling screen uses MLP-only traces: 4,096 training boundaries sampled from 256
+full-context sequences and 446 validation boundaries from a separate 16-sequence split. Layers
+0, 7, 14, 21, and 29 are initialized from the full-epoch checkpoint and independently trained for
+2,048 cached-boundary steps. The declared screen requires at least 10% mean improvement and final
+mean relative L2 no greater than 0.15.
+
+| Layer | Initial rel-L2 | Fitted rel-L2 | Improvement |
+|---:|---:|---:|---:|
+| 0 | 0.3059 | 0.2221 | 27.4% |
+| 7 | 0.5476 | 0.5049 | 7.8% |
+| 14 | 0.4905 | 0.4558 | 7.1% |
+| 21 | 0.4805 | 0.4497 | 6.4% |
+| 29 | 0.1007 | 0.0961 | 4.6% |
+| Mean | 0.3851 | 0.3457 | 10.2% |
+
+The relative-improvement check passes, but the absolute ceiling fails by 0.1957. Uniform width 672
+is rejected before another causal run. The next architecture should test layer-adaptive capacity or
+a more expressive structured basis under an aggregate, rather than per-layer, 45% traffic budget.
 
 The next experiment replaced learned membership prediction with a predictor-free, DIP-inspired
 selector. The published DIP method motivates top-magnitude input pruning and partial activation

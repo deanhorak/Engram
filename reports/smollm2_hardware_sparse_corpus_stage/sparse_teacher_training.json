@@ -1,0 +1,233 @@
+{
+  "artifact": {
+    "format": "safetensors_router_and_mergeable_gate_up_down_lora",
+    "path": "/home/dean/repos/engram/reports/smollm2_hardware_sparse_corpus_stage/sparse_student.safetensors",
+    "sha256": "7f08770a5ea2ef29dbe37e9d48e3df4ebb26787b30940a3ab8f0555506e0f30a"
+  },
+  "configuration": {
+    "adapter_rank": 8,
+    "batch_size": 4,
+    "cache_line_records": 16,
+    "candidate_count": 512,
+    "epochs": 1,
+    "input_fraction": 0.625,
+    "learning_rate": 0.0001,
+    "loss_weights": {
+      "hidden": 0.25,
+      "local": 1.0,
+      "locality": 0.05,
+      "logit": 0.25,
+      "router": 0.1
+    },
+    "router_learning_rate": 0.001,
+    "router_rank": 16,
+    "router_regularization": 8000.0,
+    "routing_mode": "hardware_ste",
+    "temperature": 1.0,
+    "top_k": 512
+  },
+  "data_separation": {
+    "calibration_sequences": 32,
+    "held_out": true,
+    "method": "exact_token_sequence_hashes",
+    "overlapping_sequences": 0,
+    "training_dataset_hash": "55af4d5a2a57b5a1a2ac2614ee22b63ac9033202d2ccff76bb833b1e08bb221e",
+    "training_sequences": 16,
+    "training_validation_overlapping_sequences": 0,
+    "validation_sequences": 4
+  },
+  "experiment": "hardware_aware_sparse_teacher_finetuning",
+  "gate": {
+    "checks": {
+      "cache_adjusted_traffic": true,
+      "candidate_recall": false,
+      "evidence_size": false,
+      "final_hidden_relative_l2": false,
+      "hardware_budget": true,
+      "nll_delta": false,
+      "teacher_student_kl": false,
+      "teacher_top1_agreement": false
+    },
+    "decision": "stop_before_serialization",
+    "passed": false
+  },
+  "metrics": {
+    "candidate_cache_line_fraction": {
+      "count": 2100,
+      "maximum": 1.0,
+      "mean": 0.9986458333333333,
+      "median": 1.0,
+      "minimum": 0.96875,
+      "p95": 1.0
+    },
+    "candidate_cache_lines": {
+      "count": 2100,
+      "maximum": 96.0,
+      "mean": 95.87,
+      "median": 96.0,
+      "minimum": 93.0,
+      "p95": 96.0
+    },
+    "candidate_recall": {
+      "count": 2100,
+      "maximum": 0.99609375,
+      "mean": 0.8999097842261905,
+      "median": 0.8984375,
+      "minimum": 0.72265625,
+      "p95": 0.9453125
+    },
+    "final_hidden_cosine": {
+      "count": 70,
+      "maximum": 0.9952853375914383,
+      "mean": 0.9846719494896254,
+      "median": 0.9868252672672349,
+      "minimum": 0.9521320667476396,
+      "p95": 0.9941861891436675
+    },
+    "final_hidden_relative_l2": {
+      "count": 70,
+      "maximum": 0.30837638038196913,
+      "mean": 0.17020361157692968,
+      "median": 0.16187117487901959,
+      "minimum": 0.09827101274527703,
+      "p95": 0.2613278225715031
+    },
+    "local_mlp_relative_l2": {
+      "count": 2100,
+      "maximum": 0.7206205308036151,
+      "mean": 0.33191438215169056,
+      "median": 0.35019313111215644,
+      "minimum": 0.0008602260538765377,
+      "p95": 0.4941490997649694
+    },
+    "nll_delta": {
+      "count": 66,
+      "maximum": 2.2264585494995117,
+      "mean": 0.16994654748475913,
+      "median": 0.07152044773101807,
+      "minimum": -0.8507871627807617,
+      "p95": 1.0315831899642944
+    },
+    "student_nll": {
+      "count": 66,
+      "maximum": 13.438653945922852,
+      "mean": 4.678385396121127,
+      "median": 4.9271979331970215,
+      "minimum": 0.16992096602916718,
+      "p95": 10.876853942871094
+    },
+    "teacher_nll": {
+      "count": 66,
+      "maximum": 12.995285987854004,
+      "mean": 4.508438847055941,
+      "median": 4.1092143058776855,
+      "minimum": 0.17923946678638458,
+      "p95": 10.579240560531616
+    },
+    "teacher_student_kl": {
+      "count": 66,
+      "maximum": 0.631102442741394,
+      "mean": 0.13682997798914034,
+      "median": 0.10021472349762917,
+      "minimum": 0.00689959479495883,
+      "p95": 0.34644199907779694
+    },
+    "teacher_student_top5_overlap": {
+      "count": 66,
+      "maximum": 1.0,
+      "mean": 0.7878787993933215,
+      "median": 0.800000011920929,
+      "minimum": 0.20000000298023224,
+      "p95": 1.0
+    },
+    "teacher_top1_agreement": {
+      "count": 66,
+      "maximum": 1.0,
+      "mean": 0.7878787878787878,
+      "median": 1.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    },
+    "teacher_top5_contains_student_top1": {
+      "count": 66,
+      "maximum": 1.0,
+      "mean": 1.0,
+      "median": 1.0,
+      "minimum": 1.0,
+      "p95": 1.0
+    }
+  },
+  "projected_traffic": {
+    "cache_adjusted_fraction_of_dense": 0.7774392361111111,
+    "cache_adjusted_weight_bytes_per_token_layer": 8253941.76,
+    "dense_over_sparse_reduction": 1.6363636363636365,
+    "dense_weight_bytes_per_token_layer": 10616832,
+    "fraction_of_dense": 0.6111111111111112,
+    "input_coordinates": 360,
+    "weight_bytes_per_token_layer": 6488064
+  },
+  "schema_version": 2,
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "status": "measured_local_model",
+  "training": {
+    "batch_size": 4,
+    "history": [
+      {
+        "batch": 0,
+        "epoch": 0,
+        "hidden": 0.008543862029910088,
+        "local": 0.12471815198659897,
+        "locality": 0.9777549505233765,
+        "logit": 0.14332401752471924,
+        "record_start": 0,
+        "records": 4,
+        "router": 0.40273112058639526,
+        "total": 0.25184598565101624
+      },
+      {
+        "batch": 1,
+        "epoch": 0,
+        "hidden": 0.008172905072569847,
+        "local": 0.12103673815727234,
+        "locality": 0.9776710271835327,
+        "logit": 0.12679848074913025,
+        "record_start": 4,
+        "records": 4,
+        "router": 0.40316569805145264,
+        "total": 0.24397970736026764
+      },
+      {
+        "batch": 2,
+        "epoch": 0,
+        "hidden": 0.010675965808331966,
+        "local": 0.1408178061246872,
+        "locality": 0.9776244759559631,
+        "logit": 0.16023243963718414,
+        "record_start": 8,
+        "records": 4,
+        "router": 0.3979407846927643,
+        "total": 0.2722202241420746
+      },
+      {
+        "batch": 3,
+        "epoch": 0,
+        "hidden": 0.013111303560435772,
+        "local": 0.1523265540599823,
+        "locality": 0.9776602387428284,
+        "logit": 0.1827017068862915,
+        "record_start": 12,
+        "records": 4,
+        "router": 0.3929775655269623,
+        "total": 0.28946056962013245
+      }
+    ],
+    "records": 16,
+    "router_initialization_cache_reused": true,
+    "steps": 4
+  },
+  "validation": {
+    "input_token_positions": 70,
+    "next_token_positions": 66,
+    "records": 4
+  }
+}

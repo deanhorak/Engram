@@ -1,0 +1,127 @@
+{
+  "completed_steps": 8,
+  "configuration": {
+    "adapter_rank": 32,
+    "batch_size": 8,
+    "candidate_count": 672,
+    "epochs": 1,
+    "input_fraction": 0.625,
+    "learning_rate": 0.001,
+    "loss_weights": {
+      "hidden": 0.5,
+      "local": 1.0,
+      "locality": 0.0,
+      "logit": 0.5,
+      "router": 0.2
+    },
+    "records": 64,
+    "residual_rank": 0,
+    "router_learning_rate": 0.003,
+    "router_rank": 8,
+    "schema_version": 1,
+    "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+    "temperature": 1.0,
+    "top_k": 672,
+    "training_dataset_hash": "cd4ad21a5a381a9fb9b03134c68944be055dc47578d817fc3484c0d4491e19c0",
+    "validation_dataset_hash": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c"
+  },
+  "gradient_diagnostics": null,
+  "history": [
+    {
+      "batch": 0,
+      "epoch": 0,
+      "hidden": 0.18275666236877441,
+      "local": 0.9704227447509766,
+      "locality": 0.0,
+      "logit": 2.85158371925354,
+      "record_start": 0,
+      "records": 8,
+      "router": 0.728094220161438,
+      "total": 2.633211851119995
+    },
+    {
+      "batch": 1,
+      "epoch": 0,
+      "hidden": 0.1778283268213272,
+      "local": 0.7726716995239258,
+      "locality": 0.0,
+      "logit": 1.936524748802185,
+      "record_start": 8,
+      "records": 8,
+      "router": 0.7257219552993774,
+      "total": 1.9749926328659058
+    },
+    {
+      "batch": 2,
+      "epoch": 0,
+      "hidden": 0.18556106090545654,
+      "local": 0.758632481098175,
+      "locality": 0.0,
+      "logit": 1.9760315418243408,
+      "record_start": 16,
+      "records": 8,
+      "router": 0.7232987284660339,
+      "total": 1.9840885400772095
+    },
+    {
+      "batch": 3,
+      "epoch": 0,
+      "hidden": 0.18246279656887054,
+      "local": 0.7447100281715393,
+      "locality": 0.0,
+      "logit": 2.249398708343506,
+      "record_start": 24,
+      "records": 8,
+      "router": 0.7213149666786194,
+      "total": 2.1049036979675293
+    },
+    {
+      "batch": 4,
+      "epoch": 0,
+      "hidden": 0.17388717830181122,
+      "local": 0.7055132389068604,
+      "locality": 0.0,
+      "logit": 1.4928120374679565,
+      "record_start": 32,
+      "records": 8,
+      "router": 0.7180020213127136,
+      "total": 1.6824631690979004
+    },
+    {
+      "batch": 5,
+      "epoch": 0,
+      "hidden": 0.16630840301513672,
+      "local": 0.6837859153747559,
+      "locality": 0.0,
+      "logit": 1.6057467460632324,
+      "record_start": 40,
+      "records": 8,
+      "router": 0.7145419120788574,
+      "total": 1.712721824645996
+    },
+    {
+      "batch": 6,
+      "epoch": 0,
+      "hidden": 0.1643684059381485,
+      "local": 0.6780717968940735,
+      "locality": 0.0,
+      "logit": 1.438994288444519,
+      "record_start": 48,
+      "records": 8,
+      "router": 0.7116261720657349,
+      "total": 1.6220784187316895
+    },
+    {
+      "batch": 7,
+      "epoch": 0,
+      "hidden": 0.16656656563282013,
+      "local": 0.6518504619598389,
+      "locality": 0.0,
+      "logit": 1.6325550079345703,
+      "record_start": 56,
+      "records": 8,
+      "router": 0.707317590713501,
+      "total": 1.692874789237976
+    }
+  ]
+}

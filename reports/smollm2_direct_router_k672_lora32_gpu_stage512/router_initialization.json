@@ -1,0 +1,9 @@
+{
+  "calibration_dataset_hash": "383691c11c1f3670322abb768df4362aca54c2e917907bb68ae8d33f4cf002f3",
+  "layers": 30,
+  "router_rank": 8,
+  "router_regularization": 8000.0,
+  "schema_version": 1,
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "top_k": 672
+}

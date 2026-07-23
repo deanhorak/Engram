@@ -110,3 +110,46 @@ def test_dip_sweep_requires_validation_trace_and_valid_budgets(tmp_path):
             top_k=4,
             candidate_counts=(3,),
         )
+
+
+def test_dip_sweep_supports_cache_line_block_selection(tmp_path):
+    model = create_tiny_fixture(
+        tmp_path / "model",
+        hidden_size=32,
+        intermediate_size=12,
+        num_layers=2,
+        num_heads=2,
+    )
+    trace = tmp_path / "validation"
+    rng = np.random.default_rng(812)
+    model_hash = inspect_model(model).source_hash
+    with TraceWriter(
+        trace,
+        model_hash=model_hash,
+        dataset_hash="blocked-held-out",
+        split="validation",
+        seed=812,
+    ) as writer:
+        arrays = {
+            "sample_id": np.asarray([0, 0], dtype=np.int64),
+            "token_id": np.asarray([1, 2], dtype=np.int64),
+        }
+        for layer in range(2):
+            arrays[f"layer_{layer}_mlp_input"] = rng.normal(size=(2, 32)).astype(
+                np.float32
+            )
+        writer.append(arrays)
+
+    report = evaluate_dip_exact_completion_sweep(
+        model,
+        trace,
+        input_fractions=(0.5,),
+        top_k=4,
+        candidate_counts=(6,),
+        input_block_size=16,
+    )
+
+    assert report["configuration"]["input_block_size"] == 16
+    assert report["configuration"]["input_coordinate_counts"] == [16]
+    assert report["arms"][0]["name"].startswith("dip_b16_")
+    assert "contiguous_16_float32" in report["method"]["input_selection_granularity"]

@@ -2,6 +2,10 @@
 
 Status: **durable policy/session and adapter scaffolds implemented; production workers and learned predictors are not**
 
+This subsystem is tracked separately from the compiled model worker's blocked
+Milestone 2 semantic gate. See [Project status](status.md) for the combined
+repository snapshot.
+
 Engram now distinguishes two very different control problems. Inside a compiled model, the
 token-level recurrent controller updates a numeric state during generation. Above one or more
 models, an optional system-level **Cognitive Executive**, called the Oracle, manages goals,

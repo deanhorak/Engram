@@ -1,0 +1,545 @@
+{
+  "artifact": {
+    "format": "engram_width_pruned_mlp_v1",
+    "written": false
+  },
+  "configuration": {
+    "batch_size": 1,
+    "device": "cpu",
+    "device_neutral_artifact": true,
+    "learning_rate": 1e-05,
+    "local_batch_size": 32,
+    "local_learning_rate": 0.0003,
+    "local_warmup_steps": 8,
+    "loss_weights": {
+      "hidden": 0.25,
+      "local": 1.0,
+      "logit": 0.25
+    },
+    "replacement_order": "deepest_first",
+    "replacement_steps": 4,
+    "steps": 8,
+    "target_width": 672
+  },
+  "data_separation": {
+    "method": "exact_token_sequence_hashes",
+    "overlapping_sequences": 0,
+    "training_dataset_hash": "383691c11c1f3670322abb768df4362aca54c2e917907bb68ae8d33f4cf002f3",
+    "validation_dataset_hash": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c"
+  },
+  "experiment": "progressive_width_pruned_distillation",
+  "gate": {
+    "checks": {
+      "all_layers_compact": true,
+      "evidence_size": true,
+      "final_hidden_relative_l2": false,
+      "nll_delta": false,
+      "projected_traffic": true,
+      "teacher_student_kl": false,
+      "teacher_top1_agreement": false
+    },
+    "decision": "continue_width_distillation_or_stop",
+    "passed": false
+  },
+  "initialization": [
+    {
+      "layer": 0,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 1,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 2,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 3,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 4,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 5,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 6,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 7,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 8,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 9,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 10,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 11,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 12,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 13,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 14,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 15,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 16,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 17,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 18,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 19,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 20,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 21,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 22,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 23,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 24,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 25,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 26,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 27,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 28,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    },
+    {
+      "layer": 29,
+      "method": "mean_teacher_contribution",
+      "records": 512
+    }
+  ],
+  "local_warmup": [
+    {
+      "layer": 0,
+      "relative_l2_after": 0.2759603437222812,
+      "relative_l2_before": 0.2888246255165632,
+      "steps": 8
+    },
+    {
+      "layer": 1,
+      "relative_l2_after": 0.43060877995369895,
+      "relative_l2_before": 0.43972374667011865,
+      "steps": 8
+    },
+    {
+      "layer": 2,
+      "relative_l2_after": 0.468641889134791,
+      "relative_l2_before": 0.47674056456766295,
+      "steps": 8
+    },
+    {
+      "layer": 3,
+      "relative_l2_after": 0.5387249781627239,
+      "relative_l2_before": 0.5481283555867682,
+      "steps": 8
+    },
+    {
+      "layer": 4,
+      "relative_l2_after": 0.5545873942216943,
+      "relative_l2_before": 0.5651272565927045,
+      "steps": 8
+    },
+    {
+      "layer": 5,
+      "relative_l2_after": 0.5418871081694636,
+      "relative_l2_before": 0.5517739858206208,
+      "steps": 8
+    },
+    {
+      "layer": 6,
+      "relative_l2_after": 0.5398549566529116,
+      "relative_l2_before": 0.5496749931476499,
+      "steps": 8
+    },
+    {
+      "layer": 7,
+      "relative_l2_after": 0.5218685426801531,
+      "relative_l2_before": 0.5326112380752233,
+      "steps": 8
+    },
+    {
+      "layer": 8,
+      "relative_l2_after": 0.4477259065161039,
+      "relative_l2_before": 0.4608648485974328,
+      "steps": 8
+    },
+    {
+      "layer": 9,
+      "relative_l2_after": 0.48254530904895654,
+      "relative_l2_before": 0.49274213763628405,
+      "steps": 8
+    },
+    {
+      "layer": 10,
+      "relative_l2_after": 0.4831439776694463,
+      "relative_l2_before": 0.49388339497111633,
+      "steps": 8
+    },
+    {
+      "layer": 11,
+      "relative_l2_after": 0.5103888707909445,
+      "relative_l2_before": 0.5137250521124958,
+      "steps": 8
+    },
+    {
+      "layer": 12,
+      "relative_l2_after": 0.5238645357072085,
+      "relative_l2_before": 0.5345346447555853,
+      "steps": 8
+    },
+    {
+      "layer": 13,
+      "relative_l2_after": 0.49591056770880004,
+      "relative_l2_before": 0.5104889413496407,
+      "steps": 8
+    },
+    {
+      "layer": 14,
+      "relative_l2_after": 0.4707827169696296,
+      "relative_l2_before": 0.48576717504429123,
+      "steps": 8
+    },
+    {
+      "layer": 15,
+      "relative_l2_after": 0.46916161867658046,
+      "relative_l2_before": 0.48901433505936476,
+      "steps": 8
+    },
+    {
+      "layer": 16,
+      "relative_l2_after": 0.5270013186211897,
+      "relative_l2_before": 0.5418467095912081,
+      "steps": 8
+    },
+    {
+      "layer": 17,
+      "relative_l2_after": 0.5167057162559778,
+      "relative_l2_before": 0.5338649134899779,
+      "steps": 8
+    },
+    {
+      "layer": 18,
+      "relative_l2_after": 0.4231411484055684,
+      "relative_l2_before": 0.4375639150628173,
+      "steps": 8
+    },
+    {
+      "layer": 19,
+      "relative_l2_after": 0.4678557136238827,
+      "relative_l2_before": 0.4827114828501766,
+      "steps": 8
+    },
+    {
+      "layer": 20,
+      "relative_l2_after": 0.3937961916424403,
+      "relative_l2_before": 0.4068199629772497,
+      "steps": 8
+    },
+    {
+      "layer": 21,
+      "relative_l2_after": 0.4592955304741996,
+      "relative_l2_before": 0.47305699872634777,
+      "steps": 8
+    },
+    {
+      "layer": 22,
+      "relative_l2_after": 0.41672936941328675,
+      "relative_l2_before": 0.4301384424114503,
+      "steps": 8
+    },
+    {
+      "layer": 23,
+      "relative_l2_after": 0.3571916611480507,
+      "relative_l2_before": 0.37288653906020486,
+      "steps": 8
+    },
+    {
+      "layer": 24,
+      "relative_l2_after": 0.3464439505539849,
+      "relative_l2_before": 0.3565846651193917,
+      "steps": 8
+    },
+    {
+      "layer": 25,
+      "relative_l2_after": 0.44319200992317687,
+      "relative_l2_before": 0.4531941804728013,
+      "steps": 8
+    },
+    {
+      "layer": 26,
+      "relative_l2_after": 0.4084700199129397,
+      "relative_l2_before": 0.41825800571641114,
+      "steps": 8
+    },
+    {
+      "layer": 27,
+      "relative_l2_after": 0.350983854268098,
+      "relative_l2_before": 0.36135313017848447,
+      "steps": 8
+    },
+    {
+      "layer": 28,
+      "relative_l2_after": 0.2680890553973875,
+      "relative_l2_before": 0.27559839044055134,
+      "steps": 8
+    },
+    {
+      "layer": 29,
+      "relative_l2_after": 0.09641848158830356,
+      "relative_l2_before": 0.10399465472406735,
+      "steps": 8
+    }
+  ],
+  "metrics": {
+    "final_hidden_cosine": {
+      "count": 507,
+      "maximum": 0.982990891330349,
+      "mean": 0.8365838490512015,
+      "median": 0.8706249709273043,
+      "minimum": 0.23732661359206958,
+      "p95": 0.9623060377164149
+    },
+    "final_hidden_relative_l2": {
+      "count": 507,
+      "maximum": 1.2400592196861309,
+      "mean": 0.5485992774057427,
+      "median": 0.5215076135915341,
+      "minimum": 0.18475073492960825,
+      "p95": 0.9473104630852537
+    },
+    "local_mlp_relative_l2": {
+      "count": 15210,
+      "maximum": 4.295758257799221,
+      "mean": 0.8171084216656884,
+      "median": 0.8433164620535758,
+      "minimum": 0.0008324355632035723,
+      "p95": 1.1548991242258968
+    },
+    "nll_delta": {
+      "count": 491,
+      "maximum": 14.94863510131836,
+      "mean": 1.8341987415773688,
+      "median": 1.1751549243927002,
+      "minimum": -4.37701416015625,
+      "p95": 6.434256553649902
+    },
+    "student_nll": {
+      "count": 491,
+      "maximum": 16.0269832611084,
+      "mean": 5.010698537252094,
+      "median": 4.275323867797852,
+      "minimum": 0.0003830652858596295,
+      "p95": 11.50663948059082
+    },
+    "teacher_nll": {
+      "count": 491,
+      "maximum": 16.939329147338867,
+      "mean": 3.176499797914646,
+      "median": 1.7890857458114624,
+      "minimum": 6.6756979322235566e-06,
+      "p95": 9.731781005859375
+    },
+    "teacher_student_kl": {
+      "count": 491,
+      "maximum": 13.884441375732422,
+      "mean": 1.8520288836332954,
+      "median": 1.1881170272827148,
+      "minimum": 0.00035907389246858656,
+      "p95": 5.6137535572052
+    },
+    "teacher_student_top5_overlap": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.4191446124354108,
+      "median": 0.4000000059604645,
+      "minimum": 0.0,
+      "p95": 0.800000011920929
+    },
+    "teacher_top1_agreement": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.395112016293279,
+      "median": 0.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    },
+    "teacher_top5_contains_student_top1": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.6659877800407332,
+      "median": 1.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    }
+  },
+  "projected_traffic": {
+    "dense_weight_bytes": 10616832,
+    "fraction_of_dense": 0.4375,
+    "hidden_size": 576,
+    "source_intermediate_size": 1536,
+    "target_intermediate_size": 672,
+    "weight_bytes": 4644864
+  },
+  "schema_version": 1,
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "training": {
+    "history": [
+      {
+        "converted_layers": 8,
+        "hidden": 0.0027813322376459837,
+        "local": 0.1867004632949829,
+        "logit": 0.281192421913147,
+        "step": 1,
+        "total": 0.257693886756897
+      },
+      {
+        "converted_layers": 15,
+        "hidden": 0.005277843680232763,
+        "local": 0.3108619451522827,
+        "logit": 0.41422519087791443,
+        "step": 2,
+        "total": 0.41573771834373474
+      },
+      {
+        "converted_layers": 23,
+        "hidden": 0.008780451491475105,
+        "local": 0.3276413381099701,
+        "logit": 0.5235055088996887,
+        "step": 3,
+        "total": 0.46071285009384155
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.044834330677986145,
+        "local": 0.5709673762321472,
+        "logit": 1.6228201389312744,
+        "step": 4,
+        "total": 0.9878810048103333
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.050861429423093796,
+        "local": 0.5518301129341125,
+        "logit": 2.0062971115112305,
+        "step": 5,
+        "total": 1.06611967086792
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.057505086064338684,
+        "local": 0.6711657643318176,
+        "logit": 2.1573634147644043,
+        "step": 6,
+        "total": 1.2248828411102295
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.043334607034921646,
+        "local": 0.5006871819496155,
+        "logit": 1.4589169025421143,
+        "step": 7,
+        "total": 0.8762500882148743
+      },
+      {
+        "converted_layers": 30,
+        "hidden": 0.07985629141330719,
+        "local": 0.5706497430801392,
+        "logit": 1.199791669845581,
+        "step": 8,
+        "total": 0.8905617594718933
+      }
+    ],
+    "records": 32
+  },
+  "validation": {
+    "all_layers_compact": true,
+    "input_token_positions": 507,
+    "next_token_positions": 491,
+    "records": 16
+  }
+}

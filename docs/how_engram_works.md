@@ -8,6 +8,11 @@ compiled representation, and how generation works without the source transformer
 Engram is a research prototype. Where the implemented baseline differs from the intended trained
 system, this document says so explicitly.
 
+For the shortest current account, start with [Project status](status.md). The
+key result is that the extraction, packaging, and runtime mechanisms work, but
+no representation yet combines teacher-like behavior with the required
+physical memory-traffic reduction.
+
 ## 1. What a language model does
 
 A language model receives a sequence of **tokens** and predicts a probability for the next token.
@@ -273,13 +278,58 @@ projection receives local MLP, hidden-state, and output-logit distillation losse
 normalization, embeddings, and original MLP weights never update. The artifact stores only these
 router and adapter tensors. The first 32-step pilot improves its training loss but fails held-out
 recall and causal quality, so it is not used by inference. A gradient audit also shows that hard
-candidate indices prevent the causal losses from training the router, making a differentiable
-soft-to-hard route a requirement before repeating that experiment.
+candidate indices prevent the causal losses from training the router. The replacement trainer now
+uses hard candidate choices in its forward result and a sigmoid straight-through mask in backward.
+It also lowers the default budget to `q=62.5%`, `C=K=512` and penalizes the expected number of
+64-byte line groups touched by candidates. Exact candidate-only completion and selected down-row
+gathers are used for the student result; a detached dense oracle is retained only to create
+supervision and measure recall. This fixes the gradient and execution design, but not the
+scientific gate. The full 32/16 evaluation fails, and exact top-512 membership itself touches
+almost every candidate line group. Mergeable gate/up/down LoRA, broader training
+text, balanced record packing, and explicit whole-line candidates were screened afterward; none
+improved recall, causal quality, and traffic together. The current low-budget sparse-teacher
+artifact therefore remains experimental and is not consumed by inference. Corrected LoRA scaling,
+a full 128-sequence rank-32 residual run, and a sequence-disjoint layer-adaptive magnitude schedule
+also fail. The next major semantic design must learn a structured expert/block basis jointly with
+the student MLP rather than select the teacher's diffuse frozen neurons post hoc.
 
-Those training stages are open work. The present compiler writes initialized or heuristic
-fallbacks and records that fact in its conversion report. DIP now supplies a passing semantic
-substitution arm, so the immediate work is to serialize its packed layout and validate a native
-sparse kernel before attributing later failures to attention or controller distillation.
+A bounded shadow implementation tested whether a simple lossless permutation could provide that
+structure without training. It packs the 1,536 records into equal contiguous blocks and selects
+enough whole blocks to execute exactly 512 records. Smaller blocks improve the impossible
+full-information reference, but even 96 blocks of 16 records leave 0.438 mean local relative-L2
+error. The static shortcut is therefore closed. The remaining hypothesis requires the gates and
+MLP weights to co-adapt while the forward pass already obeys the sparse hardware layout.
+
+The implemented native-gate alternative uses the largest input coordinates to approximate every
+gate value, selects 512 channels directly from those values, and reads only the selected up rows
+and down columns. It does not complete candidate gate values or rerank with dense activations. At
+q=62.5%, its ideal weight traffic is 43.06% of dense. The original dense basis reveals why training
+is necessary: exact contribution selection has 0.190 local error, while gate-only selection has
+0.375 and input pruning raises it only to 0.386. A cached-boundary warm-up improves a representative
+layer by only 2.55%, so the next valid test must expose all layers to their own causal state drift
+during progressive sparse-teacher training.
+
+CUDA may accelerate that training experiment, but it is not part of the Engram representation.
+The same hard sparse forward, checkpoints, reports, and evaluation criteria must work on CPU, and
+the deployment target remains a packed CPU inference kernel with measured memory traffic.
+
+The end-to-end trainer now follows this rule. It begins with dense MLP execution, progressively
+reduces retained gate inputs and active channels, and co-trains full MLP weights while the rest of
+the transformer remains frozen. Its checkpoints contain ordinary CPU tensors plus optimizer state
+and can resume on another device. Validation resets every layer to q=62.5%/K=512 and disables the
+soft selection and dense-shadow training paths.
+
+Large-scale training remains open work. The present compiler writes initialized or heuristic
+fallbacks and records that fact in its conversion report. DIP supplies a passing semantic
+substitution arm and now has an experimental serialized layout/native kernel, but that kernel is
+slower than dense. Attention/controller distillation remains separate open work.
+
+A later 3M-position compact-Q4 run establishes the opposite frontier: its
+serialized MLP payload fits the 45% traffic budget, but its causal quality is
+far from the teacher. An exact one-million-record output-memory pilot also
+fails to improve layer-local error enough to justify scale-up. Therefore the
+diagram in this document remains the intended architecture, not a claim that
+the current converter has learned a quality-preserving replacement.
 
 ## 5. The converted format
 

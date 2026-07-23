@@ -1,0 +1,571 @@
+{
+  "artifact": {
+    "format": "safetensors_full_gate_up_down_weights_selected_layers",
+    "path": "/home/dean/repos/engram/reports/smollm2_native_gate_trace_layer14_utility64/native_gate_trace_student.safetensors",
+    "sha256": "54eee1bb8977c58ac5d267587c861ad081a04e6c9c14064fb059a6e61a73ddd4"
+  },
+  "configuration": {
+    "batch_size": 8,
+    "calibration_records_limit": 128,
+    "dense_shadow_weight": 1.0,
+    "device": "cpu",
+    "input_fraction": 0.625,
+    "layers": [
+      14
+    ],
+    "learning_rate": 0.0001,
+    "steps": 64,
+    "temperature": 1.0,
+    "top_k": 512,
+    "utility_weight": 0.25,
+    "validation_records_limit": 128
+  },
+  "data_separation": {
+    "held_out": true,
+    "method": "exact_token_sequence_hashes",
+    "overlapping_sequences": 0
+  },
+  "experiment": "native_gate_cached_trace_pretraining",
+  "layers": [
+    {
+      "after": {
+        "dense_shadow_relative_l2": {
+          "count": 128,
+          "maximum": 0.0812109112603425,
+          "mean": 0.03393462580702268,
+          "median": 0.031047458135090435,
+          "minimum": 0.013115052761335094,
+          "p95": 0.061008409568194887
+        },
+        "hard_cosine": {
+          "count": 128,
+          "maximum": 0.9838582342088359,
+          "mean": 0.9116094791745095,
+          "median": 0.9132210258258506,
+          "minimum": 0.8024409447162522,
+          "p95": 0.9798329008545436
+        },
+        "hard_relative_l2": {
+          "count": 128,
+          "maximum": 0.6101973252894803,
+          "mean": 0.40401097555201126,
+          "median": 0.40969088870168135,
+          "minimum": 0.1793478328953097,
+          "p95": 0.5249221786135757
+        }
+      },
+      "before": {
+        "dense_shadow_relative_l2": {
+          "count": 128,
+          "maximum": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "hard_cosine": {
+          "count": 128,
+          "maximum": 0.9810870493201509,
+          "mean": 0.9070120504790249,
+          "median": 0.9075020124067634,
+          "minimum": 0.8070613729557488,
+          "p95": 0.9783397313521358
+        },
+        "hard_relative_l2": {
+          "count": 128,
+          "maximum": 0.6019867827889097,
+          "mean": 0.4146026701185762,
+          "median": 0.42645056144000304,
+          "minimum": 0.19439155107757086,
+          "p95": 0.5350637364961306
+        }
+      },
+      "history": [
+        {
+          "dense_shadow": 0.0,
+          "sparse": 0.12220495194196701,
+          "step": 1,
+          "total": 0.28250059485435486,
+          "utility_ranking": 0.6411826014518738
+        },
+        {
+          "dense_shadow": 1.5059842553455383e-05,
+          "sparse": 0.1795375496149063,
+          "step": 2,
+          "total": 0.3456633687019348,
+          "utility_ranking": 0.6644430160522461
+        },
+        {
+          "dense_shadow": 4.263884693500586e-05,
+          "sparse": 0.1666634976863861,
+          "step": 3,
+          "total": 0.33019906282424927,
+          "utility_ranking": 0.653971791267395
+        },
+        {
+          "dense_shadow": 3.109827230218798e-05,
+          "sparse": 0.1463679075241089,
+          "step": 4,
+          "total": 0.31493496894836426,
+          "utility_ranking": 0.6741438508033752
+        },
+        {
+          "dense_shadow": 7.27772930986248e-05,
+          "sparse": 0.18370430171489716,
+          "step": 5,
+          "total": 0.34995564818382263,
+          "utility_ranking": 0.6647142767906189
+        },
+        {
+          "dense_shadow": 9.043050522450358e-05,
+          "sparse": 0.12140382826328278,
+          "step": 6,
+          "total": 0.2817378342151642,
+          "utility_ranking": 0.6409742832183838
+        },
+        {
+          "dense_shadow": 0.00041091564344242215,
+          "sparse": 0.16000217199325562,
+          "step": 7,
+          "total": 0.3229823410511017,
+          "utility_ranking": 0.6502770185470581
+        },
+        {
+          "dense_shadow": 0.00035564895370043814,
+          "sparse": 0.14593686163425446,
+          "step": 8,
+          "total": 0.30687373876571655,
+          "utility_ranking": 0.6423249244689941
+        },
+        {
+          "dense_shadow": 0.000403460900997743,
+          "sparse": 0.14316426217556,
+          "step": 9,
+          "total": 0.3109135031700134,
+          "utility_ranking": 0.6693831086158752
+        },
+        {
+          "dense_shadow": 0.0003464618930593133,
+          "sparse": 0.16435086727142334,
+          "step": 10,
+          "total": 0.3248058557510376,
+          "utility_ranking": 0.6404340863227844
+        },
+        {
+          "dense_shadow": 0.00020716515427920967,
+          "sparse": 0.11288931220769882,
+          "step": 11,
+          "total": 0.27878856658935547,
+          "utility_ranking": 0.6627684235572815
+        },
+        {
+          "dense_shadow": 0.00044846138916909695,
+          "sparse": 0.17686641216278076,
+          "step": 12,
+          "total": 0.3456570506095886,
+          "utility_ranking": 0.6733686923980713
+        },
+        {
+          "dense_shadow": 0.000361039477866143,
+          "sparse": 0.14601822197437286,
+          "step": 13,
+          "total": 0.3075339198112488,
+          "utility_ranking": 0.6446186304092407
+        },
+        {
+          "dense_shadow": 0.00045483882422558963,
+          "sparse": 0.12379509955644608,
+          "step": 14,
+          "total": 0.2871115207672119,
+          "utility_ranking": 0.6514464020729065
+        },
+        {
+          "dense_shadow": 0.0006673141033388674,
+          "sparse": 0.19017714262008667,
+          "step": 15,
+          "total": 0.3567960262298584,
+          "utility_ranking": 0.6638062000274658
+        },
+        {
+          "dense_shadow": 0.0006302616093307734,
+          "sparse": 0.13448365032672882,
+          "step": 16,
+          "total": 0.29509198665618896,
+          "utility_ranking": 0.6399122476577759
+        },
+        {
+          "dense_shadow": 0.003619117196649313,
+          "sparse": 0.10001222789287567,
+          "step": 17,
+          "total": 0.26266568899154663,
+          "utility_ranking": 0.6361373066902161
+        },
+        {
+          "dense_shadow": 0.003647994250059128,
+          "sparse": 0.15120729804039001,
+          "step": 18,
+          "total": 0.3196257948875427,
+          "utility_ranking": 0.6590819358825684
+        },
+        {
+          "dense_shadow": 0.00315099791623652,
+          "sparse": 0.13975411653518677,
+          "step": 19,
+          "total": 0.3058590292930603,
+          "utility_ranking": 0.65181565284729
+        },
+        {
+          "dense_shadow": 0.0023787319660186768,
+          "sparse": 0.12787166237831116,
+          "step": 20,
+          "total": 0.29704850912094116,
+          "utility_ranking": 0.6671924591064453
+        },
+        {
+          "dense_shadow": 0.004384959116578102,
+          "sparse": 0.15623734891414642,
+          "step": 21,
+          "total": 0.3259005546569824,
+          "utility_ranking": 0.661112904548645
+        },
+        {
+          "dense_shadow": 0.0016715431120246649,
+          "sparse": 0.10760277509689331,
+          "step": 22,
+          "total": 0.2684330642223358,
+          "utility_ranking": 0.6366350054740906
+        },
+        {
+          "dense_shadow": 0.0034992701839655638,
+          "sparse": 0.13984116911888123,
+          "step": 23,
+          "total": 0.3058786988258362,
+          "utility_ranking": 0.6501531004905701
+        },
+        {
+          "dense_shadow": 0.003745508613064885,
+          "sparse": 0.12524349987506866,
+          "step": 24,
+          "total": 0.28808289766311646,
+          "utility_ranking": 0.6363755464553833
+        },
+        {
+          "dense_shadow": 0.002117577474564314,
+          "sparse": 0.1284187138080597,
+          "step": 25,
+          "total": 0.2970114052295685,
+          "utility_ranking": 0.665900468826294
+        },
+        {
+          "dense_shadow": 0.0027033116202801466,
+          "sparse": 0.14514343440532684,
+          "step": 26,
+          "total": 0.3066164255142212,
+          "utility_ranking": 0.6350786685943604
+        },
+        {
+          "dense_shadow": 0.0013047894462943077,
+          "sparse": 0.1029517874121666,
+          "step": 27,
+          "total": 0.26932162046432495,
+          "utility_ranking": 0.6602601408958435
+        },
+        {
+          "dense_shadow": 0.0029010821599513292,
+          "sparse": 0.1546521633863449,
+          "step": 28,
+          "total": 0.32477718591690063,
+          "utility_ranking": 0.6688957810401917
+        },
+        {
+          "dense_shadow": 0.0024975433479994535,
+          "sparse": 0.12955424189567566,
+          "step": 29,
+          "total": 0.2928886413574219,
+          "utility_ranking": 0.6433475017547607
+        },
+        {
+          "dense_shadow": 0.0017220424488186836,
+          "sparse": 0.10964782536029816,
+          "step": 30,
+          "total": 0.2728045880794525,
+          "utility_ranking": 0.6457388401031494
+        },
+        {
+          "dense_shadow": 0.0027080385480076075,
+          "sparse": 0.17003145813941956,
+          "step": 31,
+          "total": 0.33768075704574585,
+          "utility_ranking": 0.6597650051116943
+        },
+        {
+          "dense_shadow": 0.00337965483777225,
+          "sparse": 0.11234533041715622,
+          "step": 32,
+          "total": 0.2748664617538452,
+          "utility_ranking": 0.6365658640861511
+        },
+        {
+          "dense_shadow": 0.0041097248904407024,
+          "sparse": 0.09453058987855911,
+          "step": 33,
+          "total": 0.255359411239624,
+          "utility_ranking": 0.6268764138221741
+        },
+        {
+          "dense_shadow": 0.00501100393012166,
+          "sparse": 0.13971345126628876,
+          "step": 34,
+          "total": 0.3088144361972809,
+          "utility_ranking": 0.6563599109649658
+        },
+        {
+          "dense_shadow": 0.005110641475766897,
+          "sparse": 0.1267288327217102,
+          "step": 35,
+          "total": 0.2937203645706177,
+          "utility_ranking": 0.6475236415863037
+        },
+        {
+          "dense_shadow": 0.004403207916766405,
+          "sparse": 0.1169045940041542,
+          "step": 36,
+          "total": 0.2885659337043762,
+          "utility_ranking": 0.6690325140953064
+        },
+        {
+          "dense_shadow": 0.004545781295746565,
+          "sparse": 0.14437679946422577,
+          "step": 37,
+          "total": 0.3131105303764343,
+          "utility_ranking": 0.656751811504364
+        },
+        {
+          "dense_shadow": 0.002568927127867937,
+          "sparse": 0.09933756291866302,
+          "step": 38,
+          "total": 0.260059654712677,
+          "utility_ranking": 0.6326126456260681
+        },
+        {
+          "dense_shadow": 0.004824486095458269,
+          "sparse": 0.12805280089378357,
+          "step": 39,
+          "total": 0.2940334379673004,
+          "utility_ranking": 0.6446245908737183
+        },
+        {
+          "dense_shadow": 0.004403145983815193,
+          "sparse": 0.11359390616416931,
+          "step": 40,
+          "total": 0.27710527181625366,
+          "utility_ranking": 0.6364328265190125
+        },
+        {
+          "dense_shadow": 0.003152646357193589,
+          "sparse": 0.11811710894107819,
+          "step": 41,
+          "total": 0.2870175242424011,
+          "utility_ranking": 0.6629910469055176
+        },
+        {
+          "dense_shadow": 0.0036536031402647495,
+          "sparse": 0.13225306570529938,
+          "step": 42,
+          "total": 0.2945709228515625,
+          "utility_ranking": 0.6346570253372192
+        },
+        {
+          "dense_shadow": 0.0018793174531310797,
+          "sparse": 0.09626606851816177,
+          "step": 43,
+          "total": 0.26216867566108704,
+          "utility_ranking": 0.6560931205749512
+        },
+        {
+          "dense_shadow": 0.004822745453566313,
+          "sparse": 0.1404757797718048,
+          "step": 44,
+          "total": 0.3116499185562134,
+          "utility_ranking": 0.6654055118560791
+        },
+        {
+          "dense_shadow": 0.0042695230804383755,
+          "sparse": 0.1153668686747551,
+          "step": 45,
+          "total": 0.2808656692504883,
+          "utility_ranking": 0.6449171304702759
+        },
+        {
+          "dense_shadow": 0.002958973404020071,
+          "sparse": 0.10131891071796417,
+          "step": 46,
+          "total": 0.2650074362754822,
+          "utility_ranking": 0.6429181694984436
+        },
+        {
+          "dense_shadow": 0.004612932913005352,
+          "sparse": 0.15558446943759918,
+          "step": 47,
+          "total": 0.3248327672481537,
+          "utility_ranking": 0.6585414409637451
+        },
+        {
+          "dense_shadow": 0.0031819327268749475,
+          "sparse": 0.10570967197418213,
+          "step": 48,
+          "total": 0.26637953519821167,
+          "utility_ranking": 0.6299517154693604
+        },
+        {
+          "dense_shadow": 0.0046264976263046265,
+          "sparse": 0.08817525953054428,
+          "step": 49,
+          "total": 0.2507171630859375,
+          "utility_ranking": 0.631661593914032
+        },
+        {
+          "dense_shadow": 0.006105372216552496,
+          "sparse": 0.13084542751312256,
+          "step": 50,
+          "total": 0.30068373680114746,
+          "utility_ranking": 0.6549317836761475
+        },
+        {
+          "dense_shadow": 0.005582067184150219,
+          "sparse": 0.11935051530599594,
+          "step": 51,
+          "total": 0.2862924039363861,
+          "utility_ranking": 0.6454392671585083
+        },
+        {
+          "dense_shadow": 0.004657842218875885,
+          "sparse": 0.11028768122196198,
+          "step": 52,
+          "total": 0.28098705410957336,
+          "utility_ranking": 0.6641661524772644
+        },
+        {
+          "dense_shadow": 0.006440431345254183,
+          "sparse": 0.13276994228363037,
+          "step": 53,
+          "total": 0.30355626344680786,
+          "utility_ranking": 0.6573836207389832
+        },
+        {
+          "dense_shadow": 0.0033053455408662558,
+          "sparse": 0.09378249198198318,
+          "step": 54,
+          "total": 0.25524866580963135,
+          "utility_ranking": 0.6326433420181274
+        },
+        {
+          "dense_shadow": 0.006055810023099184,
+          "sparse": 0.11937692761421204,
+          "step": 55,
+          "total": 0.28685837984085083,
+          "utility_ranking": 0.6457024812698364
+        },
+        {
+          "dense_shadow": 0.005867545492947102,
+          "sparse": 0.10424114018678665,
+          "step": 56,
+          "total": 0.2679314911365509,
+          "utility_ranking": 0.6312912106513977
+        },
+        {
+          "dense_shadow": 0.004213748965412378,
+          "sparse": 0.11012721061706543,
+          "step": 57,
+          "total": 0.2803412675857544,
+          "utility_ranking": 0.6640012860298157
+        },
+        {
+          "dense_shadow": 0.00507580628618598,
+          "sparse": 0.12309477478265762,
+          "step": 58,
+          "total": 0.2856851816177368,
+          "utility_ranking": 0.6300583481788635
+        },
+        {
+          "dense_shadow": 0.002893037861213088,
+          "sparse": 0.09001673012971878,
+          "step": 59,
+          "total": 0.2567543089389801,
+          "utility_ranking": 0.6553781628608704
+        },
+        {
+          "dense_shadow": 0.006072648335248232,
+          "sparse": 0.13015516102313995,
+          "step": 60,
+          "total": 0.30232542753219604,
+          "utility_ranking": 0.6643904447555542
+        },
+        {
+          "dense_shadow": 0.004486868157982826,
+          "sparse": 0.10851559787988663,
+          "step": 61,
+          "total": 0.2720714211463928,
+          "utility_ranking": 0.6362758874893188
+        },
+        {
+          "dense_shadow": 0.003750596661120653,
+          "sparse": 0.09424585849046707,
+          "step": 62,
+          "total": 0.2575610280036926,
+          "utility_ranking": 0.6382582783699036
+        },
+        {
+          "dense_shadow": 0.006311312317848206,
+          "sparse": 0.1419742852449417,
+          "step": 63,
+          "total": 0.31278643012046814,
+          "utility_ranking": 0.6580033302307129
+        },
+        {
+          "dense_shadow": 0.004342889413237572,
+          "sparse": 0.09646759927272797,
+          "step": 64,
+          "total": 0.2572114169597626,
+          "utility_ranking": 0.6256036758422852
+        }
+      ],
+      "layer": 14,
+      "relative_improvement": 0.025546614457489444,
+      "training_states": 128,
+      "validation_states": 128
+    }
+  ],
+  "projected_traffic": {
+    "active_records": 512,
+    "dense_weight_bytes": 10616832,
+    "fraction_of_dense": 0.4305555555555556,
+    "gate_weight_bytes": 2211840,
+    "hidden_size": 576,
+    "input_coordinates": 360,
+    "input_fraction": 0.625,
+    "intermediate_size": 1536,
+    "selected_up_down_weight_bytes": 2359296,
+    "total_weight_bytes": 4571136
+  },
+  "schema_version": 1,
+  "screen": {
+    "caveat": "Cached-boundary training does not expose the student to its own transformer state drift and cannot pass the all-layer causal gate.",
+    "checks": {
+      "active_record_budget": true,
+      "dense_shadow_retention": true,
+      "held_out_sparse_improvement": false,
+      "input_coordinate_budget": true,
+      "projected_traffic": true
+    },
+    "decision": "revise_native_gate_trace_objective",
+    "passed": false
+  },
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "status": "layerwise_trace_only_training",
+  "summary": {
+    "dense_shadow_relative_l2_after": 0.03393462580702268,
+    "hard_relative_l2_after": 0.40401097555201126,
+    "hard_relative_l2_before": 0.4146026701185762
+  }
+}

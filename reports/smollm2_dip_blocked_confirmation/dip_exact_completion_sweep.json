@@ -1,0 +1,2088 @@
+{
+  "arms": [
+    {
+      "candidate_count": 896,
+      "candidate_recall": {
+        "count": 35520,
+        "maximum": 1.0,
+        "mean": 0.8524356876407657,
+        "median": 0.8515625,
+        "minimum": 0.6471354166666666,
+        "p95": 0.890625
+      },
+      "input_coordinate_count": 432,
+      "input_fraction": 0.75,
+      "layer_mean_candidate_recall": {
+        "count": 30,
+        "maximum": 0.8912694432713963,
+        "mean": 0.8524356876407658,
+        "median": 0.8542645428631757,
+        "minimum": 0.8060698638091216,
+        "p95": 0.8717403377498593
+      },
+      "layer_mean_mlp_output_relative_l2": {
+        "count": 30,
+        "maximum": 0.23167052417096676,
+        "mean": 0.17180329057091848,
+        "median": 0.18742927035948784,
+        "minimum": 0.03657635087660226,
+        "p95": 0.2229025723827336
+      },
+      "layer_mean_oracle_score_mass_recall": {
+        "count": 30,
+        "maximum": 0.9710420966148376,
+        "mean": 0.9207278430461884,
+        "median": 0.92115917801857,
+        "minimum": 0.9002576470375061,
+        "p95": 0.9394405901432037
+      },
+      "meets_existing_candidate_recall_gate": false,
+      "mlp_output_cosine": {
+        "count": 35520,
+        "maximum": 0.999999946401538,
+        "mean": 0.9834736839400304,
+        "median": 0.9840526882970155,
+        "minimum": 0.9179973131936924,
+        "p95": 0.9989652298788916
+      },
+      "mlp_output_relative_l2": {
+        "count": 35520,
+        "maximum": 0.39719848895748794,
+        "mean": 0.17180329057091845,
+        "median": 0.17839106041322533,
+        "minimum": 0.00032750287161871776,
+        "p95": 0.253076153219877
+      },
+      "name": "dip_b16_q432_c896_k768",
+      "near_oracle_screen": false,
+      "oracle_score_mass_recall": {
+        "count": 35520,
+        "maximum": 1.000000238418579,
+        "mean": 0.9207278391279213,
+        "median": 0.9198707044124603,
+        "minimum": 0.8410782217979431,
+        "p95": 0.9571159482002257
+      },
+      "projected_traffic": {
+        "bytes_per_element": 4,
+        "candidate_completion_elements_per_token_layer": 258048,
+        "dense_weight_bytes_per_token_layer": 10616832,
+        "dense_weight_elements_per_token_layer": 2654208,
+        "partial_gate_up_elements_per_token_layer": 1327104,
+        "projected_dense_over_sparse_reduction": 1.309090909090909,
+        "projected_fraction_of_dense": 0.7638888888888888,
+        "projected_weight_bytes_per_token_layer": 8110080,
+        "projected_weight_elements_per_token_layer": 2027520,
+        "selected_down_elements_per_token_layer": 442368
+      },
+      "top_k": 768
+    }
+  ],
+  "candidate_recall_gate": 0.95,
+  "configuration": {
+    "candidate_counts": [
+      896
+    ],
+    "hidden_size": 576,
+    "input_block_size": 16,
+    "input_coordinate_counts": [
+      432
+    ],
+    "input_fractions": [
+      0.75
+    ],
+    "intermediate_size": 1536,
+    "num_hidden_layers": 30,
+    "top_k": 768,
+    "validation_records_limit": null
+  },
+  "experiment": "dynamic_input_pruning_exact_completion_sweep",
+  "measurement_caveat": "The NumPy evaluator executes dense matrix products. Traffic is a logical float32 weight-read count; it excludes indexes, activations, and measured DRAM traffic. For blocked runs the serialized/native implementation uses 64-byte-aligned access units, but the trace evaluator is still not a latency measurement.",
+  "method": {
+    "basis": {
+      "title": "Efficient LLM Inference using Dynamic Input Pruning and Cache-Aware Masking",
+      "url": "https://arxiv.org/abs/2412.01380"
+    },
+    "candidate_score": "abs(partial_swiglu_activation) * l2_norm(down_column)",
+    "engram_extension": "After partial gate/up scoring, complete omitted input-coordinate products only for candidates and exactly rerank their full contribution-magnitude scores.",
+    "exact_score": "abs(exact_swiglu_activation) * l2_norm(down_column)",
+    "input_selection_granularity": "contiguous_16_float32_block_by_hidden_l2",
+    "tie_break": "stable ascending record index",
+    "trained_parameters": 0
+  },
+  "near_oracle_screen_recall": 0.99,
+  "near_oracle_screen_score_mass_recall": 0.995,
+  "oracle": {
+    "mlp_output_cosine": {
+      "count": 35520,
+      "maximum": 0.999999946401538,
+      "mean": 0.993695212737559,
+      "median": 0.9939126690725817,
+      "minimum": 0.978501755216683,
+      "p95": 0.9996673708507414
+    },
+    "mlp_output_relative_l2": {
+      "count": 35520,
+      "maximum": 0.20894528510093896,
+      "mean": 0.10616181141095922,
+      "median": 0.11045041171613698,
+      "minimum": 0.00032750287161871776,
+      "p95": 0.15678523159282284
+    }
+  },
+  "pareto_frontier": [
+    "dip_b16_q432_c896_k768"
+  ],
+  "per_layer": [
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.8932291666666666,
+            "mean": 0.8060698638091216,
+            "median": 0.8072916666666666,
+            "minimum": 0.6471354166666666,
+            "p95": 0.8723958333333334
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.999842872910157,
+            "mean": 0.9974013785317474,
+            "median": 0.9982361840263343,
+            "minimum": 0.9833647405179136,
+            "p95": 0.9997078115574664
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.18856027483100973,
+            "mean": 0.06640216174284158,
+            "median": 0.06042867419218598,
+            "minimum": 0.01800603162603503,
+            "p95": 0.12182824911887269
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9554634094238281,
+            "mean": 0.9210697414001098,
+            "median": 0.9214445650577545,
+            "minimum": 0.8763375878334045,
+            "p95": 0.940844252705574
+          }
+        }
+      ],
+      "layer": 0,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9999937982541256,
+          "mean": 0.9992497808618397,
+          "median": 0.9996389586720639,
+          "minimum": 0.9947397278641185,
+          "p95": 0.9999769836395181
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.10435521312190771,
+          "mean": 0.03331123918792281,
+          "median": 0.027078495637923916,
+          "minimum": 0.0035286754194241965,
+          "p95": 0.07262856962808656
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.8919270833333334,
+            "mean": 0.8285022082629505,
+            "median": 0.828125,
+            "minimum": 0.76171875,
+            "p95": 0.8606770833333334
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9998881542637825,
+            "mean": 0.9841923732568806,
+            "median": 0.9854740216845901,
+            "minimum": 0.9465906010325226,
+            "p95": 0.9980370505433176
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.32331568713713565,
+            "mean": 0.16872249865034838,
+            "median": 0.17121466831020415,
+            "minimum": 0.015518545032555738,
+            "p95": 0.2529264964831197
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9546458721160889,
+            "mean": 0.9037563478121081,
+            "median": 0.9038743078708649,
+            "minimum": 0.8410782217979431,
+            "p95": 0.9337206155061721
+          }
+        }
+      ],
+      "layer": 1,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9999631716298291,
+          "mean": 0.9948991856846152,
+          "median": 0.9949963821938657,
+          "minimum": 0.9866231112925694,
+          "p95": 0.9992613730130502
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.16352752783839483,
+          "mean": 0.09665887491590136,
+          "median": 0.10005102014232067,
+          "minimum": 0.008617050154883866,
+          "p95": 0.13901348416686327
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.89453125,
+            "mean": 0.8358924109656531,
+            "median": 0.8359375,
+            "minimum": 0.77734375,
+            "p95": 0.8645833333333334
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9999985536738503,
+            "mean": 0.9795719675350381,
+            "median": 0.9795251089828352,
+            "minimum": 0.9459124163243289,
+            "p95": 0.9928363650002848
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.3251435657375044,
+            "mean": 0.1944042693174956,
+            "median": 0.20148599080536728,
+            "minimum": 0.001842229038552351,
+            "p95": 0.26017301967129375
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9890555143356323,
+            "mean": 0.9074651993609764,
+            "median": 0.905283510684967,
+            "minimum": 0.8554971218109131,
+            "p95": 0.9375181466341018
+          }
+        }
+      ],
+      "layer": 2,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.999999523266784,
+          "mean": 0.9926722072547758,
+          "median": 0.9925338042332286,
+          "minimum": 0.9851357379671494,
+          "p95": 0.9970696089940608
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.17180451057527765,
+          "mean": 0.11725861605602841,
+          "median": 0.12222233398827737,
+          "minimum": 0.0009797329354727822,
+          "p95": 0.15345642824402062
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9830729166666666,
+            "mean": 0.8353381457629504,
+            "median": 0.83203125,
+            "minimum": 0.78125,
+            "p95": 0.8684895833333334
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.994749970340698,
+            "mean": 0.9764300986877987,
+            "median": 0.9767339559646977,
+            "minimum": 0.9179973131936924,
+            "p95": 0.9897243338516278
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.39719848895748794,
+            "mean": 0.2126736828878753,
+            "median": 0.2149781878691272,
+            "minimum": 0.10305591026814215,
+            "p95": 0.2702027158913585
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9911190271377563,
+            "mean": 0.9035702161994335,
+            "median": 0.9018722474575043,
+            "minimum": 0.8592483997344971,
+            "p95": 0.9313062071800232
+          }
+        }
+      ],
+      "layer": 3,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9986539146004376,
+          "mean": 0.9916467766290656,
+          "median": 0.9915461247972439,
+          "minimum": 0.9840601440902108,
+          "p95": 0.995808105357856
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.1783644066521178,
+          "mean": 0.1276153852482484,
+          "median": 0.12988397072242053,
+          "minimum": 0.052045973445401704,
+          "p95": 0.15564485906620495
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9713541666666666,
+            "mean": 0.8363575978322072,
+            "median": 0.8333333333333334,
+            "minimum": 0.7877604166666666,
+            "p95": 0.8643880208333332
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9956503454379382,
+            "mean": 0.9744528315902456,
+            "median": 0.9746457715273904,
+            "minimum": 0.9401843436622336,
+            "p95": 0.9870223514915581
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.34161408140999056,
+            "mean": 0.2220716207820445,
+            "median": 0.22398285139912774,
+            "minimum": 0.09321379693413581,
+            "p95": 0.27516870556528844
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9840338230133057,
+            "mean": 0.9008360827291334,
+            "median": 0.8999544978141785,
+            "minimum": 0.8612568974494934,
+            "p95": 0.9231015384197235
+          }
+        }
+      ],
+      "layer": 4,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9980401793088858,
+          "mean": 0.9902099268594263,
+          "median": 0.990260250988677,
+          "minimum": 0.9790128810802968,
+          "p95": 0.9947578034619735
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.20894528510093896,
+          "mean": 0.13832253922783871,
+          "median": 0.13948743845340558,
+          "minimum": 0.0626151737694664,
+          "p95": 0.1686344692718366
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9856770833333334,
+            "mean": 0.8399757179054054,
+            "median": 0.8372395833333334,
+            "minimum": 0.7838541666666666,
+            "p95": 0.8671875
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9945619236165826,
+            "mean": 0.9722454383566468,
+            "median": 0.9723267311908828,
+            "minimum": 0.9346667934634297,
+            "p95": 0.9866009533190447
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.35559368276402786,
+            "mean": 0.23167052417096676,
+            "median": 0.2341679862760403,
+            "minimum": 0.1041481714796959,
+            "p95": 0.28171231857481854
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9924665689468384,
+            "mean": 0.9009401641181998,
+            "median": 0.8997440040111542,
+            "minimum": 0.8661596179008484,
+            "p95": 0.9234778016805649
+          }
+        }
+      ],
+      "layer": 5,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9974390512263724,
+          "mean": 0.9885863422327511,
+          "median": 0.9884542983578601,
+          "minimum": 0.978501755216683,
+          "p95": 0.9938107112634748
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.20626611306145734,
+          "mean": 0.1494885004936111,
+          "median": 0.15179991338326887,
+          "minimum": 0.071684215105161,
+          "p95": 0.17965219162499527
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9895833333333334,
+            "mean": 0.836596239794482,
+            "median": 0.8346354166666666,
+            "minimum": 0.7825520833333334,
+            "p95": 0.8658854166666666
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9944398727579095,
+            "mean": 0.9739520622531196,
+            "median": 0.9737386518952551,
+            "minimum": 0.9443904624182611,
+            "p95": 0.9893282514222854
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.32883697552742996,
+            "mean": 0.22358244187420648,
+            "median": 0.22809893362990277,
+            "minimum": 0.10565877183671823,
+            "p95": 0.2800927392888389
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9952296614646912,
+            "mean": 0.9002575742936617,
+            "median": 0.899068683385849,
+            "minimum": 0.8516489863395691,
+            "p95": 0.9218364804983139
+          }
+        }
+      ],
+      "layer": 6,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9971794291136077,
+          "mean": 0.9900597130183899,
+          "median": 0.9900369912750466,
+          "minimum": 0.9802677752123288,
+          "p95": 0.9949680024892569
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.19800068388145614,
+          "mean": 0.13917319855394875,
+          "median": 0.14091117822945004,
+          "minimum": 0.07505455883968591,
+          "p95": 0.17171881542239675
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9895833333333334,
+            "mean": 0.8375892982826577,
+            "median": 0.8346354166666666,
+            "minimum": 0.7877604166666666,
+            "p95": 0.8658854166666666
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9995883433917527,
+            "mean": 0.9753952870364663,
+            "median": 0.9752601016533785,
+            "minimum": 0.9405272633038109,
+            "p95": 0.9906173064961608
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.34059657417671896,
+            "mean": 0.2154024433991678,
+            "median": 0.22139115349142005,
+            "minimum": 0.030235067630748277,
+            "p95": 0.27529860023424757
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9963919520378113,
+            "mean": 0.9010136733586723,
+            "median": 0.8987821340560913,
+            "minimum": 0.8627759218215942,
+            "p95": 0.9239498794078826
+          }
+        }
+      ],
+      "layer": 7,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.999741157028717,
+          "mean": 0.9905574100785726,
+          "median": 0.9903789204478605,
+          "minimum": 0.9802692834878429,
+          "p95": 0.9961944783624195
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.19786482085432647,
+          "mean": 0.13423236847575817,
+          "median": 0.13872932849628522,
+          "minimum": 0.023099643899547388,
+          "p95": 0.17103311718102104
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 1.0,
+            "mean": 0.8410578547297297,
+            "median": 0.8372395833333334,
+            "minimum": 0.7916666666666666,
+            "p95": 0.8684895833333334
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9999748118784196,
+            "mean": 0.9812986118524641,
+            "median": 0.9818054491741026,
+            "minimum": 0.9476572346128942,
+            "p95": 0.9946198183309215
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.3196643644522838,
+            "mean": 0.18649151935891364,
+            "median": 0.19069335841523533,
+            "minimum": 0.00722679446787044,
+            "p95": 0.2510133306927709
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 1.0000001192092896,
+            "mean": 0.9062652067356819,
+            "median": 0.9039619863033295,
+            "minimum": 0.864709198474884,
+            "p95": 0.9279034525156021
+          }
+        }
+      ],
+      "layer": 8,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.999979742092663,
+          "mean": 0.9928697379377159,
+          "median": 0.9931178524794193,
+          "minimum": 0.9822368113788162,
+          "p95": 0.9975553154221742
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.18858714290953335,
+          "mean": 0.11561104746146315,
+          "median": 0.11769663402304092,
+          "minimum": 0.006540152598299648,
+          "p95": 0.15600796753380503
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9947916666666666,
+            "mean": 0.8458394918355855,
+            "median": 0.8424479166666666,
+            "minimum": 0.796875,
+            "p95": 0.8723958333333334
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.999994422983284,
+            "mean": 0.978099188025223,
+            "median": 0.9776109373314743,
+            "minimum": 0.9391654434822198,
+            "p95": 0.99250427834732
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.3467579488296448,
+            "mean": 0.20239601089871126,
+            "median": 0.21083857531333933,
+            "minimum": 0.003512093506292999,
+            "p95": 0.25713949047257295
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9992986917495728,
+            "mean": 0.9091560831545172,
+            "median": 0.9064629971981049,
+            "minimum": 0.8705843091011047,
+            "p95": 0.9286129653453827
+          }
+        }
+      ],
+      "layer": 9,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9999953724834351,
+          "mean": 0.9914283130300195,
+          "median": 0.9914444676318652,
+          "minimum": 0.9797954317489542,
+          "p95": 0.9968654953657355
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.20040361917953908,
+          "mean": 0.12693444828335093,
+          "median": 0.13086279913162185,
+          "minimum": 0.003219076211704029,
+          "p95": 0.1636491578428208
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9752604166666666,
+            "mean": 0.8490397135416667,
+            "median": 0.84765625,
+            "minimum": 0.80078125,
+            "p95": 0.875
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9999508159996887,
+            "mean": 0.9780335152825069,
+            "median": 0.9774247922491048,
+            "minimum": 0.9552181574594901,
+            "p95": 0.9909737429988879
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.29602803369505704,
+            "mean": 0.20398798289778677,
+            "median": 0.21154978789532763,
+            "minimum": 0.0101447605063628,
+            "p95": 0.25480175435151353
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9944242835044861,
+            "mean": 0.9118062542197672,
+            "median": 0.910394161939621,
+            "minimum": 0.8735454082489014,
+            "p95": 0.9320597290992736
+          }
+        }
+      ],
+      "layer": 10,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9999555650849893,
+          "mean": 0.9912788059171737,
+          "median": 0.9911319046721683,
+          "minimum": 0.9830562938559615,
+          "p95": 0.9964625183414438
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.18393677264404468,
+          "mean": 0.129122150185205,
+          "median": 0.13319819693677715,
+          "minimum": 0.009519298345526549,
+          "p95": 0.16122046251468442
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.8997395833333334,
+            "mean": 0.8469865128800675,
+            "median": 0.8463541666666666,
+            "minimum": 0.7994791666666666,
+            "p95": 0.87109375
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9999997975544866,
+            "mean": 0.977835415998847,
+            "median": 0.9780522729231884,
+            "minimum": 0.9513029502234659,
+            "p95": 0.9875705875695016
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.30828474335559314,
+            "mean": 0.2066025433227732,
+            "median": 0.208800546596771,
+            "minimum": 0.0006770438873408312,
+            "p95": 0.25185838934436927
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9951147437095642,
+            "mean": 0.9115917992249534,
+            "median": 0.9108141660690308,
+            "minimum": 0.8715314865112305,
+            "p95": 0.9292184561491013
+          }
+        }
+      ],
+      "layer": 11,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9999999297167077,
+          "mean": 0.9911224832484088,
+          "median": 0.9910005702938101,
+          "minimum": 0.9847141889899653,
+          "p95": 0.9948610382529827
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.17448062257213928,
+          "mean": 0.13145558275437766,
+          "median": 0.13418640958307168,
+          "minimum": 0.00038034479298349074,
+          "p95": 0.15604290156640072
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9700520833333334,
+            "mean": 0.8520716761683559,
+            "median": 0.8502604166666666,
+            "minimum": 0.8059895833333334,
+            "p95": 0.875
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9977382300465868,
+            "mean": 0.9778855231856202,
+            "median": 0.9779073567544397,
+            "minimum": 0.9577362274737019,
+            "p95": 0.9874263610836438
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.2878839626159631,
+            "mean": 0.20727743217746916,
+            "median": 0.2091890062654378,
+            "minimum": 0.06722064341507887,
+            "p95": 0.2482395498995714
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9872510433197021,
+            "mean": 0.9150329000643782,
+            "median": 0.914459615945816,
+            "minimum": 0.8812575340270996,
+            "p95": 0.9316103011369705
+          }
+        }
+      ],
+      "layer": 12,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9979596557137322,
+          "mean": 0.9911422184417641,
+          "median": 0.9910629598565326,
+          "minimum": 0.9849183799647814,
+          "p95": 0.9948140391552104
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.17321088618002126,
+          "mean": 0.13194961148630927,
+          "median": 0.13354580279496647,
+          "minimum": 0.0643217948175432,
+          "p95": 0.15445820379831565
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9778645833333334,
+            "mean": 0.8569280950872747,
+            "median": 0.85546875,
+            "minimum": 0.8125,
+            "p95": 0.8815104166666666
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.998913813231439,
+            "mean": 0.9789475644738809,
+            "median": 0.9790917695149371,
+            "minimum": 0.9534662625080109,
+            "p95": 0.9888003983273126
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.3028893503099467,
+            "mean": 0.2018736241102194,
+            "median": 0.20417176193221903,
+            "minimum": 0.04659686384042043,
+            "p95": 0.24911714584022632
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9909108877182007,
+            "mean": 0.9172718704652947,
+            "median": 0.9168116748332977,
+            "minimum": 0.8844702243804932,
+            "p95": 0.9336501300334931
+          }
+        }
+      ],
+      "layer": 13,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9989395520929073,
+          "mean": 0.9911084687278604,
+          "median": 0.99094717711981,
+          "minimum": 0.983875196929117,
+          "p95": 0.9949880634970008
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.17888120730688006,
+          "mean": 0.1319309337613138,
+          "median": 0.1346150545567505,
+          "minimum": 0.04604667668924754,
+          "p95": 0.1582122482550074
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.98046875,
+            "mean": 0.8596818253800675,
+            "median": 0.8580729166666666,
+            "minimum": 0.8046875,
+            "p95": 0.8828125
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9993289534574085,
+            "mean": 0.9812234651845281,
+            "median": 0.9813468901427068,
+            "minimum": 0.9588725068519467,
+            "p95": 0.9910751647125737
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.28383794164639603,
+            "mean": 0.1902182933375534,
+            "median": 0.19301561918974147,
+            "minimum": 0.036648957254708445,
+            "p95": 0.24107495033671833
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9947865009307861,
+            "mean": 0.9214749500356816,
+            "median": 0.9208914339542389,
+            "minimum": 0.8829535245895386,
+            "p95": 0.9369867980480194
+          }
+        }
+      ],
+      "layer": 14,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9993360262345642,
+          "mean": 0.9924418758341026,
+          "median": 0.9923715592254575,
+          "minimum": 0.9845256424780139,
+          "p95": 0.9964585265150129
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.17537956645161765,
+          "mean": 0.12126535401729457,
+          "median": 0.12359962161389151,
+          "minimum": 0.0364394987802831,
+          "p95": 0.14982785104411758
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.984375,
+            "mean": 0.8622716955236487,
+            "median": 0.8619791666666666,
+            "minimum": 0.8125,
+            "p95": 0.88671875
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9983614874762304,
+            "mean": 0.9816858634993048,
+            "median": 0.9817622201073186,
+            "minimum": 0.9531037315547782,
+            "p95": 0.9904491699631252
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.30271685585035746,
+            "mean": 0.18836702136006203,
+            "median": 0.19042762362379953,
+            "minimum": 0.057270587058055634,
+            "p95": 0.23363220601518314
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9948439002037048,
+            "mean": 0.9239740232760841,
+            "median": 0.9235745668411255,
+            "minimum": 0.8920281529426575,
+            "p95": 0.9406232833862305
+          }
+        }
+      ],
+      "layer": 15,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.998521846142479,
+          "mean": 0.992640444567123,
+          "median": 0.9926150732361276,
+          "minimum": 0.9865631991057994,
+          "p95": 0.9959595143031985
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.16338018747356925,
+          "mean": 0.12004426682197793,
+          "median": 0.1214525239067002,
+          "minimum": 0.054779497493190575,
+          "p95": 0.1462064389447134
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9869791666666666,
+            "mean": 0.8592925200591216,
+            "median": 0.8580729166666666,
+            "minimum": 0.8098958333333334,
+            "p95": 0.8841145833333334
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9981299739710668,
+            "mean": 0.9795606839594578,
+            "median": 0.9796677142123822,
+            "minimum": 0.9533439729196921,
+            "p95": 0.9886469747468491
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.30265426119372557,
+            "mean": 0.1989541339225712,
+            "median": 0.20102527366736167,
+            "minimum": 0.06195065232108143,
+            "p95": 0.24820498880210445
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9956031441688538,
+            "mean": 0.9209561043393772,
+            "median": 0.9201966524124146,
+            "minimum": 0.8798118233680725,
+            "p95": 0.9380914658308029
+          }
+        }
+      ],
+      "layer": 16,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9981073595040857,
+          "mean": 0.9918435679236024,
+          "median": 0.9918885513564553,
+          "minimum": 0.9849095935017234,
+          "p95": 0.995348377170232
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.1733269697013997,
+          "mean": 0.1264650798885181,
+          "median": 0.12759361988453138,
+          "minimum": 0.06202762907736053,
+          "p95": 0.15374966537108464
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9778645833333334,
+            "mean": 0.8552125123170045,
+            "median": 0.8541666666666666,
+            "minimum": 0.8072916666666666,
+            "p95": 0.8802083333333334
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9991537768909312,
+            "mean": 0.9811214918463694,
+            "median": 0.9816557028328217,
+            "minimum": 0.9551808961168035,
+            "p95": 0.9902572005946172
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.29683043140293136,
+            "mean": 0.19063688933498982,
+            "median": 0.19107378189118362,
+            "minimum": 0.042237334087582123,
+            "p95": 0.24250805409192552
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9927446246147156,
+            "mean": 0.9212484629069632,
+            "median": 0.9211852848529816,
+            "minimum": 0.8875137567520142,
+            "p95": 0.9390947163105011
+          }
+        }
+      ],
+      "layer": 17,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9992227290689077,
+          "mean": 0.9929841231828255,
+          "median": 0.9929401743184201,
+          "minimum": 0.985117164385907,
+          "p95": 0.9964466624694437
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.1721054249676507,
+          "mean": 0.11693546900832553,
+          "median": 0.11885480339415747,
+          "minimum": 0.040421464436381525,
+          "p95": 0.14408050317912888
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9817708333333334,
+            "mean": 0.8658931147944818,
+            "median": 0.8645833333333334,
+            "minimum": 0.8072916666666666,
+            "p95": 0.8880208333333334
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9986240060723269,
+            "mean": 0.9874422310355865,
+            "median": 0.9875789034415614,
+            "minimum": 0.9714745073716816,
+            "p95": 0.9923675187273348
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.2371529119337959,
+            "mean": 0.15634204616086636,
+            "median": 0.15719673616015636,
+            "minimum": 0.05249040555445488,
+            "p95": 0.19116216513436404
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9943014979362488,
+            "mean": 0.9337667723161143,
+            "median": 0.9337628483772278,
+            "minimum": 0.905415952205658,
+            "p95": 0.9485667258501053
+          }
+        }
+      ],
+      "layer": 18,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9987900544186066,
+          "mean": 0.9953246081728819,
+          "median": 0.9953394706172286,
+          "minimum": 0.9909371252201968,
+          "p95": 0.9970995632629152
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.13436535013687764,
+          "mean": 0.09591296594662549,
+          "median": 0.0966262999072588,
+          "minimum": 0.04919625393455483,
+          "p95": 0.11445922374813144
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9856770833333334,
+            "mean": 0.8685610659487614,
+            "median": 0.8684895833333334,
+            "minimum": 0.8216145833333334,
+            "p95": 0.8919270833333334
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9989118934233624,
+            "mean": 0.9848746104287345,
+            "median": 0.9849323709482951,
+            "minimum": 0.963225744587332,
+            "p95": 0.9933970988774085
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.26953081603450196,
+            "mean": 0.1703299221611218,
+            "median": 0.17318930839510924,
+            "minimum": 0.04669025968500373,
+            "p95": 0.22125231023322534
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9962881207466125,
+            "mean": 0.9304794687777758,
+            "median": 0.9304774403572083,
+            "minimum": 0.8912056088447571,
+            "p95": 0.9465138167142868
+          }
+        }
+      ],
+      "layer": 19,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9989135281766709,
+          "mean": 0.9938117478514077,
+          "median": 0.9937924469131142,
+          "minimum": 0.9853589223961708,
+          "p95": 0.997263858961518
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.1705480399286167,
+          "mean": 0.10961887036959843,
+          "median": 0.11133313693774882,
+          "minimum": 0.046633145663797775,
+          "p95": 0.13735633401932465
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.984375,
+            "mean": 0.8736649246903154,
+            "median": 0.8736979166666666,
+            "minimum": 0.8177083333333334,
+            "p95": 0.8971354166666666
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9991406232991039,
+            "mean": 0.9884338663347568,
+            "median": 0.9886378496446249,
+            "minimum": 0.9703792450094711,
+            "p95": 0.993492740929374
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.24162094433827275,
+            "mean": 0.14982026118151812,
+            "median": 0.1504752176715984,
+            "minimum": 0.04145035426542559,
+            "p95": 0.1876020447141768
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9948258399963379,
+            "mean": 0.9387143584522041,
+            "median": 0.9385017156600952,
+            "minimum": 0.8959488868713379,
+            "p95": 0.9525964140892029
+          }
+        }
+      ],
+      "layer": 20,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.999184071900682,
+          "mean": 0.9956545811646367,
+          "median": 0.9957482633603854,
+          "minimum": 0.990535745957613,
+          "p95": 0.9974891678839464
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.1376005275516145,
+          "mean": 0.0921539405127641,
+          "median": 0.09218906921500014,
+          "minimum": 0.040397016016210166,
+          "p95": 0.11472553545905355
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9895833333333334,
+            "mean": 0.8612753378378378,
+            "median": 0.8606770833333334,
+            "minimum": 0.80859375,
+            "p95": 0.8880208333333334
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9995410057842654,
+            "mean": 0.9850275886662816,
+            "median": 0.9853814202974449,
+            "minimum": 0.9656779018452417,
+            "p95": 0.9922983145196512
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.2599278754426942,
+            "mean": 0.16976257840975648,
+            "median": 0.17081808212570115,
+            "minimum": 0.030310816987407927,
+            "p95": 0.2170260579583472
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9973690509796143,
+            "mean": 0.9262560281801868,
+            "median": 0.9258089959621429,
+            "minimum": 0.8808287978172302,
+            "p95": 0.9426782011985779
+          }
+        }
+      ],
+      "layer": 21,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9995890151700858,
+          "mean": 0.9943054469950412,
+          "median": 0.9943991542014685,
+          "minimum": 0.9882072854650401,
+          "p95": 0.9970692226454366
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.15312304894889917,
+          "mean": 0.10512063066963269,
+          "median": 0.1058507365160071,
+          "minimum": 0.028698365325256166,
+          "p95": 0.13168743471399277
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.98046875,
+            "mean": 0.8693880648226351,
+            "median": 0.8684895833333334,
+            "minimum": 0.8072916666666666,
+            "p95": 0.89453125
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9994484990825813,
+            "mean": 0.987576844987123,
+            "median": 0.9879226163964466,
+            "minimum": 0.966334138929721,
+            "p95": 0.9938783912792156
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.257397925312282,
+            "mean": 0.154559188453337,
+            "median": 0.15504374630484116,
+            "minimum": 0.033225946867072635,
+            "p95": 0.1991926154202511
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9947352409362793,
+            "mean": 0.9339245759655495,
+            "median": 0.9336642324924469,
+            "minimum": 0.8967804312705994,
+            "p95": 0.9495695680379868
+          }
+        }
+      ],
+      "layer": 22,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9995129375092677,
+          "mean": 0.995227193708045,
+          "median": 0.9952381702467583,
+          "minimum": 0.9900911778919212,
+          "p95": 0.9975927544367649
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.14048223598068157,
+          "mean": 0.09631070910612104,
+          "median": 0.09751769239273897,
+          "minimum": 0.03127190729115951,
+          "p95": 0.12050540911167971
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9856770833333334,
+            "mean": 0.8656566722972973,
+            "median": 0.8645833333333334,
+            "minimum": 0.7981770833333334,
+            "p95": 0.8932291666666666
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9994286570700804,
+            "mean": 0.9906268752279228,
+            "median": 0.9910228139458725,
+            "minimum": 0.9655295719540884,
+            "p95": 0.9956060575986185
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.26129470062923416,
+            "mean": 0.1343677987430231,
+            "median": 0.13420361548844112,
+            "minimum": 0.033817402721238364,
+            "p95": 0.17699261054802085
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9963710308074951,
+            "mean": 0.9317085784230683,
+            "median": 0.9314285516738892,
+            "minimum": 0.888370156288147,
+            "p95": 0.9499095439910888
+          }
+        }
+      ],
+      "layer": 23,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9994277356627095,
+          "mean": 0.9963228234486173,
+          "median": 0.9963056720414399,
+          "minimum": 0.9923289468019174,
+          "p95": 0.9982213893130876
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.12363105346501224,
+          "mean": 0.0848014064902249,
+          "median": 0.08635437492571901,
+          "minimum": 0.0338922924403532,
+          "p95": 0.1060237604289408
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9830729166666666,
+            "mean": 0.8627698743665541,
+            "median": 0.86328125,
+            "minimum": 0.7903645833333334,
+            "p95": 0.8932291666666666
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9994719636011828,
+            "mean": 0.9901406901719767,
+            "median": 0.990581977293012,
+            "minimum": 0.9716779452944572,
+            "p95": 0.9952397206019853
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.23631498253944602,
+            "mean": 0.13746651412758,
+            "median": 0.1371047211816728,
+            "minimum": 0.03258474674239427,
+            "p95": 0.18342499221159494
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9956192970275879,
+            "mean": 0.9336912296208981,
+            "median": 0.9343173205852509,
+            "minimum": 0.886133074760437,
+            "p95": 0.9516000717878341
+          }
+        }
+      ],
+      "layer": 24,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.999486429693289,
+          "mean": 0.996473689075762,
+          "median": 0.9965413433678212,
+          "minimum": 0.9910500132899545,
+          "p95": 0.998335178820161
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.13360691945370393,
+          "mean": 0.08267636660213683,
+          "median": 0.08323452856701195,
+          "minimum": 0.032137176945577835,
+          "p95": 0.10506737039421239
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9817708333333334,
+            "mean": 0.8489242416244369,
+            "median": 0.8489583333333334,
+            "minimum": 0.7734375,
+            "p95": 0.8815104166666666
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.9996045493509863,
+            "mean": 0.9867013086583907,
+            "median": 0.9871265500582656,
+            "minimum": 0.9676229401210231,
+            "p95": 0.9930309634244158
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.2525104274501124,
+            "mean": 0.1597936497351221,
+            "median": 0.1601421172355205,
+            "minimum": 0.028120401691787776,
+            "p95": 0.20639135143946843
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9957593679428101,
+            "mean": 0.9216597458800754,
+            "median": 0.9218822121620178,
+            "minimum": 0.8669692873954773,
+            "p95": 0.9426287591457366
+          }
+        }
+      ],
+      "layer": 25,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.999648910513326,
+          "mean": 0.9955271246780476,
+          "median": 0.995767773758887,
+          "minimum": 0.98894932229046,
+          "p95": 0.9976668750486833
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.14847567699485473,
+          "mean": 0.0929393982570749,
+          "median": 0.09192231496580264,
+          "minimum": 0.0265105508466545,
+          "p95": 0.12296866491920294
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9765625,
+            "mean": 0.8533165734093469,
+            "median": 0.8528645833333334,
+            "minimum": 0.78515625,
+            "p95": 0.88671875
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.999772906230011,
+            "mean": 0.9884664907601827,
+            "median": 0.9890608971621053,
+            "minimum": 0.9508438308928884,
+            "p95": 0.9942522721700914
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.310039311274461,
+            "mean": 0.14848836167239476,
+            "median": 0.1477435812007694,
+            "minimum": 0.021327074185006723,
+            "p95": 0.19750484033623034
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9954929947853088,
+            "mean": 0.9264488153260302,
+            "median": 0.9263566434383392,
+            "minimum": 0.8761934041976929,
+            "p95": 0.946736878156662
+          }
+        }
+      ],
+      "layer": 26,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9997802616602954,
+          "mean": 0.9961930859197186,
+          "median": 0.9962468171597774,
+          "minimum": 0.9906756343742211,
+          "p95": 0.998117203847414
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.13633285451680785,
+          "mean": 0.08575657293672875,
+          "median": 0.0866631208134522,
+          "minimum": 0.020968074656182438,
+          "p95": 0.11030987626285009
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 1.0,
+            "mean": 0.8639465881897522,
+            "median": 0.8645833333333334,
+            "minimum": 0.7916666666666666,
+            "p95": 0.8984375
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.999949842850906,
+            "mean": 0.9913966003072092,
+            "median": 0.9920210048425946,
+            "minimum": 0.9682412819724545,
+            "p95": 0.9960215815602509
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.25006918322371374,
+            "mean": 0.12761714344577893,
+            "median": 0.12631800806955293,
+            "minimum": 0.010017177150836264,
+            "p95": 0.17745740452732445
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 1.0000001192092896,
+            "mean": 0.936422028553647,
+            "median": 0.9375684857368469,
+            "minimum": 0.8820917010307312,
+            "p95": 0.9570575326681137
+          }
+        }
+      ],
+      "layer": 27,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.999949842850906,
+          "mean": 0.99721312740639,
+          "median": 0.9972855803656173,
+          "minimum": 0.9933350343538733,
+          "p95": 0.9984786592807725
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.11544950257273547,
+          "mean": 0.07346013653541958,
+          "median": 0.0736844200144384,
+          "minimum": 0.010017177150836264,
+          "p95": 0.09452161360561395
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 1.0,
+            "mean": 0.8637013478322071,
+            "median": 0.86328125,
+            "minimum": 0.80078125,
+            "p95": 0.8919270833333334
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.999999946401538,
+            "mean": 0.9949640137676734,
+            "median": 0.99543550298149,
+            "minimum": 0.9821540798342374,
+            "p95": 0.9977908211904107
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.18809120959116366,
+            "mean": 0.09723980861445598,
+            "median": 0.09546147143654415,
+            "minimum": 0.00032750287161871776,
+            "p95": 0.1387201688253355
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 1.000000238418579,
+            "mean": 0.9400348732801708,
+            "median": 0.9408621788024902,
+            "minimum": 0.9015306234359741,
+            "p95": 0.9572119176387787
+          }
+        }
+      ],
+      "layer": 28,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.999999946401538,
+          "mean": 0.9983075019255626,
+          "median": 0.9983583691072102,
+          "minimum": 0.9959646425368243,
+          "p95": 0.99917064763422
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.0898634338456737,
+          "mean": 0.05698374708936762,
+          "median": 0.05738727433399382,
+          "minimum": 0.00032750287161871776,
+          "p95": 0.0744650989822036
+        }
+      },
+      "records": 1184
+    },
+    {
+      "arms": [
+        {
+          "candidate_count": 896,
+          "candidate_recall": {
+            "count": 1184,
+            "maximum": 0.9934895833333334,
+            "mean": 0.8912694432713963,
+            "median": 0.890625,
+            "minimum": 0.8255208333333334,
+            "p95": 0.9203776041666665
+          },
+          "input_coordinate_count": 432,
+          "input_fraction": 0.75,
+          "mlp_output_cosine": {
+            "count": 1184,
+            "maximum": 0.99996336489711,
+            "mean": 0.9992266372989284,
+            "median": 0.9994364819508392,
+            "minimum": 0.9923738473275304,
+            "p95": 0.999861113536076
+          },
+          "mlp_output_relative_l2": {
+            "count": 1184,
+            "maximum": 0.12348755107400733,
+            "mean": 0.03657635087660226,
+            "median": 0.03374749133060102,
+            "minimum": 0.008576252736027669,
+            "p95": 0.06566834347419293
+          },
+          "name": "dip_b16_q432_c896_k768",
+          "oracle_score_mass_recall": {
+            "count": 1184,
+            "maximum": 0.9991905689239502,
+            "mean": 0.9710420453669252,
+            "median": 0.9718690514564514,
+            "minimum": 0.9344955086708069,
+            "p95": 0.9843999415636062
+          }
+        }
+      ],
+      "layer": 29,
+      "oracle": {
+        "mlp_output_cosine": {
+          "count": 1184,
+          "maximum": 0.9999768963893818,
+          "mean": 0.999754070350627,
+          "median": 0.9997908784443907,
+          "minimum": 0.9986567738371465,
+          "p95": 0.9999349052102948
+        },
+        "mlp_output_relative_l2": {
+          "count": 1184,
+          "maximum": 0.05250262669917361,
+          "mean": 0.021344931985688636,
+          "median": 0.020610272127743193,
+          "minimum": 0.0069107073685966925,
+          "p95": 0.03349187765832063
+        }
+      },
+      "records": 1184
+    }
+  ],
+  "recommended_arm": {
+    "candidate_count": 896,
+    "candidate_recall": {
+      "count": 35520,
+      "maximum": 1.0,
+      "mean": 0.8524356876407657,
+      "median": 0.8515625,
+      "minimum": 0.6471354166666666,
+      "p95": 0.890625
+    },
+    "input_coordinate_count": 432,
+    "input_fraction": 0.75,
+    "layer_mean_candidate_recall": {
+      "count": 30,
+      "maximum": 0.8912694432713963,
+      "mean": 0.8524356876407658,
+      "median": 0.8542645428631757,
+      "minimum": 0.8060698638091216,
+      "p95": 0.8717403377498593
+    },
+    "layer_mean_mlp_output_relative_l2": {
+      "count": 30,
+      "maximum": 0.23167052417096676,
+      "mean": 0.17180329057091848,
+      "median": 0.18742927035948784,
+      "minimum": 0.03657635087660226,
+      "p95": 0.2229025723827336
+    },
+    "layer_mean_oracle_score_mass_recall": {
+      "count": 30,
+      "maximum": 0.9710420966148376,
+      "mean": 0.9207278430461884,
+      "median": 0.92115917801857,
+      "minimum": 0.9002576470375061,
+      "p95": 0.9394405901432037
+    },
+    "meets_existing_candidate_recall_gate": false,
+    "mlp_output_cosine": {
+      "count": 35520,
+      "maximum": 0.999999946401538,
+      "mean": 0.9834736839400304,
+      "median": 0.9840526882970155,
+      "minimum": 0.9179973131936924,
+      "p95": 0.9989652298788916
+    },
+    "mlp_output_relative_l2": {
+      "count": 35520,
+      "maximum": 0.39719848895748794,
+      "mean": 0.17180329057091845,
+      "median": 0.17839106041322533,
+      "minimum": 0.00032750287161871776,
+      "p95": 0.253076153219877
+    },
+    "name": "dip_b16_q432_c896_k768",
+    "near_oracle_screen": false,
+    "oracle_score_mass_recall": {
+      "count": 35520,
+      "maximum": 1.000000238418579,
+      "mean": 0.9207278391279213,
+      "median": 0.9198707044124603,
+      "minimum": 0.8410782217979431,
+      "p95": 0.9571159482002257
+    },
+    "projected_traffic": {
+      "bytes_per_element": 4,
+      "candidate_completion_elements_per_token_layer": 258048,
+      "dense_weight_bytes_per_token_layer": 10616832,
+      "dense_weight_elements_per_token_layer": 2654208,
+      "partial_gate_up_elements_per_token_layer": 1327104,
+      "projected_dense_over_sparse_reduction": 1.309090909090909,
+      "projected_fraction_of_dense": 0.7638888888888888,
+      "projected_weight_bytes_per_token_layer": 8110080,
+      "projected_weight_elements_per_token_layer": 2027520,
+      "selected_down_elements_per_token_layer": 442368
+    },
+    "top_k": 768
+  },
+  "schema_version": 1,
+  "scope_caveat": "This clean-state trace screen does not measure hidden-state drift, logit KL, target NLL, or top-1 agreement; the trained-teacher causal intervention remains decisive.",
+  "screening_decision": "reject_before_causal_intervention",
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "status": "measured_local_model",
+  "validation": {
+    "dataset_hash": "ddca79850dbd3d97935d969f84d22983ce76517e785febd2911a53545d9bafd4",
+    "records_per_layer": 1184,
+    "sequence_count": 16,
+    "split": "validation",
+    "trace_path": "/home/dean/repos/engram/work/smollm2-135m-confirmation",
+    "unique_sequence_count": 16
+  }
+}

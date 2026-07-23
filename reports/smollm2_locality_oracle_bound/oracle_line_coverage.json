@@ -1,0 +1,24 @@
+{
+  "experiment": "oracle_contiguous_cache_line_coverage_bound",
+  "source": "held_out_validation_expanded_exact_top512_membership",
+  "states_times_layers": 15210,
+  "group_width_records": 16,
+  "total_groups": 96,
+  "oracle_touched_groups": {
+    "mean": 95.85825115055884,
+    "p05": 95.0,
+    "p50": 96.0,
+    "p95": 96.0
+  },
+  "perfect_group_selector_recall_upper_bound": {
+    "32": {"mean": 0.4602611614480605, "p05": 0.443359375, "minimum": 0.412109375},
+    "40": {"mean": 0.5537159455128206, "p05": 0.537109375, "minimum": 0.505859375},
+    "48": {"mean": 0.6387315859220908, "p05": 0.62109375, "minimum": 0.595703125},
+    "56": {"mean": 0.7169802453155818, "p05": 0.69921875, "minimum": 0.673828125},
+    "64": {"mean": 0.7924402120315582, "p05": 0.77734375, "minimum": 0.751953125},
+    "72": {"mean": 0.8568296453813281, "p05": 0.84375, "minimum": 0.82421875},
+    "80": {"mean": 0.9174822022928995, "p05": 0.90625, "minimum": 0.88671875},
+    "88": {"mean": 0.9664992192636424, "p05": 0.958984375, "minimum": 0.94921875},
+    "96": {"mean": 1.0, "p05": 1.0, "minimum": 1.0}
+  }
+}

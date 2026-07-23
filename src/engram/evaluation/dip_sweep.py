@@ -105,12 +105,27 @@ def _partial_proxy_scores(
     up: np.ndarray,
     value_norms: np.ndarray,
     coordinate_count: int,
+    input_block_size: int | None = None,
 ) -> np.ndarray:
-    coordinates = _stable_top_k(np.abs(states), coordinate_count)
     partial = np.zeros_like(states)
-    np.put_along_axis(
-        partial, coordinates, np.take_along_axis(states, coordinates, axis=1), axis=1
-    )
+    if input_block_size is None:
+        coordinates = _stable_top_k(np.abs(states), coordinate_count)
+        np.put_along_axis(
+            partial,
+            coordinates,
+            np.take_along_axis(states, coordinates, axis=1),
+            axis=1,
+        )
+    else:
+        if states.shape[1] % input_block_size or coordinate_count % input_block_size:
+            raise ValueError("hidden and coordinate counts must align to input blocks")
+        blocks = states.reshape(len(states), -1, input_block_size)
+        block_count = coordinate_count // input_block_size
+        block_scores = np.sum(blocks.astype(np.float64) ** 2, axis=2)
+        selected_blocks = _stable_top_k(block_scores, block_count)
+        mask = np.zeros(blocks.shape[:2], dtype=bool)
+        np.put_along_axis(mask, selected_blocks, True, axis=1)
+        partial = np.where(mask[:, :, None], blocks, 0.0).reshape(states.shape)
     return np.abs(neuron_activations(partial, gate, up)) * value_norms[None, :]
 
 
@@ -231,6 +246,7 @@ def evaluate_dip_exact_completion_sweep(
     top_k: int = 768,
     candidate_counts: Sequence[int] = (896, 1024),
     validation_records: int | None = None,
+    input_block_size: int | None = None,
 ) -> dict[str, Any]:
     """Measure DIP candidate completion on held-out dense-teacher states."""
 
@@ -246,10 +262,28 @@ def evaluate_dip_exact_completion_sweep(
     fractions = tuple(dict.fromkeys(float(value) for value in input_fractions))
     if not fractions:
         raise ValueError("at least one input fraction is required")
-    coordinate_counts = {
-        fraction: input_coordinate_count(inspection.hidden_size, fraction)
-        for fraction in fractions
-    }
+    if any(not np.isfinite(value) or value <= 0.0 or value > 1.0 for value in fractions):
+        raise ValueError("input fractions must be finite values in (0, 1]")
+    if input_block_size is not None:
+        if (
+            isinstance(input_block_size, bool)
+            or input_block_size <= 0
+            or inspection.hidden_size % input_block_size
+        ):
+            raise ValueError("input_block_size must positively divide hidden_size")
+        input_blocks = inspection.hidden_size // input_block_size
+        coordinate_counts = {
+            fraction: min(
+                inspection.hidden_size,
+                max(1, int(round(fraction * input_blocks))) * input_block_size,
+            )
+            for fraction in fractions
+        }
+    else:
+        coordinate_counts = {
+            fraction: input_coordinate_count(inspection.hidden_size, fraction)
+            for fraction in fractions
+        }
     if top_k <= 0 or top_k > inspection.intermediate_size:
         raise ValueError("top_k must lie within the intermediate size")
     candidates = tuple(dict.fromkeys(int(value) for value in candidate_counts))
@@ -312,7 +346,12 @@ def evaluate_dip_exact_completion_sweep(
         for fraction in fractions:
             coordinate_count = coordinate_counts[fraction]
             proxy_scores = _partial_proxy_scores(
-                states, gate, up, value_norms, coordinate_count
+                states,
+                gate,
+                up,
+                value_norms,
+                coordinate_count,
+                input_block_size,
             )
             proxy_order = _stable_top_k(proxy_scores, max(candidates))
             for candidate_count in candidates:
@@ -344,7 +383,11 @@ def evaluate_dip_exact_completion_sweep(
                 layer_means[key]["relative_l2"].append(float(np.mean(relative)))
                 layer_result["arms"].append(
                     {
-                        "name": f"dip_q{coordinate_count}_c{candidate_count}_k{top_k}",
+                        "name": (
+                            f"dip_b{input_block_size}_q{coordinate_count}_c{candidate_count}_k{top_k}"
+                            if input_block_size is not None
+                            else f"dip_q{coordinate_count}_c{candidate_count}_k{top_k}"
+                        ),
                         "input_fraction": fraction,
                         "input_coordinate_count": coordinate_count,
                         "candidate_count": candidate_count,
@@ -364,7 +407,11 @@ def evaluate_dip_exact_completion_sweep(
         relative = _stats(aggregate[key]["relative_l2"])
         coordinate_count = coordinate_counts[fraction]
         arm = {
-            "name": f"dip_q{coordinate_count}_c{candidate_count}_k{top_k}",
+            "name": (
+                f"dip_b{input_block_size}_q{coordinate_count}_c{candidate_count}_k{top_k}"
+                if input_block_size is not None
+                else f"dip_q{coordinate_count}_c{candidate_count}_k{top_k}"
+            ),
             "input_fraction": fraction,
             "input_coordinate_count": coordinate_count,
             "candidate_count": candidate_count,
@@ -424,6 +471,11 @@ def evaluate_dip_exact_completion_sweep(
             "exact_score": "abs(exact_swiglu_activation) * l2_norm(down_column)",
             "tie_break": "stable ascending record index",
             "trained_parameters": 0,
+            "input_selection_granularity": (
+                "scalar_coordinate"
+                if input_block_size is None
+                else f"contiguous_{input_block_size}_float32_block_by_hidden_l2"
+            ),
         },
         "validation": {
             "trace_path": str(Path(validation_traces).resolve()),
@@ -444,6 +496,7 @@ def evaluate_dip_exact_completion_sweep(
             ],
             "candidate_counts": list(candidates),
             "validation_records_limit": validation_records,
+            "input_block_size": input_block_size,
         },
         "oracle": oracle_summary,
         "arms": arms,
@@ -460,8 +513,9 @@ def evaluate_dip_exact_completion_sweep(
         ),
         "measurement_caveat": (
             "The NumPy evaluator executes dense matrix products. Traffic is a logical float32 "
-            "weight-read projection for a future sparse kernel, excludes indexes/activations/cache "
-            "effects, and is not measured DRAM traffic or latency."
+            "weight-read count; it excludes indexes, activations, and measured DRAM traffic. "
+            "For blocked runs the serialized/native implementation uses 64-byte-aligned access "
+            "units, but the trace evaluator is still not a latency measurement."
         ),
         "scope_caveat": (
             "This clean-state trace screen does not measure hidden-state drift, logit KL, target "

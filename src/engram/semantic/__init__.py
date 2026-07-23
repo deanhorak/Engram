@@ -13,6 +13,20 @@ from .dip import (
     projected_dip_traffic,
     stable_top_k,
 )
+from .dip_package import (
+    SerializedDIPLayer,
+    SerializedDIPMetrics,
+    SerializedDIPRead,
+    build_serialized_dip_package,
+    write_serialized_dip_layer,
+)
+from .product_quantization import (
+    ProductAdditiveEncoding,
+    ProductAdditiveMetadata,
+    ProductAdditiveQuantizationError,
+    decode_product_additive,
+    fit_product_additive,
+)
 
 __all__ = [
     "analyze_magnitude_oracle",
@@ -34,4 +48,14 @@ __all__ = [
     "partial_proxy_scores",
     "projected_dip_traffic",
     "stable_top_k",
+    "SerializedDIPLayer",
+    "SerializedDIPMetrics",
+    "SerializedDIPRead",
+    "build_serialized_dip_package",
+    "write_serialized_dip_layer",
+    "ProductAdditiveEncoding",
+    "ProductAdditiveMetadata",
+    "ProductAdditiveQuantizationError",
+    "decode_product_additive",
+    "fit_product_additive",
 ]

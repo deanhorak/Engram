@@ -13,11 +13,22 @@ MLP_QUALITY_THRESHOLDS = {
     "maximum_final_hidden_relative_l2": 0.10,
 }
 MINIMUM_ROUTED_CANDIDATE_RECALL = 0.95
+MAXIMUM_PROJECTED_MLP_TRAFFIC_FRACTION = 0.45
 IDENTITY_TOLERANCE = 1e-6
 MINIMUM_EVALUATION_SEQUENCES = 8
 MINIMUM_UNIQUE_EVALUATION_SEQUENCES = 8
 MINIMUM_NEXT_TOKEN_POSITIONS = 256
-GATED_VARIANTS = {"identity", "oracle", "rank16", "overlap", "dip"}
+FULL_CONVERTED_WIDTH_SELECTION_SCOPE = "full_converted_width"
+ROUTED_CANDIDATE_SELECTION_SCOPE = "routed_candidates"
+GATED_VARIANTS = {
+    "identity",
+    "oracle",
+    "rank16",
+    "overlap",
+    "dip",
+    "dip_paq",
+    "shared_basis",
+}
 MAGNITUDE_REFERENCE_CAVEAT = (
     "The magnitude oracle uses all neuron activations to choose top-K and is not a "
     "realizable candidate-selection algorithm. Magnitude ranking is not the "
@@ -106,7 +117,119 @@ def _ensure_stat_count(metric: Any, name: str, expected: int) -> None:
         raise ValueError(f"metric {name!r} count must equal {expected}")
 
 
-def evaluate_mlp_arm_gate(arm: dict[str, Any]) -> dict[str, Any]:
+def _valid_sha256(value: Any) -> bool:
+    if not isinstance(value, str) or len(value) != 64:
+        return False
+    try:
+        int(value, 16)
+    except ValueError:
+        return False
+    return True
+
+
+def _candidate_recall_policy(
+    arm: dict[str, Any],
+    *,
+    intermediate_size: int | None = None,
+) -> dict[str, Any]:
+    """Authenticate whether oracle candidate recall applies to one deployable arm."""
+
+    variant = arm.get("variant")
+    scope = arm.get("selection_scope")
+    if scope is None:
+        if variant == "shared_basis":
+            raise ValueError(
+                "shared_basis arm must authenticate selection_scope as "
+                "full_converted_width"
+            )
+        return {
+            "applicable": True,
+            "status": "required",
+            "selection_scope": ROUTED_CANDIDATE_SELECTION_SCOPE,
+            "selection_scope_authenticated": False,
+            "reason": "arm_selects_from_a_candidate_shortlist",
+        }
+    if not isinstance(scope, dict):
+        raise ValueError("selection_scope must be an authenticated object")
+    mode = scope.get("mode")
+    if mode == ROUTED_CANDIDATE_SELECTION_SCOPE:
+        if variant == "shared_basis":
+            raise ValueError(
+                "shared_basis arm must use full_converted_width selection"
+            )
+        if scope.get("candidate_shortlist") is not True:
+            raise ValueError(
+                "routed_candidates selection_scope must declare "
+                "candidate_shortlist=true"
+            )
+        return {
+            "applicable": True,
+            "status": "required",
+            "selection_scope": ROUTED_CANDIDATE_SELECTION_SCOPE,
+            "selection_scope_authenticated": True,
+            "reason": "arm_selects_from_a_candidate_shortlist",
+        }
+    if mode != FULL_CONVERTED_WIDTH_SELECTION_SCOPE:
+        raise ValueError(
+            "selection_scope mode must be 'routed_candidates' or "
+            "'full_converted_width'"
+        )
+    if variant != "shared_basis":
+        raise ValueError(
+            "full_converted_width selection_scope is only valid for shared_basis arms"
+        )
+    converted_width = scope.get("converted_width")
+    scored_width = scope.get("scored_width")
+    if (
+        isinstance(converted_width, bool)
+        or not isinstance(converted_width, int)
+        or converted_width <= 0
+        or isinstance(scored_width, bool)
+        or not isinstance(scored_width, int)
+        or scored_width != converted_width
+    ):
+        raise ValueError(
+            "full_converted_width selection_scope must declare equal positive "
+            "converted_width and scored_width"
+        )
+    if intermediate_size is not None and converted_width != intermediate_size:
+        raise ValueError(
+            "full_converted_width selection_scope must equal intermediate_size"
+        )
+    if scope.get("candidate_shortlist") is not False:
+        raise ValueError(
+            "full_converted_width selection_scope must declare "
+            "candidate_shortlist=false"
+        )
+    authentication = scope.get("authentication")
+    if not isinstance(authentication, dict):
+        raise ValueError(
+            "full_converted_width selection_scope requires artifact authentication"
+        )
+    if (
+        authentication.get("source")
+        != "strict_reloaded_artifact_header_and_manifest"
+        or authentication.get("verified") is not True
+        or not _valid_sha256(authentication.get("sha256"))
+    ):
+        raise ValueError(
+            "full_converted_width selection_scope requires verified strict-reload "
+            "artifact headers, an authenticated manifest, and a SHA-256"
+        )
+    return {
+        "applicable": False,
+        "status": "not_applicable",
+        "selection_scope": FULL_CONVERTED_WIDTH_SELECTION_SCOPE,
+        "selection_scope_authenticated": True,
+        "reason": "all_converted_records_are_scored_without_a_candidate_shortlist",
+    }
+
+
+def evaluate_mlp_arm_gate(
+    arm: dict[str, Any],
+    *,
+    intermediate_size: int | None = None,
+) -> dict[str, Any]:
     """Evaluate one intervention arm against declared quality prerequisites."""
 
     variant = arm.get("variant")
@@ -172,33 +295,90 @@ def evaluate_mlp_arm_gate(arm: dict[str, Any]) -> dict[str, Any]:
                 "maximum",
             ),
         ]
-        gate_type = (
-            "full_information_magnitude_reference"
-            if variant == "oracle"
-            else "routed_quality"
-        )
+        if variant == "oracle":
+            gate_type = "full_information_magnitude_reference"
+        elif variant == "shared_basis":
+            gate_type = "full_width_sparse_quality"
+        else:
+            gate_type = "routed_quality"
+        candidate_recall_policy = None
         if variant not in {"oracle", "identity"}:
-            recall = _mean_metric(
-                arm.get("local_mlp", {}),
-                "candidate_recall",
-                minimum=0.0,
-                maximum=1.0,
+            candidate_recall_policy = _candidate_recall_policy(
+                arm,
+                intermediate_size=intermediate_size,
             )
+            local_mlp = arm.get("local_mlp", {})
+            reported_applicability = arm.get("candidate_recall_applicable")
+            if (
+                reported_applicability is not None
+                and reported_applicability
+                is not candidate_recall_policy["applicable"]
+            ):
+                raise ValueError(
+                    "candidate_recall_applicable contradicts authenticated "
+                    "selection_scope"
+                )
+            if candidate_recall_policy["applicable"]:
+                recall = _mean_metric(
+                    local_mlp,
+                    "candidate_recall",
+                    minimum=0.0,
+                    maximum=1.0,
+                )
+                checks.append(
+                    _check(
+                        "candidate_recall",
+                        recall,
+                        MINIMUM_ROUTED_CANDIDATE_RECALL,
+                        "minimum",
+                    )
+                )
+            else:
+                if "candidate_recall" in local_mlp:
+                    raise ValueError(
+                        "candidate_recall must be omitted when authenticated "
+                        "selection_scope is full_converted_width"
+                    )
+                checks.append(
+                    {
+                        "metric": "candidate_recall",
+                        "actual": None,
+                        "comparison": "not_applicable",
+                        "threshold": None,
+                        "passed": True,
+                        "applicable": False,
+                        "reason": candidate_recall_policy["reason"],
+                    }
+                )
+        if variant in {"dip_paq", "shared_basis"}:
+            projected = arm.get("projected_accounting", {})
+            traffic = projected.get("cold_fraction_of_dense_q4")
+            if isinstance(traffic, bool) or not isinstance(traffic, (int, float)):
+                raise ValueError(
+                    f"{variant} arm must report cold_fraction_of_dense_q4"
+                )
+            if not math.isfinite(float(traffic)) or float(traffic) < 0.0:
+                raise ValueError(
+                    "cold_fraction_of_dense_q4 must be finite and non-negative"
+                )
             checks.append(
                 _check(
-                    "candidate_recall",
-                    recall,
-                    MINIMUM_ROUTED_CANDIDATE_RECALL,
-                    "minimum",
+                    "cold_fraction_of_dense_q4",
+                    float(traffic),
+                    MAXIMUM_PROJECTED_MLP_TRAFFIC_FRACTION,
+                    "maximum",
                 )
             )
     failed = [item["metric"] for item in checks if not item["passed"]]
-    return {
+    result = {
         "type": gate_type,
         "passed": not failed,
         "checks": checks,
         "failed_metrics": failed,
     }
+    if variant not in {"oracle", "identity"}:
+        result["candidate_recall"] = candidate_recall_policy
+    return result
 
 
 def apply_mlp_intervention_gates(report: dict[str, Any]) -> dict[str, Any]:
@@ -293,6 +473,7 @@ def apply_mlp_intervention_gates(report: dict[str, Any]) -> dict[str, Any]:
     identity_arms = []
     oracle_arms = []
     routed_arms = []
+    full_width_arms = []
     for arm in arms:
         name = arm.get("name")
         if not isinstance(name, str) or not name or name in arm_names:
@@ -356,21 +537,43 @@ def apply_mlp_intervention_gates(report: dict[str, Any]) -> dict[str, Any]:
                 raise ValueError(f"arm {name!r} must declare a positive top_k")
             if top_k > intermediate_size:
                 raise ValueError(f"arm {name!r} top_k exceeds intermediate_size")
+        candidate_recall_policy = None
         if variant not in {"identity", "oracle"}:
+            candidate_recall_policy = _candidate_recall_policy(
+                arm,
+                intermediate_size=intermediate_size,
+            )
             candidate_count = arm.get("candidate_count")
-            if (
-                isinstance(candidate_count, bool)
-                or not isinstance(candidate_count, int)
-                or candidate_count < arm["top_k"]
+            if candidate_recall_policy["applicable"]:
+                if (
+                    isinstance(candidate_count, bool)
+                    or not isinstance(candidate_count, int)
+                    or candidate_count < arm["top_k"]
+                ):
+                    raise ValueError(
+                        f"routed arm {name!r} must declare candidate_count >= top_k"
+                    )
+                if candidate_count > intermediate_size:
+                    raise ValueError(
+                        f"routed arm {name!r} candidate_count exceeds intermediate_size"
+                    )
+            elif candidate_count is not None:
+                raise ValueError(
+                    f"full-width arm {name!r} must omit candidate_count because it "
+                    "does not use a candidate shortlist"
+                )
+            reported_applicability = arm.get("candidate_recall_applicable")
+            if reported_applicability is not None and (
+                not isinstance(reported_applicability, bool)
+                or reported_applicability
+                is not candidate_recall_policy["applicable"]
             ):
                 raise ValueError(
-                    f"routed arm {name!r} must declare candidate_count >= top_k"
+                    "candidate_recall_applicable contradicts authenticated "
+                    "selection_scope"
                 )
-            if candidate_count > intermediate_size:
-                raise ValueError(
-                    f"routed arm {name!r} candidate_count exceeds intermediate_size"
-                )
-        if variant == "dip":
+            arm["candidate_recall_applicable"] = candidate_recall_policy["applicable"]
+        if variant in {"dip", "dip_paq"}:
             input_fraction = arm.get("input_fraction")
             if (
                 isinstance(input_fraction, bool)
@@ -399,11 +602,18 @@ def apply_mlp_intervention_gates(report: dict[str, Any]) -> dict[str, Any]:
                     else next_token_positions
                 )
                 _ensure_stat_count(metric, f"quality.{metric_name}", expected)
-        arm["gate"] = evaluate_mlp_arm_gate(arm)
+        arm["gate"] = evaluate_mlp_arm_gate(
+            arm,
+            intermediate_size=intermediate_size,
+        )
         if arm["variant"] == "identity":
             identity_arms.append(arm)
         elif arm["variant"] == "oracle":
             oracle_arms.append(arm)
+        elif candidate_recall_policy is not None and not candidate_recall_policy[
+            "applicable"
+        ]:
+            full_width_arms.append(arm)
         else:
             routed_arms.append(arm)
 
@@ -416,12 +626,19 @@ def apply_mlp_intervention_gates(report: dict[str, Any]) -> dict[str, Any]:
     eligible_identities = [arm for arm in identity_arms if progression_eligible(arm)]
     eligible_oracles = [arm for arm in oracle_arms if progression_eligible(arm)]
     eligible_routers = [arm for arm in routed_arms if progression_eligible(arm)]
+    eligible_full_width_arms = [
+        arm for arm in full_width_arms if progression_eligible(arm)
+    ]
     eligible_learned_routers = [
         arm for arm in eligible_routers if arm.get("variant") in {"rank16", "overlap"}
     ]
+    eligible_fitted_arms = [*eligible_learned_routers, *eligible_full_width_arms]
     identity_passed = any(arm["gate"]["passed"] for arm in eligible_identities)
     passing_oracles = [arm["name"] for arm in eligible_oracles if arm["gate"]["passed"]]
     passing_router_arms = [arm for arm in eligible_routers if arm["gate"]["passed"]]
+    passing_full_width_gate_arms = [
+        arm for arm in eligible_full_width_arms if arm["gate"]["passed"]
+    ]
     matched_passing_router_arms = []
     for router_arm in passing_router_arms:
         matched_reference = any(
@@ -430,8 +647,16 @@ def apply_mlp_intervention_gates(report: dict[str, Any]) -> dict[str, Any]:
         )
         if matched_reference:
             matched_passing_router_arms.append(router_arm)
+    matched_passing_full_width_arms = []
+    for full_width_arm in passing_full_width_gate_arms:
+        matched_reference = any(
+            oracle_arm.get("top_k") == full_width_arm.get("top_k")
+            for oracle_arm in eligible_oracles
+        )
+        if matched_reference:
+            matched_passing_full_width_arms.append(full_width_arm)
     data_separation: bool | None = None
-    if eligible_learned_routers:
+    if eligible_fitted_arms:
         calibration = result.get("calibration") or {}
         data_separation = bool(
             calibration.get("separation_method") == "exact_token_sequence_hashes"
@@ -444,7 +669,9 @@ def apply_mlp_intervention_gates(report: dict[str, Any]) -> dict[str, Any]:
         # DIP has no fitted predictor and therefore no train/evaluation split to leak.
         data_separation = True
     passing_predictor_free_arms = [
-        arm for arm in matched_passing_router_arms if arm.get("variant") == "dip"
+        arm
+        for arm in matched_passing_router_arms
+        if arm.get("variant") in {"dip", "dip_paq"}
     ]
     matched_passing_learned_arms = [
         arm
@@ -454,9 +681,18 @@ def apply_mlp_intervention_gates(report: dict[str, Any]) -> dict[str, Any]:
     passing_learned_arms = (
         matched_passing_learned_arms if data_separation is True else []
     )
-    accepted_passing_arms = [*passing_predictor_free_arms, *passing_learned_arms]
-    passing_routers = [arm["name"] for arm in accepted_passing_arms]
-    if not eligible_oracles and not eligible_routers:
+    passing_full_width_arms = (
+        matched_passing_full_width_arms if data_separation is True else []
+    )
+    accepted_passing_arms = [
+        *passing_predictor_free_arms,
+        *passing_learned_arms,
+        *passing_full_width_arms,
+    ]
+    passing_routers = [
+        arm["name"] for arm in [*passing_predictor_free_arms, *passing_learned_arms]
+    ]
+    if not eligible_oracles and not eligible_routers and not eligible_full_width_arms:
         decision = "insufficient_all_layer_evidence"
         targets_met: bool | None = None
     elif not evidence_size_verified:
@@ -465,18 +701,27 @@ def apply_mlp_intervention_gates(report: dict[str, Any]) -> dict[str, Any]:
     elif not identity_passed:
         decision = "insufficient_identity_sanity"
         targets_met = None
-    elif eligible_routers:
-        if passing_routers:
-            decision = (
-                "eligible_for_selector_serialization"
-                if passing_predictor_free_arms and not passing_learned_arms
-                else "eligible_for_router_serialization"
-            )
+    elif eligible_routers or eligible_full_width_arms:
+        if accepted_passing_arms:
+            if passing_full_width_arms and not (
+                passing_predictor_free_arms or passing_learned_arms
+            ):
+                decision = "eligible_for_full_width_artifact_confirmation"
+            elif passing_predictor_free_arms and not (
+                passing_learned_arms or passing_full_width_arms
+            ):
+                decision = "eligible_for_selector_serialization"
+            elif passing_learned_arms and not (
+                passing_predictor_free_arms or passing_full_width_arms
+            ):
+                decision = "eligible_for_router_serialization"
+            else:
+                decision = "eligible_for_deployable_artifact_confirmation"
             targets_met = True
-        elif eligible_learned_routers and data_separation is not True:
+        elif eligible_fitted_arms and data_separation is not True:
             decision = "invalid_data_separation"
             targets_met = None
-        elif passing_router_arms:
+        elif passing_router_arms or passing_full_width_gate_arms:
             decision = "insufficient_matched_magnitude_reference"
             targets_met = None
         else:
@@ -495,12 +740,22 @@ def apply_mlp_intervention_gates(report: dict[str, Any]) -> dict[str, Any]:
     result["gate_definition"] = {
         **MLP_QUALITY_THRESHOLDS,
         "minimum_routed_candidate_recall": MINIMUM_ROUTED_CANDIDATE_RECALL,
+        "maximum_projected_mlp_traffic_fraction": (
+            MAXIMUM_PROJECTED_MLP_TRAFFIC_FRACTION
+        ),
         "minimum_evaluation_sequences": MINIMUM_EVALUATION_SEQUENCES,
         "minimum_unique_evaluation_sequences": MINIMUM_UNIQUE_EVALUATION_SEQUENCES,
         "minimum_next_token_positions": MINIMUM_NEXT_TOKEN_POSITIONS,
+        "candidate_recall_applicability_policy": (
+            "candidate recall is mandatory for routed-candidate arms and is "
+            "not applicable only for a shared_basis arm whose strict-reloaded "
+            "artifact authenticates full_converted_width scoring with no "
+            "candidate shortlist"
+        ),
         "matched_magnitude_reference_policy": (
-            "a routed arm requires an all-layer magnitude-reference arm at the same top_k; "
-            "the reference need not pass when the routed arm itself passes causal quality"
+            "a deployable arm requires an all-layer magnitude-reference arm at the same "
+            "top_k; the reference need not pass when the deployable arm itself passes "
+            "causal quality"
         ),
         "scope": (
             "logit and NLL means use held-out next-token positions; final-hidden, local MLP, "
@@ -519,6 +774,12 @@ def apply_mlp_intervention_gates(report: dict[str, Any]) -> dict[str, Any]:
             arm["name"] for arm in passing_predictor_free_arms
         ],
         "passing_learned_router_arms": [arm["name"] for arm in passing_learned_arms],
+        "passing_full_width_arms": [
+            arm["name"] for arm in passing_full_width_arms
+        ],
+        "passing_deployable_arms": [
+            arm["name"] for arm in accepted_passing_arms
+        ],
         "instrumentation_sanity": identity_passed if eligible_identities else None,
         "evidence_size_verified": evidence_size_verified,
         "evaluation_role": evaluation_role,
@@ -529,6 +790,9 @@ def apply_mlp_intervention_gates(report: dict[str, Any]) -> dict[str, Any]:
         "learned_router_data_separation_verified": (
             data_separation if eligible_learned_routers else None
         ),
+        "full_width_data_separation_verified": (
+            data_separation if eligible_full_width_arms else None
+        ),
         "oracle_viability": (
             bool(passing_oracles)
             if eligible_oracles and identity_passed and evidence_size_verified
@@ -536,7 +800,9 @@ def apply_mlp_intervention_gates(report: dict[str, Any]) -> dict[str, Any]:
         ),
         "routing_viability": (
             True
-            if passing_routers and identity_passed and evidence_size_verified
+            if (passing_predictor_free_arms or passing_learned_arms)
+            and identity_passed
+            and evidence_size_verified
             else (
                 None
                 if (
@@ -550,6 +816,20 @@ def apply_mlp_intervention_gates(report: dict[str, Any]) -> dict[str, Any]:
                     if eligible_routers and identity_passed and evidence_size_verified
                     else None
                 )
+            )
+        ),
+        "full_width_viability": (
+            True
+            if passing_full_width_arms
+            and identity_passed
+            and evidence_size_verified
+            else (
+                False
+                if eligible_full_width_arms
+                and data_separation is True
+                and identity_passed
+                and evidence_size_verified
+                else None
             )
         ),
         "development_decision": decision,
@@ -577,11 +857,14 @@ def combine_mlp_intervention_reports(
 
     routed_calibrations = []
     for report in normalized:
-        if any(arm["variant"] in {"rank16", "overlap"} for arm in report["arms"]):
+        if any(
+            arm["variant"] in {"rank16", "overlap", "shared_basis"}
+            for arm in report["arms"]
+        ):
             calibration = report.get("calibration")
             if not isinstance(calibration, dict):
                 raise ValueError(
-                    "routed source report is missing calibration provenance"
+                    "fitted source report is missing calibration provenance"
                 )
             routed_calibrations.append(calibration)
     calibration = None
@@ -648,6 +931,7 @@ def combine_mlp_intervention_reports(
 
 
 __all__ = [
+    "FULL_CONVERTED_WIDTH_SELECTION_SCOPE",
     "IDENTITY_TOLERANCE",
     "GATED_VARIANTS",
     "MAGNITUDE_REFERENCE_CAVEAT",
@@ -655,7 +939,9 @@ __all__ = [
     "MINIMUM_UNIQUE_EVALUATION_SEQUENCES",
     "MINIMUM_NEXT_TOKEN_POSITIONS",
     "MINIMUM_ROUTED_CANDIDATE_RECALL",
+    "MAXIMUM_PROJECTED_MLP_TRAFFIC_FRACTION",
     "MLP_QUALITY_THRESHOLDS",
+    "ROUTED_CANDIDATE_SELECTION_SCOPE",
     "apply_mlp_intervention_gates",
     "combine_mlp_intervention_reports",
     "evaluate_mlp_arm_gate",

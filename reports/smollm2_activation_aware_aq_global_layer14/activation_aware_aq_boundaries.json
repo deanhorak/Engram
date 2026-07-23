@@ -1,0 +1,130 @@
+{
+  "experiment": "activation_aware_additive_quantization_cached_boundaries",
+  "layers": {
+    "14": {
+      "artifact": {
+        "archive_bytes_not_used_for_traffic": 596844,
+        "exact_array_round_trip": true,
+        "path": "reports/smollm2_activation_aware_aq_global_layer14/layer_14.aq.npz",
+        "sha256": "77a51e3f17a618fef0d830df765b44e30d620242a9bf1ec1cc0bca6408c039ff",
+        "validation_source": "serialized_reloaded_fp16_payload"
+      },
+      "configuration": {
+        "batch_size": 128,
+        "checkpoint_interval": 8,
+        "code_bits": 7,
+        "codebook_size": 128,
+        "cosine_loss_weight": 0.1,
+        "device": "cuda",
+        "fit_iterations": 4,
+        "fit_sample_limit": 16384,
+        "group_size": 8,
+        "hidden_size": 576,
+        "intermediate_size": 1536,
+        "learning_rate": 0.002,
+        "num_codebooks": 2,
+        "projection_loss_weight": 0.01,
+        "seed": 14,
+        "steps": 32
+      },
+      "experiment": "activation_aware_additive_quantization_boundary_screen",
+      "interpretation": {
+        "next_if_shared_codebooks_fail": "screen multiple codebook sets at 2x6 or 3x4 bits while retaining the same strict sub-45% payload accounting",
+        "quality_is_boundary_only": true,
+        "traffic_gate_passed": true,
+        "validation_was_not_used_for_checkpoint_selection": true
+      },
+      "optimization_mode": "P_only_fixed_assignments",
+      "schema_version": 1,
+      "storage_components": {
+        "codebooks": 4096,
+        "packed_codes": 580608,
+        "record_scales": 9216,
+        "total": 593920
+      },
+      "strict_reloaded_training": {
+        "gate_projection_nmse": 0.11106988042593002,
+        "mean_cosine_similarity": 0.7937808036804199,
+        "mean_relative_l2": 0.6079080104827881,
+        "output_nmse": 0.34760695695877075,
+        "p95_relative_l2": 0.7013822793960571,
+        "up_projection_nmse": 0.1778724640607834
+      },
+      "traffic": {
+        "code_bits": 7,
+        "dense_q4_bytes": 1327104,
+        "fp16_codebook_bytes": 4096,
+        "fp16_record_scale_bytes": 9216,
+        "fraction_of_dense_q4": 0.44757908950617287,
+        "groups_per_record": 72,
+        "information_bits": 4644864,
+        "packed_code_bytes": 580608,
+        "passes_45_percent_traffic_gate": true,
+        "records": 4608,
+        "runtime_header_bytes": 64,
+        "total_cold_bytes": 593984,
+        "total_payload_bytes": 593920
+      },
+      "training": {
+        "best_full_objective": 0.36967357993125916,
+        "checkpoints": [
+          {
+            "full_training_objective": 0.47080183029174805,
+            "step": 0
+          },
+          {
+            "full_training_objective": 0.40831732749938965,
+            "step": 8
+          },
+          {
+            "full_training_objective": 0.38668012619018555,
+            "step": 16
+          },
+          {
+            "full_training_objective": 0.3759611248970032,
+            "step": 24
+          },
+          {
+            "full_training_objective": 0.36967357993125916,
+            "step": 32
+          }
+        ],
+        "initial_full_objective": 0.47080183029174805,
+        "minibatch_final_loss": 0.36391162872314453,
+        "minibatch_initial_loss": 0.4762350916862488
+      },
+      "validation": {
+        "initial_fixed_code_decoded": {
+          "gate_projection_nmse": 0.11100388318300247,
+          "mean_cosine_similarity": 0.7386572360992432,
+          "mean_relative_l2": 0.6839677095413208,
+          "output_nmse": 0.46213895082473755,
+          "p95_relative_l2": 0.8003354072570801,
+          "up_projection_nmse": 0.17814470827579498
+        },
+        "strict_reloaded_decoded": {
+          "gate_projection_nmse": 0.11583277583122253,
+          "mean_cosine_similarity": 0.78536456823349,
+          "mean_relative_l2": 0.6210805177688599,
+          "output_nmse": 0.3778579533100128,
+          "p95_relative_l2": 0.7079375982284546,
+          "up_projection_nmse": 0.18153969943523407
+        },
+        "strict_weight_relative_l2": 0.4291136860847473
+      }
+    }
+  },
+  "model": "/home/dean/.cache/huggingface/hub/models--HuggingFaceTB--SmolLM2-135M/snapshots/93efa2f097d58c2a74874c7e644dbc9b0cee75a2",
+  "model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "schema_version": 1,
+  "screen": {
+    "maximum_layer_relative_l2": 0.6210805177688599,
+    "maximum_mean_relative_l2": 0.1,
+    "mean_layer_relative_l2": 0.6210805177688599,
+    "passed": false,
+    "scope": "cached_mlp_boundaries_only_not_causal_gate",
+    "traffic_passed": true
+  },
+  "training_dataset_hash": "cd4ad21a5a381a9fb9b03134c68944be055dc47578d817fc3484c0d4491e19c0",
+  "validation_dataset_hash": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c"
+}

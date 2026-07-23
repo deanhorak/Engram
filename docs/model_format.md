@@ -1,5 +1,11 @@
 # Model format
 
+Format support is ahead of model quality. The compiler can write and validate
+the package described here, but no trained SmolLM2 semantic artifact is
+currently eligible for the default format because none passes both causal
+quality and the 45% physical cold-traffic gate. See
+[Project status](status.md).
+
 An Engram package is an inspectable directory with a versioned root `manifest.json`:
 
 ```text
@@ -24,6 +30,18 @@ actual alignment. Semantic submanifests repeat array-level metadata for independ
 An `.engram` package is a model worker, not a system-agent snapshot. It does not contain executive
 goal graphs, durable user memory, tool credentials, worker registries, or Cognitive Executive
 policy.
+
+The separate experimental DIP format defaults to version 2. Each layer stores float32
+`gate_coordinates.npy` and `up_coordinates.npy` as `[hidden,records]` so selected input
+coordinates are sequential scans, `down_rows.npy` as `[records,hidden]`, precomputed
+`value_norms.npy`, and a native-readable `uint32[4]` `config.npy`. `metadata.json` checksums every
+array. This format is deliberately not part of the default `.engram` manifest: its native kernel
+is parity-correct but the best checked 30-layer implementation is still 15.4% slower than dense.
+An opt-in version-3 diagnostic duplicates gate/up weights in record-major order. It increases MLP
+storage by 66.7% and both tested record-major completion kernels are slower, so
+`engram build-dip-package` emits v2 unless `--dual-layout-experimental` is supplied. Python loads
+both versions and verifies metadata/checksums; the native benchmark loader validates the binary
+configuration and array shapes but currently trusts files from the checked package boundary.
 
 Each compiled semantic layer contains `quantized/ivf/centroids.npy` (`float32` joint gate/up
 centroids), `posting_offsets.npy` (`uint32` CSR offsets), and `posting_indices.npy` (`uint32`

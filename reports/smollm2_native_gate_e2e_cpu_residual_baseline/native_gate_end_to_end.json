@@ -1,0 +1,174 @@
+{
+  "artifact": {
+    "format": "full_gate_up_down_weights_per_layer_required_after_basis_training",
+    "written": false
+  },
+  "configuration": {
+    "anneal_steps": 0,
+    "batch_size": 1,
+    "checkpoint_every": 0,
+    "device": "cpu",
+    "device_neutral_semantics": true,
+    "learning_rate": 1e-05,
+    "loss_weights": {
+      "dense_shadow": 0.25,
+      "hidden": 0.25,
+      "local": 1.0,
+      "logit": 0.25,
+      "utility": 0.1
+    },
+    "resumed": false,
+    "save_artifact": false,
+    "steps": 0,
+    "target_input_fraction": 0.625,
+    "target_top_k": 512,
+    "temperature": 1.0,
+    "utility_residual": {
+      "blend": 0.8,
+      "path": "/home/dean/repos/engram/reports/smollm2_native_gate_utility_residual_expanded/native_gate_utility_residual.safetensors",
+      "rank": 16,
+      "sha256": "81ed0e6194233894da79f57c490a8dae9e91823502227aed681e1e12438d449a"
+    },
+    "warmup_steps": 0
+  },
+  "data_separation": {
+    "held_out": true,
+    "method": "exact_token_sequence_hashes",
+    "overlapping_sequences": 0,
+    "training_dataset_hash": "383691c11c1f3670322abb768df4362aca54c2e917907bb68ae8d33f4cf002f3",
+    "training_sequences": 32,
+    "validation_dataset_hash": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c",
+    "validation_sequences": 16
+  },
+  "experiment": "progressive_end_to_end_native_gate_training",
+  "gate": {
+    "checks": {
+      "active_record_budget": true,
+      "evidence_size": true,
+      "final_hidden_relative_l2": false,
+      "input_coordinate_budget": true,
+      "nll_delta": false,
+      "projected_traffic": true,
+      "teacher_student_kl": false,
+      "teacher_top1_agreement": false
+    },
+    "decision": "continue_training_or_stop_before_serialization",
+    "passed": false
+  },
+  "metrics": {
+    "final_hidden_cosine": {
+      "count": 507,
+      "maximum": 0.9910166924448615,
+      "mean": 0.9284705222079926,
+      "median": 0.9394905158306373,
+      "minimum": 0.5848338101573857,
+      "p95": 0.9784143114544952
+    },
+    "final_hidden_relative_l2": {
+      "count": 507,
+      "maximum": 0.9422149299413821,
+      "mean": 0.36270648935595895,
+      "median": 0.34599803797514317,
+      "minimum": 0.1351910251731281,
+      "p95": 0.5669911967328627
+    },
+    "local_mlp_relative_l2": {
+      "count": 15210,
+      "maximum": 3.3359792525098437,
+      "mean": 0.6250527692732784,
+      "median": 0.6491679348445163,
+      "minimum": 0.0009169005262632695,
+      "p95": 0.9350424420490064
+    },
+    "nll_delta": {
+      "count": 491,
+      "maximum": 6.270658493041992,
+      "mean": 0.582924465629625,
+      "median": 0.3286224603652954,
+      "minimum": -4.471426010131836,
+      "p95": 2.840121269226074
+    },
+    "student_nll": {
+      "count": 491,
+      "maximum": 15.215474128723145,
+      "mean": 3.759424263587904,
+      "median": 2.636049270629883,
+      "minimum": 0.00015507926582358778,
+      "p95": 10.479147911071777
+    },
+    "teacher_nll": {
+      "count": 491,
+      "maximum": 16.939329147338867,
+      "mean": 3.176499797914646,
+      "median": 1.7890857458114624,
+      "minimum": 6.6756979322235566e-06,
+      "p95": 9.731781005859375
+    },
+    "teacher_student_kl": {
+      "count": 491,
+      "maximum": 5.085094451904297,
+      "mean": 0.6285282700374908,
+      "median": 0.4383794665336609,
+      "minimum": 0.0001376966101815924,
+      "p95": 1.8623737692832947
+    },
+    "teacher_student_top5_overlap": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.5910387095329475,
+      "median": 0.6000000238418579,
+      "minimum": 0.0,
+      "p95": 1.0
+    },
+    "teacher_top1_agreement": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.5987780040733197,
+      "median": 1.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    },
+    "teacher_top5_contains_student_top1": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.8940936863543788,
+      "median": 1.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    }
+  },
+  "projected_traffic": {
+    "active_records": 512,
+    "dense_weight_bytes": 10616832,
+    "fraction_of_dense": 0.4305555555555556,
+    "gate_weight_bytes": 2211840,
+    "hidden_size": 576,
+    "input_coordinates": 360,
+    "input_fraction": 0.625,
+    "intermediate_size": 1536,
+    "selected_up_down_weight_bytes": 2359296,
+    "total_weight_bytes": 4571136,
+    "utility_residual_bytes": 141312,
+    "with_utility_residual_fraction_of_dense": 0.44386574074074076
+  },
+  "schema_version": 1,
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "status": "measured_local_model",
+  "training": {
+    "checkpoint": {
+      "device_neutral": true,
+      "path": null,
+      "written": false
+    },
+    "completed_before_resume": 0,
+    "history": [],
+    "records": 32,
+    "requested_total_steps": 0
+  },
+  "validation": {
+    "hard_sparse_path_only": true,
+    "input_token_positions": 507,
+    "next_token_positions": 491,
+    "records": 16
+  }
+}

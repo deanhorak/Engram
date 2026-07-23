@@ -1,0 +1,804 @@
+{
+  "artifact": {
+    "format": "engram_native_gate_utility_residual_v1",
+    "path": "/home/dean/repos/engram/reports/smollm2_native_gate_on_policy_round1/native_gate_on_policy_residual.safetensors",
+    "sha256": "d695ffda554e56952c39e0686cfae87db59eaad4269b0182e01913dc19b38208"
+  },
+  "artifact_binding": {
+    "input_fraction": 0.625,
+    "mlp_weights_sha256": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+    "parent_residual_sha256": "81ed0e6194233894da79f57c490a8dae9e91823502227aed681e1e12438d449a",
+    "top_k": 512
+  },
+  "baseline": {
+    "artifact_sha256": "81ed0e6194233894da79f57c490a8dae9e91823502227aed681e1e12438d449a",
+    "blend": 0.8,
+    "local_relative_l2": {
+      "count": 3840,
+      "maximum": 0.6398789615505012,
+      "mean": 0.3511661424085578,
+      "median": 0.36440902203355485,
+      "minimum": 0.0012937584829890109,
+      "p95": 0.5399755564888105
+    }
+  },
+  "configuration": {
+    "blends": [
+      0.5,
+      0.65,
+      0.8,
+      1.0
+    ],
+    "device": "cpu",
+    "fit_fraction": 0.75,
+    "fit_states_per_layer": 512,
+    "input_fraction": 0.625,
+    "rank": 16,
+    "regularization": 4000.0,
+    "top_k": 512,
+    "validation_states_per_layer": 128
+  },
+  "configurations": [
+    {
+      "blend": 0.8,
+      "local_cosine": {
+        "count": 3840,
+        "maximum": 0.9999996274964658,
+        "mean": 0.9272274076820556,
+        "median": 0.9329498641674903,
+        "minimum": 0.7571728148374477,
+        "p95": 0.9980738272739693
+      },
+      "local_relative_l2": {
+        "count": 3840,
+        "maximum": 0.6532146625841013,
+        "mean": 0.3498315387987664,
+        "median": 0.3623313941675558,
+        "minimum": 0.0012460004237078303,
+        "p95": 0.5398692161339926
+      }
+    },
+    {
+      "blend": 0.65,
+      "local_cosine": {
+        "count": 3840,
+        "maximum": 0.9999995902024627,
+        "mean": 0.9270604244086854,
+        "median": 0.9322922561137019,
+        "minimum": 0.7616604757535127,
+        "p95": 0.9980275970751681
+      },
+      "local_relative_l2": {
+        "count": 3840,
+        "maximum": 0.6480416222036631,
+        "mean": 0.35046808672753293,
+        "median": 0.3639136453716083,
+        "minimum": 0.001287116595156036,
+        "p95": 0.5394721565054282
+      }
+    },
+    {
+      "blend": 1.0,
+      "local_cosine": {
+        "count": 3840,
+        "maximum": 0.9999996411390609,
+        "mean": 0.9268185651041722,
+        "median": 0.932533865388483,
+        "minimum": 0.745458432470871,
+        "p95": 0.9980653936737218
+      },
+      "local_relative_l2": {
+        "count": 3840,
+        "maximum": 0.6689256682362774,
+        "mean": 0.35053605229756535,
+        "median": 0.3636826727320134,
+        "minimum": 0.0011985089728368383,
+        "p95": 0.5390142425003379
+      }
+    },
+    {
+      "blend": 0.5,
+      "local_cosine": {
+        "count": 3840,
+        "maximum": 0.9999995672950555,
+        "mean": 0.9264098563181921,
+        "median": 0.9316426335150221,
+        "minimum": 0.7671835698968176,
+        "p95": 0.9979700539881621
+      },
+      "local_relative_l2": {
+        "count": 3840,
+        "maximum": 0.6420176201393549,
+        "mean": 0.35233627640377463,
+        "median": 0.365514732736685,
+        "minimum": 0.001307686633912528,
+        "p95": 0.539164476216591
+      }
+    }
+  ],
+  "data_separation": {
+    "dataset_sha256": "383691c11c1f3670322abb768df4362aca54c2e917907bb68ae8d33f4cf002f3",
+    "fit_sequences": 24,
+    "overlapping_sequences": 0,
+    "validation_sequences": 8
+  },
+  "experiment": "native_gate_on_policy_residual_recalibration",
+  "layers": [
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.1279241213211636
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.12793690667764107
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.1285457700131592
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.1293598121452893
+        }
+      ],
+      "layer": 0
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.30639006886145415
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.3054489807569496
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.3047311198052643
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.3053229538738759
+        }
+      ],
+      "layer": 1
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.3800111778104095
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.3798572657840919
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.3804207466666204
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.3818509261231554
+        }
+      ],
+      "layer": 2
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4281852974853868
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.4248238471562691
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.4243515144644565
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.424830286542912
+        }
+      ],
+      "layer": 3
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4902727195521075
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.4882300572761066
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.487637117678398
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.48838102653666327
+        }
+      ],
+      "layer": 4
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.5266450918386466
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.5244585453935386
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.5240670453323334
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.5245084995739779
+        }
+      ],
+      "layer": 5
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.49049188447286685
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.4880286238959348
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.4873840544984723
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.4890044198012773
+        }
+      ],
+      "layer": 6
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4647408816064704
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.4645477608429688
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.4646276120257119
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.4664575273647417
+        }
+      ],
+      "layer": 7
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.3981987914623083
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.3965804131968142
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.3965055313302319
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.39730406182583067
+        }
+      ],
+      "layer": 8
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.40776015492412143
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.4058740509501744
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.406900923660786
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.40828191843116185
+        }
+      ],
+      "layer": 9
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4266649337589651
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.4248133250488286
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.4244736918763371
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.42600764546183667
+        }
+      ],
+      "layer": 10
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4399915798704875
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.4380233386330929
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.4365450760602181
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.4360424998144341
+        }
+      ],
+      "layer": 11
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.45016982830379004
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.4489169185508233
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.44723742094364183
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.4487356411589436
+        }
+      ],
+      "layer": 12
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.42197583274255884
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.4210462746213014
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.42111526035621843
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.42238699269519153
+        }
+      ],
+      "layer": 13
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.3528119256398162
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.3512602822083093
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.35157554653686907
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.35220643460078427
+        }
+      ],
+      "layer": 14
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4017461264609007
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.3968139710452736
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.3944474797399546
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.39573411879002496
+        }
+      ],
+      "layer": 15
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4185975076911044
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.41660354039538744
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.4152782561425756
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.41685728842674125
+        }
+      ],
+      "layer": 16
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.4130823285562053
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.4110906857127302
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.4087553629044648
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.40665710245054304
+        }
+      ],
+      "layer": 17
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.31656444174463005
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.31461735808727265
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.3131941693427306
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.3132337569520972
+        }
+      ],
+      "layer": 18
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.3698920561052089
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.36661037260993967
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.36567752507625734
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.36691912551790495
+        }
+      ],
+      "layer": 19
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.2858485870083521
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.2837810474645755
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.28296447221724075
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.2833854749258683
+        }
+      ],
+      "layer": 20
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.35860564802031747
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.3547890146044813
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.3529865565107101
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.35333952405881947
+        }
+      ],
+      "layer": 21
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.3024045394583733
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.2998185191619891
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.2992034374206868
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.29999130822780284
+        }
+      ],
+      "layer": 22
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.28674008768734127
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.28548609910286304
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.28509828303086754
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.2856809832242363
+        }
+      ],
+      "layer": 23
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.2653263414299811
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.26320384239067823
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.26261850495372757
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.26335733604676936
+        }
+      ],
+      "layer": 24
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.3062941863496683
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.3047990238642603
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.30441803055972033
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.30508576536147847
+        }
+      ],
+      "layer": 25
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.27789305705955225
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.27620732826333366
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.27538553514060804
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.275632008675849
+        }
+      ],
+      "layer": 26
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.23145225072441322
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.22975917072037616
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.22920179511068348
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.22956667321212676
+        }
+      ],
+      "layer": 27
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.16574967543863528
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.1640791304660268
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.16365810877092474
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.16401893432559914
+        }
+      ],
+      "layer": 28
+    },
+    {
+      "configurations": [
+        {
+          "blend": 0.5,
+          "local_relative_l2": 0.057657168728001626
+        },
+        {
+          "blend": 0.65,
+          "local_relative_l2": 0.05653690694395548
+        },
+        {
+          "blend": 0.8,
+          "local_relative_l2": 0.055940215793120494
+        },
+        {
+          "blend": 1.0,
+          "local_relative_l2": 0.055941522781023226
+        }
+      ],
+      "layer": 29
+    }
+  ],
+  "projected_traffic": {
+    "active_records": 512,
+    "dense_weight_bytes": 10616832,
+    "fraction_of_dense": 0.4305555555555556,
+    "gate_weight_bytes": 2211840,
+    "hidden_size": 576,
+    "input_coordinates": 360,
+    "input_fraction": 0.625,
+    "intermediate_size": 1536,
+    "selected_up_down_weight_bytes": 2359296,
+    "total_weight_bytes": 4571136,
+    "utility_residual_bytes": 141312,
+    "with_utility_residual_fraction_of_dense": 0.44386574074074076
+  },
+  "relative_improvement": 0.003800490561640557,
+  "schema_version": 1,
+  "screen": {
+    "checks": {
+      "local_improvement": true,
+      "material_local_improvement": false,
+      "projected_traffic": true,
+      "sequence_disjoint_shadow": true
+    },
+    "decision": "reject_on_policy_recalibration",
+    "passed": false
+  },
+  "selection": {
+    "blend": 0.8,
+    "local_cosine": {
+      "count": 3840,
+      "maximum": 0.9999996274964658,
+      "mean": 0.9272274076820556,
+      "median": 0.9329498641674903,
+      "minimum": 0.7571728148374477,
+      "p95": 0.9980738272739693
+    },
+    "local_relative_l2": {
+      "count": 3840,
+      "maximum": 0.6532146625841013,
+      "mean": 0.3498315387987664,
+      "median": 0.3623313941675558,
+      "minimum": 0.0012460004237078303,
+      "p95": 0.5398692161339926
+    }
+  },
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7"
+}

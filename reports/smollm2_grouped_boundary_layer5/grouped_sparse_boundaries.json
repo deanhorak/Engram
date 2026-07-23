@@ -1,0 +1,335 @@
+{
+  "artifact": {
+    "path": "/home/dean/repos/engram/reports/smollm2_grouped_boundary_layer5/grouped_sparse_boundaries.safetensors",
+    "sha256": "c05ea70c474efd6512d20c4c6e7abd985a8892bb2d723b7f0785894af676802d"
+  },
+  "configuration": {
+    "adapter_rank": 8,
+    "anneal_steps": 64,
+    "batch_size": 256,
+    "cosine_weight": 0.1,
+    "dense_anchor_weight": 0.1,
+    "device": "cuda",
+    "evaluation_interval": 32,
+    "layers": [
+      5
+    ],
+    "learned_pairing": true,
+    "learning_rate": 0.0001,
+    "max_train_records": 4096,
+    "max_validation_records": 2048,
+    "maximum_mean_relative_l2": 0.2,
+    "route_weight": 0.1,
+    "router_group_size": 2,
+    "router_learning_rate": 0.001,
+    "router_rank": 16,
+    "router_regularization": 8000.0,
+    "router_warmup_steps": 32,
+    "settle_steps": 128,
+    "start_temperature": 1.0,
+    "start_top_k": 768,
+    "temperature": 0.5,
+    "top_k": 672
+  },
+  "data_separation": {
+    "held_out": true,
+    "overlapping_sequences": 0,
+    "training_dataset_hash": "cd4ad21a5a381a9fb9b03134c68944be055dc47578d817fc3484c0d4491e19c0",
+    "validation_dataset_hash": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c"
+  },
+  "experiment": "grouped_sparse_teacher_boundary_training",
+  "layers": [
+    {
+      "best": {
+        "cosine": {
+          "count": 446,
+          "maximum": 0.9601432233009849,
+          "mean": 0.8007598260083162,
+          "median": 0.8024523812378702,
+          "minimum": 0.4131981085680261,
+          "p95": 0.9425495009176355
+        },
+        "group_target_recall": 0.5258914828300476,
+        "relative_l2": {
+          "count": 446,
+          "maximum": 0.9116122114617756,
+          "mean": 0.5830048455737918,
+          "median": 0.597385239717376,
+          "minimum": 0.2866491908570977,
+          "p95": 0.7477212143242882
+        },
+        "step": 224
+      },
+      "dense_shadow_relative_l2": {
+        "count": 446,
+        "maximum": 8.934859457070098e-07,
+        "mean": 5.246658390549556e-07,
+        "median": 5.272934973103057e-07,
+        "minimum": 3.955760963029873e-07,
+        "p95": 5.897457705743149e-07
+      },
+      "evaluations": [
+        {
+          "cosine": {
+            "count": 446,
+            "maximum": 0.9558947643690578,
+            "mean": 0.7792400881172712,
+            "median": 0.7814751568168117,
+            "minimum": 0.524436336192281,
+            "p95": 0.9390878720136678
+          },
+          "group_target_recall": 0.5452767610549927,
+          "relative_l2": {
+            "count": 446,
+            "maximum": 0.8516751094888617,
+            "mean": 0.6115155274669717,
+            "median": 0.624391864230371,
+            "minimum": 0.30235491576284146,
+            "p95": 0.7751971723166393
+          },
+          "step": 0
+        },
+        {
+          "cosine": {
+            "count": 446,
+            "maximum": 0.9564228909686238,
+            "mean": 0.7769500833798012,
+            "median": 0.7798828574478868,
+            "minimum": 0.5177324051859405,
+            "p95": 0.9372574531898871
+          },
+          "group_target_recall": 0.5411461591720581,
+          "relative_l2": {
+            "count": 446,
+            "maximum": 0.8576638082032363,
+            "mean": 0.6145922915108,
+            "median": 0.6269863002636569,
+            "minimum": 0.3072557718251263,
+            "p95": 0.7766770534192935
+          },
+          "step": 32
+        },
+        {
+          "cosine": {
+            "count": 446,
+            "maximum": 0.9602095486801104,
+            "mean": 0.7894385379127941,
+            "median": 0.7939968841475237,
+            "minimum": 0.3731274233692822,
+            "p95": 0.9386778724524663
+          },
+          "group_target_recall": 0.5357276201248169,
+          "relative_l2": {
+            "count": 446,
+            "maximum": 0.9304726219166429,
+            "mean": 0.5982238094025703,
+            "median": 0.6087745754191665,
+            "minimum": 0.29686529522178434,
+            "p95": 0.7634375834103537
+          },
+          "step": 64
+        },
+        {
+          "cosine": {
+            "count": 446,
+            "maximum": 0.960486512139092,
+            "mean": 0.7917801122207694,
+            "median": 0.7958752768188592,
+            "minimum": 0.37702076801487655,
+            "p95": 0.9399171693161791
+          },
+          "group_target_recall": 0.5311565399169922,
+          "relative_l2": {
+            "count": 446,
+            "maximum": 0.9279359800096096,
+            "mean": 0.5948466094687884,
+            "median": 0.6061579148949086,
+            "minimum": 0.294020886874718,
+            "p95": 0.7709978973355402
+          },
+          "step": 96
+        },
+        {
+          "cosine": {
+            "count": 446,
+            "maximum": 0.9629159926702225,
+            "mean": 0.795390954210659,
+            "median": 0.80385742904508,
+            "minimum": 0.3797362875825903,
+            "p95": 0.943485289295869
+          },
+          "group_target_recall": 0.5292413830757141,
+          "relative_l2": {
+            "count": 446,
+            "maximum": 0.9270632488013806,
+            "mean": 0.5893823193355203,
+            "median": 0.5970915111068206,
+            "minimum": 0.28321757771829437,
+            "p95": 0.767966817751555
+          },
+          "step": 128
+        },
+        {
+          "cosine": {
+            "count": 446,
+            "maximum": 0.9616134201938342,
+            "mean": 0.7984338072191535,
+            "median": 0.8022952126821039,
+            "minimum": 0.401058164818913,
+            "p95": 0.9456022197310346
+          },
+          "group_target_recall": 0.5276799201965332,
+          "relative_l2": {
+            "count": 446,
+            "maximum": 0.9166786257201528,
+            "mean": 0.5857037371466071,
+            "median": 0.5988448148973865,
+            "minimum": 0.2830555109283673,
+            "p95": 0.7665202508596693
+          },
+          "step": 160
+        },
+        {
+          "cosine": {
+            "count": 446,
+            "maximum": 0.9642737940247018,
+            "mean": 0.8011673247011866,
+            "median": 0.8018557588297774,
+            "minimum": 0.5526185533828069,
+            "p95": 0.9439542683654318
+          },
+          "group_target_recall": 0.5268257260322571,
+          "relative_l2": {
+            "count": 446,
+            "maximum": 0.8356085265716972,
+            "mean": 0.5833855637841675,
+            "median": 0.5984975975900266,
+            "minimum": 0.27504717990602623,
+            "p95": 0.7489372966610919
+          },
+          "step": 192
+        },
+        {
+          "cosine": {
+            "count": 446,
+            "maximum": 0.9601432233009849,
+            "mean": 0.8007598260083162,
+            "median": 0.8024523812378702,
+            "minimum": 0.4131981085680261,
+            "p95": 0.9425495009176355
+          },
+          "group_target_recall": 0.5258914828300476,
+          "relative_l2": {
+            "count": 446,
+            "maximum": 0.9116122114617756,
+            "mean": 0.5830048455737918,
+            "median": 0.597385239717376,
+            "minimum": 0.2866491908570977,
+            "p95": 0.7477212143242882
+          },
+          "step": 224
+        }
+      ],
+      "final": {
+        "cosine": {
+          "count": 446,
+          "maximum": 0.9601432233009849,
+          "mean": 0.8007598260083162,
+          "median": 0.8024523812378702,
+          "minimum": 0.4131981085680261,
+          "p95": 0.9425495009176355
+        },
+        "group_target_recall": 0.5258914828300476,
+        "relative_l2": {
+          "count": 446,
+          "maximum": 0.9116122114617756,
+          "mean": 0.5830048455737918,
+          "median": 0.597385239717376,
+          "minimum": 0.2866491908570977,
+          "p95": 0.7477212143242882
+        },
+        "step": 224
+      },
+      "initial": {
+        "cosine": {
+          "count": 446,
+          "maximum": 0.9558947643690578,
+          "mean": 0.7792400881172712,
+          "median": 0.7814751568168117,
+          "minimum": 0.524436336192281,
+          "p95": 0.9390878720136678
+        },
+        "group_target_recall": 0.5452767610549927,
+        "relative_l2": {
+          "count": 446,
+          "maximum": 0.8516751094888617,
+          "mean": 0.6115155274669717,
+          "median": 0.624391864230371,
+          "minimum": 0.30235491576284146,
+          "p95": 0.7751971723166393
+        },
+        "step": 0
+      },
+      "layer": 5,
+      "learned_pairing": true,
+      "training_first": {
+        "active_records": 768,
+        "cosine": 0.0,
+        "dense_anchor": 0.0,
+        "loss": 0.6904621124267578,
+        "phase": "router_warmup",
+        "reconstruction": 0.0,
+        "route": 0.6904621124267578,
+        "step": 1,
+        "temperature": 1.0
+      },
+      "training_last": {
+        "active_records": 672,
+        "cosine": 0.12268250435590744,
+        "dense_anchor": 0.029105810448527336,
+        "loss": 0.22106531262397766,
+        "phase": "settle",
+        "reconstruction": 0.20121896266937256,
+        "route": 0.6995996236801147,
+        "step": 224,
+        "temperature": 0.5
+      },
+      "training_records": 4096,
+      "validation_records": 446
+    }
+  ],
+  "projected_traffic": {
+    "cache_line_bytes": 64,
+    "dense_q4_bytes": 1327104,
+    "fraction_of_dense_q4": 0.447289737654321,
+    "record_group_q4_bytes": 1728,
+    "router_bias_fp16_bytes": 1536,
+    "router_factor_q4_bytes": 10752,
+    "router_group_size": 2,
+    "router_input_q4_bytes": 4608,
+    "router_metadata_cache_aligned_bytes": 2240,
+    "router_nonlinear_scale_fp16_bytes": 32,
+    "router_output_groups": 768,
+    "router_output_q4_bytes": 6144,
+    "selected_groups": 336,
+    "selected_record_q4_bytes": 580608,
+    "total_bytes": 593600,
+    "uint16_group_id_bytes": 672
+  },
+  "schema_version": 1,
+  "screen": {
+    "checks": {
+      "dense_permutation_parity": true,
+      "every_layer_improved": true,
+      "mean_relative_l2": false,
+      "projected_traffic": true
+    },
+    "decision": "reject_or_continue_boundary_optimization",
+    "passed": false,
+    "selection_caveat": "Best checkpoints use the boundary-validation split for development; the causal gate still requires untouched sequence-level confirmation."
+  },
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "summary": {
+    "mean_best_relative_l2": 0.5830048455737918
+  }
+}

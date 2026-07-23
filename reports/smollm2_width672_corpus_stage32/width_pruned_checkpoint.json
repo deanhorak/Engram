@@ -1,0 +1,17 @@
+{
+  "completed_steps": 128,
+  "configuration": {
+    "batch_size": 1,
+    "hidden_weight": 0.25,
+    "learning_rate": 1e-05,
+    "local_weight": 1.0,
+    "logit_weight": 0.25,
+    "replacement_steps": 16,
+    "schema_version": 1,
+    "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+    "target_width": 672,
+    "training_dataset_hash": "55af4d5a2a57b5a1a2ac2614ee22b63ac9033202d2ccff76bb833b1e08bb221e",
+    "validation_dataset_hash": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c"
+  },
+  "device_neutral": true
+}

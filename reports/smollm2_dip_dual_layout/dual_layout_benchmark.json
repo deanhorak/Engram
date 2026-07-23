@@ -1,0 +1,50 @@
+{
+  "experiment": "dip_dual_layout_diagnostic",
+  "status": "rejected",
+  "model": "HuggingFaceTB/SmolLM2-135M",
+  "package_bytes": {
+    "v2_coordinate_major": 318792948,
+    "v3_dual_layout": 531164178,
+    "ratio": 1.666172923
+  },
+  "low_budget_synthetic_benchmark": {
+    "configuration": {"input_coordinates": 360, "candidates": 512, "top_k": 512},
+    "iterations_per_trial": 20,
+    "trials": 6,
+    "coordinate_candidate_gather": {
+      "median_wall_time_speedup": 0.912439,
+      "median_sparse_ns_per_layer": 1092855,
+      "estimated_cache_line_fraction_of_dense": 0.775174
+    },
+    "coordinate_full_stream": {
+      "median_wall_time_speedup": 0.982212,
+      "median_sparse_ns_per_layer": 1019092,
+      "estimated_cache_line_fraction_of_dense": 0.775174
+    },
+    "record_omitted_coordinate_gather": {
+      "median_wall_time_speedup": 0.81496,
+      "median_sparse_ns_per_layer": 1271880,
+      "synthetic_estimated_cache_line_fraction_of_dense": 0.719136
+    },
+    "record_full_row_stream": {
+      "median_wall_time_speedup": 0.845479,
+      "median_sparse_ns_per_layer": 1259280,
+      "estimated_cache_line_fraction_of_dense": 0.75
+    },
+    "hidden_source": "deterministic_synthetic_period_29"
+  },
+  "held_out_trace_locality": {
+    "state_layer_pairs": 35520,
+    "total_coordinate_lines": 36,
+    "q_360_mean_omitted_coordinate_lines": 35.983,
+    "q_360_fraction_touching_all_lines": 0.983,
+    "q_432_mean_omitted_coordinate_lines": 35.658,
+    "q_432_fraction_touching_all_lines": 0.701
+  },
+  "real_trace_record_major_fraction_of_dense": {
+    "q360_c512_k512": 0.7499,
+    "q360_c1024_k768": 1.0276,
+    "q432_c896_k768": 1.0519
+  },
+  "decision": "retain_v2_default_keep_v3_only_as_opt_in_rejected_diagnostic"
+}

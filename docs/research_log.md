@@ -1,5 +1,294 @@
 # Research log
 
+## 2026-07-23 — Combined status freeze and output-memory stop
+
+- Froze the formal combined Milestone 2 gate at KL <=0.05, top-1 >=0.90,
+  NLL delta <=+0.05, final-hidden relative L2 <=0.10, at least eight unique
+  sequences/256 prediction positions, and complete physical cold MLP traffic
+  <=45% of dense ideal Q4. Candidate recall remains >=0.95 only when an
+  approximate candidate stage exists.
+- Stopped the layer-adaptive compact-Q4 run at its predeclared 3,000,093
+  prediction-position checkpoint. The independently serialized/reloaded
+  44.933449%-traffic artifact reaches KL 0.886578, top-1 0.565945, NLL delta
+  +0.883762, and final-hidden relative L2 0.424521. It fails every 80%-gap
+  closure continuation rule, so the final seven million positions were not
+  spent and formal development/confirmation data remained unopened.
+- Screened materially different local representations after post-hoc
+  quantization, shared-basis, structured-dictionary, expert, and compact
+  branches failed. Conditional width-640 experts reach 0.4468 held-out local
+  error; a local Taylor model reaches 0.4640; finite shared Jacobian banks
+  remain above 0.22. Token-conditioned Jacobians improve exact output memory
+  to 0.2360 and two regions per token to 0.2164, but require tens of GiB before
+  indexing or all-layer packaging.
+- Measured an exact nested LLE-32 output-memory curve at 16,384/65,536/233,005
+  local prototypes: 0.490340/0.401270/0.327526 mean layer-14 relative L2.
+  Reconstructing query states from 512 neighbors reaches 0.0496, while output
+  interpolation remains at 0.3275; the bottleneck is nonlinear operator
+  variation rather than state-neighbor coverage.
+- Captured exactly 1,000,000 finite FP16 layer-14 input/output pairs from
+  8,192 sequences in the authenticated 10M-position SmolLM2 pretraining
+  mixture. Exact stable LLE-32 over the combined 1,233,005 prototypes improves
+  only to 0.321854, or 1.73%. The frozen progression rule required <=0.28 and
+  at least 10% improvement, so the 10M capture, Q4/index work, external split,
+  and causal evaluation were not opened.
+- Consolidated the result in [Project status](status.md) and the checked
+  [machine-readable snapshot](../reports/semantic_gate_status_2026-07-23/summary.json).
+  No representation currently passes quality and traffic together; gate work
+  is paused pending an explicit choice among larger compact-model training, a
+  relaxed systems policy around the DIP quality frontier, or a genuinely new
+  conditional representation.
+
+## 2026-07-22 — Teacher-boundary width ceiling rejects uniform 672
+
+- Added MLP-only teacher tracing with deterministic per-sequence token sampling. Full sequence
+  context is executed, but only sampled MLP inputs/outputs are stored; attention boundaries are
+  omitted. The training trace contains 4,096 states from 256 sequences (610 MB), while the
+  sequence-disjoint validation trace contains 446 states from 16 sequences (63 MB).
+- Added a checkpoint-initialized local-ceiling evaluator that trains compact gate/up/down matrices
+  from cached boundaries, writes a provenance-bound safetensors artifact, and requires both 10%
+  mean improvement and mean validation relative L2 <=0.15.
+- A 64-step screen improves all five representative layers but only 2.7% overall. At 512 steps the
+  improvement is 8.8%. The final 2,048-step convergence rung reaches 10.2% improvement, from
+  0.3851 to 0.3457, but fails the absolute ceiling. Layers 7/14/21 remain at
+  0.5049/0.4558/0.4497; layer 29 reaches 0.0961.
+- Uniform width 672 is rejected before another causal run. The next bounded architecture should
+  allocate widths by measured layer sensitivity or introduce a more expressive structured basis,
+  charging the aggregate serialized bytes/traffic against the unchanged 45% limit.
+
+## 2026-07-22 — Full-corpus fixed-width student and stop decision
+
+- Added a contiguous fixed-width SwiGLU student, deterministic local-source corpus builder, and
+  device-neutral checkpoint/resume. Parameter-only checkpoint transfer validates model identity,
+  compact width, tensor names/shapes, and SHA-256 lineage while deliberately restoring neither
+  optimizer state nor history.
+- Built 2,048 sequence records (258,899 token positions) by round-robin tokenization of 129 local
+  documentation, Python, and native-source files. Training/validation exact sequence hashes are
+  disjoint. Every 1,536-wide MLP is replaced by a trainable 672-wide MLP, giving 43.75% projected
+  dense MLP weight traffic with no inference router.
+- Completed one CPU-only epoch with all 30 compact layers active. From the earlier 128-sequence
+  pilot to the full epoch, held-out KL improves 1.5499→1.1773, top-1 0.4175→0.4745, NLL delta
+  +1.5254→+1.0553, hidden L2 0.4896→0.4260, and local MLP L2 0.7636→0.7053.
+- The result passes evidence, traffic, and all-layers-compact checks but fails every semantic
+  quality threshold by a large margin. Improvement also slows late in the epoch; top-1 briefly
+  plateaus. Additional blind epochs on width 672 are rejected. The next bounded experiment is a
+  larger teacher-boundary layerwise fit to measure the compact basis's local approximation ceiling
+  before spending on another causal run.
+
+## 2026-07-22 — Milestone 2 frozen-basis stop and structured-upcycling decision
+
+- Tested a DAgger-style rank-16 residual refit on the actual q=62.5%/K=512 hard-student states.
+  The parent artifact has same-state local relative L2 0.35117; the refit reaches only 0.34983
+  (0.38%). This rejects teacher-state distribution mismatch as the primary blocker. The emitted
+  artifact is diagnostic only; no causal run was authorized.
+- Rechecked the frozen-basis ceiling. Even the nondeployable exact-utility K=512 oracle fails the
+  causal gate at KL 0.132, top-1 0.809, NLL +0.085, and hidden L2 0.179. Better selection alone
+  therefore cannot pass at 512 original channels.
+- Tested a traffic-neutral alternative that shifts budget from gate inputs to active channels:
+  q=43.75%, K=640, and a rank-23 residual project to 44.25% dense traffic. The local screen passes
+  at L2 0.32893, but the all-layer development control is mixed and still far outside the gate:
+  KL 0.684, top-1 0.603, NLL +0.616, hidden L2 0.358, and local L2 0.594. It also violates the
+  original K<=512 constraint. The branch is rejected rather than used to redefine the gate.
+- A direct rank-16 K=640 utility predictor has only 57.7% oracle overlap and local L2 0.443. A
+  q=6.25% selector followed by exact selected-gate completion remains within 44.21% traffic but has
+  local L2 0.435. Both fail before causal evaluation.
+- Screened fixed-width structured pruning on representative layer 14. A 640-wide SwiGLU initialized
+  from the strongest global channels improves held-out local L2 from 0.519 to 0.469 after 128
+  full-weight steps. Expanding 512 real states into 8,192 teacher-labeled interpolations and running
+  512 steps reaches a best 0.453 before overfitting. This is not enough to justify all-layer
+  replacement from the current corpus.
+- The frozen-neuron and cheap-recalibration search is closed. The remaining credible Milestone 2
+  path is structured sparse upcycling or width pruning with materially more real token data,
+  progressive dense-to-sparse training, and full MLP adaptation. CPU inference remains mandatory;
+  CUDA may accelerate training but must not affect the serialized representation or runtime.
+
+## 2026-07-22 — Low-rank native-gate utility correction
+
+- Added a continuous multi-output ridge fit for the residual between partial-gate log utility and
+  exact up-dependent channel utility. The implementation truncates the fitted map to a low-rank
+  factorization, charges every factor and bias byte to inference traffic, and evaluates on exact
+  sequence-disjoint traces.
+- The initial 128-state rank-8/16 screen reduced local error from 0.3855 to 0.3551 but missed the
+  10% threshold. A predeclared final cheap sweep used 512 states, corpus-scaled regularization,
+  ranks 8/16/23, and the largest rank below 45% traffic. Rank 23/blend 0.8 reaches 0.3359 at 44.94%;
+  rank 16/blend 0.8 reaches 0.3380 at 44.39%. The lower-traffic rank 16 point is selected because it
+  is within 1% of the best error. Its exact top-512 oracle recall is 0.643.
+- Serialized all 30 rank-16 residuals as source-hash-bound safetensors and integrated them into the
+  hard native-gate wrapper and end-to-end evaluator. The correction changes selection only; exact
+  up/down computation remains restricted to 512 channels.
+- The full 16-sequence/491-next-token CPU control improves KL 1.235→0.629, top-1 0.460→0.599, NLL
+  delta +1.202→+0.583, hidden L2 0.508→0.363, and local L2 0.702→0.625. It passes evidence and
+  44.39%-traffic checks but not the final causal thresholds.
+- A matched eight-step progressive run reaches 0.640/0.605/+0.604/0.363/0.626. Only top-1 improves;
+  all other primary metrics regress slightly. Longer training on the unchanged objective is
+  stopped. The next bounded experiment is on-policy residual recalibration using sparse-student
+  layer inputs, followed by the same untouched causal gate.
+
+## 2026-07-22 — Low-budget representation bounds and residual/adaptive stop
+
+- Built and benchmarked an opt-in version-3 DIP package that duplicates gate/up weights in
+  coordinate-major and record-major order. It grows the 30-layer package from 318.8 MB to
+  531.2 MB. At q=360/C=K=512, six-trial medians are `0.815x` dense for omitted-coordinate
+  record gathers and `0.845x` for full record rows, versus `0.912x` for coordinate gathers and
+  `0.982x` for coordinate streaming. Real confirmation states touch essentially every omitted
+  coordinate line, so record-major traffic reaches 102.8%–105.2% of dense at the quality-valid
+  budgets. Version 2 remains the default; v3 is a rejected diagnostic.
+- Replaced the saturated locality relaxation with a fixed-cardinality soft top-C backward path and
+  exact hard occupied-line forward value. A gradient audit measured the unweighted locality
+  gradient at 269.5x smaller than the causal router gradient, with cosine 0.037. Balancing those
+  norms still left occupancy at 95.86/96 lines.
+- Computed a stronger oracle bound on all 15,210 expanded-validation state/layer pairs. Exact
+  top-512 membership itself touches 95.858/96 contiguous 16-record lines. Even a selector with
+  perfect oracle knowledge captures only 91.75% mean membership with 80 lines; 88 lines are needed
+  for 96.65%. Individual-record locality is structurally incompatible with a material traffic win
+  under this static layout.
+- Fixed nonstandard LoRA scaling: Kaiming A initialization plus alpha=rank replaces 0.01 A values
+  compounded by a second 1/r factor. Added a rank-32 hidden-output residual, included its 147,456
+  bytes per token-layer in traffic, and trained on all 128 independent sequences with durable
+  four-step checkpoints. The 32-step held-out result improves KL from 0.166 to 0.152, top-1 from
+  0.768 to 0.780, NLL delta from +0.126 to +0.100, and hidden L2 from 0.199 to 0.193, but fails every
+  causal threshold. The residual itself is only 0.18% of teacher-output norm, has cosine 0.0014
+  with the missing output, and slightly worsens local error, so it is disabled by default.
+- Adapter learning rates 3e-4 and 1e-3 are unstable on matched 16-record screens; 1e-4 remains the
+  stable point. A layer-adaptive exact-oracle schedule was then chosen from individual-layer causal
+  interventions on a separate four-sequence selection split at the same mean K=512. Its untouched
+  16-sequence confirmation also fails and is slightly worse than uniform K=512: KL 0.134, top-1
+  0.786, NLL +0.110, and hidden L2 0.185. Fixed-total layer adaptation is stopped.
+- The low-budget post-hoc configuration is therefore blocked before serialization. The next
+  architecture-level experiment must make sparsity trainable and structured—expert/block routing
+  with co-trained MLP weights on materially more data—rather than continue tuning selection over
+  the frozen, diffusely coactive neuron basis.
+- Added a hard-forward structured-expert module and a trace-only feasibility screen. It supports a
+  lossless gate/up/down permutation, contiguous physical blocks, exact selected-block execution,
+  a fixed-cardinality soft backward surrogate, and inference traffic that includes the router.
+  Unit tests verify dense-shadow parity, deterministic grouping, exact active counts, nonzero
+  causal router gradients, and that evaluation never evaluates the dense surrogate.
+- Screened three balanced coactivation layouts at exactly 512 active records on 128 calibration
+  and 128 disjoint validation states per layer. The 24×64/top-8, 48×32/top-16, and 96×16/top-32
+  layouts project to 33.86%, 34.38%, and 35.42% of dense weight traffic. Their full-information
+  greedy-residual local relative-L2 errors are 0.547, 0.497, and 0.438; fitted-router errors are
+  0.655, 0.638, and 0.624. Dense-shadow parity is below 8.6e-7 maximum relative L2.
+- Static grouping of the existing SmolLM2 neuron basis therefore fails the declared 0.20 local
+  pretraining screen even with a non-deployable residual-aware oracle. Full end-to-end block
+  training is not justified from this initialization. The next bounded experiment is native
+  gate-based channel sparsity trained through the actual sparse path, with grouped selection for
+  physical locality; it must be shadow-evaluated and microbenchmarked before a long run.
+- Implemented that native-gate shadow without candidate completion. At K=512, exact contribution
+  selection has mean local relative L2 0.190, establishing local representational headroom. Using
+  the dense SwiGLU gate itself to select channels raises error to 0.375. Retaining 62.5% and 50% of
+  gate input coordinates changes it to 0.386 and 0.402, at ideal traffic of 43.06% and 38.89% of
+  dense. The dominant error is therefore channel-utility prediction, not input pruning.
+- Added a full-weight native-gate student wrapper. Its training forward value is the exact hard
+  sparse path; a detached dense surrogate supplies soft top-K selection gradients only during
+  training. Tests verify dense parity, exact q/K budgets, hard-forward parity, selection gradients
+  beyond chosen records, and that evaluation never invokes the surrogate.
+- Added cached-boundary layerwise pretraining with dense-shadow retention and a training-only
+  hardest-negative utility-ranking warm-up. On representative layer 14, 16 causal-only steps move
+  held-out local error from 0.4146 to 0.4102; utility ranking reaches 0.4098. Extending the single
+  controlled arm to 64 steps with stronger dense retention reaches only 0.4040 (2.55% improvement)
+  while dense-shadow error reaches 0.0339. It fails the declared 10% improvement screen.
+- Cached-boundary native-gate tuning is stopped rather than expanded to all layers. The remaining
+  justified semantic experiment is progressive end-to-end native-gate co-training on materially
+  larger data, with the student executing its hard sparse path and attention/norm initially frozen.
+  The host contains an RTX 3050, but the current execution session cannot reach the NVIDIA driver:
+  NVML fails, `/dev/nvidia*` is not exposed, and CUDA-enabled PyTorch reports zero devices. CUDA is
+  optional training acceleration; CPU execution, reproducibility, packaging, and inference remain
+  project requirements.
+- Added a device-neutral end-to-end native-gate trainer. It freezes attention, normalization, and
+  embeddings; co-trains complete gate/up/down MLP weights; linearly anneals dense q/K to the target;
+  and combines hard-path local, dense-shadow, hidden-state, logit-KL, and utility-ranking losses.
+  Held-out evaluation forces q=62.5%/K=512 and rejects any training-only surrogate execution.
+- The CPU path is operational. A one-record direct-target smoke completes all 30 layers and writes
+  a provenance/traffic/gate report without a model artifact. A four-step schedule traverses
+  K=1,536/1,195/853/512 and q=576/504/432/360; versus the direct jump it improves smoke KL from
+  1.759 to 1.592 and hidden L2 from 0.700 to 0.635. These are execution diagnostics only.
+- Added an evaluation-only control and ran the complete 16-sequence/491-next-token set. The
+  untrained hard native-gate baseline has KL 1.235, top-1 0.460, NLL +1.202, hidden L2 0.508, and
+  local MLP L2 0.702. An eight-step CPU stage passes evidence and 43.06%-traffic checks but changes
+  those to 1.254/0.481/+1.211/0.510/0.700. Because top-1/local improve slightly while KL/NLL/hidden
+  worsen, a longer run on this objective is not justified by the bounded result.
+- Implemented device-neutral full-weight/optimizer checkpoints whose requested total step count can
+  be extended on resume. A tiny two-layer Llama integration test checkpoints one CPU step and
+  resumes to two. CUDA may accelerate the same state, but is not required for checkpoint creation,
+  restoration, validation semantics, or artifacts. A broken optional sklearn/NumPy ABI is ignored
+  narrowly when importing causal-LM Transformers code because sklearn is not used by this trainer.
+
+## 2026-07-21 — Low-budget sparse-teacher full gate and stop decision
+
+- Added padding-safe sequence batching and a provenance-checked safetensors cache for the initial
+  30-layer router fit. Cache reuse reduced a two-train/two-validation rerun to 58.3 seconds. The
+  complete 32/16 experiment then ran in 582.8 seconds on CPU and met the 16-sequence/491-next-token
+  evidence floor.
+- At `q=62.5%`, `C=K=512`, the full result fails: candidate recall 0.8959, KL 0.1659,
+  top-1 agreement 0.7678, NLL delta +0.1261, and final-hidden relative L2 0.1988. Candidate lines
+  occupy 95.86/96 groups; cache-adjusted traffic is 77.74% of dense rather than the 61.11% scalar
+  ideal.
+- Audited candidate locality without another causal run. Balanced physical permutations based on
+  router features or direct candidate co-occurrence leave 94.66–95.42 lines occupied. Selecting
+  exactly 32 complete 16-record lines is local by construction, but the best checked layout/score
+  reaches only 0.4873 oracle recall and local relative L2 remains above 0.47. Neither approach is
+  suitable for compilation.
+- A cached blend sweep shows the partial-weight proxy plus low-rank router peaks near scale 0.1 at
+  only 0.8965 validation recall; larger router weight degrades monotonically. The original 0.119
+  blend was already near this optimum, so blend tuning cannot close the gap.
+- Extended the student with mergeable rank-8 gate/up LoRA in addition to the down update and gave
+  router factors a separate learning rate. Added a deterministic local-source corpus builder and
+  decoupled router calibration from student training. The generated corpus has 128 sequences and
+  15,991 token positions.
+- A bounded 16-sequence broader-corpus stage improved KL from 0.1425 to 0.1368 and top-1 from
+  0.7576 to 0.7879 on its four-sequence screen, but NLL worsened from +0.1543 to +0.1699, hidden
+  error stayed near 0.17, recall stayed 0.900, and line occupancy stayed 0.9986. Scaling to all
+  128 sequences is not justified on this CPU host. This individual-record locality objective is
+  stopped; a future systems path should decouple partial-scan and candidate-completion layouts or
+  change the sparse representation rather than add epochs to the same configuration.
+
+## 2026-07-20 — Hardware-aware differentiable sparse-teacher training
+
+- Replaced the pilot's causally disconnected hard route with a hard-forward, soft-backward
+  estimator. Deployment semantics remain exact: retain the largest `q` input coordinates, form
+  partial scores, complete only `C` candidates, rerank to `K`, and gather only the selected down
+  records. A straight-through sigmoid relaxation supplies gradients from local-MLP, hidden-state,
+  and logit-distillation losses to the rank-16 router.
+- Kept attention, normalization, embeddings, and original MLP weights frozen. Only router factors,
+  a learned blend between partial source-weight scores and router scores, and rank-8 MLP adapters
+  are trainable. Oracle activations are computed under `no_grad` solely for supervision and
+  candidate-recall measurement; they are not the student output.
+- Added a differentiable cache-line occupancy objective and reports for candidate/active line
+  counts, scalar logical traffic, cache-adjusted traffic, the `q<=62.5%` and `C/K<=512` budget,
+  and the existing held-out causal gate. The recommended command defaults now select
+  `q=62.5%`, `C=K=512`.
+- Unit tests prove that the hard forward budgets are exact and that a causal output/locality loss
+  produces nonzero router-factor gradients without membership BCE. The real-model one-record
+  smoke run completed and wrote a router/adapter artifact.
+- The smoke run starts at 0.9005 candidate recall. Its nominal scalar model is 61.11% of dense,
+  but candidates occupy 95.84 of 96 gate/up cache-line groups on average (99.84%). Cache-line
+  amplification raises projected total traffic to about 77.7% of dense; the record-major down
+  reads remain sparse. The run is deliberately not promoted; full-corpus accelerator training must
+  improve causal quality and line occupancy together before serialization or compilation.
+
+## 2026-07-20 — Serialized DIP kernel exposes the systems gate
+
+- Added a version-2 experimental DIP package with checksummed mmap arrays. Gate/up weights are
+  coordinate-major for sequential partial scans; down weights are record-major for contiguous
+  selected-row reads. The Python and native implementations agree on selected IDs, output sums,
+  and byte accounting, and candidate completion touches only candidate records in code.
+- Corrected an initial cache interpretation after checking the official implementation. Published
+  DIP cache awareness reweights fine-grained choices using temporal cache state; it does not force
+  input coordinates into spatial cache-line blocks. The tested block-16 variant retained only
+  85.24% of oracle records and 92.07% score mass on all 35,520 fresh-confirmation layer states, so
+  it is rejected.
+- At `q=432/C=896/K=768`, logical scalar reads remain 76.39% of dense. Counting unique 64-byte
+  lines touched by the coordinate-major completion gather gives 83.33% of dense.
+- Replaced array-of-structures accumulators and near-full partial sorts with contiguous float32
+  accumulators, partition selection, and record-sorted candidates. Real layer-10 selected IDs
+  remain exactly equal to the Python reference. This improves the full-model candidate-gather
+  kernel to `0.770x` dense.
+- Since 896/1,536 candidates touch every cache line, a second kernel streams all omitted-coordinate
+  rows and reranks only candidates. It is faster than gather but executes 83.33% of dense weight
+  bytes. Across six alternating-order 20-pass runs over all 30 layers (305 MiB), median sparse
+  time is 37.673 ms versus 32.639 ms dense, or `0.863x`. The current architecture is therefore
+  rejected before default-runtime integration; a robust win requires materially smaller `C/K`,
+  temporal reuse on target hardware, or a different representation.
+
 ## 2026-07-20 — Predictor-free Dynamic Input Pruning crosses the semantic gate
 
 - Audited the failed sparse-teacher pilot before spending more training compute. The hard
@@ -171,8 +460,9 @@
   means scientific Gate 1 is not yet complete.
 - Native build succeeded. The default user-local `ctest` launcher was broken because its
   Python `cmake` module is missing; `/usr/bin/ctest` passed.
-- Hardware audit found AVX but no AVX2 and no accessible performance counters. CUDA is not
-  usable from PyTorch in this environment. No performance claim was made.
+- Hardware audit found AVX but no AVX2 and no accessible performance counters. The RTX 3050 is
+  visible on PCI, but CUDA is not exposed to PyTorch in this execution session. No performance
+  claim was made.
 
 ## 2026-07-18 — Milestone 2 semantic baseline
 

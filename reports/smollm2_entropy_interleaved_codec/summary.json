@@ -1,0 +1,60 @@
+{
+  "status": "measured_local_model",
+  "model": "HuggingFaceTB/SmolLM2-135M",
+  "model_revision": "93efa2f097d58c2a74874c7e644dbc9b0cee75a2",
+  "device": "cpu",
+  "hidden_size": 576,
+  "source_intermediate_size": 1536,
+  "layer_count": 30,
+  "selected_records_per_layer": 768,
+  "cache_line_bytes": 64,
+  "dense_q4_reference_bytes": 39813120,
+  "traffic_gate_fraction": 0.45,
+  "traffic_gate_bytes": 17915904,
+  "results": {
+    "signed_q3_sequential_gate_up_random_down": {
+      "serialized_artifact_bytes": 22575296,
+      "largest_k_cold_bytes": 18234944,
+      "largest_k_fraction": 0.45801343878600825,
+      "first_k_cold_bytes": 18078144,
+      "first_k_fraction": 0.4540750385802469,
+      "passes_largest_k": false
+    },
+    "signed_q3_interleaved_gate_up_down": {
+      "serialized_artifact_bytes": 24273856,
+      "largest_k_cold_bytes": 12758656,
+      "largest_k_fraction": 0.3204636059670782,
+      "first_k_cold_bytes": 12329024,
+      "first_k_fraction": 0.30967238940329217,
+      "passes_largest_k": true,
+      "largest_k_router_allowance_bytes": 5157248
+    },
+    "signed_q4_interleaved_gate_up_down": {
+      "serialized_artifact_bytes": 35852992,
+      "largest_k_cold_bytes": 18528576,
+      "largest_k_fraction": 0.4653886959876543,
+      "first_k_cold_bytes": 18120448,
+      "first_k_fraction": 0.4551376028806584,
+      "passes_largest_k": false
+    }
+  },
+  "layer14": {
+    "signed_q3_sequential_largest_k_fraction": 0.45693479938271603,
+    "signed_q3_interleaved_largest_k_fraction": 0.31741898148148145,
+    "signed_q4_interleaved_largest_k_fraction": 0.462914737654321
+  },
+  "validation": {
+    "entropy_coder": "deterministic static byte rANS",
+    "strict_full_artifact_reload": true,
+    "checks": [
+      "global and directory integrity",
+      "per-layer model frequencies and checksum",
+      "absolute record offsets and 64-byte alignment",
+      "record identity, source ID, FP16 scales, encoded lengths and checksums",
+      "decoded-symbol checksums and signed-code range",
+      "canonical rANS terminal state",
+      "zero padding"
+    ]
+  },
+  "conclusion": "Only the independently aligned signed-Q3 triple-record layout leaves material traffic for a nonlinear router at K=768. Sequential Q3 and strictly inline-framed Q4 fail before router traffic."
+}

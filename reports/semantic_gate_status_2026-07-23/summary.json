@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "snapshot_date": "2026-07-23",
+  "source_model": "HuggingFaceTB/SmolLM2-135M",
+  "decision": "milestone_2_combined_semantic_systems_gate_blocked",
+  "formal_gate": {
+    "maximum_teacher_student_kl": 0.05,
+    "minimum_teacher_top1_agreement": 0.9,
+    "maximum_nll_delta": 0.05,
+    "maximum_final_hidden_relative_l2": 0.1,
+    "minimum_unique_sequences": 8,
+    "minimum_prediction_positions": 256,
+    "maximum_physical_cold_mlp_traffic_fraction": 0.45,
+    "minimum_candidate_recall_when_applicable": 0.95
+  },
+  "frontiers": {
+    "predictor_free_dip_confirmation": {
+      "input_coordinates": 432,
+      "candidates": 896,
+      "active_records": 768,
+      "candidate_recall": 0.98971,
+      "teacher_student_kl": 0.02864,
+      "teacher_top1_agreement": 0.9101,
+      "nll_delta": 0.03261,
+      "final_hidden_relative_l2": 0.09048,
+      "scalar_traffic_fraction": 0.7639,
+      "cache_line_traffic_fraction": 0.8333,
+      "native_sparse_to_dense_throughput": 0.863,
+      "decision": "quality_pass_systems_fail"
+    },
+    "compact_q4_3m": {
+      "prediction_positions": 3000093,
+      "teacher_student_kl": 0.8865775083353311,
+      "teacher_top1_agreement": 0.5659448818897638,
+      "nll_delta": 0.8837622120202747,
+      "final_hidden_relative_l2": 0.4245205178778506,
+      "physical_cold_mlp_traffic_fraction": 0.4493344907407407,
+      "serialized_reloaded": true,
+      "formal_data_loaded": false,
+      "decision": "traffic_pass_quality_fail_stop_at_frozen_3m_rule"
+    },
+    "pretraining_output_memory_1m": {
+      "layer": 14,
+      "local_prototypes": 233005,
+      "pretraining_prototypes": 1000000,
+      "combined_prototypes": 1233005,
+      "parent_mean_relative_l2": 0.32752639055252075,
+      "combined_mean_relative_l2": 0.32185375690460205,
+      "relative_improvement": 0.0173196231251755,
+      "required_maximum_mean_relative_l2": 0.28,
+      "required_minimum_relative_improvement": 0.1,
+      "external_data_loaded": false,
+      "decision": "close_pretraining_output_memory_density_path"
+    }
+  },
+  "milestones": {
+    "1": "complete",
+    "2": "implementation_broadly_complete_exit_gate_blocked",
+    "3": "prototype_complete_trained_substitution_not_passed",
+    "4": "prototype_complete_controller_not_distilled",
+    "5": "infrastructure_complete_quality_qualified_package_blocked",
+    "6": "fixture_runtime_complete_trained_systems_gate_blocked",
+    "7": "in_progress_no_successful_final_report"
+  },
+  "source_report_sha256": {
+    "compact_q4_3m": "e6a6743249a08af375a7a1f09daad0fbdd857c2bc60d0c67880b8badc30112b4",
+    "compact_q4_decision": "5596b3577e0a329aaab39e4eea7a8b2838cf847b0bea5fba8558cc0c1cb77bc6",
+    "output_memory_parent": "5e4c2d8c8d2b7a73510137e028ca601a55429a6d1f861c0b3d4a55c009a2a8f6",
+    "prototype_density_curve": "23048ce2bc433b02ce9fc21adc5645d845692ee720194c65f233b89277984847",
+    "pretraining_output_memory_pilot": "d2b8ded8d352aa06e060e9843bb3ce5e59160320260c08296ca577ef7b83ebbf"
+  },
+  "scope_caveat": "The latest output-memory result is a development-only float layer-local ceiling. It is not a Q4/indexed traffic result or a formal causal evaluation. No listed frontier passes the combined gate."
+}

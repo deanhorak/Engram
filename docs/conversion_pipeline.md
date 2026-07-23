@@ -1,5 +1,10 @@
 # Conversion pipeline
 
+Current eligibility is summarized in [Project status](status.md). Although the
+fixture compiler and experimental serializers work, no trained SmolLM2
+semantic artifact currently passes both the causal and physical-traffic gates,
+so none is eligible to become the default compiled semantic representation.
+
 Compilation produces one self-contained model worker. It does not construct or train the optional
 request-level Cognitive Executive, its durable memory, or its tool/model routing policy.
 
@@ -72,8 +77,25 @@ correction parameters are eligible for serialization.
 The sparse-teacher trainer writes a separate safetensors router/adapter experiment artifact and a
 gate report; it does not mutate the cached source model or compile the artifact. The first pilot
 fails every routed quality check, so this artifact is likewise ineligible for package inclusion.
-An audit also shows that its hard candidate selection blocks causal-loss gradients to the router,
-so a future training retry must use a differentiable soft-to-hard stage.
+An audit also shows that its hard candidate selection blocks causal-loss gradients to the router.
+The replacement experiment now uses hard-forward/soft-backward candidate masks, a materially lower
+`q<=62.5%`, `C/K<=512` budget, and a differentiable cache-line locality loss. It remains a separate
+experiment artifact: only a one-record smoke run has completed, so it is not compiler input.
+The later complete run and bounded LoRA/broader-corpus follow-ups also fail. Router initialization
+is now cacheable and student training may use a separate JSONL corpus, but these engineering
+improvements do not make the resulting tensors eligible for compilation.
+The structured-expert shadow command is also deliberately pre-compilation. Its tested static
+whole-block layouts fail the local feasibility screen, so they do not produce student weights or a
+serializable package. A future native gate-routed student must first pass the unchanged held-out
+causal thresholds through its exact hard forward path.
+The native-gate shadow and cached-trace trainer are likewise pre-compilation experiments. They
+remove candidate completion and meet the nominal q/K traffic envelope, but the checked layerwise
+training arm fails its improvement screen. Their safetensors file is a diagnostic selected-layer
+checkpoint, not a model package or compiler input.
+The end-to-end native-gate trainer can optionally write complete co-trained MLP tensors, because a
+changed basis cannot be represented by router deltas alone. It also supports device-neutral
+full-weight/optimizer checkpoints for time-sliced CPU training. Neither checkpoint nor final
+safetensors output is a compiler input until the hard-path causal gate passes on held-out data.
 
 The predictor-free DIP-inspired selector is the materially different arm that changes the quality
 decision. Top-magnitude input pruning and partial scoring come from DIP; candidate-only exact
@@ -81,10 +103,19 @@ completion and contribution reranking are Engram extensions. After choosing 75% 
 896 candidates, and K=768 on the development grid, the fixed configuration passes again on a
 sequence-disjoint confirmation corpus. `--evaluation-role confirmation` requires
 `--configuration-selection-traces` and rejects any exact token-sequence overlap.
-The current pipeline still has no DIP serializer: it needs a cache-aware gate/up layout, candidate
-completion metadata, and a native kernel before attention/controller work can depend on it. The
-quality pass authorizes that experimental systems implementation; it does not authorize compiling
-the old learned-router artifacts or claiming a runtime speedup.
+`engram build-dip-package` now writes a checksummed, mmap-friendly version-2 coordinate-major
+research package, and the native benchmark implements candidate-gather and full-coordinate-stream
+completion. An opt-in version-3 dual layout exists only to reproduce a rejected record-major
+experiment: it adds 66.7% MLP storage and is slower than v2. Neither format is a default `.engram`
+compiler input. The quality pass authorized this systems experiment; its measured latency failure
+does not authorize compiling the old learned-router artifacts or claiming a runtime speedup.
+
+The later compact-Q4 and output-memory branches do not change that compiler
+decision. The compact artifact is physically valid at 44.9334% of dense ideal
+Q4 but fails every causal metric at its frozen 3M-position stop. The exact
+output-memory pilot fails its layer-local progression rule before Q4, indexing,
+traffic accounting, or causal substitution. Both remain research evidence,
+not package inputs.
 
 ## Runnable compiler
 

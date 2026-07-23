@@ -1,0 +1,52 @@
+{
+  "schema_version": 2,
+  "experiment": "serialized_dip_native_benchmark",
+  "model": "HuggingFaceTB/SmolLM2-135M",
+  "layers": 30,
+  "serialized_weight_mib": 305,
+  "configuration": {
+    "hidden_size": 576,
+    "intermediate_size": 1536,
+    "input_coordinates": 432,
+    "candidate_count": 896,
+    "top_k": 768,
+    "iterations_per_run": 20,
+    "runs": 6,
+    "alternating_measurement_order": true,
+    "precision": "float32"
+  },
+  "weight_accounting": {
+    "logical_candidate_bytes_per_layer": 8110080,
+    "cache_line_amplified_bytes_per_layer": 8847360,
+    "streamed_execution_bytes_per_layer": 8847360,
+    "dense_bytes_per_layer": 10616832,
+    "logical_fraction_of_dense": 0.763889,
+    "cache_line_and_streamed_fraction_of_dense": 0.833333,
+    "measured_dram_bytes": false
+  },
+  "optimized_candidate_gather": {
+    "median_sparse_ms_per_30_layer_pass": 41.33795,
+    "median_dense_ms_per_30_layer_pass": 31.87055,
+    "median_dense_over_sparse_speedup": 0.770333,
+    "decision": "fail"
+  },
+  "full_coordinate_stream_completion": {
+    "median_sparse_ms_per_30_layer_pass": 37.67255,
+    "median_dense_ms_per_30_layer_pass": 32.63935,
+    "median_dense_over_sparse_speedup": 0.863460,
+    "decision": "fail"
+  },
+  "real_layer_parity": {
+    "layer": 10,
+    "selected_ids_equal": true,
+    "python_output_checksum": 4.561765668913722,
+    "native_output_checksum": 4.56179
+  },
+  "decision": "reject_current_q432_c896_k768_kernel_before_runtime_integration",
+  "limitations": [
+    "one CPU architecture (Ivy Bridge AVX without AVX2)",
+    "scalar C++ control path with compiler auto-vectorized contiguous loops",
+    "cache-line bytes are calculated from touched lines, not hardware-counter DRAM reads",
+    "benchmark isolates MLP kernels and does not feed outputs through the transformer"
+  ]
+}

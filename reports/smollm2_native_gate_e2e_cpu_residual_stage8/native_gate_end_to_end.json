@@ -1,0 +1,271 @@
+{
+  "artifact": {
+    "format": "full_gate_up_down_weights_per_layer_required_after_basis_training",
+    "written": false
+  },
+  "configuration": {
+    "anneal_steps": 6,
+    "batch_size": 1,
+    "checkpoint_every": 0,
+    "device": "cpu",
+    "device_neutral_semantics": true,
+    "learning_rate": 1e-05,
+    "loss_weights": {
+      "dense_shadow": 0.25,
+      "hidden": 0.25,
+      "local": 1.0,
+      "logit": 0.25,
+      "utility": 0.1
+    },
+    "resumed": false,
+    "save_artifact": false,
+    "steps": 8,
+    "target_input_fraction": 0.625,
+    "target_top_k": 512,
+    "temperature": 1.0,
+    "utility_residual": {
+      "blend": 0.8,
+      "path": "/home/dean/repos/engram/reports/smollm2_native_gate_utility_residual_expanded/native_gate_utility_residual.safetensors",
+      "rank": 16,
+      "sha256": "81ed0e6194233894da79f57c490a8dae9e91823502227aed681e1e12438d449a"
+    },
+    "warmup_steps": 2
+  },
+  "data_separation": {
+    "held_out": true,
+    "method": "exact_token_sequence_hashes",
+    "overlapping_sequences": 0,
+    "training_dataset_hash": "383691c11c1f3670322abb768df4362aca54c2e917907bb68ae8d33f4cf002f3",
+    "training_sequences": 32,
+    "validation_dataset_hash": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c",
+    "validation_sequences": 16
+  },
+  "experiment": "progressive_end_to_end_native_gate_training",
+  "gate": {
+    "checks": {
+      "active_record_budget": true,
+      "evidence_size": true,
+      "final_hidden_relative_l2": false,
+      "input_coordinate_budget": true,
+      "nll_delta": false,
+      "projected_traffic": true,
+      "teacher_student_kl": false,
+      "teacher_top1_agreement": false
+    },
+    "decision": "continue_training_or_stop_before_serialization",
+    "passed": false
+  },
+  "metrics": {
+    "final_hidden_cosine": {
+      "count": 507,
+      "maximum": 0.9919039379879592,
+      "mean": 0.928847395507548,
+      "median": 0.9413618320782725,
+      "minimum": 0.6350769698799029,
+      "p95": 0.9768495928065414
+    },
+    "final_hidden_relative_l2": {
+      "count": 507,
+      "maximum": 0.8871692506566281,
+      "mean": 0.36281440750541183,
+      "median": 0.34410438344096067,
+      "minimum": 0.12875647386922726,
+      "p95": 0.546921667296293
+    },
+    "local_mlp_relative_l2": {
+      "count": 15210,
+      "maximum": 3.160607743053592,
+      "mean": 0.6264075578302923,
+      "median": 0.650272889282467,
+      "minimum": 0.0009127661791643326,
+      "p95": 0.9342989355957392
+    },
+    "nll_delta": {
+      "count": 491,
+      "maximum": 7.60421085357666,
+      "mean": 0.6044942121543777,
+      "median": 0.3309001922607422,
+      "minimum": -2.762906074523926,
+      "p95": 2.6647156476974487
+    },
+    "student_nll": {
+      "count": 491,
+      "maximum": 14.883610725402832,
+      "mean": 3.78099400991954,
+      "median": 2.7007503509521484,
+      "minimum": 0.00020037073409184813,
+      "p95": 10.93333101272583
+    },
+    "teacher_nll": {
+      "count": 491,
+      "maximum": 16.939329147338867,
+      "mean": 3.176499797914646,
+      "median": 1.7890857458114624,
+      "minimum": 6.6756979322235566e-06,
+      "p95": 9.731781005859375
+    },
+    "teacher_student_kl": {
+      "count": 491,
+      "maximum": 6.31027364730835,
+      "mean": 0.6399213468737506,
+      "median": 0.4357398748397827,
+      "minimum": 0.0001793577102944255,
+      "p95": 2.0118422508239746
+    },
+    "teacher_student_top5_overlap": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.5959266932214593,
+      "median": 0.6000000238418579,
+      "minimum": 0.0,
+      "p95": 1.0
+    },
+    "teacher_top1_agreement": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.604887983706721,
+      "median": 1.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    },
+    "teacher_top5_contains_student_top1": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.8737270875763747,
+      "median": 1.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    }
+  },
+  "projected_traffic": {
+    "active_records": 512,
+    "dense_weight_bytes": 10616832,
+    "fraction_of_dense": 0.4305555555555556,
+    "gate_weight_bytes": 2211840,
+    "hidden_size": 576,
+    "input_coordinates": 360,
+    "input_fraction": 0.625,
+    "intermediate_size": 1536,
+    "selected_up_down_weight_bytes": 2359296,
+    "total_weight_bytes": 4571136,
+    "utility_residual_bytes": 141312,
+    "with_utility_residual_fraction_of_dense": 0.44386574074074076
+  },
+  "schema_version": 1,
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "status": "measured_local_model",
+  "training": {
+    "checkpoint": {
+      "device_neutral": true,
+      "path": null,
+      "written": false
+    },
+    "completed_before_resume": 0,
+    "history": [
+      {
+        "dense_shadow": 7.151403601246553e-12,
+        "hidden": 1.8017451679924745e-12,
+        "input_coordinates": 576,
+        "input_fraction": 1.0,
+        "local": 8.100323363458006e-12,
+        "logit": -1.2056317721942378e-08,
+        "step": 1,
+        "top_k": 1536,
+        "total": -3.00374081163568e-09,
+        "utility_ranking": 0.0
+      },
+      {
+        "dense_shadow": 2.800461288643419e-06,
+        "hidden": 3.7349464037106372e-06,
+        "input_coordinates": 576,
+        "input_fraction": 1.0,
+        "local": 2.8000470138067612e-06,
+        "logit": 0.0006568537792190909,
+        "step": 2,
+        "top_k": 1536,
+        "total": 0.00016864734061527997,
+        "utility_ranking": 0.0
+      },
+      {
+        "dense_shadow": 0.0008428849396295846,
+        "hidden": 6.60232180962339e-05,
+        "input_coordinates": 540,
+        "input_fraction": 0.9375,
+        "local": 0.0014168440829962492,
+        "logit": 0.0008845033007673919,
+        "step": 3,
+        "top_k": 1365,
+        "total": 0.016232483088970184,
+        "utility_ranking": 0.1436728686094284
+      },
+      {
+        "dense_shadow": 0.008672707714140415,
+        "hidden": 0.0005671942490153015,
+        "input_coordinates": 504,
+        "input_fraction": 0.875,
+        "local": 0.013388867489993572,
+        "logit": 0.013007385656237602,
+        "step": 4,
+        "top_k": 1195,
+        "total": 0.041175730526447296,
+        "utility_ranking": 0.22225043177604675
+      },
+      {
+        "dense_shadow": 0.03206312656402588,
+        "hidden": 0.0021461425349116325,
+        "input_coordinates": 468,
+        "input_fraction": 0.8125,
+        "local": 0.0456058569252491,
+        "logit": 0.07754257321357727,
+        "step": 5,
+        "top_k": 1024,
+        "total": 0.10239642858505249,
+        "utility_ranking": 0.28852608799934387
+      },
+      {
+        "dense_shadow": 0.06962500512599945,
+        "hidden": 0.00561349606141448,
+        "input_coordinates": 432,
+        "input_fraction": 0.75,
+        "local": 0.09852026402950287,
+        "logit": 0.11283702403306961,
+        "step": 6,
+        "top_k": 853,
+        "total": 0.18035125732421875,
+        "utility_ranking": 0.3481210172176361
+      },
+      {
+        "dense_shadow": 0.14445072412490845,
+        "hidden": 0.00965961441397667,
+        "input_coordinates": 396,
+        "input_fraction": 0.6875,
+        "local": 0.19102218747138977,
+        "logit": 0.31559741497039795,
+        "step": 7,
+        "top_k": 683,
+        "total": 0.3557260036468506,
+        "utility_ranking": 0.4727686941623688
+      },
+      {
+        "dense_shadow": 0.26650241017341614,
+        "hidden": 0.016028854995965958,
+        "input_coordinates": 360,
+        "input_fraction": 0.625,
+        "local": 0.32121726870536804,
+        "logit": 0.6955960988998413,
+        "step": 8,
+        "top_k": 512,
+        "total": 0.6241334676742554,
+        "utility_ranking": 0.5838432908058167
+      }
+    ],
+    "records": 32,
+    "requested_total_steps": 8
+  },
+  "validation": {
+    "hard_sparse_path_only": true,
+    "input_token_positions": 507,
+    "next_token_positions": 491,
+    "records": 16
+  }
+}

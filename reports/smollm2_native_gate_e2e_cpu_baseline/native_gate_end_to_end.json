@@ -1,0 +1,157 @@
+{
+  "artifact": {
+    "format": "full_gate_up_down_weights_per_layer_required_after_basis_training",
+    "written": false
+  },
+  "configuration": {
+    "anneal_steps": 0,
+    "batch_size": 1,
+    "device": "cpu",
+    "device_neutral_semantics": true,
+    "learning_rate": 1e-05,
+    "loss_weights": {
+      "dense_shadow": 0.25,
+      "hidden": 0.25,
+      "local": 1.0,
+      "logit": 0.25,
+      "utility": 0.1
+    },
+    "save_artifact": false,
+    "steps": 0,
+    "target_input_fraction": 0.625,
+    "target_top_k": 512,
+    "temperature": 1.0,
+    "warmup_steps": 0
+  },
+  "data_separation": {
+    "held_out": true,
+    "method": "exact_token_sequence_hashes",
+    "overlapping_sequences": 0,
+    "training_dataset_hash": "383691c11c1f3670322abb768df4362aca54c2e917907bb68ae8d33f4cf002f3",
+    "training_sequences": 1,
+    "validation_dataset_hash": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c",
+    "validation_sequences": 16
+  },
+  "experiment": "progressive_end_to_end_native_gate_training",
+  "gate": {
+    "checks": {
+      "active_record_budget": true,
+      "evidence_size": true,
+      "final_hidden_relative_l2": false,
+      "input_coordinate_budget": true,
+      "nll_delta": false,
+      "projected_traffic": true,
+      "teacher_student_kl": false,
+      "teacher_top1_agreement": false
+    },
+    "decision": "continue_training_or_stop_before_serialization",
+    "passed": false
+  },
+  "metrics": {
+    "final_hidden_cosine": {
+      "count": 507,
+      "maximum": 0.9738101560897652,
+      "mean": 0.8548954657678546,
+      "median": 0.8866572122886105,
+      "minimum": 0.15578538573778752,
+      "p95": 0.9499015837720788
+    },
+    "final_hidden_relative_l2": {
+      "count": 507,
+      "maximum": 1.019483960757326,
+      "mean": 0.5084801878289987,
+      "median": 0.4764450535402525,
+      "minimum": 0.2273778740560644,
+      "p95": 0.766971745821205
+    },
+    "local_mlp_relative_l2": {
+      "count": 15210,
+      "maximum": 9.48633254947134,
+      "mean": 0.7015546161835216,
+      "median": 0.7198939122880393,
+      "minimum": 0.001976928419631521,
+      "p95": 1.0283805050549526
+    },
+    "nll_delta": {
+      "count": 491,
+      "maximum": 12.66148853302002,
+      "mean": 1.2019638999008675,
+      "median": 0.8680260181427002,
+      "minimum": -10.811065673828125,
+      "p95": 4.350795269012451
+    },
+    "student_nll": {
+      "count": 491,
+      "maximum": 20.988157272338867,
+      "mean": 4.3784636959960865,
+      "median": 3.305244207382202,
+      "minimum": 0.003278359305113554,
+      "p95": 11.377438068389893
+    },
+    "teacher_nll": {
+      "count": 491,
+      "maximum": 16.939329147338867,
+      "mean": 3.176499797914646,
+      "median": 1.7890857458114624,
+      "minimum": 6.6756979322235566e-06,
+      "p95": 9.731781005859375
+    },
+    "teacher_student_kl": {
+      "count": 491,
+      "maximum": 12.055317878723145,
+      "mean": 1.2349637965467815,
+      "median": 0.8646594882011414,
+      "minimum": 0.0032445399556308985,
+      "p95": 3.94421923160553
+    },
+    "teacher_student_top5_overlap": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.4973523538187905,
+      "median": 0.6000000238418579,
+      "minimum": 0.0,
+      "p95": 0.800000011920929
+    },
+    "teacher_top1_agreement": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.46028513238289204,
+      "median": 0.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    },
+    "teacher_top5_contains_student_top1": {
+      "count": 491,
+      "maximum": 1.0,
+      "mean": 0.7657841140529531,
+      "median": 1.0,
+      "minimum": 0.0,
+      "p95": 1.0
+    }
+  },
+  "projected_traffic": {
+    "active_records": 512,
+    "dense_weight_bytes": 10616832,
+    "fraction_of_dense": 0.4305555555555556,
+    "gate_weight_bytes": 2211840,
+    "hidden_size": 576,
+    "input_coordinates": 360,
+    "input_fraction": 0.625,
+    "intermediate_size": 1536,
+    "selected_up_down_weight_bytes": 2359296,
+    "total_weight_bytes": 4571136
+  },
+  "schema_version": 1,
+  "source_model_hash": "907880e8955e6ef4072314e9032bc938d36ebcd49554a499b334bb441ba4deb7",
+  "status": "measured_local_model",
+  "training": {
+    "history": [],
+    "records": 1
+  },
+  "validation": {
+    "hard_sparse_path_only": true,
+    "input_token_positions": 507,
+    "next_token_positions": 491,
+    "records": 16
+  }
+}
