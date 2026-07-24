@@ -287,6 +287,29 @@ calls, so the next systems work should move Q/K/V/output projection and cache
 orchestration across the native boundary and avoid a full vocabulary
 projection on every decode step. Hardware DRAM counters remain unmeasured.
 
+A fused position-major stream ABI has since reduced prompt-time native calls
+from one per token per layer to one per layer. At 256 prompt tokens it changes
+elapsed time only from 255.64 to 254.23 seconds (0.55%), so call-loop overhead
+is rejected as the main problem. A measured 33-token phase profile assigns
+11.60 seconds to Q/K/V projections, 7.71 to output projection, 12.62 to the
+vocabulary head, 5.94 to the packed MLP, 0.12 to native attention, and 0.06 to
+RoPE. The next implementation should therefore reuse the existing
+threaded/base-3 machinery for packed native Q/K/V/O projections, then address
+the tied vocabulary head separately.
+
+That packed projection path is now implemented. It retains the official
+four-codes-per-byte tensors, shares one 12-thread native kernel across all 120
+Q/K/V/O modules, and does not materialize their BF16 matrices. The 33-token
+end-to-end run falls from 38.51 to 22.29 seconds, with projection time falling
+from 19.31 to 3.01 seconds. A direct 32-position comparison against the
+materialized-projection package has KL 0.00394, top-1 0.96875, NLL delta
+−0.00037, and hidden L2 0.03532. This is a development semantic pass, not yet a
+frozen confirmation. The subsequent frozen 8-sequence/256-position result
+passes with KL 0.00548, top-1 0.95703, NLL delta +0.00200, and hidden L2
+0.05887. Native projection execution is 111.38 seconds versus 256.56 seconds
+materialized on the same confirmation tensor. The projection path is promoted;
+the vocabulary head now dominates at 13.00 seconds.
+
 CUDA remains an optional training accelerator only; the serialized format and
 inference mechanism are CPU-native. Repeating IVF, candidate-count,
 regularization, prototype-density, small residual, post-hoc bit allocation,

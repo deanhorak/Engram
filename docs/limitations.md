@@ -28,6 +28,10 @@
   interface counts, not hardware DRAM events. The long-context prompt is a
   deterministic repeated benchmark string and is not additional quality
   evidence.
+- Native packed Q/K/V/O execution passes the frozen
+  8-sequence/256-position confirmation and substantially improves latency, but
+  its packed decode loops are threaded without explicit AVX2 intrinsics. The
+  tied 128,256-entry vocabulary head remains a materialized BF16 full scan.
 - The grouped-ternary result uses an exact serialized/reloaded artifact and
   clears the evidence floor, but it is not eligible for more training under
   its frozen rule. It closes 63.37%/62.77% of the remaining KL/NLL gaps and

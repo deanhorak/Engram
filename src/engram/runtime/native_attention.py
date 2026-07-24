@@ -114,6 +114,18 @@ class NativeStreamingAttention:
             ctypes.c_size_t,
         ]
         self._library.engram_streaming_attention_step_f32.restype = ctypes.c_int
+        self._library.engram_streaming_attention_stream_f32.argtypes = [
+            ctypes.c_void_p,
+            pointer,
+            pointer,
+            pointer,
+            ctypes.c_size_t,
+            pointer,
+            ctypes.POINTER(_Metrics),
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        self._library.engram_streaming_attention_stream_f32.restype = ctypes.c_int
 
     @staticmethod
     def _array(values, shape: tuple[int, int], name: str) -> np.ndarray:
@@ -168,6 +180,71 @@ class NativeStreamingAttention:
             for name in NativeStreamingAttentionMetrics.__dataclass_fields__
         }
         return output, NativeStreamingAttentionMetrics(**values)
+
+    def stream(
+        self,
+        queries,
+        keys,
+        values,
+    ) -> tuple[np.ndarray, NativeStreamingAttentionMetrics]:
+        """Advance a position-major stream through one native ABI call."""
+
+        if not self._handle:
+            raise RuntimeError("native streaming attention is closed")
+        query_array = np.asarray(queries, dtype=np.float32)
+        key_array = np.asarray(keys, dtype=np.float32)
+        value_array = np.asarray(values, dtype=np.float32)
+        if query_array.ndim != 3:
+            raise ValueError("queries must have shape [length, heads, dimension]")
+        length = int(query_array.shape[0])
+        expected_query = (
+            length,
+            self.query_heads,
+            self.head_dimension,
+        )
+        expected_kv = (
+            length,
+            self.key_value_heads,
+            self.head_dimension,
+        )
+        if length <= 0 or query_array.shape != expected_query:
+            raise ValueError(f"queries must have shape {expected_query}")
+        if key_array.shape != expected_kv:
+            raise ValueError(f"keys must have shape {expected_kv}")
+        if value_array.shape != expected_kv:
+            raise ValueError(f"values must have shape {expected_kv}")
+        for name, array in (
+            ("queries", query_array),
+            ("keys", key_array),
+            ("values", value_array),
+        ):
+            if not np.all(np.isfinite(array)):
+                raise ValueError(f"{name} must be finite")
+        query_array = np.ascontiguousarray(query_array)
+        key_array = np.ascontiguousarray(key_array)
+        value_array = np.ascontiguousarray(value_array)
+        output = np.empty_like(query_array)
+        metrics = _Metrics()
+        error = ctypes.create_string_buffer(512)
+        pointer = ctypes.POINTER(ctypes.c_float)
+        status = self._library.engram_streaming_attention_stream_f32(
+            self._handle,
+            query_array.ctypes.data_as(pointer),
+            key_array.ctypes.data_as(pointer),
+            value_array.ctypes.data_as(pointer),
+            length,
+            output.ctypes.data_as(pointer),
+            ctypes.byref(metrics),
+            error,
+            len(error),
+        )
+        if status:
+            raise RuntimeError(error.value.decode("utf-8", errors="replace"))
+        metric_values = {
+            name: int(getattr(metrics, name))
+            for name in NativeStreamingAttentionMetrics.__dataclass_fields__
+        }
+        return output, NativeStreamingAttentionMetrics(**metric_values)
 
     def reset(self) -> None:
         if self._handle:

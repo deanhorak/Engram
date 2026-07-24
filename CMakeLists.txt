@@ -18,6 +18,7 @@ add_library(engram_kernels STATIC
   native/src/semantic_quantized.cpp
   native/src/swiglu.cpp
   native/src/streaming_attention.cpp
+  native/src/ternary_projection.cpp
   native/src/thread_pool.cpp
   native/src/transition_cache.cpp
   native/src/vocabulary.cpp
@@ -30,7 +31,10 @@ target_compile_features(engram_kernels PUBLIC cxx_std_20)
 target_compile_options(engram_kernels PRIVATE -Wall -Wextra -Wpedantic)
 set_target_properties(engram_kernels PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-add_library(engram_bitnet SHARED native/src/native_bitnet_c.cpp)
+add_library(engram_bitnet SHARED
+  native/src/native_bitnet_c.cpp
+  native/src/ternary_projection_c.cpp
+)
 target_link_libraries(engram_bitnet PRIVATE engram_kernels)
 target_compile_features(engram_bitnet PRIVATE cxx_std_20)
 target_compile_options(engram_bitnet PRIVATE -Wall -Wextra -Wpedantic)

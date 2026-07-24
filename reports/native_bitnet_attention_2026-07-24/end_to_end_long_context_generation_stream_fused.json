@@ -1,0 +1,49 @@
+{
+  "bounded_state_confirmed": true,
+  "configuration": {
+    "attention_compute_dtype": "float32",
+    "head_dimension": 128,
+    "layers": 30,
+    "lengths": [
+      256
+    ],
+    "local_window": 16,
+    "max_new_tokens": 2,
+    "older_candidates": 8,
+    "older_top_k": 4,
+    "query_heads": 20,
+    "sink_tokens": 2,
+    "threads": 12
+  },
+  "dense_hf_kv_cache_allocated": false,
+  "experiment": "native_bitnet_end_to_end_long_context_generation",
+  "hardware": {
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64"
+  },
+  "package": "/home/dean/repos/engram/work/native_bitnet/model.engram-bitnet",
+  "results": [
+    {
+      "attention_fraction_of_dense_logical_reads": 0.16351461406207582,
+      "attention_logical_read_bytes": 3330662400,
+      "attention_scratch_bytes": 7200,
+      "attention_state_bytes": 7477440,
+      "context_tokens": 256,
+      "dense_attention_logical_read_bytes": 20369203200,
+      "elapsed_seconds": 254.23285393999686,
+      "generated_text": " isThe",
+      "generated_tokens": [
+        374,
+        791
+      ],
+      "generated_tokens_per_second": 0.007866803872925224,
+      "mlp_calls": 60,
+      "mlp_elapsed_seconds": 12.462338466,
+      "processed_positions": 257,
+      "processed_positions_per_second": 1.0108842976708912,
+      "scheduled_mlp_bytes": 637847040
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Complete compiled-package prefill and greedy decode, including token embedding, all transformer layers, native packed MLP calls, bounded native attention, final normalization, vocabulary projection, and token selection. Logical reads are algorithmic float32 interface counts rather than measured DRAM transactions."
+}

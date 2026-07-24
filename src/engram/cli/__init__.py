@@ -359,6 +359,7 @@ def _parser() -> argparse.ArgumentParser:
     generation_benchmark.add_argument("--mlp-library", type=Path)
     generation_benchmark.add_argument("--attention-library", type=Path)
     generation_benchmark.add_argument("--threads", type=int)
+    generation_benchmark.add_argument("--native-projections", action="store_true")
     generation_benchmark.add_argument("--local-window", type=int, default=16)
     generation_benchmark.add_argument("--candidates", type=int, default=8)
     generation_benchmark.add_argument("--top-k", type=int, default=4)
@@ -412,6 +413,7 @@ def _parser() -> argparse.ArgumentParser:
     generate_bitnet.add_argument("--max-tokens", type=int, default=16)
     generate_bitnet.add_argument("--library", type=Path)
     generate_bitnet.add_argument("--threads", type=int)
+    generate_bitnet.add_argument("--native-projections", action="store_true")
     generate_bitnet.add_argument("--bounded-attention", action="store_true")
     generate_bitnet.add_argument("--attention-library", type=Path)
     generate_bitnet.add_argument("--local-window", type=int, default=16)
@@ -1299,6 +1301,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             mlp_library=args.mlp_library,
             attention_library=args.attention_library,
             threads=args.threads,
+            native_projections=args.native_projections,
             local_window=args.local_window,
             older_candidates=args.candidates,
             older_top_k=args.top_k,
@@ -1391,6 +1394,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.model,
             library=args.library,
             threads=args.threads,
+            native_projections=args.native_projections,
         ) as runtime:
             if args.bounded_attention:
                 result = runtime.generate_bounded(
@@ -1425,6 +1429,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                     ),
                     "attention_state_bytes": result.attention_state_bytes,
                     "attention_scratch_bytes": result.attention_scratch_bytes,
+                    "qkv_projection_seconds": result.qkv_projection_seconds,
+                    "rope_seconds": result.rope_seconds,
+                    "native_attention_seconds": result.native_attention_seconds,
+                    "output_projection_seconds": (
+                        result.output_projection_seconds
+                    ),
+                    "native_attention_calls": result.native_attention_calls,
                 },
                 indent=2,
             )

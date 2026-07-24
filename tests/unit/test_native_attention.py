@@ -137,3 +137,51 @@ def test_native_streaming_attention_matches_reference_and_stays_bounded():
         output, metrics = native.step(query, key, value)
         np.testing.assert_array_equal(output, np.ones_like(output))
         assert metrics.tokens_seen == 1
+
+
+def test_native_stream_call_matches_individual_steps_and_aggregates_traffic():
+    library = Path("build/libengram_attention.so")
+    if not library.exists():
+        pytest.skip("native attention library has not been built")
+    heads, kv_heads, width, length = 4, 2, 7, 23
+    generator = np.random.default_rng(43)
+    queries = generator.normal(size=(length, heads, width)).astype(np.float32)
+    keys = generator.normal(size=(length, kv_heads, width)).astype(np.float32)
+    values = generator.normal(size=(length, kv_heads, width)).astype(np.float32)
+    configuration = {
+        "query_heads": heads,
+        "key_value_heads": kv_heads,
+        "head_dimension": width,
+        "local_window": 4,
+        "older_candidates": 5,
+        "older_top_k": 3,
+        "sink_tokens": 2,
+        "library": library,
+    }
+    with (
+        NativeStreamingAttention(**configuration) as streamed,
+        NativeStreamingAttention(**configuration) as stepped,
+    ):
+        actual, stream_metrics = streamed.stream(queries, keys, values)
+        rows = []
+        traffic = {
+            "candidate_key_bytes": 0,
+            "selected_value_bytes": 0,
+            "local_kv_bytes": 0,
+        }
+        for position in range(length):
+            row, step_metrics = stepped.step(
+                queries[position],
+                keys[position],
+                values[position],
+            )
+            rows.append(row)
+            for name in traffic:
+                traffic[name] += getattr(step_metrics, name)
+
+    np.testing.assert_array_equal(actual, np.stack(rows))
+    assert stream_metrics.tokens_seen == length
+    assert stream_metrics.candidate_key_bytes == traffic["candidate_key_bytes"]
+    assert stream_metrics.selected_value_bytes == traffic["selected_value_bytes"]
+    assert stream_metrics.local_kv_bytes == traffic["local_kv_bytes"]
+    assert stream_metrics.state_bytes == step_metrics.state_bytes

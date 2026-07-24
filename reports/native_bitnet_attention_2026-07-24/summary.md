@@ -95,9 +95,40 @@ projection/orchestration and the full vocabulary path as the next systems
 targets. These are modeled logical reads rather than hardware DRAM counters,
 and the deterministic repeated prompt is not new semantic evidence.
 
+A subsequent position-major C ABI processes each complete prompt segment in
+one native call per layer and is bit-identical to individual steps. The
+controlled 256-token result is 254.23 seconds versus 255.64 seconds before
+fusion, only a 0.55% improvement. A 33-token phase profile attributes 11.60
+seconds to Q/K/V projection, 7.71 to output projection, 12.62 to the vocabulary
+head, 5.94 to packed MLP calls, 0.12 to native attention, and 0.06 to RoPE.
+This rejects further call-loop optimization and selects packed ternary
+Q/K/V/O execution as the next native boundary.
+
+That boundary is now implemented with one shared threaded kernel over the
+official four-codes-per-byte projection tensors. The controlled 33-token run
+falls from 38.51 to 22.29 seconds; Q/K/V/O time falls from 19.31 to 3.01
+seconds, and generated tokens are unchanged. Direct 32-position development
+parity against materialized projections gives KL 0.003945, top-1 0.96875, NLL
+delta −0.000369, and final-hidden L2 0.035325. Frozen confirmation passes on
+records 8–15 over
+256 positions: KL 0.005478, top-1 0.957031, NLL delta +0.002001, and hidden L2
+0.058874. Native projection execution takes 111.38 seconds versus 256.56
+seconds materialized on the same tensor, so the path is promoted. The full tied
+vocabulary projection now dominates the profile at 13.00 seconds.
+
 Machine-readable evidence:
 [frozen_streaming_c8_k4_confirmation.json](frozen_streaming_c8_k4_confirmation.json).
 Native scaling evidence:
 [native_long_context.json](native_long_context.json).
 Complete generation evidence:
 [end_to_end_long_context_generation.json](end_to_end_long_context_generation.json).
+Stream-fused comparison:
+[end_to_end_long_context_generation_stream_fused.json](end_to_end_long_context_generation_stream_fused.json).
+Phase profile:
+[end_to_end_generation_phase_profile.json](end_to_end_generation_phase_profile.json).
+Packed projection timing:
+[end_to_end_generation_native_projections.json](end_to_end_generation_native_projections.json).
+Packed projection semantic parity:
+[native_projection_parity.json](native_projection_parity.json).
+Frozen packed projection confirmation:
+[native_projection_frozen_confirmation.json](native_projection_frozen_confirmation.json).

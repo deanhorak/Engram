@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import platform
+import time
 from pathlib import Path
 from typing import Sequence
 
@@ -31,6 +32,7 @@ def benchmark_native_bitnet_generation(
     mlp_library: str | Path | None = None,
     attention_library: str | Path | None = None,
     threads: int | None = None,
+    native_projections: bool = False,
     local_window: int = 16,
     older_candidates: int = 8,
     older_top_k: int = 4,
@@ -48,6 +50,7 @@ def benchmark_native_bitnet_generation(
         package,
         library=mlp_library,
         threads=threads,
+        native_projections=native_projections,
     ) as runtime:
         seed_tokens = runtime.encode(prompt)
         config = runtime.model.config
@@ -56,15 +59,34 @@ def benchmark_native_bitnet_generation(
         layers = int(config.num_hidden_layers)
         for context_length in checked_lengths:
             context = _fixed_length_context(seed_tokens, context_length)
-            generated = runtime.generate_tokens_bounded(
-                context,
-                max_new_tokens=max_new_tokens,
-                attention_library=attention_library,
-                local_window=local_window,
-                older_candidates=older_candidates,
-                older_top_k=older_top_k,
-                sink_tokens=sink_tokens,
+            head_started = [0.0]
+            head_elapsed = [0.0]
+
+            def _head_pre_hook(_module, _inputs):
+                head_started[0] = time.perf_counter()
+
+            def _head_post_hook(_module, _inputs, _output):
+                head_elapsed[0] += time.perf_counter() - head_started[0]
+
+            pre_handle = runtime.model.lm_head.register_forward_pre_hook(
+                _head_pre_hook
             )
+            post_handle = runtime.model.lm_head.register_forward_hook(
+                _head_post_hook
+            )
+            try:
+                generated = runtime.generate_tokens_bounded(
+                    context,
+                    max_new_tokens=max_new_tokens,
+                    attention_library=attention_library,
+                    local_window=local_window,
+                    older_candidates=older_candidates,
+                    older_top_k=older_top_k,
+                    sink_tokens=sink_tokens,
+                )
+            finally:
+                pre_handle.remove()
+                post_handle.remove()
             processed_positions = context_length + max_new_tokens - 1
             dense_logical_reads = (
                 sum(range(1, processed_positions + 1))
@@ -99,6 +121,16 @@ def benchmark_native_bitnet_generation(
                     ),
                     "attention_state_bytes": generated.attention_state_bytes,
                     "attention_scratch_bytes": generated.attention_scratch_bytes,
+                    "qkv_projection_seconds": generated.qkv_projection_seconds,
+                    "rope_seconds": generated.rope_seconds,
+                    "native_attention_seconds": (
+                        generated.native_attention_seconds
+                    ),
+                    "output_projection_seconds": (
+                        generated.output_projection_seconds
+                    ),
+                    "native_attention_calls": generated.native_attention_calls,
+                    "vocabulary_projection_seconds": head_elapsed[0],
                 }
             )
     report = {
@@ -113,6 +145,7 @@ def benchmark_native_bitnet_generation(
             "older_top_k": int(older_top_k),
             "sink_tokens": int(sink_tokens),
             "threads": threads,
+            "native_packed_attention_projections": bool(native_projections),
             "query_heads": query_heads,
             "head_dimension": head_dimension,
             "layers": layers,

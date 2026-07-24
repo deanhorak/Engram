@@ -205,6 +205,7 @@ engram generate-native-bitnet \
   --model work/native_bitnet/model.engram-bitnet \
   --prompt "The capital of France is" --max-tokens 2 \
   --bounded-attention \
+  --native-projections \
   --library build/libengram_bitnet.so \
   --attention-library build/libengram_attention.so
 
@@ -213,7 +214,8 @@ engram benchmark-native-bitnet-generation \
   --out reports/generated/native-generation.json \
   --lengths 33 128 256 --max-tokens 2 \
   --mlp-library build/libengram_bitnet.so \
-  --attention-library build/libengram_attention.so
+  --attention-library build/libengram_attention.so \
+  --native-projections
 ```
 
 The compiler copies only config/tokenizer assets and non-MLP tensors, embeds
@@ -225,3 +227,5 @@ autoregressive generation. With `--bounded-attention`, it creates one
 persistent native attention state per layer, applies RoPE from explicit
 absolute positions, and keeps the Transformers dense KV cache disabled. It
 does not consult the source checkpoint directory after compilation.
+`--native-projections` additionally executes the packaged official Q/K/V/O
+ternary tensors without expanding them to BF16 matrices.

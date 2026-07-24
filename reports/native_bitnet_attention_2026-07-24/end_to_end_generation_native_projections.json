@@ -1,0 +1,56 @@
+{
+  "bounded_state_confirmed": true,
+  "configuration": {
+    "attention_compute_dtype": "float32",
+    "head_dimension": 128,
+    "layers": 30,
+    "lengths": [
+      33
+    ],
+    "local_window": 16,
+    "max_new_tokens": 2,
+    "native_packed_attention_projections": true,
+    "older_candidates": 8,
+    "older_top_k": 4,
+    "query_heads": 20,
+    "sink_tokens": 2,
+    "threads": 12
+  },
+  "dense_hf_kv_cache_allocated": false,
+  "experiment": "native_bitnet_end_to_end_long_context_generation",
+  "hardware": {
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64"
+  },
+  "package": "/home/dean/repos/engram/work/native_bitnet/model.engram-bitnet",
+  "results": [
+    {
+      "attention_fraction_of_dense_logical_reads": 0.865546218487395,
+      "attention_logical_read_bytes": 316416000,
+      "attention_scratch_bytes": 7200,
+      "attention_state_bytes": 7477440,
+      "context_tokens": 33,
+      "dense_attention_logical_read_bytes": 365568000,
+      "elapsed_seconds": 22.28923731899704,
+      "generated_text": "The purpose",
+      "generated_tokens": [
+        791,
+        7580
+      ],
+      "generated_tokens_per_second": 0.08972940488616032,
+      "mlp_calls": 60,
+      "mlp_elapsed_seconds": 5.730753388,
+      "native_attention_calls": 60,
+      "native_attention_seconds": 0.13211947905801935,
+      "output_projection_seconds": 1.2383966289708042,
+      "processed_positions": 34,
+      "processed_positions_per_second": 1.5253998830647255,
+      "qkv_projection_seconds": 1.7758800910160062,
+      "rope_seconds": 0.06223581297672354,
+      "scheduled_mlp_bytes": 637847040,
+      "vocabulary_projection_seconds": 13.002257185995404
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Complete compiled-package prefill and greedy decode, including token embedding, all transformer layers, native packed MLP calls, bounded native attention, final normalization, vocabulary projection, and token selection. Logical reads are algorithmic float32 interface counts rather than measured DRAM transactions."
+}

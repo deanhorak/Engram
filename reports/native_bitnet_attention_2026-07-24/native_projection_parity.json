@@ -1,0 +1,21 @@
+{
+  "candidate_native_seconds_including_load": 25.65489561999857,
+  "experiment": "native_packed_attention_projection_parity",
+  "final_hidden": {
+    "exact": false,
+    "maximum_absolute_error": 0.044921875,
+    "mean_absolute_error": 0.00152344920206815,
+    "relative_l2": 0.0353245735168457
+  },
+  "logits": {
+    "exact": false,
+    "maximum_absolute_error": 1.46875,
+    "mean_absolute_error": 0.10068247467279434,
+    "mean_kl_divergence": 0.003944975323975086,
+    "relative_l2": 0.025597194209694862,
+    "top1_agreement": 0.96875
+  },
+  "positions": 32,
+  "target_nll_delta": -0.0003685951232910156,
+  "teacher_materialized_seconds_including_load": 50.46997787900182
+}

@@ -143,6 +143,28 @@ and 256 prompt tokens. End-to-end processing is only about one position per
 second: Python-side projection/orchestration and the full vocabulary path
 dominate, so these results establish bounded memory scaling, not production
 latency or measured hardware DRAM traffic.
+
+Collapsing prompt attention into one native stream call per layer preserves
+outputs exactly but improves the 256-token run by only 0.55%. A phase profile
+shows why: Q/K/V and O projections consume 19.31 seconds of a 38.51-second
+33-token run, the full vocabulary projection consumes 12.62 seconds, the
+packed MLP consumes 5.94 seconds, and the bounded cache itself consumes only
+0.12 seconds. The next native work is packed ternary Q/K/V/O execution, not
+further cache or call-loop tuning.
+
+The packed-projection implementation now consumes the official
+four-codes-per-byte package tensors directly through a shared threaded C++
+kernel. On the controlled 33-token run it reduces Q/K/V/O time from 19.31 to
+3.01 seconds and total time from 38.51 to 22.29 seconds (42.1%), with identical
+generated tokens. Against the materialized-projection model on 32 trained
+next-token positions it measures KL 0.00394, top-1 agreement 0.96875, target
+NLL delta −0.00037, and final-hidden relative L2 0.03532. This clears the
+development semantic thresholds. The sequence-disjoint frozen
+8-sequence/256-position confirmation also passes: KL 0.00548, top-1 0.95703,
+NLL delta +0.00200, and hidden L2 0.05887. Native projection execution takes
+111.38 seconds versus 256.56 seconds materialized on that identical batch.
+The full vocabulary projection, now about 13 seconds of the 22-second
+generation run, is the dominant next target.
 The detailed history below is retained so negative results remain auditable.
 
 The repository contains an end-to-end research prototype: Hugging Face model inspection and

@@ -1,5 +1,48 @@
 # Research log
 
+## 2026-07-24 — Packed native attention projections pass development screen
+
+- Added a shared threaded C++ kernel for the official BitNet
+  four-output-codes-per-byte layout. It performs the existing per-row Q8
+  activation quantization and ternary projection without expanding weights to
+  BF16. A deterministic fixture matches the materialized BitLinear within the
+  declared numerical tolerance.
+- A real layer-0 Q projection at 33 rows runs in 0.0116 seconds versus 0.2443
+  seconds materialized (21.0×), with relative L2 0.000524.
+- Replacing all 120 packaged Q/K/V/O modules preserves the expected ` Paris.`
+  generation. At 33 prompt tokens plus two decode tokens, projection time
+  falls from 19.31 to 3.01 seconds and total time from 38.51 to 22.29 seconds,
+  a 42.1% end-to-end reduction.
+- Direct comparison to the materialized-projection model on 32 trained
+  next-token positions reaches KL 0.003945, top-1 0.96875, NLL delta
+  −0.000369, and final-hidden relative L2 0.035325.
+- Frozen records 8–15 then pass over 256 next-token positions: KL 0.005478,
+  top-1 0.957031, NLL delta +0.002001, and hidden L2 0.058874. Native
+  projection execution takes 111.38 seconds versus 256.56 seconds
+  materialized on the same batch. The path is promoted.
+- The tied full-vocabulary projection now consumes 13.00 seconds and is the
+  dominant measured phase.
+
+## 2026-07-24 — Stream-call fusion rejected; projection phases isolated
+
+- Added a position-major native stream ABI so an entire prompt segment crosses
+  the C boundary once per layer instead of once per token. A 23-token stream is
+  bit-identical to 23 individual steps and reports identical accumulated
+  traffic.
+- The controlled 256-token package run improves only from 255.64 to 254.23
+  seconds (0.55%) with identical tokens, state, and logical reads. Python call
+  count is therefore not the material bottleneck.
+- Phase timing on a complete 33-token prompt plus two-token decode attributes
+  11.60 seconds to Q/K/V projections, 7.71 seconds to attention output
+  normalization/projection, 12.62 seconds to the vocabulary projection, 5.94
+  seconds to packed native MLP calls, 0.12 seconds to bounded native attention,
+  and 0.06 seconds to RoPE. These measured phases explain 98.8% of the
+  38.51-second total.
+- Cache-policy tuning and further ABI-call fusion are stopped. The next native
+  boundary must execute the packaged ternary Q/K/V/O projections without
+  materializing BF16 matrices; the tied vocabulary path is the next independent
+  target.
+
 ## 2026-07-24 — Stateful attention enters complete package generation
 
 - Replaced each package transformer's dense attention module with a persistent

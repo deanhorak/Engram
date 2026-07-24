@@ -41,6 +41,11 @@ class NativeBitNetGeneration:
     attention_logical_read_bytes: int = 0
     attention_state_bytes: int = 0
     attention_scratch_bytes: int = 0
+    qkv_projection_seconds: float = 0.0
+    rope_seconds: float = 0.0
+    native_attention_seconds: float = 0.0
+    output_projection_seconds: float = 0.0
+    native_attention_calls: int = 0
 
 
 def _safe_package_path(root: Path, relative: str) -> Path:
@@ -86,6 +91,7 @@ class NativeBitNetRuntime:
         *,
         library: str | Path | None = None,
         threads: int | None = None,
+        native_projections: bool = False,
         verify_checksums: bool = True,
     ) -> None:
         self.path = Path(package).resolve()
@@ -103,6 +109,7 @@ class NativeBitNetRuntime:
             self.manifest["mlp"]["path"],
         )
         configured_threads = int(self.manifest["runtime"]["kernel_threads"])
+        self.native_projections = bool(native_projections)
         self.kernel = NativeBitNetCPUKernel(
             self.artifact_path,
             threads=configured_threads if threads is None else threads,
@@ -120,6 +127,9 @@ class NativeBitNetRuntime:
         for layer in getattr(self, "_native_attention_layers", []):
             layer.close()
         self._native_attention_layers = []
+        if getattr(self, "projection_kernel", None) is not None:
+            self.projection_kernel.close()
+            self.projection_kernel = None
         if getattr(self, "kernel", None) is not None:
             self.kernel.close()
 
@@ -175,6 +185,19 @@ class NativeBitNetRuntime:
             self.manifest["transformer"]["non_mlp_path"],
         )
         MaterializedBitLinear = _materialized_bitlinear_class()
+        self.projection_kernel = None
+        NativeProjection = None
+        if self.native_projections:
+            from engram.runtime.native_projection import (
+                NativeTernaryProjectionKernel,
+                native_projection_module_class,
+            )
+
+            self.projection_kernel = NativeTernaryProjectionKernel(
+                threads=self.kernel.thread_count,
+                library=self.kernel.library_path,
+            )
+            NativeProjection = native_projection_module_class()
         ordinary_state = {}
         with safe_open(weights_path, framework="pt", device="cpu") as handle:
             names = set(handle.keys())
@@ -189,18 +212,33 @@ class NativeBitNetRuntime:
                             f"for layer {layer_index}"
                         )
                     projection = getattr(layer.self_attn, projection_name)
-                    packed = handle.get_tensor(weight_name).cpu().numpy()
-                    codes = unpack_hf_bitnet_codes(
-                        packed,
-                        out_features=projection.out_features,
-                    )
-                    decoded = torch.from_numpy(codes)
                     scale = handle.get_tensor(scale_name)
-                    setattr(
-                        layer.self_attn,
-                        projection_name,
-                        MaterializedBitLinear(decoded, scale),
-                    )
+                    packed = handle.get_tensor(weight_name).cpu().numpy()
+                    if self.projection_kernel is not None:
+                        projection_index = self.projection_kernel.add(
+                            packed,
+                            output_features=projection.out_features,
+                            scale=float(scale.float().item()),
+                        )
+                        setattr(
+                            layer.self_attn,
+                            projection_name,
+                            NativeProjection(
+                                self.projection_kernel,
+                                projection_index,
+                            ),
+                        )
+                    else:
+                        codes = unpack_hf_bitnet_codes(
+                            packed,
+                            out_features=projection.out_features,
+                        )
+                        decoded = torch.from_numpy(codes)
+                        setattr(
+                            layer.self_attn,
+                            projection_name,
+                            MaterializedBitLinear(decoded, scale),
+                        )
             projection_keys = {
                 f"model.layers.{layer_index}.self_attn.{projection_name}.{suffix}"
                 for layer_index in range(len(model.model.layers))
@@ -444,6 +482,13 @@ class NativeBitNetRuntime:
             attention_logical_read_bytes=int(attention["logical_read_bytes"]),
             attention_state_bytes=int(attention["state_bytes"]),
             attention_scratch_bytes=int(attention["scratch_bytes"]),
+            qkv_projection_seconds=float(attention["qkv_projection_seconds"]),
+            rope_seconds=float(attention["rope_seconds"]),
+            native_attention_seconds=float(attention["native_stream_seconds"]),
+            output_projection_seconds=float(
+                attention["output_projection_seconds"]
+            ),
+            native_attention_calls=int(attention["native_stream_calls"]),
         )
 
     def generate(self, prompt: str, *, max_new_tokens: int) -> NativeBitNetGeneration:

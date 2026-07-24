@@ -1,0 +1,31 @@
+{
+  "experiment": "native_packed_attention_projection_frozen_confirmation",
+  "final_hidden": {
+    "exact": false,
+    "maximum_absolute_error": 0.084228515625,
+    "mean_absolute_error": 0.0024306545965373516,
+    "relative_l2": 0.05887429043650627
+  },
+  "logits": {
+    "exact": false,
+    "maximum_absolute_error": 2.5,
+    "mean_absolute_error": 0.1518222987651825,
+    "mean_kl_divergence": 0.005477676168084145,
+    "relative_l2": 0.0336754247546196,
+    "top1_agreement": 0.95703125
+  },
+  "materialized_projection_seconds": 256.559953046999,
+  "native_projection_seconds": 111.37716898600047,
+  "passed": true,
+  "positions": 256,
+  "record_offset": 8,
+  "role": "confirmation",
+  "sequences": 8,
+  "target_nll_delta": 0.0020012855529785156,
+  "thresholds": {
+    "final_hidden_relative_l2_max": 0.1,
+    "mean_kl_divergence_max": 0.05,
+    "target_nll_delta_max": 0.05,
+    "top1_agreement_min": 0.9
+  }
+}

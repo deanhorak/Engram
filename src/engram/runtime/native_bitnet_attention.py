@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from pathlib import Path
 from typing import Any
 
@@ -59,6 +60,11 @@ def native_incremental_attention_class():
             self._logical_read_bytes = 0
             self._maximum_state_bytes = 0
             self._maximum_scratch_bytes = 0
+            self._qkv_projection_seconds = 0.0
+            self._rope_seconds = 0.0
+            self._native_stream_seconds = 0.0
+            self._output_projection_seconds = 0.0
+            self._native_stream_calls = 0
 
         @property
         def query_heads(self) -> int:
@@ -73,12 +79,17 @@ def native_incremental_attention_class():
             return self._next_position
 
         @property
-        def metrics(self) -> dict[str, int]:
+        def metrics(self) -> dict[str, int | float]:
             return {
                 "tokens_seen": self._next_position,
                 "logical_read_bytes": self._logical_read_bytes,
                 "state_bytes": self._maximum_state_bytes,
                 "scratch_bytes": self._maximum_scratch_bytes,
+                "qkv_projection_seconds": self._qkv_projection_seconds,
+                "rope_seconds": self._rope_seconds,
+                "native_stream_seconds": self._native_stream_seconds,
+                "output_projection_seconds": self._output_projection_seconds,
+                "native_stream_calls": self._native_stream_calls,
             }
 
         def _new_cache(self) -> NativeStreamingAttention:
@@ -109,6 +120,11 @@ def native_incremental_attention_class():
             self._logical_read_bytes = 0
             self._maximum_state_bytes = 0
             self._maximum_scratch_bytes = 0
+            self._qkv_projection_seconds = 0.0
+            self._rope_seconds = 0.0
+            self._native_stream_seconds = 0.0
+            self._output_projection_seconds = 0.0
+            self._native_stream_calls = 0
 
         def close(self) -> None:
             for cache in self._caches:
@@ -154,45 +170,43 @@ def native_incremental_attention_class():
 
             input_shape = hidden_states.shape[:-1]
             hidden_shape = (*input_shape, -1, self.head_dim)
+            projection_started = time.perf_counter()
             query = self.q_proj(hidden_states).view(hidden_shape).transpose(1, 2)
             key = self.k_proj(hidden_states).view(hidden_shape).transpose(1, 2)
             value = self.v_proj(hidden_states).view(hidden_shape).transpose(1, 2)
+            self._qkv_projection_seconds += (
+                time.perf_counter() - projection_started
+            )
+            rope_started = time.perf_counter()
             query, key = apply_rotary_pos_emb(
                 query,
                 key,
                 *position_embeddings,
             )
+            self._rope_seconds += time.perf_counter() - rope_started
 
             output_batches = []
             forward_state_bytes = 0
             forward_scratch_bytes = 0
             for batch_index, cache in enumerate(self._caches):
-                rows = []
-                cache_state_bytes = 0
-                cache_scratch_bytes = 0
-                for offset in range(length):
-                    output, metrics = cache.step(
-                        query[batch_index, :, offset].float().cpu().numpy(),
-                        key[batch_index, :, offset].float().cpu().numpy(),
-                        value[batch_index, :, offset].float().cpu().numpy(),
-                    )
-                    rows.append(torch.from_numpy(output))
-                    self._logical_read_bytes += (
-                        metrics.candidate_key_bytes
-                        + metrics.selected_value_bytes
-                        + metrics.local_kv_bytes
-                    )
-                    cache_state_bytes = max(
-                        cache_state_bytes,
-                        metrics.state_bytes,
-                    )
-                    cache_scratch_bytes = max(
-                        cache_scratch_bytes,
-                        metrics.scratch_bytes,
-                    )
-                output_batches.append(torch.stack(rows, dim=1))
-                forward_state_bytes += cache_state_bytes
-                forward_scratch_bytes += cache_scratch_bytes
+                stream_started = time.perf_counter()
+                output, metrics = cache.stream(
+                    query[batch_index].transpose(0, 1).float().cpu().numpy(),
+                    key[batch_index].transpose(0, 1).float().cpu().numpy(),
+                    value[batch_index].transpose(0, 1).float().cpu().numpy(),
+                )
+                self._native_stream_seconds += (
+                    time.perf_counter() - stream_started
+                )
+                self._native_stream_calls += 1
+                output_batches.append(torch.from_numpy(output).transpose(0, 1))
+                self._logical_read_bytes += (
+                    metrics.candidate_key_bytes
+                    + metrics.selected_value_bytes
+                    + metrics.local_kv_bytes
+                )
+                forward_state_bytes += metrics.state_bytes
+                forward_scratch_bytes += metrics.scratch_bytes
             self._maximum_state_bytes = max(
                 self._maximum_state_bytes,
                 forward_state_bytes,
@@ -207,13 +221,20 @@ def native_incremental_attention_class():
                 dtype=hidden_states.dtype,
             )
             output = output.transpose(1, 2).reshape(*input_shape, -1).contiguous()
+            output_started = time.perf_counter()
             output = self.attn_sub_norm(output)
-            return self.o_proj(output), None
+            output = self.o_proj(output)
+            self._output_projection_seconds += (
+                time.perf_counter() - output_started
+            )
+            return output, None
 
     return NativeIncrementalBitNetAttention
 
 
-def aggregate_native_attention_metrics(layers: list[Any]) -> dict[str, int]:
+def aggregate_native_attention_metrics(
+    layers: list[Any],
+) -> dict[str, int | float]:
     """Aggregate per-layer traffic and allocated state."""
 
     metrics = [layer.metrics for layer in layers]
@@ -228,6 +249,22 @@ def aggregate_native_attention_metrics(layers: list[Any]) -> dict[str, int]:
         ),
         "state_bytes": sum(int(item["state_bytes"]) for item in metrics),
         "scratch_bytes": sum(int(item["scratch_bytes"]) for item in metrics),
+        "qkv_projection_seconds": sum(
+            float(item.get("qkv_projection_seconds", 0.0)) for item in metrics
+        ),
+        "rope_seconds": sum(
+            float(item.get("rope_seconds", 0.0)) for item in metrics
+        ),
+        "native_stream_seconds": sum(
+            float(item.get("native_stream_seconds", 0.0)) for item in metrics
+        ),
+        "output_projection_seconds": sum(
+            float(item.get("output_projection_seconds", 0.0))
+            for item in metrics
+        ),
+        "native_stream_calls": sum(
+            int(item.get("native_stream_calls", 0)) for item in metrics
+        ),
     }
 
 

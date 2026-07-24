@@ -8,6 +8,7 @@ from .native_attention import (
     NativeStreamingAttentionMetrics,
 )
 from .native_bitnet_attention import aggregate_native_attention_metrics
+from .native_projection import NativeTernaryProjectionKernel
 from .reference import EngramRuntime, GenerationToken
 
 __all__ = [
@@ -17,6 +18,7 @@ __all__ = [
     "NativeBitNetRuntime",
     "NativeStreamingAttention",
     "NativeStreamingAttentionMetrics",
+    "NativeTernaryProjectionKernel",
     "aggregate_native_attention_metrics",
     "validate_native_bitnet_package",
 ]
