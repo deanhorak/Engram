@@ -17,6 +17,7 @@ add_library(engram_kernels STATIC
   native/src/semantic_ivf.cpp
   native/src/semantic_quantized.cpp
   native/src/swiglu.cpp
+  native/src/streaming_attention.cpp
   native/src/thread_pool.cpp
   native/src/transition_cache.cpp
   native/src/vocabulary.cpp
@@ -39,6 +40,15 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   # libstdc++. Keep the C ABI module self-contained so ctypes does not inherit
   # that process-global GLIBCXX version constraint.
   target_link_options(engram_bitnet PRIVATE -static-libstdc++ -static-libgcc)
+endif()
+
+add_library(engram_attention SHARED native/src/streaming_attention_c.cpp)
+target_link_libraries(engram_attention PRIVATE engram_kernels)
+target_compile_features(engram_attention PRIVATE cxx_std_20)
+target_compile_options(engram_attention PRIVATE -Wall -Wextra -Wpedantic)
+set_target_properties(engram_attention PROPERTIES OUTPUT_NAME engram_attention)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_link_options(engram_attention PRIVATE -static-libstdc++ -static-libgcc)
 endif()
 
 add_executable(engram-native-info native/src/info.cpp)
@@ -67,7 +77,7 @@ if(ENGRAM_BUILD_TESTS)
   target_link_libraries(engram_native_tests PRIVATE engram_kernels)
   add_test(NAME engram_native_tests COMMAND engram_native_tests)
 
-  foreach(test_name IN ITEMS controller dip episodic npy package semantic semantic_ivf semantic_quantized thread_pool transition_cache vector_kernels vocabulary vocabulary_ivf)
+  foreach(test_name IN ITEMS controller dip episodic npy package semantic semantic_ivf semantic_quantized streaming_attention thread_pool transition_cache vector_kernels vocabulary vocabulary_ivf)
     add_executable(engram_native_${test_name}_tests native/tests/test_${test_name}.cpp)
     target_link_libraries(engram_native_${test_name}_tests PRIVATE engram_kernels)
     add_test(NAME engram_native_${test_name}_tests COMMAND engram_native_${test_name}_tests)

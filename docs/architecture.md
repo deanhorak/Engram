@@ -113,9 +113,20 @@ sequence length, and a configurable fixed-capacity older-token ring. The new
 native-BitNet substitution harness additionally runs the trained transformer's
 real Q/K/V projections and RoPE while replacing attention itself. Local and
 retrieved keys participate in one exact sparse softmax rather than separately
-normalized reads. W=16/K=4 passes the frozen semantic gate, but its current
-reference selector computes scores for every older key. The next runtime
-design must produce a small indexed candidate set before exact score reranking.
+normalized reads.
+
+The promoted native operator has an exact 16-token ring and eight retained old
+entries: two immutable attention sinks and six cumulative-attention heavy
+hitters. It scores all eight old keys, transfers the best four old values, and
+normalizes those values jointly with the local window. Each layer and batch
+item owns one persistent C++ state object. Prompt prefill may arrive as a
+multi-token tensor, but the wrapper advances the state one token at a time.
+Incremental calls must begin at the state's next absolute position. The model
+computes RoPE from those explicit positions before Q/K cross the native
+boundary, so rotating a decoded key never depends on a fabricated dense cache.
+`use_cache=False` prevents Transformers from allocating its `DynamicCache`.
+State is reset between independent generations and cannot silently survive a
+batch-size or position discontinuity.
 
 ## Token-level controller and output path
 
@@ -260,5 +271,7 @@ is a logical per-channel payload, not a contiguous physical record. The
 source-family-specific package and generation runtime are now implemented and
 produce exact source/package output parity. The bounded W=16/C=8/K=4 streaming
 attention operator now also passes causal confirmation. The next architectural
-task is integrating its sink/heavy-hitter cache and exact rerank into a native
-generation kernel, then measuring long-context latency and DRAM traffic.
+task is now partly complete: a stateful native sink/heavy-hitter cache and
+exact rerank pass randomized parity and trained development substitution. The
+remaining boundary is incremental cache-position integration in package
+generation, followed by end-to-end long-context latency and DRAM traffic.

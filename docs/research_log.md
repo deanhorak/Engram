@@ -1,5 +1,46 @@
 # Research log
 
+## 2026-07-24 — Stateful attention enters complete package generation
+
+- Replaced each package transformer's dense attention module with a persistent
+  W=16/C=8/K=4 native cache. Prompt prefill and incremental decode now share
+  that state, while the model applies normal BitNet RoPE using explicit,
+  monotonically increasing absolute positions. Hugging Face `DynamicCache`
+  allocation is disabled.
+- Full-sequence and uneven 6/4/1-token chunk execution are bit-identical for
+  the same bounded operator. The runtime rejects skipped or repeated positions
+  and batch-size changes without reset.
+- Complete 30-layer package generation was measured at 33, 128, and 256 prompt
+  tokens plus two greedy tokens. All-layer attention state remains exactly
+  7,477,440 bytes. Logical attention reads fall from 86.55% to 31.07% and
+  16.35% of the dense query-head counterfactual.
+- Total elapsed time is 39.06, 131.97, and 255.64 seconds, about
+  0.87–1.01 processed positions/second. Packed MLP calls account for only
+  5.69, 8.97, and 12.65 seconds. Native Q/K/V/output projection, removal of
+  per-token Python/ctypes crossings, and a bounded vocabulary path are now
+  higher-value systems work than further tuning the isolated cache.
+- The report contains modeled interface bytes, not hardware DRAM counters, and
+  the repeated benchmark prompt is not semantic-quality evidence.
+
+## 2026-07-24 — Native bounded attention kernel and long-context crossover
+
+- Added a stateful C++20 W/C/K attention kernel and C ABI implementing the
+  exact local ring, sink retention, cumulative-attention heavy replacement,
+  candidate-key rerank, selected-value softmax, reset, and bounded metrics.
+- Found and fixed an eviction semantic edge case: when the heavy cache is
+  full, an incoming token below the current minimum must be discarded rather
+  than forcibly replacing a heavier entry.
+- Native C++, ctypes/NumPy, and transformer replacement tests agree across
+  randomized multi-head eviction sequences. All 15 native tests pass.
+- Trained one-sequence native substitution reaches KL 0.00528, top-1 0.96875,
+  NLL +0.01239, and hidden L2 0.04210. Its 34.28-second transformer run is
+  close to the 34.79-second dense baseline and faster than the 47.51-second
+  Python-cache reference on the same input.
+- A standalone W=16/C=8/K=4 benchmark keeps per-layer state fixed at 249,248
+  bytes. Logical reads are 87.88%, 31.29%, 8.40%, and 2.14% of dense at
+  lengths 33, 128, 512, and 2,048. Counts are at the query-head kernel
+  interface; it motivated the complete generation benchmark above.
+
 ## 2026-07-24 — Bounded streaming attention passes frozen confirmation
 
 - Rejected random multi-table sign-LSH after development recall remained

@@ -122,9 +122,27 @@ keys and transfers the best four values. On the sequence-disjoint frozen
 8-sequence/256-position confirmation it reaches KL 0.01409, 94.14% top-1
 agreement, NLL delta −0.00613, and final-hidden relative L2 0.08559. Old-context
 storage and reads are fixed as context grows. The current 33-token protocol
-models at 93.34% of dense KV traffic and the implementation is still a slow
-Python reference, so the next implementation is a native phase-streaming
-attention/cache kernel and long-context traffic benchmark.
+models at 93.34% of dense KV traffic.
+
+The state transition and eight-to-four rerank are now also implemented behind
+a C ABI in C++20. Randomized eviction parity passes against an independent
+NumPy state machine, and trained one-sequence substitution reaches KL 0.00528,
+top-1 0.96875, NLL +0.01239, and hidden L2 0.04210. A standalone long-context
+run keeps per-layer state fixed at 249,248 bytes while logical reads fall from
+87.88% of dense at 33 tokens to 31.29% at 128, 8.40% at 512, and 2.14% at
+2,048.
+
+That kernel is now wired into compiled-package prefill and incremental greedy
+generation. Every transformer layer owns a persistent bounded cache; the
+runtime supplies monotonic absolute positions to normal BitNet RoPE and keeps
+the Hugging Face dense KV cache disabled. Full-sequence and uneven incremental
+chunks are bit-identical for the same bounded operator. On complete 30-layer
+package generation, total attention state remains 7,477,440 bytes while
+logical attention reads are 86.55%, 31.07%, and 16.35% of dense at 33, 128,
+and 256 prompt tokens. End-to-end processing is only about one position per
+second: Python-side projection/orchestration and the full vocabulary path
+dominate, so these results establish bounded memory scaling, not production
+latency or measured hardware DRAM traffic.
 The detailed history below is retained so negative results remain auditable.
 
 The repository contains an end-to-end research prototype: Hugging Face model inspection and

@@ -36,6 +36,11 @@ class NativeBitNetGeneration:
     mlp_elapsed_seconds: float
     scheduled_mlp_bytes: int
     maximum_scratch_bytes: int
+    attention_mode: str = "dense_kv_cache"
+    attention_tokens_seen: int = 0
+    attention_logical_read_bytes: int = 0
+    attention_state_bytes: int = 0
+    attention_scratch_bytes: int = 0
 
 
 def _safe_package_path(root: Path, relative: str) -> Path:
@@ -106,11 +111,15 @@ class NativeBitNetRuntime:
         )
         try:
             self.model, self.tokenizer = self._load_transformer()
+            self._native_attention_layers: list[Any] = []
         except Exception:
             self.kernel.close()
             raise
 
     def close(self) -> None:
+        for layer in getattr(self, "_native_attention_layers", []):
+            layer.close()
+        self._native_attention_layers = []
         if getattr(self, "kernel", None) is not None:
             self.kernel.close()
 
@@ -246,6 +255,65 @@ class NativeBitNetRuntime:
     def forward(self, input_ids, **kwargs):
         return self.model(input_ids=input_ids, **kwargs)
 
+    def enable_bounded_attention(
+        self,
+        *,
+        library: str | Path | None = None,
+        local_window: int = 16,
+        older_candidates: int = 8,
+        older_top_k: int = 4,
+        sink_tokens: int = 2,
+    ) -> None:
+        """Replace dense attention with persistent bounded native caches."""
+
+        from engram.runtime.native_bitnet_attention import (
+            native_incremental_attention_class,
+        )
+
+        if self._native_attention_layers:
+            configured = self._native_attention_layers[0]
+            requested = (
+                int(local_window),
+                int(older_candidates),
+                int(older_top_k),
+                int(sink_tokens),
+                None if library is None else str(Path(library).resolve()),
+            )
+            current = (
+                configured.local_window,
+                configured.older_candidates,
+                configured.older_top_k,
+                configured.sink_tokens,
+                None
+                if configured.library is None
+                else str(Path(configured.library).resolve()),
+            )
+            if requested != current:
+                raise ValueError(
+                    "bounded attention is already enabled with another configuration"
+                )
+            return
+        Replacement = native_incremental_attention_class()
+        replacements = []
+        for decoder_layer in self.model.model.layers:
+            replacement = Replacement(
+                decoder_layer.self_attn,
+                local_window=local_window,
+                older_candidates=older_candidates,
+                older_top_k=older_top_k,
+                sink_tokens=sink_tokens,
+                library=library,
+            )
+            decoder_layer.self_attn = replacement
+            replacements.append(replacement)
+        self._native_attention_layers = replacements
+
+    def reset_bounded_attention(self) -> None:
+        if not self._native_attention_layers:
+            raise RuntimeError("bounded attention has not been enabled")
+        for layer in self._native_attention_layers:
+            layer.reset_cache()
+
     def generate_tokens(
         self,
         prompt_tokens: Sequence[int],
@@ -293,10 +361,108 @@ class NativeBitNetRuntime:
             ),
         )
 
+    def generate_tokens_bounded(
+        self,
+        prompt_tokens: Sequence[int],
+        *,
+        max_new_tokens: int,
+        attention_library: str | Path | None = None,
+        local_window: int = 16,
+        older_candidates: int = 8,
+        older_top_k: int = 4,
+        sink_tokens: int = 2,
+    ) -> NativeBitNetGeneration:
+        """Generate incrementally without allocating a dense transformer KV cache."""
+
+        if max_new_tokens <= 0:
+            raise ValueError("max_new_tokens must be positive")
+        if not prompt_tokens:
+            raise ValueError("prompt_tokens must not be empty")
+        self.enable_bounded_attention(
+            library=attention_library,
+            local_window=local_window,
+            older_candidates=older_candidates,
+            older_top_k=older_top_k,
+            sink_tokens=sink_tokens,
+        )
+        self.reset_bounded_attention()
+        torch, _, _ = _torch_modules()
+        prompt = torch.tensor([list(prompt_tokens)], dtype=torch.long)
+        prompt_positions = torch.arange(prompt.shape[1], dtype=torch.long)
+        generated: list[int] = []
+        self.kernel.clear_metrics()
+        started = time.perf_counter()
+        with torch.inference_mode():
+            output = self.model(
+                input_ids=prompt,
+                position_ids=prompt_positions.unsqueeze(0),
+                use_cache=False,
+            )
+            next_token = int(output.logits[0, -1].argmax().item())
+            generated.append(next_token)
+            absolute_position = prompt.shape[1]
+            for _ in range(1, max_new_tokens):
+                output = self.model(
+                    input_ids=torch.tensor([[next_token]], dtype=torch.long),
+                    position_ids=torch.tensor(
+                        [[absolute_position]],
+                        dtype=torch.long,
+                    ),
+                    use_cache=False,
+                )
+                absolute_position += 1
+                next_token = int(output.logits[0, -1].argmax().item())
+                generated.append(next_token)
+        elapsed = time.perf_counter() - started
+        calls = list(self.kernel.calls)
+        from engram.runtime.native_bitnet_attention import (
+            aggregate_native_attention_metrics,
+        )
+
+        attention = aggregate_native_attention_metrics(
+            self._native_attention_layers
+        )
+        return NativeBitNetGeneration(
+            prompt_tokens=tuple(int(value) for value in prompt_tokens),
+            generated_tokens=tuple(generated),
+            text=self.decode(generated),
+            elapsed_seconds=elapsed,
+            mlp_calls=len(calls),
+            mlp_elapsed_seconds=sum(int(call["elapsed_ns"]) for call in calls) / 1e9,
+            scheduled_mlp_bytes=sum(
+                int(call["scheduled_cache_line_bytes"]) for call in calls
+            ),
+            maximum_scratch_bytes=max(
+                (int(call["scratch_bytes"]) for call in calls),
+                default=0,
+            ),
+            attention_mode=(
+                f"native_streaming_w{local_window}_"
+                f"c{older_candidates}_k{older_top_k}"
+            ),
+            attention_tokens_seen=int(attention["tokens_seen"]),
+            attention_logical_read_bytes=int(attention["logical_read_bytes"]),
+            attention_state_bytes=int(attention["state_bytes"]),
+            attention_scratch_bytes=int(attention["scratch_bytes"]),
+        )
+
     def generate(self, prompt: str, *, max_new_tokens: int) -> NativeBitNetGeneration:
         return self.generate_tokens(
             self.encode(prompt),
             max_new_tokens=max_new_tokens,
+        )
+
+    def generate_bounded(
+        self,
+        prompt: str,
+        *,
+        max_new_tokens: int,
+        **kwargs,
+    ) -> NativeBitNetGeneration:
+        return self.generate_tokens_bounded(
+            self.encode(prompt),
+            max_new_tokens=max_new_tokens,
+            **kwargs,
         )
 
 

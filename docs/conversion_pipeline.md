@@ -201,8 +201,19 @@ engram compile-native-bitnet \
   --out work/native_bitnet/model.engram-bitnet
 
 engram validate --model work/native_bitnet/model.engram-bitnet
-engram generate --model work/native_bitnet/model.engram-bitnet \
-  --prompt "The capital of France is" --max-tokens 2
+engram generate-native-bitnet \
+  --model work/native_bitnet/model.engram-bitnet \
+  --prompt "The capital of France is" --max-tokens 2 \
+  --bounded-attention \
+  --library build/libengram_bitnet.so \
+  --attention-library build/libengram_attention.so
+
+engram benchmark-native-bitnet-generation \
+  --model work/native_bitnet/model.engram-bitnet \
+  --out reports/generated/native-generation.json \
+  --lengths 33 128 256 --max-tokens 2 \
+  --mlp-library build/libengram_bitnet.so \
+  --attention-library build/libengram_attention.so
 ```
 
 The compiler copies only config/tokenizer assets and non-MLP tensors, embeds
@@ -210,5 +221,7 @@ the packed phase-stream artifact, and seals the result with checksums. The
 runtime creates the transformer without initially allocating parameters,
 loads the packaged non-MLP state, installs the native MLP module in every
 layer, rejects any remaining unmaterialized parameter, and then performs
-cached autoregressive generation. It does not consult the source checkpoint
-directory after compilation.
+autoregressive generation. With `--bounded-attention`, it creates one
+persistent native attention state per layer, applies RoPE from explicit
+absolute positions, and keeps the Transformers dense KV cache disabled. It
+does not consult the source checkpoint directory after compilation.

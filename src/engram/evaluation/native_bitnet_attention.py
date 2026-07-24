@@ -44,6 +44,7 @@ def _attention_replacement_class():
             page_size: int = 8,
             page_bound: str = "sphere",
             sink_tokens: int = 2,
+            native_attention_library: str | Path | None = None,
         ) -> None:
             super().__init__()
             if mode not in {
@@ -54,6 +55,7 @@ def _attention_replacement_class():
                 "indexed_hybrid",
                 "bounded_hybrid",
                 "streaming_hybrid",
+                "native_streaming",
             }:
                 raise ValueError(f"unsupported attention replacement mode: {mode}")
             if local_window <= 0 or retrieval_top_k <= 0:
@@ -104,6 +106,7 @@ def _attention_replacement_class():
             self.page_size = int(page_size)
             self.page_bound = page_bound
             self.sink_tokens = int(sink_tokens)
+            self.native_attention_library = native_attention_library
             generator = torch.Generator(device="cpu")
             generator.manual_seed(int(lsh_seed) + 104729 * int(self.layer_idx))
             projections = torch.randn(
@@ -748,6 +751,51 @@ def _attention_replacement_class():
             self.index_stats = stats
             return torch.stack(output_batches)
 
+        def _native_streaming(self, query, key, value):
+            from engram.runtime.native_attention import NativeStreamingAttention
+
+            output_batches = []
+            totals: dict[str, int] = {}
+            for batch_index in range(query.shape[0]):
+                batch_rows = []
+                with NativeStreamingAttention(
+                    query_heads=query.shape[1],
+                    key_value_heads=key.shape[1],
+                    head_dimension=query.shape[-1],
+                    local_window=self.local_window,
+                    older_candidates=self.retrieval_candidates,
+                    older_top_k=self.retrieval_top_k,
+                    sink_tokens=self.sink_tokens,
+                    scale=self.scaling,
+                    library=self.native_attention_library,
+                ) as attention:
+                    for position in range(query.shape[2]):
+                        output, metrics = attention.step(
+                            query[batch_index, :, position].float().cpu().numpy(),
+                            key[batch_index, :, position].float().cpu().numpy(),
+                            value[batch_index, :, position].float().cpu().numpy(),
+                        )
+                        batch_rows.append(torch.from_numpy(output))
+                        for name in (
+                            "candidate_key_bytes",
+                            "selected_value_bytes",
+                            "local_kv_bytes",
+                        ):
+                            totals[name] = totals.get(name, 0) + int(
+                                getattr(metrics, name)
+                            )
+                        totals["state_bytes"] = max(
+                            totals.get("state_bytes", 0),
+                            int(metrics.state_bytes),
+                        )
+                        totals["scratch_bytes"] = max(
+                            totals.get("scratch_bytes", 0),
+                            int(metrics.scratch_bytes),
+                        )
+                output_batches.append(torch.stack(batch_rows, dim=1))
+            self.index_stats = totals
+            return torch.stack(output_batches).to(query.device)
+
         def forward(
             self,
             hidden_states,
@@ -771,8 +819,11 @@ def _attention_replacement_class():
                 key,
                 *position_embeddings,
             )
-            key = repeat_kv(key, self.num_key_value_groups)
-            value = repeat_kv(value, self.num_key_value_groups)
+            native_key = key
+            native_value = value
+            if self.mode != "native_streaming":
+                key = repeat_kv(key, self.num_key_value_groups)
+                value = repeat_kv(value, self.num_key_value_groups)
             if self.mode == "local":
                 output, weights = self._local(query, key, value, attention_mask)
             elif self.mode == "recurrent":
@@ -789,6 +840,9 @@ def _attention_replacement_class():
                 weights = None
             elif self.mode == "streaming_hybrid":
                 output = self._streaming_local_retrieval(query, key, value)
+                weights = None
+            elif self.mode == "native_streaming":
+                output = self._native_streaming(query, native_key, native_value)
                 weights = None
             else:
                 local, local_weights = self._local(
@@ -882,6 +936,7 @@ def evaluate_native_bitnet_attention_substitution(
     page_size: int = 8,
     page_bound: str = "sphere",
     sink_tokens: int = 2,
+    native_attention_library: str | Path | None = None,
 ) -> dict[str, Any]:
     """Evaluate trained all-layer attention replacements after the MLP pass."""
 
@@ -967,6 +1022,7 @@ def evaluate_native_bitnet_attention_substitution(
                         page_size=page_size,
                         page_bound=page_bound,
                         sink_tokens=sink_tokens,
+                        native_attention_library=native_attention_library,
                     )
                 runtime.kernel.clear_metrics()
                 with torch.inference_mode():
@@ -1002,13 +1058,14 @@ def evaluate_native_bitnet_attention_substitution(
                     "indexed_hybrid",
                     "bounded_hybrid",
                     "streaming_hybrid",
+                    "native_streaming",
                 }:
                     totals: dict[str, int | float] = {}
                     for index in selected_layers:
                         replacement = runtime.model.model.layers[index].self_attn
                         for name, value in replacement.index_stats.items():
                             totals[name] = int(totals.get(name, 0)) + int(value)
-                    if mode != "streaming_hybrid":
+                    if mode not in {"streaming_hybrid", "native_streaming"}:
                         totals["oracle_recall"] = (
                             1.0
                             if mode == "bounded_hybrid"
@@ -1057,9 +1114,9 @@ def evaluate_native_bitnet_attention_substitution(
     semantic_confirmation_passed = len(results) == 1 and all(
         next(iter(semantic_checks.values())).values()
     )
-    bounded_attention_confirmation_passed = (
-        semantic_confirmation_passed and next(iter(results)) == "streaming_hybrid"
-    )
+    bounded_attention_confirmation_passed = semantic_confirmation_passed and next(
+        iter(results)
+    ) in {"streaming_hybrid", "native_streaming"}
     dense_slots = sum(range(1, tokens_per_sequence + 1))
     selected_slots = sum(
         min(position + 1, local_window)
@@ -1080,6 +1137,7 @@ def evaluate_native_bitnet_attention_substitution(
     indexed_traffic = None
     bounded_traffic = None
     streaming_traffic = None
+    native_streaming_traffic = None
     if "indexed_hybrid" in results:
         index = results["indexed_hybrid"]["index"]
         local_slots = (
@@ -1211,6 +1269,29 @@ def evaluate_native_bitnet_attention_substitution(
             "candidate_slots_unique_kv_group": index["candidate_slots_unique_kv_group"],
             "selected_slots_unique_kv_group": index["selected_slots_unique_kv_group"],
         }
+    if "native_streaming" in results:
+        index = results["native_streaming"]["index"]
+        native_total = (
+            int(index["local_kv_bytes"])
+            + int(index["candidate_key_bytes"])
+            + int(index["selected_value_bytes"])
+        )
+        native_dense = (
+            evaluated_layer_count
+            * sequence_count
+            * dense_slots
+            * num_attention_heads
+            * head_dim
+            * 2
+            * 4
+        )
+        native_streaming_traffic = {
+            **index,
+            "dtype": "float32",
+            "total_logical_read_bytes": native_total,
+            "dense_query_head_logical_read_bytes": native_dense,
+            "fraction_of_dense_query_head_reads": native_total / native_dense,
+        }
     report = {
         "schema_version": 1,
         "experiment": "native_bitnet_milestone_3_attention_substitution",
@@ -1268,6 +1349,10 @@ def evaluate_native_bitnet_attention_substitution(
                     "exact local window plus fixed attention sinks and a "
                     "bounded online cumulative-attention heavy-hitter cache"
                 ),
+                "native_streaming": (
+                    "stateful native C++ W/C/K sink and heavy-hitter cache "
+                    "with exact candidate reranking"
+                ),
             },
         },
         "head_analysis": head_analysis,
@@ -1311,6 +1396,7 @@ def evaluate_native_bitnet_attention_substitution(
             "indexed_hybrid": indexed_traffic,
             "bounded_hybrid": bounded_traffic,
             "streaming_hybrid": streaming_traffic,
+            "native_streaming": native_streaming_traffic,
             "hardware_dram_counter_measured": False,
         },
         "decision": (
@@ -1330,7 +1416,7 @@ def evaluate_native_bitnet_attention_substitution(
                 "not native latency or hardware DRAM traffic. The current "
                 "per-head cache implementation is a Python evaluation reference."
             )
-            if "streaming_hybrid" in results
+            if {"streaming_hybrid", "native_streaming"} & set(results)
             else (
                 "This run measures deterministic attention operators on the "
                 "qualified MLP package. Scan-based exact retrieval cannot "

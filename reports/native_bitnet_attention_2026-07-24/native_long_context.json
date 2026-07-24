@@ -1,0 +1,64 @@
+{
+  "bounded_state_confirmed": true,
+  "configuration": {
+    "dtype": "float32",
+    "head_dimension": 128,
+    "key_value_heads": 5,
+    "local_window": 16,
+    "older_candidates": 8,
+    "older_top_k": 4,
+    "query_heads": 20,
+    "seed": 20260724,
+    "sink_tokens": 2
+  },
+  "experiment": "native_streaming_attention_long_context",
+  "hardware_dram_counter_measured": false,
+  "results": [
+    {
+      "active_older_entries": 160,
+      "bounded_logical_read_bytes": 10096640,
+      "dense_logical_read_bytes": 11489280,
+      "elapsed_seconds": 0.009462191999773495,
+      "fraction_of_dense_logical_reads": 0.8787878787878788,
+      "length": 33,
+      "scratch_bytes": 240,
+      "state_bytes": 249248,
+      "tokens_per_second": 3487.5639810299717
+    },
+    {
+      "active_older_entries": 160,
+      "bounded_logical_read_bytes": 52899840,
+      "dense_logical_read_bytes": 169082880,
+      "elapsed_seconds": 0.03851588699762942,
+      "fraction_of_dense_logical_reads": 0.31286337209302323,
+      "length": 128,
+      "scratch_bytes": 240,
+      "state_bytes": 249248,
+      "tokens_per_second": 3323.3039656565134
+    },
+    {
+      "active_older_entries": 160,
+      "bounded_logical_read_bytes": 225914880,
+      "dense_logical_read_bytes": 2689597440,
+      "elapsed_seconds": 0.1553887810005108,
+      "fraction_of_dense_logical_reads": 0.08399579678362573,
+      "length": 512,
+      "scratch_bytes": 240,
+      "state_bytes": 249248,
+      "tokens_per_second": 3294.961172250376
+    },
+    {
+      "active_older_entries": 160,
+      "bounded_logical_read_bytes": 917975040,
+      "dense_logical_read_bytes": 42970644480,
+      "elapsed_seconds": 0.6547061059973203,
+      "fraction_of_dense_logical_reads": 0.02136284086749634,
+      "length": 2048,
+      "scratch_bytes": 240,
+      "state_bytes": 249248,
+      "tokens_per_second": 3128.121123722012
+    }
+  ],
+  "schema_version": 1,
+  "scope_caveat": "Logical reads are counted at the query-head kernel interface. Elapsed time includes ctypes and deterministic input generation; this is not yet an end-to-end transformer benchmark."
+}

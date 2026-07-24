@@ -221,7 +221,7 @@ scientific exit criterion has passed.
 |---|---|---|
 | 1. Inspection, tracing, exact MLP decomposition, oracle experiment | Complete | Complete for the fixture and exercised on SmolLM2 |
 | 2. Semantic package, routing, quantization, Python substitution runtime | Native-BitNet phase artifact, direct CPU kernel, package compiler, validator, and generation runtime implemented | **Low-bit-native track passes** the frozen causal/cold-byte gate and exact package parity; dense-Llama track remains blocked |
-| 3. Local/recurrent/retrieval attention and hybrid episodic memory | Trained-model local/recurrent/retrieval operators plus bounded sink/heavy-hitter streaming hybrid implemented | **Bounded trained-model confirmation passes** at W=16, C=8, K=4; native latency and long-context hardware traffic remain |
+| 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid plus stateful C++20 cache/rerank kernel implemented | **Frozen trained-model confirmation passes**; native randomized parity and bounded-state scaling pass; incremental generation and hardware counters remain |
 | 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Prototype implemented | Controller remains initialized rather than successfully distilled |
 | 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and has exact source/package output parity |
 | 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime plus direct memory-mapped BitNet MLP kernel implemented | Python transformer generation uses the native MLP kernel; a full C++ transformer and hardware-counter traffic remain |
@@ -263,9 +263,29 @@ six cumulative-attention heavy hitters, exact-reranking eight old keys to four
 values. On frozen records 8–15 it passes every semantic threshold: KL 0.01409,
 top-1 0.94141, NLL delta −0.00613, and hidden L2 0.08559 over 256 positions.
 Its old-context state and reads are constant in context length. At the short
-33-token test point it still models at 93.34% of dense KV traffic, and its
-per-head implementation is Python. The next work is a native cache/rerank
-kernel plus long-context logical and hardware-counter traffic validation.
+33-token test point it still models at 93.34% of dense KV traffic.
+
+The same state machine now has a stateful C++20 implementation and C ABI.
+Randomized 40-token native/NumPy parity passes through eviction and
+heavy-hitter replacement. Trained development substitution also passes
+quality (KL 0.00528, top-1 0.96875, NLL +0.01239, hidden L2 0.04210). The
+standalone native benchmark holds state at 249,248 bytes per layer and reduces
+logical reads to 31.29%/8.40%/2.14% of dense at context
+128/512/2,048.
+
+Incremental compiled-package integration is now complete. The runtime resets
+one persistent native cache per layer and batch item, processes prompt tokens
+in order, advances absolute positions during decode, applies normal BitNet
+RoPE at those positions, and does not allocate a Hugging Face KV cache.
+Full-sequence and uneven-chunk execution are bit-identical for the bounded
+operator, and a position discontinuity is rejected. Complete generation at
+33/128/256 prompt tokens holds all-layer attention state at 7,477,440 bytes
+and uses 86.55%/31.07%/16.35% of dense logical attention reads. It processes
+about 0.87/0.98/1.01 input positions per second. Only 5.69/8.97/12.65 seconds
+of the corresponding 39.06/131.97/255.64 seconds occur inside packed MLP
+calls, so the next systems work should move Q/K/V/output projection and cache
+orchestration across the native boundary and avoid a full vocabulary
+projection on every decode step. Hardware DRAM counters remain unmeasured.
 
 CUDA remains an optional training accelerator only; the serialized format and
 inference mechanism are CPU-native. Repeating IVF, candidate-count,

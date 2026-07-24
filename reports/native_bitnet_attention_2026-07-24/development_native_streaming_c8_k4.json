@@ -1,0 +1,379 @@
+{
+  "attention_traffic_model": {
+    "bf16_bytes_per_element": 2,
+    "bounded_hybrid": null,
+    "current_exact_hybrid_bytes": 39590400,
+    "current_exact_hybrid_fraction_of_dense_kv": 0.9188948306595366,
+    "dense_kv_bytes": 43084800,
+    "dense_visible_kv_slots": 16830,
+    "evaluated_layers": 30,
+    "exact_topk_key_scan_bytes": 21542400,
+    "hardware_dram_counter_measured": false,
+    "head_dim": 128,
+    "hybrid_selected_kv_slots": 470,
+    "indexed_hybrid": null,
+    "indexed_retrieval_implemented": false,
+    "num_attention_heads": 20,
+    "num_key_value_heads": 5,
+    "selected_value_bytes": 18048000,
+    "streaming_hybrid": null,
+    "native_streaming": {
+      "candidate_key_bytes": 33177600,
+      "dense_query_head_logical_read_bytes": 344678400,
+      "dtype": "float32",
+      "fraction_of_dense_query_head_reads": 0.8787878787878788,
+      "local_kv_bytes": 250675200,
+      "scratch_bytes": 7200,
+      "selected_value_bytes": 19046400,
+      "state_bytes": 7477440,
+      "total_logical_read_bytes": 302899200
+    }
+  },
+  "baseline": {
+    "elapsed_seconds": 34.78906031200313,
+    "mlp_calls": 30,
+    "nll": 4.453737735748291
+  },
+  "bounded_attention_confirmation_passed": false,
+  "configuration": {
+    "layers": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29
+    ],
+    "local_window": 16,
+    "lsh_bits": 8,
+    "lsh_radius": 1,
+    "lsh_seed": 314159,
+    "lsh_tables": 4,
+    "modes": [
+      "native_streaming"
+    ],
+    "older_weight": 0.5,
+    "operator_contracts": {
+      "bounded_hybrid": "exact page upper bounds with branch-and-bound top-k, then one softmax over local and selected older keys",
+      "hybrid": "one exact sparse softmax over local keys and exact older top-k keys",
+      "indexed_hybrid": "online multi-table sign-LSH postings, exact candidate reranking, then one softmax over local and selected older keys",
+      "local": "exact causal softmax over the bounded local window",
+      "native_streaming": "stateful native C++ W/C/K sink and heavy-hitter cache with exact candidate reranking",
+      "recurrent": "causal ELU+1 normalized recurrent linear attention",
+      "retrieval": "local softmax plus separately normalized exact older top-k",
+      "streaming_hybrid": "exact local window plus fixed attention sinks and a bounded online cumulative-attention heavy-hitter cache"
+    },
+    "page_bound": "sphere",
+    "page_size": 8,
+    "recurrent_decay": 0.99,
+    "retrieval_candidates": 8,
+    "retrieval_top_k": 4,
+    "sink_tokens": 2
+  },
+  "dataset": {
+    "path": "/home/dean/repos/engram/tests/fixtures/confirmation_expanded.jsonl",
+    "prediction_positions": 32,
+    "record_offset": 0,
+    "role": "development_attention_evaluation",
+    "selection_rule": "1_nonempty_records_in_file_order_after_offset_0",
+    "sequences": 1,
+    "sha256": "ddca79850dbd3d97935d969f84d22983ce76517e785febd2911a53545d9bafd4",
+    "tokenizer_policy": "pinned_model_tokenizer_with_mistral_regex_fix",
+    "tokens_per_sequence": 33,
+    "unique_sequences": 1
+  },
+  "decision": "measure_before_attention_distillation",
+  "experiment": "native_bitnet_milestone_3_attention_substitution",
+  "head_analysis": {
+    "layers": [
+      {
+        "layer": 0,
+        "maximum_head_older_mass": 0.9994955658912659,
+        "mean_attention_entropy": 1.0909250974655151,
+        "mean_older_mass": 0.4410211145877838,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.800000011920929
+      },
+      {
+        "layer": 1,
+        "maximum_head_older_mass": 0.6085205078125,
+        "mean_attention_entropy": 1.651629090309143,
+        "mean_older_mass": 0.26390784978866577,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.6499999761581421
+      },
+      {
+        "layer": 2,
+        "maximum_head_older_mass": 0.3262996971607208,
+        "mean_attention_entropy": 1.4285639524459839,
+        "mean_older_mass": 0.18011489510536194,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.3499999940395355
+      },
+      {
+        "layer": 3,
+        "maximum_head_older_mass": 0.450395405292511,
+        "mean_attention_entropy": 1.7193368673324585,
+        "mean_older_mass": 0.19183877110481262,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.3499999940395355
+      },
+      {
+        "layer": 4,
+        "maximum_head_older_mass": 0.5269036889076233,
+        "mean_attention_entropy": 1.5069676637649536,
+        "mean_older_mass": 0.2717846632003784,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.6499999761581421
+      },
+      {
+        "layer": 5,
+        "maximum_head_older_mass": 0.7007866501808167,
+        "mean_attention_entropy": 1.3072857856750488,
+        "mean_older_mass": 0.31396472454071045,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.6499999761581421
+      },
+      {
+        "layer": 6,
+        "maximum_head_older_mass": 0.6663667559623718,
+        "mean_attention_entropy": 1.3069950342178345,
+        "mean_older_mass": 0.30824628472328186,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.75
+      },
+      {
+        "layer": 7,
+        "maximum_head_older_mass": 0.8332294225692749,
+        "mean_attention_entropy": 1.38765549659729,
+        "mean_older_mass": 0.40389323234558105,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.949999988079071
+      },
+      {
+        "layer": 8,
+        "maximum_head_older_mass": 0.7885635495185852,
+        "mean_attention_entropy": 1.1312183141708374,
+        "mean_older_mass": 0.2938689589500427,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.699999988079071
+      },
+      {
+        "layer": 9,
+        "maximum_head_older_mass": 0.6034265160560608,
+        "mean_attention_entropy": 1.4612457752227783,
+        "mean_older_mass": 0.25893694162368774,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.6000000238418579
+      },
+      {
+        "layer": 10,
+        "maximum_head_older_mass": 0.6303668022155762,
+        "mean_attention_entropy": 1.22636878490448,
+        "mean_older_mass": 0.3421423137187958,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.800000011920929
+      },
+      {
+        "layer": 11,
+        "maximum_head_older_mass": 0.6047394871711731,
+        "mean_attention_entropy": 1.4542728662490845,
+        "mean_older_mass": 0.3746406137943268,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.8999999761581421
+      },
+      {
+        "layer": 12,
+        "maximum_head_older_mass": 0.5497320890426636,
+        "mean_attention_entropy": 1.435677409172058,
+        "mean_older_mass": 0.3641842007637024,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.8999999761581421
+      },
+      {
+        "layer": 13,
+        "maximum_head_older_mass": 0.5243957042694092,
+        "mean_attention_entropy": 1.4782477617263794,
+        "mean_older_mass": 0.23192425072193146,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.550000011920929
+      },
+      {
+        "layer": 14,
+        "maximum_head_older_mass": 0.9429498314857483,
+        "mean_attention_entropy": 1.1862560510635376,
+        "mean_older_mass": 0.4333617687225342,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.949999988079071
+      },
+      {
+        "layer": 15,
+        "maximum_head_older_mass": 0.5740132331848145,
+        "mean_attention_entropy": 1.5170750617980957,
+        "mean_older_mass": 0.32309165596961975,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.8500000238418579
+      },
+      {
+        "layer": 16,
+        "maximum_head_older_mass": 0.7097166776657104,
+        "mean_attention_entropy": 1.4377022981643677,
+        "mean_older_mass": 0.4054853022098541,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.8999999761581421
+      },
+      {
+        "layer": 17,
+        "maximum_head_older_mass": 0.7975082397460938,
+        "mean_attention_entropy": 1.5130695104599,
+        "mean_older_mass": 0.4309901297092438,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.949999988079071
+      },
+      {
+        "layer": 18,
+        "maximum_head_older_mass": 0.7237351536750793,
+        "mean_attention_entropy": 1.5697585344314575,
+        "mean_older_mass": 0.3593626320362091,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.8500000238418579
+      },
+      {
+        "layer": 19,
+        "maximum_head_older_mass": 0.5892695188522339,
+        "mean_attention_entropy": 1.4396843910217285,
+        "mean_older_mass": 0.34011775255203247,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.8500000238418579
+      },
+      {
+        "layer": 20,
+        "maximum_head_older_mass": 0.7064769864082336,
+        "mean_attention_entropy": 1.215166687965393,
+        "mean_older_mass": 0.4281767010688782,
+        "retrieval_head_fraction_at_20_percent_older_mass": 1.0
+      },
+      {
+        "layer": 21,
+        "maximum_head_older_mass": 0.9620468020439148,
+        "mean_attention_entropy": 1.100245475769043,
+        "mean_older_mass": 0.35474950075149536,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.949999988079071
+      },
+      {
+        "layer": 22,
+        "maximum_head_older_mass": 0.7379096746444702,
+        "mean_attention_entropy": 1.403993010520935,
+        "mean_older_mass": 0.3641110956668854,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.8500000238418579
+      },
+      {
+        "layer": 23,
+        "maximum_head_older_mass": 0.5892094373703003,
+        "mean_attention_entropy": 1.3627218008041382,
+        "mean_older_mass": 0.4270118176937103,
+        "retrieval_head_fraction_at_20_percent_older_mass": 1.0
+      },
+      {
+        "layer": 24,
+        "maximum_head_older_mass": 0.790111780166626,
+        "mean_attention_entropy": 1.3476845026016235,
+        "mean_older_mass": 0.4419328570365906,
+        "retrieval_head_fraction_at_20_percent_older_mass": 1.0
+      },
+      {
+        "layer": 25,
+        "maximum_head_older_mass": 0.7197698950767517,
+        "mean_attention_entropy": 1.5888259410858154,
+        "mean_older_mass": 0.3781140446662903,
+        "retrieval_head_fraction_at_20_percent_older_mass": 1.0
+      },
+      {
+        "layer": 26,
+        "maximum_head_older_mass": 0.6134113669395447,
+        "mean_attention_entropy": 1.494598150253296,
+        "mean_older_mass": 0.3818616271018982,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.949999988079071
+      },
+      {
+        "layer": 27,
+        "maximum_head_older_mass": 0.6622011661529541,
+        "mean_attention_entropy": 1.5061280727386475,
+        "mean_older_mass": 0.35516539216041565,
+        "retrieval_head_fraction_at_20_percent_older_mass": 1.0
+      },
+      {
+        "layer": 28,
+        "maximum_head_older_mass": 0.6683911085128784,
+        "mean_attention_entropy": 1.6433210372924805,
+        "mean_older_mass": 0.33525073528289795,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.699999988079071
+      },
+      {
+        "layer": 29,
+        "maximum_head_older_mass": 0.6153690218925476,
+        "mean_attention_entropy": 1.7841538190841675,
+        "mean_older_mass": 0.343791663646698,
+        "retrieval_head_fraction_at_20_percent_older_mass": 0.800000011920929
+      }
+    ],
+    "local_window": 16,
+    "mean_retrieval_head_fraction": 0.8066666642824809
+  },
+  "package": "/home/dean/repos/engram/work/native_bitnet/model.engram-bitnet",
+  "schema_version": 1,
+  "scope_caveat": "The native streaming hybrid retains a fixed local window, attention sinks, and bounded heavy-hitter cache; it never scans evicted keys. This establishes trained-model development quality and native state-machine execution, not frozen confirmation or hardware DRAM traffic.",
+  "semantic_checks": {
+    "native_streaming": {
+      "final_hidden_relative_l2": true,
+      "nll_delta": true,
+      "prediction_positions": false,
+      "teacher_student_kl": true,
+      "teacher_top1_agreement": true,
+      "unique_sequences": false
+    }
+  },
+  "semantic_confirmation_passed": false,
+  "status": "trained_model_development_evaluation",
+  "substitutions": {
+    "native_streaming": {
+      "elapsed_seconds": 34.277005005998944,
+      "final_hidden": {
+        "exact": false,
+        "maximum_absolute_error": 0.087890625,
+        "mean_absolute_error": 0.0016988657880574465,
+        "relative_l2": 0.042095206677913666
+      },
+      "index": {
+        "candidate_key_bytes": 33177600,
+        "local_kv_bytes": 250675200,
+        "scratch_bytes": 7200,
+        "selected_value_bytes": 19046400,
+        "state_bytes": 7477440
+      },
+      "logits": {
+        "exact": false,
+        "maximum_absolute_error": 1.89776611328125,
+        "mean_absolute_error": 0.13362084329128265,
+        "mean_kl_divergence": 0.005278495606034994,
+        "relative_l2": 0.03914798051118851,
+        "top1_agreement": 0.96875
+      },
+      "mlp_calls": 30,
+      "nll_delta": 0.012393951416015625
+    }
+  },
+  "thresholds": {
+    "maximum_final_hidden_relative_l2": 0.1,
+    "maximum_nll_delta": 0.05,
+    "maximum_teacher_student_kl": 0.05,
+    "minimum_index_oracle_recall": 0.95,
+    "minimum_prediction_positions": 256,
+    "minimum_teacher_top1_agreement": 0.9,
+    "minimum_unique_sequences": 8
+  }
+}

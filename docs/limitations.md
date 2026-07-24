@@ -19,6 +19,15 @@
   original attention, normalization, embedding, and output tensors and drives
   them through a Python Transformers shell. Only the MLP is a native C++
   kernel; this is not yet a complete native transformer runtime.
+- Bounded attention is integrated into complete package generation and avoids
+  the dense Hugging Face KV cache, but Q/K/V and output projections still run
+  in PyTorch and every token crosses the Python/ctypes boundary at every
+  layer. At a 256-token prompt, attention state is fixed at 7,477,440 bytes
+  and modeled reads are 16.35% of dense, yet complete processing is only about
+  one position per second. Logical byte counts are algorithmic float32
+  interface counts, not hardware DRAM events. The long-context prompt is a
+  deterministic repeated benchmark string and is not additional quality
+  evidence.
 - The grouped-ternary result uses an exact serialized/reloaded artifact and
   clears the evidence floor, but it is not eligible for more training under
   its frozen rule. It closes 63.37%/62.77% of the remaining KL/NLL gaps and
@@ -104,10 +113,12 @@
 - Native-BitNet trained-teacher attention analysis and substitution now run.
   The promoted bounded hybrid retains 16 local, two sink, and six heavy-hitter
   entries, reranks eight old keys to four values, and passes frozen semantics.
-  Its Python reference is slow and the 33-token protocol still models at
-  93.34% of dense KV traffic; no native attention kernel, long-context hardware
-  measurement, or DRAM-counter evidence exists yet. The shared controller
-  remains initialized rather than distilled from source residual trajectories.
+  The 33-token protocol still models at 93.34% of dense KV traffic. A native
+  state/cache/rerank kernel and standalone long-context logical-read benchmark
+  now exist, but the kernel is not wired into incremental package generation.
+  Its benchmark includes ctypes/input-generation overhead and no hardware DRAM
+  counters. The shared controller remains initialized rather than distilled
+  from source residual trajectories.
 - Python and native generation work without source transformer tensors, but generated fixture
   token IDs are not meaningful language.
 - Compiled runtimes consume quantized-only semantic arrays and scan only IVF-posted key codes.

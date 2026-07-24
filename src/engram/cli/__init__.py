@@ -24,6 +24,12 @@ from engram.evaluation.native_bitnet_kernel import (
 from engram.evaluation.native_bitnet_attention import (
     evaluate_native_bitnet_attention_substitution,
 )
+from engram.evaluation.native_attention_benchmark import (
+    benchmark_native_streaming_attention,
+)
+from engram.evaluation.native_bitnet_generation_benchmark import (
+    benchmark_native_bitnet_generation,
+)
 from engram.evaluation.router_sweep import evaluate_rank_router_regularization_sweep
 from engram.evaluation.dip_sweep import evaluate_dip_exact_completion_sweep
 from engram.evaluation.correction_sweep import evaluate_correction_capsule_sweep
@@ -301,6 +307,7 @@ def _parser() -> argparse.ArgumentParser:
             "indexed_hybrid",
             "bounded_hybrid",
             "streaming_hybrid",
+            "native_streaming",
         ),
         default=("local", "recurrent", "retrieval", "hybrid"),
     )
@@ -319,6 +326,43 @@ def _parser() -> argparse.ArgumentParser:
         "--page-bound", choices=("box", "sphere"), default="sphere"
     )
     bitnet_attention.add_argument("--sink-tokens", type=int, default=2)
+    bitnet_attention.add_argument("--attention-library", type=Path)
+
+    attention_benchmark = commands.add_parser(
+        "benchmark-native-attention",
+        help="benchmark the bounded native attention cache at increasing contexts",
+    )
+    attention_benchmark.add_argument("--out", required=True, type=Path)
+    attention_benchmark.add_argument("--library", type=Path)
+    attention_benchmark.add_argument(
+        "--lengths", nargs="+", type=int, default=(33, 128, 512, 2048)
+    )
+    attention_benchmark.add_argument("--local-window", type=int, default=16)
+    attention_benchmark.add_argument("--candidates", type=int, default=8)
+    attention_benchmark.add_argument("--top-k", type=int, default=4)
+    attention_benchmark.add_argument("--sink-tokens", type=int, default=2)
+
+    generation_benchmark = commands.add_parser(
+        "benchmark-native-bitnet-generation",
+        help="benchmark complete bounded-attention generation from a BitNet package",
+    )
+    generation_benchmark.add_argument("--model", required=True, type=Path)
+    generation_benchmark.add_argument("--out", required=True, type=Path)
+    generation_benchmark.add_argument(
+        "--prompt",
+        default="The purpose of a semantic memory system is",
+    )
+    generation_benchmark.add_argument(
+        "--lengths", nargs="+", type=int, default=(33, 128, 256)
+    )
+    generation_benchmark.add_argument("--max-tokens", type=int, default=4)
+    generation_benchmark.add_argument("--mlp-library", type=Path)
+    generation_benchmark.add_argument("--attention-library", type=Path)
+    generation_benchmark.add_argument("--threads", type=int)
+    generation_benchmark.add_argument("--local-window", type=int, default=16)
+    generation_benchmark.add_argument("--candidates", type=int, default=8)
+    generation_benchmark.add_argument("--top-k", type=int, default=4)
+    generation_benchmark.add_argument("--sink-tokens", type=int, default=2)
 
     compile_command = commands.add_parser(
         "compile", help="compile a runnable Engram package"
@@ -368,6 +412,12 @@ def _parser() -> argparse.ArgumentParser:
     generate_bitnet.add_argument("--max-tokens", type=int, default=16)
     generate_bitnet.add_argument("--library", type=Path)
     generate_bitnet.add_argument("--threads", type=int)
+    generate_bitnet.add_argument("--bounded-attention", action="store_true")
+    generate_bitnet.add_argument("--attention-library", type=Path)
+    generate_bitnet.add_argument("--local-window", type=int, default=16)
+    generate_bitnet.add_argument("--candidates", type=int, default=8)
+    generate_bitnet.add_argument("--top-k", type=int, default=4)
+    generate_bitnet.add_argument("--sink-tokens", type=int, default=2)
 
     validate = commands.add_parser(
         "validate", help="verify package checksums and deterministic generation"
@@ -1225,6 +1275,34 @@ def main(argv: Sequence[str] | None = None) -> int:
             page_size=args.page_size,
             page_bound=args.page_bound,
             sink_tokens=args.sink_tokens,
+            native_attention_library=args.attention_library,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "benchmark-native-attention":
+        result = benchmark_native_streaming_attention(
+            out=args.out,
+            library=args.library,
+            lengths=args.lengths,
+            local_window=args.local_window,
+            older_candidates=args.candidates,
+            older_top_k=args.top_k,
+            sink_tokens=args.sink_tokens,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "benchmark-native-bitnet-generation":
+        result = benchmark_native_bitnet_generation(
+            package=args.model,
+            out=args.out,
+            prompt=args.prompt,
+            lengths=args.lengths,
+            max_new_tokens=args.max_tokens,
+            mlp_library=args.mlp_library,
+            attention_library=args.attention_library,
+            threads=args.threads,
+            local_window=args.local_window,
+            older_candidates=args.candidates,
+            older_top_k=args.top_k,
+            sink_tokens=args.sink_tokens,
         )
         print(json.dumps(result, indent=2, sort_keys=True))
     elif args.command == "compile":
@@ -1314,7 +1392,21 @@ def main(argv: Sequence[str] | None = None) -> int:
             library=args.library,
             threads=args.threads,
         ) as runtime:
-            result = runtime.generate(args.prompt, max_new_tokens=args.max_tokens)
+            if args.bounded_attention:
+                result = runtime.generate_bounded(
+                    args.prompt,
+                    max_new_tokens=args.max_tokens,
+                    attention_library=args.attention_library,
+                    local_window=args.local_window,
+                    older_candidates=args.candidates,
+                    older_top_k=args.top_k,
+                    sink_tokens=args.sink_tokens,
+                )
+            else:
+                result = runtime.generate(
+                    args.prompt,
+                    max_new_tokens=args.max_tokens,
+                )
         print(result.text)
         print(
             json.dumps(
@@ -1326,6 +1418,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "mlp_elapsed_seconds": result.mlp_elapsed_seconds,
                     "scheduled_mlp_bytes": result.scheduled_mlp_bytes,
                     "maximum_scratch_bytes": result.maximum_scratch_bytes,
+                    "attention_mode": result.attention_mode,
+                    "attention_tokens_seen": result.attention_tokens_seen,
+                    "attention_logical_read_bytes": (
+                        result.attention_logical_read_bytes
+                    ),
+                    "attention_state_bytes": result.attention_state_bytes,
+                    "attention_scratch_bytes": result.attention_scratch_bytes,
                 },
                 indent=2,
             )
