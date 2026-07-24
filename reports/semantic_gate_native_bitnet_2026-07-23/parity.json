@@ -1,0 +1,157 @@
+{
+  "artifact_integrity": {
+    "expected_sha256": "4fcf598af4346d5391ba428e32ba1629daae2768b73ab6bf872d3f9fb300ab55",
+    "verification_requested": true,
+    "verified": true
+  },
+  "artifact_path": "/home/dean/repos/engram/work/native_bitnet/model.bitnet-records.bin",
+  "artifact_sha256": "4fcf598af4346d5391ba428e32ba1629daae2768b73ab6bf872d3f9fb300ab55",
+  "causal_parity": {
+    "artifact_dense_oracle_seconds": 2.9978075639955932,
+    "final_hidden": {
+      "exact": true,
+      "maximum_absolute_error": 0.0,
+      "mean_absolute_error": 0.0,
+      "relative_l2": 0.0
+    },
+    "input_ids": [
+      128000
+    ],
+    "logits": {
+      "exact": true,
+      "maximum_absolute_error": 0.0,
+      "mean_absolute_error": 0.0,
+      "mean_kl_divergence": 0.0,
+      "relative_l2": 0.0,
+      "top1_agreement": 1.0
+    },
+    "ran": true,
+    "reference_seconds": 3.033123721994343,
+    "scope": "one bounded CPU causal smoke sequence; the artifact path decodes to dense BF16 tensors and is a parity oracle, not the packed deployment kernel"
+  },
+  "combined_gate_status": "low_bit_native_smoke_pass_not_dense_llama_conversion",
+  "dense_llama_conversion_status": "not_applicable",
+  "execution": {
+    "device": "cpu",
+    "dtype": "bfloat16",
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+    "python": "3.11.5",
+    "reference_model_load_seconds": 3.1825274959992385,
+    "reference_weight_materialization": {
+      "already_materialized_modules": 0,
+      "converted_modules": 210,
+      "policy": "strictly decode official packed uint8 tensors when the installed Transformers build leaves AutoBitLinear weights unmaterialized",
+      "ternary_coefficients_materialized": 2084044800,
+      "wrapped_uint8_modules": 210
+    },
+    "torch": "2.5.1+cu121",
+    "torchdynamo_disabled": true
+  },
+  "limitations": [
+    "The causal sample is a mechanical parity smoke test, not the frozen multi-sequence confirmation corpus.",
+    "The evaluation module materializes dense BF16 matrices; native packed-kernel throughput remains unmeasured.",
+    "Passing this separate source track does not establish that a dense Llama checkpoint can be converted losslessly."
+  ],
+  "local_parity": {
+    "layers": [
+      0,
+      14,
+      29
+    ],
+    "metrics": {
+      "0": {
+        "exact": true,
+        "maximum_absolute_error": 0.0,
+        "mean_absolute_error": 0.0,
+        "relative_l2": 0.0
+      },
+      "14": {
+        "exact": true,
+        "maximum_absolute_error": 0.0,
+        "mean_absolute_error": 0.0,
+        "relative_l2": 0.0
+      },
+      "29": {
+        "exact": true,
+        "maximum_absolute_error": 0.0,
+        "mean_absolute_error": 0.0,
+        "relative_l2": 0.0
+      }
+    },
+    "passed": true,
+    "states": 2
+  },
+  "repository": "microsoft/bitnet-b1.58-2B-4T",
+  "resolved_revision": "04c3b9ad9361b824064a1f25ea60a8be9599b127",
+  "schema_version": 4,
+  "smoke_gate": {
+    "causal_exact": true,
+    "direct_packed_execution": false,
+    "local_exact": true,
+    "measured_hardware_traffic": false,
+    "passed": true,
+    "serialized_cold_bytes_within_limit": true
+  },
+  "source_model": "microsoft/bitnet-b1.58-2B-4T",
+  "source_model_path": "/home/dean/repos/engram/.cache/huggingface/models--microsoft--bitnet-b1.58-2B-4T/snapshots/04c3b9ad9361b824064a1f25ea60a8be9599b127",
+  "source_track": "low_bit_native",
+  "source_weight_integrity": {
+    "expected_sha256": "8143ae115ed6babe5e5ada8fb8c5b769d8f417802b2db042ad98b4f7ed73975b",
+    "official_verification_required": true,
+    "sha256_after_load": "8143ae115ed6babe5e5ada8fb8c5b769d8f417802b2db042ad98b4f7ed73975b",
+    "sha256_before_load": "8143ae115ed6babe5e5ada8fb8c5b769d8f417802b2db042ad98b4f7ed73975b",
+    "verified": true
+  },
+  "traffic": {
+    "accounting_policy": "the primary numerator is the exact cache-aligned serialized MLP artifact, including all ternary streams, BF16 projection scales, BF16 intermediate-normalization gains, headers, directory, and padding. Phase-segregated streams permit an exact dense schedule that charges every serialized cache line once; this remains a modelled cold-byte result until the direct kernel measures hardware traffic. The frozen denominator is ideal code-only dense-Q4 gate/up/down weights. The actual Hugging Face two-bit MLP payload is reported separately and is never substituted for the frozen denominator.",
+    "cache_line_bytes": 64,
+    "dense_q4_source_mlp_bytes": 796262400,
+    "directory_cache_aligned_bytes": 960,
+    "directory_entry_bytes": 32,
+    "directory_payload_bytes": 960,
+    "down_stream_bytes": 3538944,
+    "down_stream_offset": 7091840,
+    "elements_per_projection": 17694720,
+    "fraction_of_dense_q4": 0.400526941872428,
+    "fraction_of_hf_native_two_bit": 0.8002199594977846,
+    "gate_stream_bytes": 3538944,
+    "gate_stream_offset": 128,
+    "header_cache_aligned_bytes": 64,
+    "headroom_bytes_to_45_percent": 39393536,
+    "hf_native_two_bit_mlp_bytes": 398546100,
+    "hidden_size": 2560,
+    "independently_scattered_record_max_bytes": 1600,
+    "independently_scattered_record_max_cache_lines": 25,
+    "independently_scattered_records_bytes": 331780864,
+    "independently_scattered_records_fraction_of_dense_q4": 0.4166727752057613,
+    "independently_scattered_records_passes_45_percent_gate": true,
+    "intermediate_size": 6912,
+    "layer_block_bytes": 10630784,
+    "layer_cache_padding_bytes": 0,
+    "layer_count": 30,
+    "layer_header_bytes": 64,
+    "layer_internal_padding_bytes": 58,
+    "layer_metadata_aligned_bytes": 128,
+    "layer_payload_bytes": 10630784,
+    "layout": "native_bitnet_phase_base3_v1",
+    "measured_hardware_traffic": false,
+    "modelled_full_phase_schedule": "stream gate and up, then contiguous normalization gains, then transposed down; each serialized cache line is charged once",
+    "modelled_full_phase_schedule_bytes": 318924544,
+    "modelled_full_phase_schedule_fraction_of_dense_q4": 0.400526941872428,
+    "modelled_full_phase_schedule_passes_45_percent_gate": true,
+    "norm_stream_bytes": 13824,
+    "norm_stream_offset": 7078016,
+    "packed_bytes_per_record_vector": 512,
+    "packing": "five base-3 ternary digits per byte",
+    "projection_scale_bytes_per_layer": 6,
+    "record_layout": "logical records addressed across cache-aligned gate, up, ffn_sub_norm-gain, and transposed-down phase streams",
+    "record_payload_bytes": 1538,
+    "record_payload_bytes_per_layer": 10630656,
+    "serialized_artifact_bytes": 318924544,
+    "serialized_layout_passes_45_percent_gate": true,
+    "total_cold_bytes": 318924544,
+    "traffic_numerator_bytes": 318924544,
+    "up_stream_bytes": 3538944,
+    "up_stream_offset": 3539072
+  }
+}

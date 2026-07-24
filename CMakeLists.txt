@@ -10,6 +10,7 @@ add_library(engram_kernels STATIC
   native/src/dip.cpp
   native/src/episodic.cpp
   native/src/npy.cpp
+  native/src/native_bitnet.cpp
   native/src/package.cpp
   native/src/runtime.cpp
   native/src/semantic.cpp
@@ -26,6 +27,19 @@ target_include_directories(engram_kernels PUBLIC native/include)
 target_link_libraries(engram_kernels PUBLIC Threads::Threads)
 target_compile_features(engram_kernels PUBLIC cxx_std_20)
 target_compile_options(engram_kernels PRIVATE -Wall -Wextra -Wpedantic)
+set_target_properties(engram_kernels PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+add_library(engram_bitnet SHARED native/src/native_bitnet_c.cpp)
+target_link_libraries(engram_bitnet PRIVATE engram_kernels)
+target_compile_features(engram_bitnet PRIVATE cxx_std_20)
+target_compile_options(engram_bitnet PRIVATE -Wall -Wextra -Wpedantic)
+set_target_properties(engram_bitnet PROPERTIES OUTPUT_NAME engram_bitnet)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  # The Python evaluation environment may already have loaded an older Conda
+  # libstdc++. Keep the C ABI module self-contained so ctypes does not inherit
+  # that process-global GLIBCXX version constraint.
+  target_link_options(engram_bitnet PRIVATE -static-libstdc++ -static-libgcc)
+endif()
 
 add_executable(engram-native-info native/src/info.cpp)
 target_link_libraries(engram-native-info PRIVATE engram_kernels)

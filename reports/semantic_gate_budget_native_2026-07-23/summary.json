@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "snapshot_date": "2026-07-23",
+  "source_model": "HuggingFaceTB/SmolLM2-135M",
+  "experiment": "budget_native_grouped_ternary_qad",
+  "decision": "traffic_pass_quality_fail_stop_before_3m",
+  "representation": {
+    "layout": "budget_native_grouped_ternary_v1",
+    "layer_count": 30,
+    "hidden_size": 576,
+    "intermediate_size": 1536,
+    "packing": "five base-3 ternary coefficients per byte",
+    "group_size": 128,
+    "scale": "one non-learned FP16 scale per group with two least-squares refinements",
+    "serialized_mlp_bytes": 17173504,
+    "dense_ideal_q4_mlp_bytes": 39813120,
+    "physical_cold_mlp_traffic_fraction": 0.4313528806584362,
+    "headroom_bytes_to_45_percent": 742400
+  },
+  "training_protocol": {
+    "teacher": "untouched dense source model",
+    "student": "full-width grouped-ternary MLPs with float master weights used only during training",
+    "forward": "exact hard grouped-ternary decode with straight-through gradients",
+    "transition": "deepest-layer-first continual quantization for the first causal rung; hard-only continuation thereafter",
+    "losses": [
+      "local MLP-output normalized MSE",
+      "all-layer hidden-state normalized MSE",
+      "direct final-hidden normalized MSE",
+      "confidence-weighted teacher-to-student logit KL",
+      "teacher top-1 cross-entropy",
+      "ground-truth next-token cross-entropy"
+    ],
+    "coadaptation": "attention, normalization, tied embedding, and output head replace already-resident weights and add no MLP cold-read bytes",
+    "checkpoint": "device-neutral parameters, optimizer state, and history",
+    "validation": "hard MLP weights and coadapted backbone serialized and independently reloaded before scoring"
+  },
+  "formal_gate": {
+    "maximum_teacher_student_kl": 0.05,
+    "minimum_teacher_top1_agreement": 0.9,
+    "maximum_nll_delta": 0.05,
+    "maximum_final_hidden_relative_l2": 0.1,
+    "minimum_unique_sequences": 8,
+    "minimum_prediction_positions": 256,
+    "maximum_physical_cold_mlp_traffic_fraction": 0.45
+  },
+  "one_million_position_result": {
+    "training_records": 8192,
+    "training_record_offset": 560,
+    "training_input_positions": 1014225,
+    "training_next_token_positions": 1006033,
+    "validation_sequences": 16,
+    "validation_input_positions": 507,
+    "validation_next_token_positions": 491,
+    "teacher_student_kl": 2.284363083624852,
+    "teacher_top1_agreement": 0.319755600814664,
+    "nll_delta": 2.277037303352277,
+    "final_hidden_relative_l2": 0.6036118082423146,
+    "final_hidden_cosine": 0.789054181423843,
+    "local_mlp_relative_l2": 1.021073503437031,
+    "physical_cold_mlp_traffic_fraction": 0.4313528806584362,
+    "serialized_reloaded": true,
+    "mlp_artifact_sha256": "7a3ed151d64e327f10321702b569fe0084e447cc0639209881c96f1cf3296fa1",
+    "backbone_artifact_sha256": "ac94647952ecb1f2d658714d1fb770902e76bc6acf47895219fa6e19bba451dc",
+    "report_sha256": "af988fec390aa430eb6a6f6aeadc9c229feb69e30aa8d34681d50c201ee40ef2"
+  },
+  "frozen_one_million_progression_rule": {
+    "baseline": "64-step head-coadaptation checkpoint",
+    "required_remaining_gap_closure_fraction": 0.5,
+    "checks": {
+      "teacher_student_kl": {
+        "baseline": 6.149546446236962,
+        "threshold": 3.099773223118481,
+        "measured": 2.284363083624852,
+        "gap_closure_fraction": 0.6336837331563704,
+        "passed": true
+      },
+      "teacher_top1_agreement": {
+        "baseline": 0.054989816700611,
+        "threshold": 0.4774949083503055,
+        "measured": 0.319755600814664,
+        "gap_closure_fraction": 0.31332851289467345,
+        "passed": false
+      },
+      "nll_delta": {
+        "baseline": 6.032558917999268,
+        "threshold": 3.0412794589996337,
+        "measured": 2.277037303352277,
+        "gap_closure_fraction": 0.627745027858905,
+        "passed": true
+      },
+      "final_hidden_relative_l2": {
+        "baseline": 0.9161311908436122,
+        "threshold": 0.5080655954218061,
+        "measured": 0.6036118082423146,
+        "gap_closure_fraction": 0.38292787496365005,
+        "passed": false
+      }
+    },
+    "passed": false,
+    "decision": "do_not_scale_this_configuration_to_3m_or_10m"
+  },
+  "development_rungs": [
+    {
+      "name": "hard_serialized_initialization",
+      "training_input_positions": 0,
+      "teacher_student_kl": 28.38136122620033,
+      "teacher_top1_agreement": 0.0,
+      "nll_delta": 27.776806608965344,
+      "final_hidden_relative_l2": 1.264003452661317,
+      "local_mlp_relative_l2": 2.532074869214054,
+      "report_sha256": "25c5fc7224aef6ef15d3f6a4331b92e2be45fbe6354183bad402c18bb227a6ee"
+    },
+    {
+      "name": "deepest_first_128_step",
+      "training_input_positions": 15887,
+      "teacher_student_kl": 11.023162182625345,
+      "teacher_top1_agreement": 0.014256619144602852,
+      "nll_delta": 10.622283786717354,
+      "final_hidden_relative_l2": 1.2064401704609493,
+      "local_mlp_relative_l2": 2.0627679840976665,
+      "report_sha256": "4328ee7a236a62b4dec9b8ccf7a12c8846ce81a1042482d30a9a9e009df15dd6"
+    },
+    {
+      "name": "geometry_rebalanced_64_step",
+      "training_input_positions": 7902,
+      "teacher_student_kl": 7.422631059547548,
+      "teacher_top1_agreement": 0.05091649694501019,
+      "nll_delta": 7.1460290863169185,
+      "final_hidden_relative_l2": 1.0706584160375687,
+      "local_mlp_relative_l2": 1.5894957388715296,
+      "report_sha256": "756fbcfc2130709bc9bd7bfe24b78c3654c1c15ee971c9a9a5db535d78afd538"
+    },
+    {
+      "name": "direct_final_hidden_64_step",
+      "training_input_positions": 7924,
+      "teacher_student_kl": 6.590048023979436,
+      "teacher_top1_agreement": 0.05091649694501019,
+      "nll_delta": 6.475833866601078,
+      "final_hidden_relative_l2": 0.9409196489599633,
+      "local_mlp_relative_l2": 1.3650051084400647,
+      "report_sha256": "db622d5f5e76f7c7b5b983b59aabafb26e675663d1bb5618ff181134558a93b3"
+    },
+    {
+      "name": "cka_and_teacher_top1_64_step",
+      "training_input_positions": 7976,
+      "teacher_student_kl": 6.136835353923184,
+      "teacher_top1_agreement": 0.048879837067209775,
+      "nll_delta": 6.0841019918379615,
+      "final_hidden_relative_l2": 0.9067403304520307,
+      "local_mlp_relative_l2": 1.3367509122402728,
+      "report_sha256": "cf0e1e6079b3319984fede1ce2096bfa1a60118a6836d9c97547fb82e591e8b7"
+    },
+    {
+      "name": "embedding_and_head_coadaptation_64_step",
+      "training_input_positions": 7873,
+      "teacher_student_kl": 6.149546446236962,
+      "teacher_top1_agreement": 0.054989816700611,
+      "nll_delta": 6.032558917999268,
+      "final_hidden_relative_l2": 0.9161311908436122,
+      "local_mlp_relative_l2": 1.3322971066365852,
+      "report_sha256": "d267d36ea89eeb5f3fe87b7b17bc41694fa2dafc43e604f7e8c7db65e1391536"
+    }
+  ],
+  "training_hardware": {
+    "accelerator": "NVIDIA GeForce RTX 3050",
+    "role": "optional training-only acceleration",
+    "deployment_dependency": false,
+    "cpu_resume_supported": true
+  },
+  "scope_caveat": "This rejects the tested grouped-ternary representation, initialization, losses, optimizer schedule, and one-million-position continuation rule on SmolLM2-135M. It is not a theorem about low-bit pretraining or other models.",
+  "recommended_next_program": "Do not continue this configuration to 3M or add another small post-hoc residual. A new semantic hypothesis must change the representation or train a low-bit model from pretraining-scale initialization; otherwise explicitly relax the 45% policy toward the quality-passing DIP frontier."
+}

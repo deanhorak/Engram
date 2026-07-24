@@ -87,6 +87,22 @@ Engram does not assume that a neuron represents one human-readable fact. A recor
 exact algebraic contribution learned by the model. Meaning may be distributed across many such
 records.
 
+### A separate native-BitNet source
+
+The new BitNet track is intentionally not passed through that SwiGLU
+inspector. BitNet quantizes activations per token, uses ReLU-squared gating,
+normalizes the entire intermediate vector, and then applies the down
+projection. The normalization denominator depends on every channel, so
+channels are addressable records but are not independent in the same way as
+Llama SwiGLU records.
+
+Because the BitNet basis was trained natively with ternary weights, Engram can
+repack its coefficients losslessly instead of approximating dense weights.
+Each record stores the channel's gate row, up row, down column, and
+normalization gain. This is a promising CPU storage format, but sparse
+selection will require an additional treatment of the shared normalization
+denominator.
+
 ## 3. What Engram is trying to build
 
 Engram's target runtime replaces repeated full-transformer execution with four cooperating parts:
@@ -319,17 +335,83 @@ the transformer remains frozen. Its checkpoints contain ordinary CPU tensors plu
 and can resume on another device. Validation resets every layer to q=62.5%/K=512 and disables the
 soft selection and dense-shadow training paths.
 
-Large-scale training remains open work. The present compiler writes initialized or heuristic
-fallbacks and records that fact in its conversion report. DIP supplies a passing semantic
-substitution arm and now has an experimental serialized layout/native kernel, but that kernel is
-slower than dense. Attention/controller distillation remains separate open work.
+Engram now also tests a router-free budget-native representation. It keeps all
+1,536 SwiGLU channels but replaces each dense projection coefficient with
+`-1`, `0`, or `+1` times one FP16 scale shared by a 128-weight group. Five
+base-3 coefficients fit in one byte. Training retains float master weights,
+but the student forward rounds them to the same hard ternary codes that will
+be serialized; a straight-through gradient lets the masters adapt without
+changing deployment semantics. Layers can transition deepest-first so the
+whole model does not experience the low-bit shock at once.
+
+The teacher and student receive the same token sequences. The losses compare
+each MLP output, every transformer hidden boundary, the final hidden state,
+the teacher probability distribution, the teacher's top token, and the actual
+next token. Attention, normalization, and the already-resident
+embedding/output head may co-adapt. Validation does not use float masters: it
+writes the 17,173,504-byte MLP file, reloads and decodes it independently, and
+then scores all layers at the hard representation. This file is 43.1353% of
+dense ideal Q4 traffic.
+
+The mechanism works but the tested model does not qualify. After 1,014,225
+training positions it reaches KL 2.284, top-1 agreement 0.320, NLL delta
++2.277, and final-hidden relative L2 0.604. Its frozen rule required at least
+half of every remaining quality gap to close before 3M; top-1 and hidden state
+miss. The checked result therefore stops this conversion configuration rather
+than treating a downward loss curve as success.
+
+A materially different follow-up begins with Microsoft's native
+`bitnet-b1.58-2B-4T`. The official two-bit MLP payload alone is 50.0521% of
+the same dense-Q4 denominator, so source switching is not counted as a pass.
+Engram instead repacks five trits per byte. Each channel has a 1,538-byte
+logical record addressed across separate gate, up, normalization-gain, and
+down phase streams. The complete 318,924,544-byte artifact is 40.0527%,
+reconstructs every coefficient and BF16 scale/gain exactly, and gives
+bit-identical dense-oracle outputs before changing execution order.
+
+That result advances storage and quality together for the separate
+low-bit-native source family. A direct CPU kernel memory-maps and executes the
+packed phase streams without dense weights. The frozen 8-sequence,
+256-position confirmation reaches KL 0.00371, 96.09% teacher top-1 agreement,
+NLL delta +0.00224, and final-hidden relative L2 0.04678, so this source track
+passes Milestone 2.
+
+The source-family-specific package and generation boundary are now complete.
+Compilation writes a 1,108,116,808-byte checksummed package containing 332
+non-MLP tensors, tokenizer/configuration assets, and the packed MLP artifact;
+all 210 original MLP tensors are omitted. At load time the transformer is
+created on empty storage, only the packaged non-MLP tensors are materialized,
+and each MLP is replaced by the memory-mapped native kernel. The loader fails
+if a checksum, model identity, tensor boundary, or unmaterialized parameter is
+wrong. Package-backed and source-backed kernel models produce bit-exact hidden
+states and logits on the parity prompt, and greedy generation completes
+without the source checkpoint.
+
+Milestone 3 substitutes attention while preserving the trained Q/K/V
+projections, rotary positions, grouped-query mapping, residual path, and
+normalization. Local-only and recurrent-only candidates fail. An exact hybrid
+first proved that four older values were sufficient but required a full key
+scan. Random LSH and exact geometric page indexes did not retrieve or prune
+well enough. The passing streaming operator instead retains two initial
+attention sinks and six online heavy hitters beside the exact 16-token local
+window. It exact-reranks those eight old keys to four values and never reads an
+evicted key. The frozen 256-position result passes every causal threshold.
+Native integration and a genuinely long-context hardware benchmark remain.
+
+The present compiler still writes initialized or heuristic fallbacks and
+records that fact in its conversion report. DIP supplies a passing semantic
+substitution arm and now has an experimental serialized layout/native kernel,
+but that kernel is slower than dense. Attention/controller distillation
+remains separate open work.
 
 A later 3M-position compact-Q4 run establishes the opposite frontier: its
 serialized MLP payload fits the 45% traffic budget, but its causal quality is
 far from the teacher. An exact one-million-record output-memory pilot also
-fails to improve layer-local error enough to justify scale-up. Therefore the
-diagram in this document remains the intended architecture, not a claim that
-the current converter has learned a quality-preserving replacement.
+fails to improve layer-local error enough to justify scale-up. The later
+budget-native grouped-ternary run also fits traffic but fails its causal
+scale-up rule. Therefore the diagram in this document remains the intended
+architecture, not a claim that the current converter has learned a
+quality-preserving replacement.
 
 ## 5. The converted format
 

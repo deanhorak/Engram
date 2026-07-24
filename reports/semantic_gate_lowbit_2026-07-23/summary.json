@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "snapshot_date": "2026-07-23",
+  "source_model": "HuggingFaceTB/SmolLM2-135M",
+  "scope": "development-only layer-14 representation screens",
+  "progression_rule": {
+    "maximum_complete_physical_cold_mlp_traffic_fraction": 0.45,
+    "maximum_mean_layer_local_relative_l2": 0.2,
+    "external_or_formal_causal_evaluation_requires_local_pass": true
+  },
+  "experiments": {
+    "cache_reused_recurrent_compact": {
+      "width": 640,
+      "cycles": 4,
+      "adapter_rank": 4,
+      "complete_cold_traffic_fraction": 0.449292695473251,
+      "traffic_scope_caveat": "assumes the tied compact-Q4 payload remains cache-resident across later cycles; native cache reuse is not measured",
+      "compact_mean_relative_l2": 0.3239177465438843,
+      "recurrent_mean_relative_l2": 0.30825406312942505,
+      "relative_improvement": 0.04835695028305054,
+      "decision": "close_before_external",
+      "source_report_sha256": "35325f8063b904732bea187000507b96bfc46ba4c1b20a1de1e1f87571b75c89"
+    },
+    "projection_normalized_ternary": {
+      "complete_cold_traffic_fraction": 0.4100131815843621,
+      "best_hard_mean_relative_l2": 0.6313227415084839,
+      "best_step": 7424,
+      "relative_improvement_over_prior_asymmetric_ternary": -0.27855324245965063,
+      "decision": "close_before_external",
+      "source_report_sha256": "e86f5dcdc5076190d12ec5011a937bd902f32cc5e0539a2ee0945d6dc4fa798c"
+    },
+    "mixed_linear_constrained_vector_quantization": {
+      "projection_levels_gate_up_down": [
+        4,
+        3,
+        3
+      ],
+      "complete_cold_traffic_fraction": 0.443481545781893,
+      "initial_mean_relative_l2": 0.6280835270881653,
+      "best_hard_mean_relative_l2": 0.3363959789276123,
+      "best_step": 8192,
+      "relative_improvement": 0.4644088494293662,
+      "decision": "close_before_external",
+      "source_report_sha256": "252a96be601e9bb9d422750c0bc3aad8ecec1195058ffc73f70e22cdb71bc8a4"
+    },
+    "unrestricted_128_entry_vector_codebook": {
+      "vector_size": 4,
+      "index_bits": 7,
+      "complete_cold_traffic_fraction": 0.44979906121399177,
+      "initial_mean_relative_l2": 0.576865017414093,
+      "initialization_guard": 0.55,
+      "qat_started": false,
+      "decision": "close_at_initialization_guard",
+      "source_report_sha256": "f1cd2521db2b1701c2629ce8ccfcf13e7ee5122cf5f28ff83635ed2421c83113"
+    },
+    "mixed_lifted_binary_lattice": {
+      "projection_dimensions_gate_up_down": [
+        [
+          16,
+          10
+        ],
+        [
+          16,
+          8
+        ],
+        [
+          16,
+          10
+        ]
+      ],
+      "effective_bits_per_weight_gate_up_down": [
+        1.6,
+        2.0,
+        1.6
+      ],
+      "complete_cold_traffic_fraction": 0.44401202417695473,
+      "best_initial_arm": "up_2bit",
+      "best_initial_mean_relative_l2": 0.5569581389427185,
+      "initialization_guard": 0.55,
+      "qat_started": false,
+      "official_liftquant_revision": "72b3875c770e4579639931fed89dc95e4067edac",
+      "official_16to8_sha256": "fde8ae1a6e5f590d67891b328325b69d3a2ab4f81281df743c59d92f46fd50ae",
+      "official_16to10_sha256": "321a7af7b67af5eecdcb4e6a533f13e37f1378628697af377ad2d2643265dce6",
+      "decision": "close_at_initialization_guard",
+      "source_report_sha256": "ab9dbca8e240648998d979c142ded0bd87df72dc1e3f891e051fcd21a31e2df0"
+    }
+  },
+  "formal_data_used": false,
+  "external_data_used": false,
+  "decision": "close_bounded_recurrent_and_posthoc_lowbit_representation_search",
+  "next_program_at_time": "train a budget-native student representation from the beginning at the serialized inference budget, or explicitly relax the traffic policy toward the quality-passing DIP frontier",
+  "followup": "The grouped-ternary budget-native program was subsequently implemented and stopped at its frozen one-million-position rule; see reports/semantic_gate_budget_native_2026-07-23."
+}

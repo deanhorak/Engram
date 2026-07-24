@@ -16,7 +16,8 @@ conversion = [
   "huggingface-hub>=0.23",
   "safetensors>=0.4",
   "torch>=2.1",
-  "transformers>=4.40",
+  "transformers>=4.53",
+  "accelerate>=0.26",
 ]
 dev = ["pytest>=8"]
 

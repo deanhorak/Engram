@@ -1,5 +1,214 @@
 # Research log
 
+## 2026-07-24 — Bounded streaming attention passes frozen confirmation
+
+- Rejected random multi-table sign-LSH after development recall remained
+  0.588–0.656. Causal quality could survive those misses, but the selector did
+  not meet the declared recall standard and did not improve short-context
+  traffic.
+- Implemented exact branch-and-bound page indexes with coordinate boxes and
+  centroid-radius bounds. Both preserve top-k exactly, but open about 94% of
+  pages. Metadata raises modeled traffic to 105.0% and 100.3% of dense
+  respectively, so the page-index branch is closed.
+- Implemented a bounded H2O/attention-sink-inspired streaming cache. Each head
+  retains the 16-token exact local window, two initial sinks, and six online
+  cumulative-attention heavy hitters. Eight old keys are exact-reranked and
+  only four old values enter the joint softmax. Evicted keys are never scanned.
+- The fixed C=8/K=4 policy passes frozen records 8–15 over 256 prediction
+  positions: KL 0.01409, top-1 0.94141, NLL delta −0.00613, and final-hidden
+  relative L2 0.08559. All semantic and evidence checks pass.
+- The short 33-token protocol models at 93.34% of dense logical KV traffic;
+  the advantage is bounded old-context state and reads rather than a large
+  short-prompt saving. The Python reference is not a latency result. The next
+  step is native cache/rerank integration and long-context hardware validation.
+
+## 2026-07-24 — Source-independent package and Milestone 3 semantic pass
+
+- Added the `engram-native-bitnet` version-1 compiler and validator. The
+  checked package contains 332 non-MLP tensors, tokenizer/configuration assets,
+  and the 318,924,544-byte phase-stream artifact. All 210 source MLP tensors
+  are excluded; every file is checksummed.
+- Added a CPU generation runtime that builds the transformer on empty storage,
+  materializes only packaged tensors, preserves native BitNet activation
+  quantization for attention projections, and installs the memory-mapped C++
+  MLP kernel in every layer. Package-backed and source-backed kernel execution
+  has bit-exact hidden/logit parity. Greedy generation after `The capital of
+  France is` produces ` Paris.`.
+- Added trained-model local, recurrent, retrieval, and hybrid attention
+  substitution with native Q/K/V, RoPE, and GQA semantics. Development rejected
+  local-only and recurrent-only operators.
+- Froze the joint-softmax W=16/K=4 hybrid and evaluated records 8–15: KL
+  0.002494, top-1 0.996094, NLL delta +0.007099, and hidden L2 0.043498 over
+  256 positions. All semantic criteria pass.
+- The exact selector scans every older key and models at 91.89% of dense
+  logical KV traffic. Milestone 3 therefore has a semantic progression pass,
+  not a systems pass. The authorized next work is indexed candidate
+  generation followed by exact reranking.
+
+## 2026-07-24 — Direct native-BitNet CPU kernel passes the frozen gate
+
+- Added a fail-closed C++20 reader for `native_bitnet_phase_base3_v1`. It
+  memory-maps the artifact, validates its headers, directory, offsets, padding,
+  BF16 metadata, and canonical base-3 streams, and never constructs dense
+  projection weights.
+- Implemented the complete BF16 MLP path over phase streams: per-token Q8
+  input, fused gate/up ternary accumulation, ReLU squared, intermediate RMS
+  normalization and gain, second Q8 quantization, and the transposed ternary
+  down pass. A persistent thread pool and C ABI expose it to PyTorch model
+  substitution while recording bytes, scratch, rows, threads, and time for
+  every layer call.
+- The deterministic tiny-artifact integration test is bit-exact against the
+  independent dense artifact oracle. Official layers 0/14/29 differ from
+  PyTorch BF16 GEMM reduction order by 0.00982, 0.00890, and 0.00684 relative
+  L2 respectively; this distinction is recorded rather than described as
+  bit parity.
+- Ran the sealed CPU-only protocol using the pinned model and artifact hashes,
+  the pinned tokenizer with its regex compatibility fix, the first eight
+  unique frozen records, and exactly 256 prediction positions. The result is
+  KL 0.003710, top-1 0.960938, NLL delta +0.002237, and final-hidden relative
+  L2 0.046775. Every semantic threshold passes.
+- The executed artifact schedules 318,924,544 cold bytes, or 40.052694% of
+  dense ideal Q4, with zero dense-weight materialization. The 30 internal MLP
+  timings total 9.737 seconds for 264 rows. This is exact scheduled traffic,
+  not a hardware memory-controller measurement.
+- The separate low-bit-native track therefore passes the Milestone 2 gate.
+  Dense-Llama conversion remains blocked. See the
+  [direct-kernel confirmation](../reports/semantic_gate_native_bitnet_2026-07-24/summary.md).
+
+## 2026-07-23 — Exact native-BitNet record feasibility pass
+
+- Preserved the unchanged 45% dense-ideal-Q4 traffic rule instead of relaxing
+  it to the 83.33% DIP frontier. Primary-source and checkpoint inspection
+  selected Microsoft's natively trained `bitnet-b1.58-2B-4T` as a separate
+  source track, pinned to revision
+  `04c3b9ad9361b824064a1f25ea60a8be9599b127`.
+- Added a metadata-only, fail-closed adapter. It accepts only
+  `BitNetForCausalLM`, ReLU-squared activation, offline `AutoBitLinear`
+  quantization, and the official packed dimensions. It does not add BitNet to
+  the existing SiLU/SwiGLU compiler, and matching metadata alone does not
+  establish native-training provenance.
+- Verified the downloaded 1,178,623,988-byte safetensors checkpoint at
+  SHA-256
+  `8143ae115ed6babe5e5ada8fb8c5b769d8f417802b2db042ad98b4f7ed73975b`.
+  The fail-closed check caught and rejected an initially transcribed
+  63-character digest before any conversion result was accepted.
+- The official four-trits-per-byte MLP payload is 398,546,100 bytes, or
+  50.0521% of the frozen denominator, so merely choosing a low-bit source
+  would not pass. Added a lossless phase-stream format with five base-3 trits
+  per byte. Each 1,538-byte logical record contains gate/up rows, a transposed
+  down column, and the BF16 intermediate-normalization gain. The four physical
+  streams are independently fixed-stride and cache aligned.
+- The independently reloaded 30-layer artifact is 318,924,544 bytes
+  (40.0527% of dense Q4 and 80.0220% of the native Hugging Face payload).
+  Its exact gate/up, gain, and down phase order can model one cold read per
+  serialized line at the same 40.0527%. Charging all independently scattered
+  logical records by touched cache lines is 41.6673%. Both calculations
+  include headers, directory, scales, gains, and padding. A physically
+  interleaved draft was rejected because exact normalization would have
+  forced multipass line rereads.
+- Validated every source two-bit digit, every canonical base-3 tail, all
+  1,592,524,800 reconstructed ternary coefficients, and 207,450 BF16 values.
+  Source and artifact logical streams share SHA-256
+  `27243c2304a2ad1b7dc87deb15eee1572ef6ace1a6c16ecbf5c485fd33f4f89d`.
+- Added a CPU BF16 parity oracle matching activation quantization,
+  ReLU-squared gating, intermediate RMS normalization, and scaled ternary
+  linears. Layers 0/14/29 are bit-identical, and an all-30-layer causal smoke
+  substitution has zero hidden/logit error, KL 0, and top-1 agreement 1.0.
+- The result advances to a direct packed CPU kernel, not to compilation. The
+  parity oracle materializes dense BF16 matrices and the causal smoke input
+  does not meet the frozen evidence floor. This track also does not solve
+  dense-Llama conversion. See the
+  [native BitNet summary](../reports/semantic_gate_native_bitnet_2026-07-23/summary.md).
+
+## 2026-07-23 — Budget-native grouped-ternary causal stop
+
+- Added an exact full-width grouped-ternary artifact and training path. Five
+  base-3 coefficients are packed per byte; every 128-weight group has one
+  non-learned FP16 scale refined by two least-squares iterations. Codes,
+  scales, headers, directory entries, and alignment produce a 17,173,504-byte
+  30-layer file, or 43.1353% of dense ideal Q4 with 742,400 bytes of headroom.
+- Added hard-forward straight-through MLPs, a deepest-layer-first continual
+  transition, confidence-weighted KL, direct final-hidden and CKA losses,
+  teacher-top-1 distillation, fresh training-record offsets, optional
+  attention/norm/embedding/head co-adaptation, device-neutral checkpoint
+  initialization/resume, and exact binary/backbone serialization and reload
+  before validation.
+- The hard serialized initialization is causally catastrophic (KL 28.381,
+  top-1 0, hidden L2 1.264). A 128-step deepest-first stage cuts KL to 11.023
+  without enough hidden recovery. Three fresh-record 64-step screens rebalance
+  geometry, add a direct final-state loss, and test CKA/top-1 distillation.
+  KL reaches 6.137 and hidden L2 0.907, but top-1 remains near 5%. Co-adapting
+  the tied embedding/output head raises it only to 5.50%.
+- Rejected a nearby 1,344/1,536-width affine-Q2 idea before production work.
+  It fits the byte limit only with a very tight no-source-ID layout, while its
+  MSE-fitted layer-14 initialization has 0.713 mean relative L2; full-width Q2
+  is still 0.688.
+- Promoted the exact ternary student to a frozen one-million-position rung.
+  An RTX 3050 accelerated training only; checkpoints and artifacts remain
+  CPU-compatible. The run used 8,192 fresh sequences, 1,014,225 input
+  positions, and one serialized/reloaded artifact on all 16 development
+  sequences/491 next-token positions. It reaches KL 2.28436, top-1 0.31976,
+  NLL +2.27704, hidden L2 0.60361, and local MLP L2 1.02107.
+- The predeclared pre-3M rule required 50% closure of every remaining formal
+  gap. KL and NLL close 63.37% and 62.77%, but top-1 and hidden state close
+  only 31.33% and 38.29%. The exact configuration is stopped before 3M/10M.
+  Prior rank-32 hidden-output and correction-capsule failures also make a
+  small residual fitted into the remaining byte headroom an unsupported
+  repetition rather than a new hypothesis.
+- Exact metrics, progression thresholds, and artifact/report hashes are in
+  the
+  [budget-native summary](../reports/semantic_gate_budget_native_2026-07-23/summary.json).
+  Another semantic program must change the representation or establish its
+  low-bit basis at pretraining scale; otherwise the honest alternative is an
+  explicit relaxation toward the quality-passing DIP traffic frontier.
+
+## 2026-07-23 — Budget-edge representation search closed
+
+- Tested a cache-reused recurrent compact operator before returning to
+  post-hoc quantization. Four applications of one width-640 Q4 SwiGLU plus
+  rank-4 cycle adapters model at 44.9293% complete cold traffic if the base
+  payload remains cache-resident. After 4,096 steps, recurrence improves the
+  jointly fitted compact baseline only 4.84%, from 0.323918 to 0.308254
+  layer-14 mean relative L2. It misses both the 25% relative-improvement rule
+  and the 0.20 local ceiling; native cache validation is therefore not opened.
+- Tested projection-local RMS normalization with full-width row-scaled ternary
+  weights at 41.0013% traffic. After 8,192 hard-QAT steps the best internal
+  layer-14 error is 0.631323, 27.86% worse than the prior asymmetric-ternary
+  frontier. The normalization hypothesis is closed for this representation.
+- Adapted the linear-constrained vector-training idea from
+  [LC-QAT](https://arxiv.org/abs/2606.10531) into a mixed
+  Q4/ternary/ternary affine lattice with complete traffic of 44.3482%. The
+  8,192-step hard-QAT run improves initialization by 46.44%, from 0.628084 to
+  0.336396, but remains far above the 0.20 local ceiling. One AMP overflow was
+  skipped through the scaler's standard recovery path; the exact frozen
+  schedule otherwise completed.
+- Screened an unrestricted 128-entry, four-weight vector codebook motivated by
+  [AQLM](https://arxiv.org/abs/2401.06118) and
+  [QuIP#](https://proceedings.mlr.press/v235/tseng24a.html). Its 7-bit indexes,
+  FP16 codebooks/scales, metadata, and padding leave only 8,000 bytes of
+  all-model headroom at 44.9799% traffic. Deterministic K-means initialization
+  has layer-14 error 0.576865, above the frozen 0.55 guard, so QAT is not run.
+- Reproduced the official
+  [LiftQuant](https://arxiv.org/abs/2606.04050) nearest-lattice search using
+  repository revision `72b3875c770e4579639931fed89dc95e4067edac` and
+  checksum-verified 16-to-8 and 16-to-10 projection tensors. The best mixed
+  arm assigns 2 bits/weight to `up` and 1.6 bits/weight to `gate` and `down`,
+  reaching 44.4012% complete traffic. Its best initialization error is
+  0.556958, narrowly above the same 0.55 guard, so QAT and formal data remain
+  unopened.
+- Added reusable traffic models and hard-forward training modules for all five
+  representations, with unit tests covering accounting, validation, shape
+  contracts, hard-code behavior, gradients, and deployment-state extraction.
+  The checked
+  [budget-edge summary](../reports/semantic_gate_lowbit_2026-07-23/summary.json)
+  records exact metrics and scratch-report hashes.
+- Closed the bounded recurrent and post-hoc representation search. This
+  decision led to the budget-native grouped-ternary program documented above;
+  that later program also reaches its frozen stop rule. The remaining
+  alternative is a materially different low-bit/pretraining hypothesis or an
+  explicit relaxation of the 45% traffic policy toward the causal
+  quality-passing DIP frontier.
+
 ## 2026-07-23 — Combined status freeze and output-memory stop
 
 - Froze the formal combined Milestone 2 gate at KL <=0.05, top-1 >=0.90,
@@ -33,10 +242,11 @@
   and causal evaluation were not opened.
 - Consolidated the result in [Project status](status.md) and the checked
   [machine-readable snapshot](../reports/semantic_gate_status_2026-07-23/summary.json).
-  No representation currently passes quality and traffic together; gate work
-  is paused pending an explicit choice among larger compact-model training, a
-  relaxed systems policy around the DIP quality frontier, or a genuinely new
-  conditional representation.
+  No representation currently passes quality and traffic together. The later
+  budget-edge campaign above tests and closes the bounded-representation
+  option. The still-later grouped-ternary section above tests and stops the
+  first material budget-native rung, leaving a new representation/pretraining
+  hypothesis or an explicit systems-policy relaxation.
 
 ## 2026-07-22 — Teacher-boundary width ceiling rejects uniform 672
 

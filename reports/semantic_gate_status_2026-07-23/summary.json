@@ -1,8 +1,11 @@
 {
-  "schema_version": 1,
+  "schema_version": 4,
   "snapshot_date": "2026-07-23",
-  "source_model": "HuggingFaceTB/SmolLM2-135M",
-  "decision": "milestone_2_combined_semantic_systems_gate_blocked",
+  "source_models": {
+    "dense_conversion_track": "HuggingFaceTB/SmolLM2-135M",
+    "low_bit_native_track": "microsoft/bitnet-b1.58-2B-4T"
+  },
+  "decision": "milestone_2_dense_conversion_blocked_low_bit_native_kernel_confirmation_pending",
   "formal_gate": {
     "maximum_teacher_student_kl": 0.05,
     "minimum_teacher_top1_agreement": 0.9,
@@ -14,6 +17,37 @@
     "minimum_candidate_recall_when_applicable": 0.95
   },
   "frontiers": {
+    "native_bitnet_exact_repack_smoke": {
+      "source_model": "microsoft/bitnet-b1.58-2B-4T",
+      "source_track": "low_bit_native_not_dense_llama_conversion",
+      "resolved_revision": "04c3b9ad9361b824064a1f25ea60a8be9599b127",
+      "artifact_encoding": "native_bitnet_phase_base3_v1",
+      "artifact_bytes": 318924544,
+      "artifact_sha256": "4fcf598af4346d5391ba428e32ba1629daae2768b73ab6bf872d3f9fb300ab55",
+      "artifact_sha256_verified_before_parity": true,
+      "source_weight_sha256_verified_before_and_after_load": true,
+      "representation_exact": true,
+      "ternary_coefficients_compared": 1592524800,
+      "bf16_values_compared": 207450,
+      "serialized_cold_mlp_fraction_of_dense_q4": 0.400526941872428,
+      "modelled_full_phase_schedule_fraction_of_dense_q4": 0.400526941872428,
+      "modelled_independently_scattered_records_fraction_of_dense_q4": 0.4166727752057613,
+      "local_parity_exact": true,
+      "local_parity_layers": [
+        0,
+        14,
+        29
+      ],
+      "local_parity_states": 2,
+      "causal_smoke_input_tokens": 1,
+      "teacher_student_kl": 0.0,
+      "teacher_top1_agreement": 1.0,
+      "final_hidden_relative_l2": 0.0,
+      "direct_packed_kernel_executed": false,
+      "measured_hardware_traffic": false,
+      "formal_confirmation_corpus_loaded": false,
+      "decision": "representation_traffic_pass_exact_parity_smoke_packed_kernel_and_confirmation_pending"
+    },
     "predictor_free_dip_confirmation": {
       "input_coordinates": 432,
       "candidates": 896,
@@ -39,6 +73,23 @@
       "formal_data_loaded": false,
       "decision": "traffic_pass_quality_fail_stop_at_frozen_3m_rule"
     },
+    "budget_native_grouped_ternary_1m": {
+      "training_input_positions": 1014225,
+      "training_next_token_positions": 1006033,
+      "teacher_student_kl": 2.284363083624852,
+      "teacher_top1_agreement": 0.319755600814664,
+      "nll_delta": 2.277037303352277,
+      "final_hidden_relative_l2": 0.6036118082423146,
+      "physical_cold_mlp_traffic_fraction": 0.4313528806584362,
+      "serialized_reloaded": true,
+      "frozen_50_percent_gap_closure": {
+        "teacher_student_kl": true,
+        "teacher_top1_agreement": false,
+        "nll_delta": true,
+        "final_hidden_relative_l2": false
+      },
+      "decision": "traffic_pass_quality_fail_stop_before_3m"
+    },
     "pretraining_output_memory_1m": {
       "layer": 14,
       "local_prototypes": 233005,
@@ -51,11 +102,42 @@
       "required_minimum_relative_improvement": 0.1,
       "external_data_loaded": false,
       "decision": "close_pretraining_output_memory_density_path"
+    },
+    "budget_edge_local_screens": {
+      "scope": "development-only layer-14 screens; not causal gate results",
+      "required_maximum_mean_relative_l2": 0.2,
+      "recurrent_compact": {
+        "physical_cold_mlp_traffic_fraction": 0.449292695473251,
+        "mean_relative_l2": 0.30825406312942505,
+        "cache_reuse_measured": false,
+        "decision": "close"
+      },
+      "projection_normalized_ternary": {
+        "physical_cold_mlp_traffic_fraction": 0.4100131815843621,
+        "mean_relative_l2": 0.6313227415084839,
+        "decision": "close"
+      },
+      "mixed_linear_constrained_vq": {
+        "physical_cold_mlp_traffic_fraction": 0.443481545781893,
+        "mean_relative_l2": 0.3363959789276123,
+        "decision": "close"
+      },
+      "unrestricted_codebook_vq": {
+        "physical_cold_mlp_traffic_fraction": 0.44979906121399177,
+        "initial_mean_relative_l2": 0.576865017414093,
+        "decision": "close_before_qat"
+      },
+      "mixed_lifted_binary": {
+        "physical_cold_mlp_traffic_fraction": 0.44401202417695473,
+        "initial_mean_relative_l2": 0.5569581389427185,
+        "decision": "close_before_qat"
+      },
+      "decision": "close_bounded_recurrent_and_posthoc_lowbit_search"
     }
   },
   "milestones": {
     "1": "complete",
-    "2": "implementation_broadly_complete_exit_gate_blocked",
+    "2": "implementation_broadly_complete_dense_track_blocked_low_bit_native_packed_kernel_and_confirmation_pending",
     "3": "prototype_complete_trained_substitution_not_passed",
     "4": "prototype_complete_controller_not_distilled",
     "5": "infrastructure_complete_quality_qualified_package_blocked",
@@ -67,7 +149,18 @@
     "compact_q4_decision": "5596b3577e0a329aaab39e4eea7a8b2838cf847b0bea5fba8558cc0c1cb77bc6",
     "output_memory_parent": "5e4c2d8c8d2b7a73510137e028ca601a55429a6d1f861c0b3d4a55c009a2a8f6",
     "prototype_density_curve": "23048ce2bc433b02ce9fc21adc5645d845692ee720194c65f233b89277984847",
-    "pretraining_output_memory_pilot": "d2b8ded8d352aa06e060e9843bb3ce5e59160320260c08296ca577ef7b83ebbf"
+    "pretraining_output_memory_pilot": "d2b8ded8d352aa06e060e9843bb3ce5e59160320260c08296ca577ef7b83ebbf",
+    "recurrent_compact": "35325f8063b904732bea187000507b96bfc46ba4c1b20a1de1e1f87571b75c89",
+    "projection_normalized_ternary": "e86f5dcdc5076190d12ec5011a937bd902f32cc5e0539a2ee0945d6dc4fa798c",
+    "mixed_linear_constrained_vq": "252a96be601e9bb9d422750c0bc3aad8ecec1195058ffc73f70e22cdb71bc8a4",
+    "unrestricted_codebook_vq": "f1cd2521db2b1701c2629ce8ccfcf13e7ee5122cf5f28ff83635ed2421c83113",
+    "mixed_lifted_binary": "ab9dbca8e240648998d979c142ded0bd87df72dc1e3f891e051fcd21a31e2df0",
+    "budget_native_grouped_ternary_1m": "af988fec390aa430eb6a6f6aeadc9c229feb69e30aa8d34681d50c201ee40ef2",
+    "native_bitnet_source_audit": "99c62c3c2c5d2ea1a0b8238da90be337a8b82893c98bae058fc4bbb7740d496a",
+    "native_bitnet_repack": "0356bda4857ff35f2b1d8ba4007048c0c0b47c6d253a7da44226d7709526c546",
+    "native_bitnet_parity": "d9a8a4c026ccb35709e4b47c17a0b8f5b477db40637fb68bf943b412ecc3063a",
+    "native_bitnet_summary": "f76f98e904d8e7d3521b10982b0d875be87fbf17eff8296beac741b193fa992e"
   },
-  "scope_caveat": "The latest output-memory result is a development-only float layer-local ceiling. It is not a Q4/indexed traffic result or a formal causal evaluation. No listed frontier passes the combined gate."
+  "scope_caveat": "The output-memory and budget-edge representation results are development-only layer-local ceilings. The grouped-ternary result is an all-layer causal evaluation, but it fails the frozen progression rule. The native-BitNet artifact is representation-exact and below the traffic ceiling, but its all-layer result is only a one-token dense-oracle parity smoke test: no direct packed kernel or frozen confirmation corpus has run. No listed deployment runtime yet passes the combined gate, and native BitNet is a separate low-bit-native source track rather than a dense-Llama conversion.",
+  "recommended_next_program": "Preserve the 45 percent traffic policy. Implement a CPU kernel that consumes native_bitnet_phase_base3_v1 directly without dense materialization, enforce the manifest artifact SHA, prove parity against the BF16 oracle, then run the frozen multi-sequence confirmation corpus with measured physical bytes and latency. Do not scale the closed grouped-ternary or post-hoc residual configurations."
 }

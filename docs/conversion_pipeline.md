@@ -30,6 +30,50 @@ Automatic resolution applies to `inspect`, `trace`, `analyze-mlp`, `build-semant
 argument. Once resolved, model loading remains local-only so all Transformers calls use the
 single cached snapshot. Existing local directories never require Hub access.
 
+Native BitNet uses a deliberately separate, fail-closed path:
+
+```bash
+engram audit-native-bitnet \
+  --model microsoft/bitnet-b1.58-2B-4T \
+  --out reports/native-bitnet-audit.json
+
+engram repack-native-bitnet \
+  --model microsoft/bitnet-b1.58-2B-4T \
+  --out work/native-bitnet/model.bitnet-records.bin \
+  --report reports/native-bitnet-repack.json
+
+TORCHDYNAMO_DISABLE=1 engram evaluate-native-bitnet-parity \
+  --model microsoft/bitnet-b1.58-2B-4T \
+  --artifact work/native-bitnet/model.bitnet-records.bin \
+  --artifact-sha256 4fcf598af4346d5391ba428e32ba1629daae2768b73ab6bf872d3f9fb300ab55 \
+  --out reports/native-bitnet-parity.json
+
+TORCHDYNAMO_DISABLE=1 engram evaluate-native-bitnet-kernel \
+  --model microsoft/bitnet-b1.58-2B-4T \
+  --artifact work/native-bitnet/model.bitnet-records.bin \
+  --artifact-sha256 4fcf598af4346d5391ba428e32ba1629daae2768b73ab6bf872d3f9fb300ab55 \
+  --dataset tests/fixtures/confirmation_expanded.jsonl \
+  --out reports/native-bitnet-kernel.json \
+  --library build/libengram_bitnet.so \
+  --threads 12
+```
+
+The audit downloads configuration only and pins the official revision by
+default. The repack command then downloads weights if absent, verifies the
+official SHA-256, validates every packed two-bit code, writes five-trit
+phase streams, reloads them, and compares all reconstructed values. Pass the
+artifact hash emitted by that report into the parity command so canonical but
+corrupted payloads cannot pass structural validation alone. These
+commands do not make `bitnet` eligible for `build-semantic` or `compile`;
+ReLU-squared gating and `ffn_sub_norm` violate those commands' exact-SwiGLU
+contract. The parity command remains a dense BF16 correctness oracle. The
+kernel command uses the separately built `libengram_bitnet.so`, memory-maps
+the phase file, and executes its packed streams directly. It downloads the
+pinned tokenizer assets when absent, applies the tokenizer regex compatibility
+fix, and runs the frozen all-layer confirmation protocol. This qualifies the
+low-bit-native MLP path for package integration; it does not make BitNet
+compatible with the generic SwiGLU compiler.
+
 ## Milestone 1 artifacts
 
 Milestone 1 supports the following resumable artifacts:
@@ -92,6 +136,16 @@ The native-gate shadow and cached-trace trainer are likewise pre-compilation exp
 remove candidate completion and meet the nominal q/K traffic envelope, but the checked layerwise
 training arm fails its improvement screen. Their safetensors file is a diagnostic selected-layer
 checkpoint, not a model package or compiler input.
+
+`train-budget-native-ternary` is the first trainer here that fixes and writes
+its complete low-bit MLP representation before compiler integration. The
+binary stores five ternary coefficients per byte, FP16 scales, versioned
+headers/directories, and alignment; validation strictly reloads it and checks
+its file size against traffic accounting. Optional co-adapted backbone tensors
+are stored separately in safetensors. This is still a research artifact, not a
+default `semantic/` layout: the checked one-million-position SmolLM2 run passes
+43.1353% traffic but fails causal quality and its pre-3M progression rule.
+
 The end-to-end native-gate trainer can optionally write complete co-trained MLP tensors, because a
 changed basis cannot be represented by router deltas alone. It also supports device-neutral
 full-weight/optimizer checkpoints for time-sliced CPU training. Neither checkpoint nor final
@@ -136,3 +190,25 @@ memory-mapped, then exercise deterministic generation. `engram-inspect`
 performs independent native parsing, dimensional checks, required-file checks, and SHA-256
 validation. Real text tokenization is copied into `tokenizer/`; native inference accepts packed
 little-endian uint32 token IDs so a Python tokenizer wrapper can remain outside neural inference.
+
+For the qualified native-BitNet source track, the separate compiler and
+runtime commands are:
+
+```bash
+engram compile-native-bitnet \
+  --model microsoft/bitnet-b1.58-2B-4T \
+  --artifact work/native_bitnet/model.bitnet-records.bin \
+  --out work/native_bitnet/model.engram-bitnet
+
+engram validate --model work/native_bitnet/model.engram-bitnet
+engram generate --model work/native_bitnet/model.engram-bitnet \
+  --prompt "The capital of France is" --max-tokens 2
+```
+
+The compiler copies only config/tokenizer assets and non-MLP tensors, embeds
+the packed phase-stream artifact, and seals the result with checksums. The
+runtime creates the transformer without initially allocating parameters,
+loads the packaged non-MLP state, installs the native MLP module in every
+layer, rejects any remaining unmaterialized parameter, and then performs
+cached autoregressive generation. It does not consult the source checkpoint
+directory after compilation.

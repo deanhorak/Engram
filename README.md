@@ -47,21 +47,84 @@ safety requirements, and separate research gates.
 
 ## Where the project stands
 
-**Current decision:** the Milestone 2 implementation is broad, but its combined
-semantic/systems gate is still blocked. Predictor-free DIP passes the causal
-quality thresholds on an untouched confirmation corpus, but requires 83.33% of
-dense MLP traffic after cache-line accounting and its native kernel is slower
-than dense. A separately trained compact-Q4 student fits the physical traffic
-limit at 44.9334%, but after 3,000,093 pretraining positions still has KL
+**Current decision:** the original dense-Llama Milestone 2 conversion remains
+blocked, but the separate low-bit-native source track now passes the frozen
+semantic and serialized cold-traffic gate with a direct CPU kernel.
+Predictor-free DIP
+passes the causal quality thresholds on an untouched confirmation corpus, but
+requires 83.33% of dense MLP traffic after cache-line accounting and its native
+kernel is slower than dense. A separately trained compact-Q4 student fits the
+physical traffic limit at 44.9334%, but after 3,000,093 pretraining positions still has KL
 0.887, top-1 agreement 56.6%, NLL delta +0.884, and final-hidden relative L2
 0.425. The latest exact output-memory pilot improved layer-14 error only 1.73%
 after adding one million independent prototypes, so that density-scaling path
-is also closed.
+is also closed. A final budget-edge campaign then tested recurrent reuse,
+projection-normalized ternary weights, affine constrained vectors,
+unrestricted codebooks, and LiftQuant-style lifted-binary lattices. Every arm
+fit within 45% modeled cold traffic, but the best trained layer-local result
+was still 0.308 relative L2 against a 0.20 progression ceiling.
 
-No tested artifact passes quality and traffic together. The concise,
-milestone-by-milestone account is [Project status](docs/status.md), with exact
+The follow-up budget-native implementation trains all 30 full-width MLPs
+through an exact grouped-ternary representation and independently reloads its
+17,173,504-byte artifact before validation. It passes physical traffic at
+43.1353%. After 1,014,225 fresh training positions, however, it reaches KL
+2.284, top-1 agreement 32.0%, NLL delta +2.277, and final-hidden relative L2
+0.604. A frozen scale-up rule required at least 50% closure of every remaining
+quality gap; KL and NLL passed, while top-1 and hidden state did not. This
+configuration is stopped before 3M rather than scaled on partial progress.
+
+The new source track pins Microsoft's natively trained
+`bitnet-b1.58-2B-4T`, validates its official two-bit checkpoint, and
+losslessly repacks every ternary MLP coefficient as five base-3 trits per
+byte. Each logical semantic record still contains one gate row, one up row,
+one transposed down column, and the channel's BF16
+intermediate-normalization gain, but the physical file groups those fields
+into cache-aligned phase streams. That layout matches BitNet's gate/up,
+normalization, and down execution order without rereading interleaved cache
+lines. The independently reloaded 318,924,544-byte artifact and modeled
+one-read-per-line phase schedule are 40.0527% of dense ideal Q4; charging
+every scattered logical record independently is 41.6673%. All 1,592,524,800
+ternary coefficients and 207,450 BF16 values
+reconstruct exactly. A memory-mapped C++ kernel now executes those streams
+directly without materializing dense weights. On the pinned tokenizer and
+frozen 8-sequence/256-position corpus it reaches KL 0.00371, 96.09% teacher
+top-1 agreement, NLL delta +0.00224, and final-hidden relative L2 0.04678.
+The exact scheduled cold bytes remain 40.0527% of dense ideal Q4, so every
+predeclared Milestone 2 check passes on this source track.
+
+This is not evidence that a dense Llama checkpoint can be converted
+losslessly. It also does not claim measured hardware DRAM events: the traffic
+result is the exact cache-line schedule of the serialized streams. The concise,
+milestone-by-milestone account is [Project status](docs/status.md), with prior
 machine-readable metrics in the
 [2026-07-23 status snapshot](reports/semantic_gate_status_2026-07-23/summary.json).
+The exact budget-native protocol and stop rule are in the
+[grouped-ternary report](reports/semantic_gate_budget_native_2026-07-23/summary.md).
+The source audit, repack, and dense-oracle evidence is in the
+[native BitNet report](reports/semantic_gate_native_bitnet_2026-07-23/summary.md).
+The qualifying direct-kernel evidence is in the
+[2026-07-24 confirmation](reports/semantic_gate_native_bitnet_2026-07-24/summary.md).
+That artifact is now integrated into a checksummed, source-independent
+1,108,116,808-byte package. The package excludes all 210 source MLP tensors,
+loads only the embedding/attention/normalization/head tensors, installs the
+memory-mapped C++ MLP kernel, and generates through the pinned tokenizer.
+Package-backed and source-backed direct-kernel models have bit-exact final
+hidden states and logits on the parity prompt; greedy generation produces
+` Paris.` after `The capital of France is`.
+
+Milestone 3 attention substitution now has a bounded trained-model pass. The
+initial exact hybrid established semantic capacity but scanned all older keys.
+Random sign-LSH recalled only 58.8–65.6% of the exact older top-k, while exact
+box and sphere page bounds opened about 94% of pages; those index branches are
+rejected. The promoted streaming hybrid keeps 16 exact local tokens, two
+attention sinks, and six online heavy hitters. It exact-scores those eight old
+keys and transfers the best four values. On the sequence-disjoint frozen
+8-sequence/256-position confirmation it reaches KL 0.01409, 94.14% top-1
+agreement, NLL delta −0.00613, and final-hidden relative L2 0.08559. Old-context
+storage and reads are fixed as context grows. The current 33-token protocol
+models at 93.34% of dense KV traffic and the implementation is still a slow
+Python reference, so the next implementation is a native phase-streaming
+attention/cache kernel and long-context traffic benchmark.
 The detailed history below is retained so negative results remain auditable.
 
 The repository contains an end-to-end research prototype: Hugging Face model inspection and
@@ -234,8 +297,10 @@ rules. In particular, the serialized mild-width Q4 student passes the 45%
 physical-byte check but remains far outside every causal threshold after 3M
 pretraining positions; scaling exact output memory from 233,005 local records
 to 1,233,005 combined records changes layer-14 error only from 0.327526 to
-0.321854. No trained semantic artifact is currently eligible for default
-package compilation.
+0.321854. Recurrent compact, normalized ternary, affine constrained-vector,
+unrestricted-codebook, and lifted-binary follow-ups also fail their local
+screens despite modeled traffic of 41.00%–44.98%. No trained semantic artifact
+is currently eligible for default package compilation.
 See [architecture](docs/architecture.md), [evaluation](docs/evaluation.md),
 and [limitations](docs/limitations.md) for the precise design and caveats. The latest routing
 measurement is documented in the [trace-calibrated recall report](reports/smollm2_calibrated_router/recall.md).
@@ -418,11 +483,25 @@ engram train-sparse-student \
   --top-k 512 \
   --candidates 512 \
   --locality-weight 0.05
+engram train-budget-native-ternary \
+  --model HuggingFaceTB/SmolLM2-135M \
+  --training-dataset /absolute/path/to/pretraining-distillation.jsonl \
+  --validation-dataset /absolute/path/to/held-out.jsonl \
+  --out work/budget-native-ternary \
+  --steps 128 \
+  --anneal-steps 96 \
+  --transition-mode deepest_first \
+  --coadapt-backbone \
+  --backbone-start-step 96 \
+  --checkpoint-every 32 \
+  --device cpu
 ```
 
 A successful command exit is not a compilation claim. The generated intervention report applies
 explicit quality gates; routed arms must pass before their parameters are eligible for
-serialization. `engram gate-mlp-intervention --report PATH` reapplies the current declared
+serialization. The grouped-ternary command writes an exact byte-accounted research artifact, but
+the checked SmolLM2 configuration is stopped by its progression rule and is not a supported
+compiler input. `engram gate-mlp-intervention --report PATH` reapplies the current declared
 thresholds to an existing report. Supplying several `--report` paths plus `--out DIRECTORY`
 creates a provenance-checked composite gate, which is useful when expensive arms were run in
 stages.

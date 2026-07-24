@@ -15,6 +15,15 @@ from engram.evaluation.report import (
     write_semantic_routing_report,
 )
 from engram.evaluation.mlp_intervention import evaluate_mlp_interventions
+from engram.evaluation.native_bitnet_parity import (
+    evaluate_native_bitnet_parity,
+)
+from engram.evaluation.native_bitnet_kernel import (
+    evaluate_native_bitnet_kernel_confirmation,
+)
+from engram.evaluation.native_bitnet_attention import (
+    evaluate_native_bitnet_attention_substitution,
+)
 from engram.evaluation.router_sweep import evaluate_rank_router_regularization_sweep
 from engram.evaluation.dip_sweep import evaluate_dip_exact_completion_sweep
 from engram.evaluation.correction_sweep import evaluate_correction_capsule_sweep
@@ -25,6 +34,10 @@ from engram.evaluation.gates import (
 from engram.episodic.evaluate import evaluate_attention_replacement
 from engram.models.fixture import create_tiny_fixture
 from engram.models.inspection import inspect_model
+from engram.models.native_bitnet import (
+    audit_native_bitnet_source,
+    repack_native_bitnet_model,
+)
 from engram.semantic.oracle import analyze_magnitude_oracle
 from engram.semantic.evaluate import evaluate_practical_routing
 from engram.semantic.memory import build_semantic_package
@@ -33,8 +46,12 @@ from engram.tracing.teacher import (
     capture_teacher_traces,
     plan_teacher_trace_capture,
 )
-from engram.compiler import compile_model
-from engram.runtime import EngramRuntime
+from engram.compiler import compile_model, compile_native_bitnet_package
+from engram.runtime import (
+    EngramRuntime,
+    NativeBitNetRuntime,
+    validate_native_bitnet_package,
+)
 from engram.runtime.validation import benchmark_runtime, validate_package
 from engram.evaluation.end_to_end import evaluate_end_to_end
 from engram.evaluation.controller_gate import evaluate_controller_gate
@@ -49,6 +66,7 @@ from engram.training import (
     evaluate_width_residual_sweep,
     recalibrate_native_gate_residual,
     train_activation_aware_aq_boundaries,
+    train_budget_native_ternary_student,
     train_projection_aq_layers,
     train_native_gate_end_to_end,
     train_native_gate_trace_student,
@@ -73,6 +91,94 @@ def _parser() -> argparse.ArgumentParser:
     inspect.add_argument("--model", required=True)
     inspect.add_argument("--no-weight-hash", action="store_true")
     inspect.add_argument("--out", type=Path)
+
+    bitnet_audit = commands.add_parser(
+        "audit-native-bitnet",
+        help=("metadata-only audit of the separate native low-bit BitNet source track"),
+    )
+    bitnet_audit.add_argument("--model", required=True)
+    bitnet_audit.add_argument("--revision")
+    bitnet_audit.add_argument("--cache-dir", type=Path)
+    bitnet_audit.add_argument("--out", type=Path)
+
+    bitnet_repack = commands.add_parser(
+        "repack-native-bitnet",
+        help=(
+            "download if needed and losslessly repack native BitNet MLP "
+            "records as five trits per byte"
+        ),
+    )
+    bitnet_repack.add_argument("--model", required=True)
+    bitnet_repack.add_argument("--revision")
+    bitnet_repack.add_argument("--cache-dir", type=Path)
+    bitnet_repack.add_argument("--out", required=True, type=Path)
+    bitnet_repack.add_argument("--report", type=Path)
+    bitnet_repack.add_argument(
+        "--skip-official-weight-hash",
+        action="store_true",
+        help="skip the pinned official checkpoint SHA-256 verification",
+    )
+
+    bitnet_parity = commands.add_parser(
+        "evaluate-native-bitnet-parity",
+        help=(
+            "run CPU-only local and causal parity against a repacked native "
+            "BitNet artifact"
+        ),
+    )
+    bitnet_parity.add_argument("--model", required=True)
+    bitnet_parity.add_argument("--artifact", required=True, type=Path)
+    bitnet_parity.add_argument(
+        "--artifact-sha256",
+        help="expected artifact SHA-256 from the repack report",
+    )
+    bitnet_parity.add_argument("--out", required=True, type=Path)
+    bitnet_parity.add_argument("--revision")
+    bitnet_parity.add_argument("--cache-dir", type=Path)
+    bitnet_parity.add_argument(
+        "--local-layers",
+        nargs="+",
+        type=int,
+        default=(0, 14, 29),
+    )
+    bitnet_parity.add_argument("--local-states", type=int, default=2)
+    bitnet_parity.add_argument(
+        "--input-ids",
+        nargs="+",
+        type=int,
+        default=(128000,),
+    )
+    bitnet_parity.add_argument(
+        "--no-causal-substitution",
+        action="store_true",
+    )
+
+    bitnet_kernel = commands.add_parser(
+        "evaluate-native-bitnet-kernel",
+        help=(
+            "run direct packed CPU parity and the frozen native-BitNet "
+            "confirmation gate"
+        ),
+    )
+    bitnet_kernel.add_argument("--model", required=True)
+    bitnet_kernel.add_argument("--artifact", required=True, type=Path)
+    bitnet_kernel.add_argument("--artifact-sha256", required=True)
+    bitnet_kernel.add_argument("--dataset", required=True, type=Path)
+    bitnet_kernel.add_argument("--out", required=True, type=Path)
+    bitnet_kernel.add_argument("--revision")
+    bitnet_kernel.add_argument("--cache-dir", type=Path)
+    bitnet_kernel.add_argument("--library", type=Path)
+    bitnet_kernel.add_argument("--threads", type=int, default=12)
+    bitnet_kernel.add_argument("--sequence-count", type=int, default=8)
+    bitnet_kernel.add_argument("--prediction-positions", type=int, default=256)
+    bitnet_kernel.add_argument("--record-offset", type=int, default=0)
+    bitnet_kernel.add_argument(
+        "--parity-layers",
+        nargs="+",
+        type=int,
+        default=(0, 14, 29),
+    )
+    bitnet_kernel.add_argument("--parity-states", type=int, default=2)
 
     fixture = commands.add_parser(
         "create-fixture", help="create deterministic random Llama-shaped weights"
@@ -172,6 +278,48 @@ def _parser() -> argparse.ArgumentParser:
     attention.add_argument("--value-width", type=int, default=16)
     attention.add_argument("--local-window", type=int, default=16)
 
+    bitnet_attention = commands.add_parser(
+        "evaluate-native-bitnet-attention",
+        help="run trained-model Milestone 3 substitutions on a BitNet package",
+    )
+    bitnet_attention.add_argument("--model", required=True, type=Path)
+    bitnet_attention.add_argument("--dataset", required=True, type=Path)
+    bitnet_attention.add_argument("--out", required=True, type=Path)
+    bitnet_attention.add_argument("--library", type=Path)
+    bitnet_attention.add_argument("--threads", type=int)
+    bitnet_attention.add_argument("--sequence-count", type=int, default=2)
+    bitnet_attention.add_argument("--prediction-positions", type=int, default=32)
+    bitnet_attention.add_argument("--record-offset", type=int, default=0)
+    bitnet_attention.add_argument(
+        "--modes",
+        nargs="+",
+        choices=(
+            "local",
+            "recurrent",
+            "retrieval",
+            "hybrid",
+            "indexed_hybrid",
+            "bounded_hybrid",
+            "streaming_hybrid",
+        ),
+        default=("local", "recurrent", "retrieval", "hybrid"),
+    )
+    bitnet_attention.add_argument("--layers", nargs="+", type=int)
+    bitnet_attention.add_argument("--local-window", type=int, default=16)
+    bitnet_attention.add_argument("--recurrent-decay", type=float, default=0.99)
+    bitnet_attention.add_argument("--retrieval-top-k", type=int, default=4)
+    bitnet_attention.add_argument("--older-weight", type=float, default=0.5)
+    bitnet_attention.add_argument("--retrieval-candidates", type=int, default=12)
+    bitnet_attention.add_argument("--lsh-tables", type=int, default=4)
+    bitnet_attention.add_argument("--lsh-bits", type=int, default=8)
+    bitnet_attention.add_argument("--lsh-radius", type=int, default=1)
+    bitnet_attention.add_argument("--lsh-seed", type=int, default=314159)
+    bitnet_attention.add_argument("--page-size", type=int, default=8)
+    bitnet_attention.add_argument(
+        "--page-bound", choices=("box", "sphere"), default="sphere"
+    )
+    bitnet_attention.add_argument("--sink-tokens", type=int, default=2)
+
     compile_command = commands.add_parser(
         "compile", help="compile a runnable Engram package"
     )
@@ -191,6 +339,18 @@ def _parser() -> argparse.ArgumentParser:
     compile_command.add_argument("--local-window", type=int)
     compile_command.add_argument("--cycles", type=int)
 
+    compile_bitnet = commands.add_parser(
+        "compile-native-bitnet",
+        help="compile a source-independent package around the direct BitNet kernel",
+    )
+    compile_bitnet.add_argument("--model", required=True)
+    compile_bitnet.add_argument("--artifact", required=True, type=Path)
+    compile_bitnet.add_argument("--artifact-sha256", required=True)
+    compile_bitnet.add_argument("--out", required=True, type=Path)
+    compile_bitnet.add_argument("--revision")
+    compile_bitnet.add_argument("--cache-dir", type=Path)
+    compile_bitnet.add_argument("--threads", type=int, default=12)
+
     generate = commands.add_parser(
         "generate", help="generate with the PyTorch-free reference runtime"
     )
@@ -198,6 +358,16 @@ def _parser() -> argparse.ArgumentParser:
     generate.add_argument("--prompt", required=True)
     generate.add_argument("--max-tokens", type=int, default=16)
     generate.add_argument("--exact-vocab", action="store_true")
+
+    generate_bitnet = commands.add_parser(
+        "generate-native-bitnet",
+        help="generate from a compiled native BitNet package on CPU",
+    )
+    generate_bitnet.add_argument("--model", required=True, type=Path)
+    generate_bitnet.add_argument("--prompt", required=True)
+    generate_bitnet.add_argument("--max-tokens", type=int, default=16)
+    generate_bitnet.add_argument("--library", type=Path)
+    generate_bitnet.add_argument("--threads", type=int)
 
     validate = commands.add_parser(
         "validate", help="verify package checksums and deterministic generation"
@@ -408,12 +578,8 @@ def _parser() -> argparse.ArgumentParser:
     sparse_train.add_argument("--start-input-fraction", type=float)
     sparse_train.add_argument("--anneal-steps", type=int, default=0)
     sparse_train.add_argument("--start-temperature", type=float)
-    sparse_train.add_argument(
-        "--checkpoint-selection-records", type=int, default=0
-    )
-    sparse_train.add_argument(
-        "--checkpoint-selection-every", type=int, default=0
-    )
+    sparse_train.add_argument("--checkpoint-selection-records", type=int, default=0)
+    sparse_train.add_argument("--checkpoint-selection-every", type=int, default=0)
     sparse_train.add_argument("--router-group-size", type=int, default=1)
     sparse_train.add_argument("--train-full-mlp", action="store_true")
     sparse_train.add_argument("--max-train-records", type=int)
@@ -741,6 +907,57 @@ def _parser() -> argparse.ArgumentParser:
     )
     width_train.add_argument("--backbone-learning-rate", type=float, default=3e-5)
 
+    ternary_train = commands.add_parser(
+        "train-budget-native-ternary",
+        help=(
+            "continually distill full-width grouped-ternary MLPs through "
+            "their serialized deployment representation"
+        ),
+    )
+    ternary_train.add_argument("--model", required=True)
+    ternary_train.add_argument("--training-dataset", required=True, type=Path)
+    ternary_train.add_argument("--validation-dataset", required=True, type=Path)
+    ternary_train.add_argument("--out", required=True, type=Path)
+    ternary_train.add_argument("--group-size", type=int, default=128)
+    ternary_train.add_argument("--steps", type=int, default=8)
+    ternary_train.add_argument("--dense-warmup-steps", type=int, default=0)
+    ternary_train.add_argument("--anneal-steps", type=int, default=4)
+    ternary_train.add_argument(
+        "--transition-mode",
+        choices=("deepest_first", "global"),
+        default="deepest_first",
+        help=(
+            "stagger quantization from the deepest MLP upward, or transition "
+            "all MLPs together"
+        ),
+    )
+    ternary_train.add_argument("--batch-size", type=int, default=1)
+    ternary_train.add_argument("--learning-rate", type=float, default=1e-5)
+    ternary_train.add_argument("--backbone-learning-rate", type=float, default=3e-5)
+    ternary_train.add_argument("--local-weight", type=float, default=0.1)
+    ternary_train.add_argument("--hidden-weight", type=float, default=0.5)
+    ternary_train.add_argument("--final-hidden-weight", type=float, default=1.0)
+    ternary_train.add_argument("--final-cka-weight", type=float, default=0.0)
+    ternary_train.add_argument("--logit-weight", type=float, default=1.0)
+    ternary_train.add_argument("--teacher-top1-weight", type=float, default=0.0)
+    ternary_train.add_argument("--label-weight", type=float, default=0.1)
+    ternary_train.add_argument("--temperature", type=float, default=1.0)
+    ternary_train.add_argument("--confidence-weight", type=float, default=0.5)
+    ternary_train.add_argument("--coadapt-backbone", action="store_true")
+    ternary_train.add_argument(
+        "--coadapt-embeddings-and-head",
+        action="store_true",
+    )
+    ternary_train.add_argument("--backbone-start-step", type=int)
+    ternary_train.add_argument("--max-train-records", type=int)
+    ternary_train.add_argument("--training-record-offset", type=int, default=0)
+    ternary_train.add_argument("--max-validation-records", type=int)
+    ternary_train.add_argument("--device", default="cpu")
+    ternary_train.add_argument("--no-artifact", action="store_true")
+    ternary_train.add_argument("--checkpoint-every", type=int, default=0)
+    ternary_train.add_argument("--resume", action="store_true")
+    ternary_train.add_argument("--initial-checkpoint", type=Path)
+
     width_ceiling = commands.add_parser(
         "evaluate-width-local-ceiling",
         help="fit compact MLPs on cached teacher boundaries and screen their local ceiling",
@@ -841,6 +1058,61 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.out.parent.mkdir(parents=True, exist_ok=True)
             args.out.write_text(payload, encoding="utf-8")
         print(payload, end="")
+    elif args.command == "audit-native-bitnet":
+        result = audit_native_bitnet_source(
+            args.model,
+            revision=args.revision,
+            cache_dir=args.cache_dir,
+        ).to_dict()
+        payload = json.dumps(result, indent=2, sort_keys=True) + "\n"
+        if args.out:
+            atomic_json(args.out, result)
+        print(payload, end="")
+        return 0 if result.get("decision") == "proceed_to_exact_weight_repack" else 2
+    elif args.command == "repack-native-bitnet":
+        result = repack_native_bitnet_model(
+            args.model,
+            args.out,
+            revision=args.revision,
+            cache_dir=args.cache_dir,
+            report_path=args.report,
+            verify_official_weight_hash=not args.skip_official_weight_hash,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "evaluate-native-bitnet-parity":
+        result = evaluate_native_bitnet_parity(
+            args.model,
+            args.artifact,
+            out=args.out,
+            revision=args.revision,
+            cache_dir=args.cache_dir,
+            local_layers=args.local_layers,
+            local_states=args.local_states,
+            input_ids=args.input_ids,
+            run_causal_substitution=not args.no_causal_substitution,
+            expected_artifact_sha256=args.artifact_sha256,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result.get("smoke_gate", {}).get("passed") else 2
+    elif args.command == "evaluate-native-bitnet-kernel":
+        result = evaluate_native_bitnet_kernel_confirmation(
+            args.model,
+            args.artifact,
+            args.dataset,
+            out=args.out,
+            artifact_sha256=args.artifact_sha256,
+            revision=args.revision,
+            cache_dir=args.cache_dir,
+            library=args.library,
+            threads=args.threads,
+            sequence_count=args.sequence_count,
+            prediction_positions=args.prediction_positions,
+            record_offset=args.record_offset,
+            parity_layers=args.parity_layers,
+            parity_states=args.parity_states,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result.get("gate_passed") else 2
     elif args.command == "create-fixture":
         print(create_tiny_fixture(args.out, seed=args.seed))
     elif args.command == "trace":
@@ -929,6 +1201,32 @@ def main(argv: Sequence[str] | None = None) -> int:
         json_path, markdown_path = write_attention_report(report, args.out)
         print(json_path)
         print(markdown_path)
+    elif args.command == "evaluate-native-bitnet-attention":
+        result = evaluate_native_bitnet_attention_substitution(
+            args.model,
+            args.dataset,
+            out=args.out,
+            library=args.library,
+            threads=args.threads,
+            sequence_count=args.sequence_count,
+            prediction_positions=args.prediction_positions,
+            record_offset=args.record_offset,
+            modes=args.modes,
+            layers=args.layers,
+            local_window=args.local_window,
+            recurrent_decay=args.recurrent_decay,
+            retrieval_top_k=args.retrieval_top_k,
+            older_weight=args.older_weight,
+            retrieval_candidates=args.retrieval_candidates,
+            lsh_tables=args.lsh_tables,
+            lsh_bits=args.lsh_bits,
+            lsh_radius=args.lsh_radius,
+            lsh_seed=args.lsh_seed,
+            page_size=args.page_size,
+            page_bound=args.page_bound,
+            sink_tokens=args.sink_tokens,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
     elif args.command == "compile":
         compile_config = {}
         if args.config:
@@ -963,21 +1261,84 @@ def main(argv: Sequence[str] | None = None) -> int:
                 cycles=int(configured("cycles", 2)),
             )
         )
-    elif args.command == "generate":
-        runtime = EngramRuntime(args.model)
-        prompt_tokens = runtime.tokenize(args.prompt)
-        tokens, metrics = runtime.generate_tokens(
-            prompt_tokens, max_tokens=args.max_tokens, exact_vocab=args.exact_vocab
+    elif args.command == "compile-native-bitnet":
+        print(
+            compile_native_bitnet_package(
+                args.model,
+                args.artifact,
+                args.out,
+                artifact_sha256=args.artifact_sha256,
+                revision=args.revision,
+                cache_dir=args.cache_dir,
+                kernel_threads=args.threads,
+            )
         )
-        print(runtime.detokenize(tokens))
+    elif args.command == "generate":
+        manifest = json.loads(
+            (Path(args.model) / "manifest.json").read_text(encoding="utf-8")
+        )
+        if manifest.get("format") == "engram-native-bitnet":
+            with NativeBitNetRuntime(args.model) as runtime:
+                result = runtime.generate(
+                    args.prompt,
+                    max_new_tokens=args.max_tokens,
+                )
+            print(result.text)
+            print(
+                json.dumps(
+                    {
+                        "tokens": list(result.generated_tokens),
+                        "elapsed_seconds": result.elapsed_seconds,
+                        "mlp_calls": result.mlp_calls,
+                        "scheduled_mlp_bytes": result.scheduled_mlp_bytes,
+                    },
+                    indent=2,
+                )
+            )
+        else:
+            runtime = EngramRuntime(args.model)
+            prompt_tokens = runtime.tokenize(args.prompt)
+            tokens, metrics = runtime.generate_tokens(
+                prompt_tokens, max_tokens=args.max_tokens, exact_vocab=args.exact_vocab
+            )
+            print(runtime.detokenize(tokens))
+            print(
+                json.dumps(
+                    {"tokens": tokens, "metrics": [item.__dict__ for item in metrics]},
+                    indent=2,
+                )
+            )
+    elif args.command == "generate-native-bitnet":
+        with NativeBitNetRuntime(
+            args.model,
+            library=args.library,
+            threads=args.threads,
+        ) as runtime:
+            result = runtime.generate(args.prompt, max_new_tokens=args.max_tokens)
+        print(result.text)
         print(
             json.dumps(
-                {"tokens": tokens, "metrics": [item.__dict__ for item in metrics]},
+                {
+                    "prompt_tokens": list(result.prompt_tokens),
+                    "tokens": list(result.generated_tokens),
+                    "elapsed_seconds": result.elapsed_seconds,
+                    "mlp_calls": result.mlp_calls,
+                    "mlp_elapsed_seconds": result.mlp_elapsed_seconds,
+                    "scheduled_mlp_bytes": result.scheduled_mlp_bytes,
+                    "maximum_scratch_bytes": result.maximum_scratch_bytes,
+                },
                 indent=2,
             )
         )
     elif args.command == "validate":
-        result = validate_package(args.model)
+        manifest = json.loads(
+            (Path(args.model) / "manifest.json").read_text(encoding="utf-8")
+        )
+        result = (
+            validate_native_bitnet_package(args.model)
+            if manifest.get("format") == "engram-native-bitnet"
+            else validate_package(args.model)
+        )
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0 if result["valid"] else 1
     elif args.command == "benchmark":
@@ -1381,6 +1742,43 @@ def main(argv: Sequence[str] | None = None) -> int:
             utility_residual=args.utility_residual,
         )
         print(args.out / "native_gate_end_to_end.json")
+        return 0 if report["gate"]["passed"] else 2
+    elif args.command == "train-budget-native-ternary":
+        report = train_budget_native_ternary_student(
+            args.model,
+            args.training_dataset,
+            args.validation_dataset,
+            args.out,
+            group_size=args.group_size,
+            steps=args.steps,
+            dense_warmup_steps=args.dense_warmup_steps,
+            anneal_steps=args.anneal_steps,
+            transition_mode=args.transition_mode,
+            batch_size=args.batch_size,
+            learning_rate=args.learning_rate,
+            backbone_learning_rate=args.backbone_learning_rate,
+            local_weight=args.local_weight,
+            hidden_weight=args.hidden_weight,
+            final_hidden_weight=args.final_hidden_weight,
+            final_cka_weight=args.final_cka_weight,
+            logit_weight=args.logit_weight,
+            teacher_top1_weight=args.teacher_top1_weight,
+            label_weight=args.label_weight,
+            temperature=args.temperature,
+            confidence_weight=args.confidence_weight,
+            coadapt_backbone=args.coadapt_backbone,
+            coadapt_embeddings_and_head=args.coadapt_embeddings_and_head,
+            backbone_start_step=args.backbone_start_step,
+            max_train_records=args.max_train_records,
+            training_record_offset=args.training_record_offset,
+            max_validation_records=args.max_validation_records,
+            device=args.device,
+            save_artifact=not args.no_artifact,
+            checkpoint_every=args.checkpoint_every,
+            resume=args.resume,
+            initial_checkpoint=args.initial_checkpoint,
+        )
+        print(args.out / "budget_native_ternary_training.json")
         return 0 if report["gate"]["passed"] else 2
     elif args.command == "train-width-pruned-student":
         report = train_width_pruned_student(

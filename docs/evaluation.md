@@ -2,19 +2,135 @@
 
 ## Current combined-gate decision
 
-As of 2026-07-23, no candidate passes the causal quality thresholds and the
-complete physical cold-traffic threshold together. Predictor-free DIP passes
-quality on an untouched confirmation corpus but reaches 83.33% cache-line
-traffic and is slower than dense in the checked native benchmark. The
+As of 2026-07-24, no dense-Llama conversion passes the causal quality
+thresholds and the complete physical cold-traffic threshold together.
+Predictor-free DIP passes quality on an untouched confirmation corpus but
+reaches 83.33% cache-line traffic and is slower than dense in the checked
+native benchmark. The
 serialized mild-width compact-Q4 student reaches 44.9334% traffic but fails
 quality after 3,000,093 training positions. The latest 1M-prototype
 output-memory experiment is layer-local only and fails its predeclared
-progression screen.
+progression screen. Five later recurrent/low-bit representations also fit the
+traffic policy but miss the 0.20 layer-local ceiling; the strongest trained
+point reaches 0.308254. The subsequent all-layer budget-native
+grouped-ternary artifact reaches 43.1353% traffic, but after 1,014,225 training
+positions still has KL 2.2844, top-1 0.3198, NLL delta +2.2770, and
+final-hidden relative L2 0.6036. It fails its frozen pre-3M progression rule.
+
+A separate low-bit-native source track now **passes**. Its direct CPU kernel
+memory-maps the 318,924,544-byte base-3 phase artifact, materializes no dense
+weights, and schedules 40.0527% of dense ideal-Q4 cold bytes. On the frozen
+8-sequence/256-position corpus it measures KL 0.00371, top-1 0.96094, NLL
+delta +0.00224, and final-hidden relative L2 0.04678. See the
+[direct-kernel result](../reports/semantic_gate_native_bitnet_2026-07-24/summary.md).
 
 See [Project status](status.md) and the
 [machine-readable snapshot](../reports/semantic_gate_status_2026-07-23/summary.json).
+Exact budget-edge screen results are in the
+[low-bit/recurrent summary](../reports/semantic_gate_lowbit_2026-07-23/summary.json).
+The exact hard-forward training protocol and scale-up decision are in the
+[budget-native summary](../reports/semantic_gate_budget_native_2026-07-23/summary.json).
 The sections below define the individual experiments and preserve their
 historical evidence.
+
+## Native BitNet repack and parity protocol
+
+`engram audit-native-bitnet` downloads configuration only and accepts the
+narrow `bitnet_offline_autobitlinear_v1` contract. It requires BitNet causal
+architecture, ReLU-squared gating, offline `AutoBitLinear` storage, and
+dimensions compatible with the official four-trits-per-byte layout. It does
+not add `bitnet` to the generic SiLU/SwiGLU compiler. Native-training
+provenance is accepted only for the pinned official source attestation; a
+local config with matching fields remains unverified.
+
+`engram repack-native-bitnet` then verifies the pinned safetensors SHA-256,
+rejects invalid two-bit code `3`, writes cache-aligned
+five-trits-per-byte gate/up/gain/down phase streams, reloads the complete
+artifact, and compares every reconstructed logical value. Each channel
+remains O(1)-addressable as a logical record. The physical phase layout avoids
+the compulsory rereads an interleaved record would incur around the shared
+RMS normalization. Traffic is reported against both the unchanged dense-Q4
+denominator and the actual Hugging Face native payload. The latter is never
+used to weaken the 45% threshold.
+
+`engram evaluate-native-bitnet-parity` preserves native per-token activation
+quantization, ReLU-squared gating, `ffn_sub_norm`, and BF16 projection scales.
+Its dense decode exists only as a correctness oracle. Progression to the
+combined gate produced:
+
+| Check | Current result | Required next result |
+|---|---:|---:|
+| Logical reconstruction | exact | exact |
+| Selected-layer BF16 parity | exact | exact |
+| Bounded all-layer causal parity | exact | exact |
+| Complete serialized/modelled phase traffic | 40.0527% | at most 45% |
+| Direct packed CPU execution | implemented; zero dense-weight bytes | parity-correct |
+| Evidence | 8 sequences / 256 positions | at least 8 sequences / 256 positions |
+| Causal quality | KL 0.00371; top-1 0.96094; NLL +0.00224; hidden L2 0.04678 | pass frozen thresholds |
+| Packed-kernel latency and traffic | 9.737 s summed MLP time; exact 40.0527% scheduled cold bytes | report against dense baseline |
+
+`engram evaluate-native-bitnet-kernel` is the qualifying command. It verifies
+the pinned source and artifact hashes, loads the pinned tokenizer with its
+regex compatibility fix, selects the frozen records deterministically,
+checks layers 0/14/29 against the dense oracle, substitutes the direct kernel
+into all 30 transformer layers, and writes every per-layer byte/time counter.
+Official BF16 layer outputs are not bit-identical because PyTorch GEMM and the
+stream kernel reduce in different orders; their maximum checked relative L2
+is 0.00982. The causal thresholds, rather than bit identity, determine the
+formal outcome.
+
+## Budget-edge local progression protocol
+
+The final bounded representation screens are deliberately cheaper than a
+formal all-layer intervention. They use sequence-disjoint development-role
+teacher boundaries at representative layer 14 and require:
+
+| Check | Threshold |
+|---|---:|
+| Complete modeled cold MLP traffic | at most 45% of dense ideal Q4 |
+| Mean layer-local relative L2 | at most 0.20 |
+| Formal or external data opened before a local pass | no |
+
+Initialization guards may stop a representation before training. Recurrent
+cache reuse must additionally be demonstrated in a native benchmark before
+its modeled byte result can count as a physical systems pass. These screens
+can reject an arm but cannot qualify one for compilation; a local pass would
+only authorize the existing all-layer causal gate on a serialized and
+independently reloaded artifact.
+
+## Budget-native causal progression protocol
+
+`engram train-budget-native-ternary` keeps the deployable representation in
+the student forward path. It supports a global or deepest-layer-first
+continual transition, hard-forward straight-through quantization, direct
+hidden/logit distillation, optional CKA and teacher-top-1 losses, co-adaptation
+of already-resident backbone tensors, fresh-record offsets, device-neutral
+checkpoint/resume, and initialization from an earlier checkpoint when the
+objective or trainable set changes.
+
+Every scored result forces all 30 MLPs to hard ternary. The MLP artifact is
+serialized, strictly reloaded, decoded, and installed before validation.
+Co-adapted attention, normalization, embedding, or head tensors are separately
+written as safetensors and reloaded. The complete MLP file size must exactly
+equal the byte model. Training hardware is not part of the inference claim:
+the one-million-position run used the local RTX 3050 as an accelerator, while
+its checkpoint and artifact remain CPU compatible.
+
+Short objective screens used fresh record ranges and predeclared improvement
+rules. The promoted one-million-position rung used 8,192 records and had to
+close at least half of every remaining formal gap from the preceding
+head-coadaptation checkpoint:
+
+| Metric | Baseline | Required after 1M | Measured | Gap closed |
+|---|---:|---:|---:|---:|
+| KL | 6.14955 | ≤3.09977 | 2.28436 | 63.37% |
+| Top-1 | 0.05499 | ≥0.47749 | 0.31976 | 31.33% |
+| NLL delta | +6.03256 | ≤+3.04128 | +2.27704 | 62.77% |
+| Hidden L2 | 0.91613 | ≤0.50807 | 0.60361 | 38.29% |
+
+Because top-1 and hidden state fail, this configuration is not eligible for a
+3M or 10M continuation. The rule prevents strong KL/NLL movement from being
+mistaken for broad semantic recovery.
 
 ## Gate 1 definition
 
@@ -302,3 +418,41 @@ run, but no trained compiled-package Gate 5 evaluation has, so no Gate 5 quality
 The system-level Cognitive Executive has separate goal, confidence-calibration, action-utility,
 attention, memory, monitoring, and safety gates defined in
 [its design document](cognitive_executive.md). Compiler gates do not imply executive success.
+
+## Native-BitNet package and Milestone 3 attention evidence
+
+The native-BitNet package runtime has exact output parity with the
+source-backed direct-kernel model on the fixed prompt: final hidden states and
+logits match bit-for-bit. Two-token greedy generation yields tokens
+`[12366, 13]` (` Paris.`), invokes the direct packed MLP 60 times, and never
+loads source MLP tensors. The package report records the source revision,
+artifact hash, non-MLP tensor count, package inventory, and runtime metrics.
+
+Attention development rejected an all-layer 16-token local replacement (KL
+0.2031, top-1 0.8594) and normalized recurrent attention (KL 2.6883, top-1
+0.1875). The promoted hybrid performs one causal softmax over the local window
+and the four exact best older keys. The frozen confirmation uses records 8–15,
+disjoint from the records used for operator selection:
+
+| Check | Threshold | Frozen result |
+|---|---:|---:|
+| KL | <= 0.05 | 0.002494 |
+| Teacher top-1 agreement | >= 0.90 | 0.996094 |
+| NLL delta | <= +0.05 | +0.007099 |
+| Final-hidden relative L2 | <= 0.10 | 0.043498 |
+| Evidence | >= 8 sequences / 256 positions | 8 / 256 |
+
+That exact result passed semantic progression only because selection scanned
+the complete older history. Follow-up random sign-LSH reached only
+58.8–65.6% exact top-k recall. Exact bounding-box and centroid-radius page
+indexes preserved recall but opened about 94% of pages and exceeded dense
+logical traffic after metadata.
+
+The promoted bounded streaming cache uses W=16, eight retained old keys (two
+sinks and six online heavy hitters), and exact-reranks four values. On the
+unchanged frozen records 8–15 it reaches KL 0.01409, top-1 0.94141, NLL delta
+−0.00613, and hidden L2 0.08559. All evidence and semantic checks pass. At 33
+tokens its modeled logical traffic is 93.34% of dense, but old-context storage
+and reads no longer grow with sequence length. This advances Milestone 3 to
+native implementation and long-context traffic validation; it does not claim
+native latency or measured DRAM reduction.

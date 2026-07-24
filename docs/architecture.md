@@ -1,8 +1,12 @@
 # Architecture
 
 For the current implementation/evidence boundary, see
-[Project status](status.md). No semantic representation described here has yet
-passed causal quality and the 45% physical cold-traffic limit together.
+[Project status](status.md). No representation has yet passed the original
+dense-Llama causal-quality and 45% physical cold-traffic limits together. The
+separate native-BitNet track now passes exact reconstruction, direct packed
+CPU execution, frozen causal confirmation, and source-independent package
+generation. This is a distinct low-bit-native source path, not a dense-model
+conversion result.
 
 Engram's target runtime combines a shared recurrent controller, fixed sparse semantic
 memory derived from SwiGLU records, hybrid local/recurrent/retrieval episodic memory, an
@@ -32,6 +36,33 @@ The Python implementation verifies this identity and the native scalar kernel pr
 independent implementation. The magnitude reference uses all activations to establish a
 full-information baseline before practical routing is attempted. It is not the optimal K-subset
 in general because vector contributions can cancel.
+
+## Separate native-BitNet record track
+
+Native BitNet is kept behind a distinct adapter because its MLP is not the
+SiLU identity above. For channel `j`:
+
+```text
+z_j(h) = ReLU(W_gate[j] Q8(h))^2 * (W_up[j] Q8(h))
+r(h)   = sqrt(mean_j z_j(h)^2 + epsilon)
+FFN(h) = W_down Q8(gamma * z(h) / r(h))
+```
+
+`Q8` is native per-token activation quantization and `gamma` is the
+intermediate `ffn_sub_norm` gain. The scalar denominator couples all
+channels, so this format cannot be admitted silently to the existing
+independent-SwiGLU oracle or router.
+
+The exact low-bit artifact nevertheless makes each channel addressable as a
+logical record containing its gate row, up row, transposed down column, and
+BF16 `gamma`. Five ternary digits are packed in one byte; the three native
+BF16 projection scales are layer-global. Physically, four cache-aligned
+gate/up/gain/down streams follow the computation phases. Four base pointers
+retain O(1) channel addressing while avoiding cache-line rereads around the
+shared normalization. The direct CPU kernel now executes from those mapped
+streams with one scheduled cold read of each serialized line and no dense
+weight materialization. Future sparse execution would additionally need an
+exact or validated estimate of the shared RMS denominator.
 
 ## Semantic-memory prototype
 
@@ -76,11 +107,15 @@ selector quality.
 
 ## Episodic-memory prototype
 
-The episodic baseline keeps an exact causal local window, a normalized ELU+1 linear-attention
-state whose size depends on head dimensions rather than sequence length, and a configurable
-fixed-capacity older-token ring. Older keys and values use per-vector int8 codes and scales;
-retrieval performs quantized cosine candidate search followed by decoded exact dot-product
-reranking. A heuristic hybrid combines the three reads and exposes state/read byte metrics.
+The episodic baseline keeps an exact causal local window, a normalized ELU+1
+linear-attention state whose size depends on head dimensions rather than
+sequence length, and a configurable fixed-capacity older-token ring. The new
+native-BitNet substitution harness additionally runs the trained transformer's
+real Q/K/V projections and RoPE while replacing attention itself. Local and
+retrieved keys participate in one exact sparse softmax rather than separately
+normalized reads. W=16/K=4 passes the frozen semantic gate, but its current
+reference selector computes scores for every older key. The next runtime
+design must produce a small indexed candidate set before exact score reranking.
 
 ## Token-level controller and output path
 
@@ -102,6 +137,33 @@ lacks AVX2 and executes the scalar fallback. Python/native greedy fixture tokens
 exact parity.
 
 ## Open architectural work
+
+The bounded dense-source representation search now includes cache-reused recurrent compact
+MLPs, projection-normalized ternary projections, affine constrained-vector
+quantization, unrestricted four-weight codebooks, and high-dimensional
+lifted-binary lattices. Their reusable modules define hard-forward operators
+and complete cold-byte models, but none passes the layer-local progression
+ceiling. They are research components, not supported `.engram` package
+layouts. That evidence motivated the separate pretraining-native BitNet track
+described above.
+
+That budget-native mechanism is now implemented for a full-width
+grouped-ternary SwiGLU. The artifact packs five ternary weights per byte and a
+non-learned FP16 scale per 128-weight group; complete 30-layer traffic is
+43.1353% of dense ideal Q4. Training retains float masters only outside the
+artifact, executes hard decoded weights with straight-through gradients, can
+transition deepest layers first, and serializes/reloads the exact binary
+before causal validation. Attention, normalization, and the tied
+embedding/output head can co-adapt as replacements for already-resident
+tensors. Checkpoints are device-neutral, so optional CUDA training does not
+create a GPU runtime dependency.
+
+The architecture is operational but not qualified. After 1,014,225 training
+positions it remains at KL 2.2844, top-1 0.3198, NLL +2.2770, and hidden L2
+0.6036. It misses the predeclared top-1 and hidden-state scale-up checks, so
+the exact design is stopped before 3M. Another architecture must change the
+learned representation or its pretraining origin rather than append another
+small post-hoc correction to this artifact.
 
 The semantic and vocabulary proxies use IVF in both runtimes, but still scan every coarse
 centroid and their tiny-fixture centroid traffic is unfavorable. Learned semantic routing remains
@@ -186,6 +248,17 @@ error only from 0.327526 to 0.321854. These results close the tested
 single-compact-MLP and prototype-density architectures; they are not compiler
 inputs.
 
-Older-context retrieval still uses a linear candidate scan. Trained attention and controller
-distillation remain open. The DIP quality pass still needs systems replication, while the separate
-low-budget research path must clear semantic quality before any compilation attempt.
+The original older-context retrieval prototype uses a linear candidate scan.
+Native-BitNet now also has a bounded streaming operator: exact local context,
+fixed attention sinks, and an online cumulative-attention heavy-hitter cache.
+Its frozen trained-model confirmation passes without consulting evicted keys.
+Native cache execution, long-context hardware traffic, and controller
+distillation remain open. The DIP quality pass still needs systems replication.
+For native BitNet, the memory-mapped CPU kernel now reads the independently
+fixed-stride gate/up/gain/down base-3 streams directly. The 1,538-byte figure
+is a logical per-channel payload, not a contiguous physical record. The
+source-family-specific package and generation runtime are now implemented and
+produce exact source/package output parity. The bounded W=16/C=8/K=4 streaming
+attention operator now also passes causal confirmation. The next architectural
+task is integrating its sink/heavy-hitter cache and exact rerank into a native
+generation kernel, then measuring long-context latency and DRAM traffic.

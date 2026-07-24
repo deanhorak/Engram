@@ -1,0 +1,27 @@
+{
+  "final_hidden": {
+    "exact": true,
+    "maximum_absolute_error": 0.0,
+    "mean_absolute_error": 0.0,
+    "relative_l2": 0.0
+  },
+  "input_ids": [
+    [
+      128000,
+      791,
+      6864,
+      315,
+      9822,
+      374
+    ]
+  ],
+  "logits": {
+    "exact": true,
+    "maximum_absolute_error": 0.0,
+    "mean_absolute_error": 0.0,
+    "mean_kl_divergence": 0.0,
+    "relative_l2": 0.0,
+    "top1_agreement": 1.0
+  },
+  "source_free_package": true
+}

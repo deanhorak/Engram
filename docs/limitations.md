@@ -1,11 +1,44 @@
 # Limitations
 
-- The central limitation is unchanged: no serialized representation jointly
-  passes the all-layer causal gate and complete cold MLP traffic at or below
-  45% of dense ideal Q4. DIP is a quality-only pass at 83.33% cache-line
+- The original dense-Llama limitation is unchanged: no serialized
+  representation jointly passes the all-layer causal gate and complete cold
+  MLP traffic at or below 45% of dense ideal Q4. DIP is a quality-only pass at 83.33% cache-line
   traffic; the mild-width compact-Q4 artifact is a traffic-only pass with
   KL 0.887, top-1 0.566, NLL +0.884, and hidden L2 0.425 after 3M positions.
+  The full-width grouped-ternary artifact is another traffic-only pass:
+  43.1353% traffic with KL 2.284, top-1 0.320, NLL +2.277, and hidden L2
+  0.604 after 1,014,225 positions.
   See [Project status](status.md).
+- The separate native-BitNet artifact reconstructs exactly and its direct
+  memory-mapped CPU kernel passes the frozen causal gate at 40.0527% scheduled
+  cold traffic. This does not say anything about losslessly converting an
+  already-trained dense Llama checkpoint. Official-layer output is numerically,
+  not bitwise, equal to PyTorch BF16 because reduction order differs (maximum
+  checked relative L2 0.00982). No hardware DRAM counter was available, and
+  package/generation integration is now implemented, but it retains the
+  original attention, normalization, embedding, and output tensors and drives
+  them through a Python Transformers shell. Only the MLP is a native C++
+  kernel; this is not yet a complete native transformer runtime.
+- The grouped-ternary result uses an exact serialized/reloaded artifact and
+  clears the evidence floor, but it is not eligible for more training under
+  its frozen rule. It closes 63.37%/62.77% of the remaining KL/NLL gaps and
+  only 31.33%/38.29% of the top-1/hidden gaps; all four had to reach 50%
+  before 3M. Its CUDA-accelerated training is device-neutral and does not
+  demonstrate CUDA-free training speed or any native ternary inference speed.
+- Small follow-ups do not rescue that conclusion. Geometry reweighting,
+  direct final-hidden loss, CKA, teacher-top-1 distillation, and tied
+  embedding/output-head co-adaptation were screened on fresh record ranges.
+  None met its complete progression rule. A cheap per-row affine-Q2
+  alternative at 87.5% width measured 0.713 layer-14 relative L2 and was
+  rejected before adding another artifact format.
+- The last bounded representation campaign does not change that result.
+  Recurrent compact Q4, projection-normalized ternary, affine
+  constrained-vector quantization, an unrestricted vector codebook, and a
+  LiftQuant-style lifted-binary lattice all model below 45% traffic, but none
+  passes the development-only layer-14 ceiling of 0.20 mean relative L2. The
+  best trained point is 0.308254 and assumes unmeasured later-cycle cache
+  reuse. The codebook and lifted-binary arms stop at initialization rather
+  than making unsupported extrapolations from QAT.
 - Exact nonparametric output memory is not a hidden solution to this gap.
   Adding one million independent pretraining records to 233,005 local
   prototypes improves layer-14 LLE-32 error only from 0.327526 to 0.321854
@@ -68,8 +101,13 @@
   overfits badly (mean relative L2 rises from 0.693 without it to 7.09 with it).
 - Real-model tracing loads the source model in CPU float32. Layer-at-a-time source execution
   and activation checkpointing remain future compiler work.
-- Attention replacement primitives exist, but trained teacher head analysis/distillation has
-  not run. The shared controller is initialized, not distilled from source residual trajectories.
+- Native-BitNet trained-teacher attention analysis and substitution now run.
+  The promoted bounded hybrid retains 16 local, two sink, and six heavy-hitter
+  entries, reranks eight old keys to four values, and passes frozen semantics.
+  Its Python reference is slow and the 33-token protocol still models at
+  93.34% of dense KV traffic; no native attention kernel, long-context hardware
+  measurement, or DRAM-counter evidence exists yet. The shared controller
+  remains initialized rather than distilled from source residual trajectories.
 - Python and native generation work without source transformer tensors, but generated fixture
   token IDs are not meaningful language.
 - Compiled runtimes consume quantized-only semantic arrays and scan only IVF-posted key codes.
