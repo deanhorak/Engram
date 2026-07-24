@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import platform
+import resource
 import time
 from pathlib import Path
 from typing import Sequence
@@ -103,6 +104,8 @@ def benchmark_native_bitnet_generation(
                     "generated_text": generated.text,
                     "processed_positions": processed_positions,
                     "elapsed_seconds": generated.elapsed_seconds,
+                    "prefill_seconds": generated.prefill_seconds,
+                    "decode_seconds": generated.decode_seconds,
                     "generated_tokens_per_second": (
                         max_new_tokens / generated.elapsed_seconds
                     ),
@@ -131,6 +134,10 @@ def benchmark_native_bitnet_generation(
                     ),
                     "native_attention_calls": generated.native_attention_calls,
                     "vocabulary_projection_seconds": head_elapsed[0],
+                    "process_peak_rss_bytes": (
+                        int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+                        * 1024
+                    ),
                 }
             )
     report = {

@@ -35,6 +35,14 @@
   Greedy generation computes that scan for only the final prompt/decode row,
   reducing its measured time to 0.83 seconds in the controlled run. Tasks that
   require logits for every input position still pay the full head cost.
+- Combined frozen and sustained-generation tests show that the inference path
+  works, but the evidence remains small: 8 frozen sequences/256 positions and
+  eight 16-token natural-prompt completions. It is not a broad benchmark of
+  reasoning, coding, instruction following, multilingual quality, or safety.
+  Mean sustained throughput is only 0.194 token/s.
+- Attention state is constant through 2,048 tokens, but total process memory
+  is not: peak RSS rises from 2.14 GB at 512 tokens to 2.57 GB at 2,048 because
+  PyTorch/Transformers and transient prompt tensors remain.
 - The grouped-ternary result uses an exact serialized/reloaded artifact and
   clears the evidence floor, but it is not eligible for more training under
   its frozen rule. It closes 63.37%/62.77% of the remaining KL/NLL gaps and

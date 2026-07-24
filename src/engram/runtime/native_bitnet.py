@@ -46,6 +46,9 @@ class NativeBitNetGeneration:
     native_attention_seconds: float = 0.0
     output_projection_seconds: float = 0.0
     native_attention_calls: int = 0
+    stopped_on_eos: bool = False
+    prefill_seconds: float = 0.0
+    decode_seconds: float = 0.0
 
 
 def _safe_package_path(root: Path, relative: str) -> Path:
@@ -293,6 +296,14 @@ class NativeBitNetRuntime:
     def forward(self, input_ids, **kwargs):
         return self.model(input_ids=input_ids, **kwargs)
 
+    def _is_eos(self, token: int) -> bool:
+        eos = getattr(getattr(self, "tokenizer", None), "eos_token_id", None)
+        if eos is None:
+            return False
+        if isinstance(eos, (tuple, list, set)):
+            return int(token) in {int(value) for value in eos}
+        return int(token) == int(eos)
+
     def enable_bounded_attention(
         self,
         *,
@@ -373,10 +384,14 @@ class NativeBitNetRuntime:
                 use_cache=True,
                 logits_to_keep=1,
             )
+            prefill_seconds = time.perf_counter() - started
+            decode_started = time.perf_counter()
             past_key_values = output.past_key_values
             next_token = int(output.logits[0, -1].argmax().item())
             generated.append(next_token)
             for _ in range(1, max_new_tokens):
+                if self._is_eos(next_token):
+                    break
                 output = self.model(
                     input_ids=torch.tensor([[next_token]], dtype=torch.long),
                     past_key_values=past_key_values,
@@ -386,6 +401,7 @@ class NativeBitNetRuntime:
                 past_key_values = output.past_key_values
                 next_token = int(output.logits[0, -1].argmax().item())
                 generated.append(next_token)
+        decode_seconds = time.perf_counter() - decode_started
         elapsed = time.perf_counter() - started
         calls = list(self.kernel.calls)
         return NativeBitNetGeneration(
@@ -402,6 +418,9 @@ class NativeBitNetRuntime:
                 (int(call["scratch_bytes"]) for call in calls),
                 default=0,
             ),
+            stopped_on_eos=bool(generated and self._is_eos(generated[-1])),
+            prefill_seconds=prefill_seconds,
+            decode_seconds=decode_seconds,
         )
 
     def generate_tokens_bounded(
@@ -442,10 +461,14 @@ class NativeBitNetRuntime:
                 use_cache=False,
                 logits_to_keep=1,
             )
+            prefill_seconds = time.perf_counter() - started
+            decode_started = time.perf_counter()
             next_token = int(output.logits[0, -1].argmax().item())
             generated.append(next_token)
             absolute_position = prompt.shape[1]
             for _ in range(1, max_new_tokens):
+                if self._is_eos(next_token):
+                    break
                 output = self.model(
                     input_ids=torch.tensor([[next_token]], dtype=torch.long),
                     position_ids=torch.tensor(
@@ -458,6 +481,7 @@ class NativeBitNetRuntime:
                 absolute_position += 1
                 next_token = int(output.logits[0, -1].argmax().item())
                 generated.append(next_token)
+        decode_seconds = time.perf_counter() - decode_started
         elapsed = time.perf_counter() - started
         calls = list(self.kernel.calls)
         from engram.runtime.native_bitnet_attention import (
@@ -496,6 +520,9 @@ class NativeBitNetRuntime:
                 attention["output_projection_seconds"]
             ),
             native_attention_calls=int(attention["native_stream_calls"]),
+            stopped_on_eos=bool(generated and self._is_eos(generated[-1])),
+            prefill_seconds=prefill_seconds,
+            decode_seconds=decode_seconds,
         )
 
     def generate(self, prompt: str, *, max_new_tokens: int) -> NativeBitNetGeneration:

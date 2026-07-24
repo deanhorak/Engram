@@ -126,6 +126,18 @@ and logical attention reads. Approximate vocabulary indexing is not promoted:
 the exact final-row head is no longer the bottleneck, while an index would add
 candidate-recall risk and duplicate storage.
 
+The components also pass as one combined inference stack. Frozen records 8–15
+give KL 0.01315, top-1 0.92969, NLL delta +0.00365, and hidden L2 0.08436.
+Eight natural prompts generate 16-token continuations without collapse; the
+outputs are recognizably coherent but expose weaknesses on code and testing
+strategy. Full versus split-prompt logits are bit-identical, and reset
+generation reproduces tokens and stable state.
+
+At 512/2,048 tokens, complete prefill takes 24.10/81.77 seconds, attention
+state remains 7,477,440 bytes, logical reads are 8.40%/2.14% of dense, and
+process peak RSS is 2.14/2.57 GB. Decode remains unsuitable for interactive
+use: seven model steps take 38.26 seconds.
+
 Machine-readable evidence:
 [frozen_streaming_c8_k4_confirmation.json](frozen_streaming_c8_k4_confirmation.json).
 Native scaling evidence:
@@ -146,3 +158,13 @@ Exact final-logit timing:
 [end_to_end_generation_last_logit.json](end_to_end_generation_last_logit.json).
 Optimized 256-token generation:
 [end_to_end_long_context_optimized.json](end_to_end_long_context_optimized.json).
+Combined optimized frozen confirmation:
+[combined_optimized_frozen_confirmation.json](combined_optimized_frozen_confirmation.json).
+Sustained generation:
+[sustained_generation_8x16.json](sustained_generation_8x16.json).
+Incremental/reset invariants:
+[incremental_invariants.json](incremental_invariants.json).
+Extended contexts:
+[end_to_end_extended_context.json](end_to_end_extended_context.json).
+Decode profile:
+[end_to_end_decode_profile.json](end_to_end_decode_profile.json).

@@ -1,5 +1,22 @@
 # Research log
 
+## 2026-07-24 — Complete inference stack passes first behavioral validation
+
+- The complete optimized stack passes frozen records 8–15 over 256 positions:
+  KL 0.01315, top-1 0.92969, NLL delta +0.00365, and hidden L2 0.08436.
+- Added EOS-aware generation and a JSONL prompt-suite evaluator. Eight natural
+  prompts generate 16 tokens each without collapse or identical-token runs.
+  Outputs are recognizably coherent, with weaknesses on code and
+  testing-strategy prompts. Mean throughput is 0.194 token/s.
+- Actual-stack one-segment and split-prompt final logits are bit-identical.
+  Cache reset reproduces the same tokens and stable counters. EOS termination
+  is covered by a unit test.
+- Complete prefill succeeds at 512/2,048 tokens in 24.10/81.77 seconds.
+  Attention state stays at 7,477,440 bytes; modeled reads are 8.40%/2.14% of
+  dense. Peak process RSS is 2.14/2.57 GB.
+- A 33-token prefill takes 4.65 seconds; seven decode model steps take 38.26
+  seconds (5.47 seconds/step). The engine works but is not interactive.
+
 ## 2026-07-24 — Exact last-logit generation removes vocabulary bottleneck
 
 - Audited the existing vocabulary IVF path. It requires a duplicate float32

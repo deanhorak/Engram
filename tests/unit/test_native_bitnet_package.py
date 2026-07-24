@@ -455,3 +455,13 @@ def test_bounded_generation_advances_absolute_positions_without_hf_cache():
     assert all(use_cache is False for _, _, use_cache in calls)
     assert result.generated_tokens == (1, 2, 3)
     assert result.attention_tokens_seen == 5
+
+    runtime.tokenizer = SimpleNamespace(eos_token_id=2)
+    runtime.model.calls.clear()
+    eos_result = runtime.generate_tokens_bounded(
+        [4, 5, 6],
+        max_new_tokens=3,
+    )
+    assert eos_result.generated_tokens == (1, 2)
+    assert eos_result.stopped_on_eos
+    assert len(runtime.model.calls) == 2

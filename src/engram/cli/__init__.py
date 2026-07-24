@@ -30,6 +30,9 @@ from engram.evaluation.native_attention_benchmark import (
 from engram.evaluation.native_bitnet_generation_benchmark import (
     benchmark_native_bitnet_generation,
 )
+from engram.evaluation.native_bitnet_generation import (
+    evaluate_native_bitnet_generation,
+)
 from engram.evaluation.router_sweep import evaluate_rank_router_regularization_sweep
 from engram.evaluation.dip_sweep import evaluate_dip_exact_completion_sweep
 from engram.evaluation.correction_sweep import evaluate_correction_capsule_sweep
@@ -293,6 +296,7 @@ def _parser() -> argparse.ArgumentParser:
     bitnet_attention.add_argument("--out", required=True, type=Path)
     bitnet_attention.add_argument("--library", type=Path)
     bitnet_attention.add_argument("--threads", type=int)
+    bitnet_attention.add_argument("--native-projections", action="store_true")
     bitnet_attention.add_argument("--sequence-count", type=int, default=2)
     bitnet_attention.add_argument("--prediction-positions", type=int, default=32)
     bitnet_attention.add_argument("--record-offset", type=int, default=0)
@@ -364,6 +368,18 @@ def _parser() -> argparse.ArgumentParser:
     generation_benchmark.add_argument("--candidates", type=int, default=8)
     generation_benchmark.add_argument("--top-k", type=int, default=4)
     generation_benchmark.add_argument("--sink-tokens", type=int, default=2)
+
+    generation_evaluation = commands.add_parser(
+        "evaluate-native-bitnet-generation",
+        help="run sustained greedy generation over a JSONL prompt suite",
+    )
+    generation_evaluation.add_argument("--model", required=True, type=Path)
+    generation_evaluation.add_argument("--prompts", required=True, type=Path)
+    generation_evaluation.add_argument("--out", required=True, type=Path)
+    generation_evaluation.add_argument("--max-tokens", type=int, default=16)
+    generation_evaluation.add_argument("--mlp-library", type=Path)
+    generation_evaluation.add_argument("--attention-library", type=Path)
+    generation_evaluation.add_argument("--threads", type=int)
 
     compile_command = commands.add_parser(
         "compile", help="compile a runnable Engram package"
@@ -1260,6 +1276,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             out=args.out,
             library=args.library,
             threads=args.threads,
+            native_projections=args.native_projections,
             sequence_count=args.sequence_count,
             prediction_positions=args.prediction_positions,
             record_offset=args.record_offset,
@@ -1306,6 +1323,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             older_candidates=args.candidates,
             older_top_k=args.top_k,
             sink_tokens=args.sink_tokens,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "evaluate-native-bitnet-generation":
+        result = evaluate_native_bitnet_generation(
+            package=args.model,
+            prompts=args.prompts,
+            out=args.out,
+            max_new_tokens=args.max_tokens,
+            mlp_library=args.mlp_library,
+            attention_library=args.attention_library,
+            threads=args.threads,
         )
         print(json.dumps(result, indent=2, sort_keys=True))
     elif args.command == "compile":
@@ -1418,6 +1446,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "prompt_tokens": list(result.prompt_tokens),
                     "tokens": list(result.generated_tokens),
                     "elapsed_seconds": result.elapsed_seconds,
+                    "prefill_seconds": result.prefill_seconds,
+                    "decode_seconds": result.decode_seconds,
                     "mlp_calls": result.mlp_calls,
                     "mlp_elapsed_seconds": result.mlp_elapsed_seconds,
                     "scheduled_mlp_bytes": result.scheduled_mlp_bytes,

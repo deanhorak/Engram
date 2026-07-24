@@ -1,0 +1,65 @@
+{
+  "bounded_state_confirmed": true,
+  "configuration": {
+    "attention_compute_dtype": "float32",
+    "head_dimension": 128,
+    "layers": 30,
+    "lengths": [
+      33
+    ],
+    "local_window": 16,
+    "max_new_tokens": 8,
+    "native_packed_attention_projections": true,
+    "older_candidates": 8,
+    "older_top_k": 4,
+    "query_heads": 20,
+    "sink_tokens": 2,
+    "threads": 12
+  },
+  "dense_hf_kv_cache_allocated": false,
+  "experiment": "native_bitnet_end_to_end_long_context_generation",
+  "hardware": {
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64"
+  },
+  "package": "/home/dean/repos/engram/work/native_bitnet/model.engram-bitnet",
+  "results": [
+    {
+      "attention_fraction_of_dense_logical_reads": 0.7890243902439025,
+      "attention_logical_read_bytes": 397516800,
+      "attention_scratch_bytes": 7200,
+      "attention_state_bytes": 7477440,
+      "context_tokens": 33,
+      "decode_seconds": 38.26490092900349,
+      "dense_attention_logical_read_bytes": 503808000,
+      "elapsed_seconds": 42.91196910399594,
+      "generated_text": "The purpose of a semantic memory system is",
+      "generated_tokens": [
+        791,
+        7580,
+        315,
+        264,
+        42833,
+        5044,
+        1887,
+        374
+      ],
+      "generated_tokens_per_second": 0.18642817300255382,
+      "mlp_calls": 240,
+      "mlp_elapsed_seconds": 23.186042485,
+      "native_attention_calls": 240,
+      "native_attention_seconds": 0.24044938197766896,
+      "output_projection_seconds": 6.298059619046398,
+      "prefill_seconds": 4.647063075994083,
+      "process_peak_rss_bytes": 2144493568,
+      "processed_positions": 40,
+      "processed_positions_per_second": 0.932140865012769,
+      "qkv_projection_seconds": 9.227811765988008,
+      "rope_seconds": 0.1355774580515572,
+      "scheduled_mlp_bytes": 2551388160,
+      "vocabulary_projection_seconds": 3.184319422005501
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Complete compiled-package prefill and greedy decode, including token embedding, all transformer layers, native packed MLP calls, bounded native attention, final normalization, vocabulary projection, and token selection. Logical reads are algorithmic float32 interface counts rather than measured DRAM transactions."
+}

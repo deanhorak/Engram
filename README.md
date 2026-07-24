@@ -175,6 +175,22 @@ tokens, the fully optimized path takes 20.72 seconds versus the earlier
 tokens and retaining the same 7,477,440-byte bounded attention state. An
 approximate vocabulary index is therefore not justified for greedy package
 generation; the packed MLP is again the dominant measured phase.
+
+The first complete inference validation now passes. With packed MLPs, packed
+Q/K/V/O, bounded native attention, incremental RoPE, and the exact last-row
+vocabulary head enabled together, the frozen 8-sequence/256-position result is
+KL 0.01315, top-1 0.92969, NLL delta +0.00365, and hidden L2 0.08436. Eight
+natural prompts generated 16-token continuations without collapse; factual
+and procedural completions are generally coherent, although the code prompt
+drifts and the testing prompt adopts an exam-question format.
+
+Full versus split-prompt logits are bit-identical, resets reproduce identical
+tokens and stable state, and EOS termination has a unit-tested control path.
+Complete prefill reaches 21.24 positions/s at 512 tokens and 25.05 positions/s
+at 2,048 tokens. Attention state remains 7,477,440 bytes, but process peak RSS
+is 2.14–2.57 GB because the Python/Transformers shell and prompt tensors
+remain. Seven autoregressive steps take 38.26 seconds, about 5.47 seconds per
+step. This is a working research inference engine, not an interactive runtime.
 The detailed history below is retained so negative results remain auditable.
 
 The repository contains an end-to-end research prototype: Hugging Face model inspection and

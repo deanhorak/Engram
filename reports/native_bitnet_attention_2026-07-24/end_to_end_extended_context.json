@@ -1,0 +1,87 @@
+{
+  "bounded_state_confirmed": true,
+  "configuration": {
+    "attention_compute_dtype": "float32",
+    "head_dimension": 128,
+    "layers": 30,
+    "lengths": [
+      512,
+      2048
+    ],
+    "local_window": 16,
+    "max_new_tokens": 1,
+    "native_packed_attention_projections": true,
+    "older_candidates": 8,
+    "older_top_k": 4,
+    "query_heads": 20,
+    "sink_tokens": 2,
+    "threads": 12
+  },
+  "dense_hf_kv_cache_allocated": false,
+  "experiment": "native_bitnet_end_to_end_long_context_generation",
+  "hardware": {
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64"
+  },
+  "package": "/home/dean/repos/engram/work/native_bitnet/model.engram-bitnet",
+  "results": [
+    {
+      "attention_fraction_of_dense_logical_reads": 0.08399579678362573,
+      "attention_logical_read_bytes": 6777446400,
+      "attention_scratch_bytes": 7200,
+      "attention_state_bytes": 7477440,
+      "context_tokens": 512,
+      "decode_seconds": 0.0008850899976096116,
+      "dense_attention_logical_read_bytes": 80687923200,
+      "elapsed_seconds": 24.102401427000586,
+      "generated_text": " is",
+      "generated_tokens": [
+        374
+      ],
+      "generated_tokens_per_second": 0.041489641728386255,
+      "mlp_calls": 30,
+      "mlp_elapsed_seconds": 16.065141577,
+      "native_attention_calls": 30,
+      "native_attention_seconds": 1.9266420829953859,
+      "output_projection_seconds": 1.9637995830125874,
+      "prefill_seconds": 24.101512216002448,
+      "process_peak_rss_bytes": 2144096256,
+      "processed_positions": 512,
+      "processed_positions_per_second": 21.242696564933762,
+      "qkv_projection_seconds": 3.0485765250123222,
+      "rope_seconds": 0.14026086201920407,
+      "scheduled_mlp_bytes": 318923520,
+      "vocabulary_projection_seconds": 0.4290940540013253
+    },
+    {
+      "attention_fraction_of_dense_logical_reads": 0.02136284086749634,
+      "attention_logical_read_bytes": 27539251200,
+      "attention_scratch_bytes": 7200,
+      "attention_state_bytes": 7477440,
+      "context_tokens": 2048,
+      "decode_seconds": 0.0006782220007153228,
+      "dense_attention_logical_read_bytes": 1289119334400,
+      "elapsed_seconds": 81.76543453599879,
+      "generated_text": " is",
+      "generated_tokens": [
+        374
+      ],
+      "generated_tokens_per_second": 0.0122301068376238,
+      "mlp_calls": 30,
+      "mlp_elapsed_seconds": 55.669081973,
+      "native_attention_calls": 30,
+      "native_attention_seconds": 6.111329735016625,
+      "output_projection_seconds": 7.138133547981852,
+      "prefill_seconds": 81.76475261199812,
+      "process_peak_rss_bytes": 2571489280,
+      "processed_positions": 2048,
+      "processed_positions_per_second": 25.04725880345354,
+      "qkv_projection_seconds": 10.736292105008033,
+      "rope_seconds": 0.4412720719992649,
+      "scheduled_mlp_bytes": 318923520,
+      "vocabulary_projection_seconds": 0.33982339399517514
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Complete compiled-package prefill and greedy decode, including token embedding, all transformer layers, native packed MLP calls, bounded native attention, final normalization, vocabulary projection, and token selection. Logical reads are algorithmic float32 interface counts rather than measured DRAM transactions."
+}

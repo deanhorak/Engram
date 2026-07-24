@@ -321,6 +321,29 @@ index is stopped for generation because it would add recall risk after the
 exact head ceased to dominate. The packed MLP now consumes 13.07 of 20.72
 seconds and is again the principal target.
 
+## Complete inference validation
+
+The optimized components now pass one combined frozen test. On records 8–15
+(8 sequences, 256 positions), packed native MLPs and projections plus bounded
+native attention reach KL 0.01315, top-1 0.92969, NLL delta +0.00365, and
+hidden L2 0.08436. All thresholds pass.
+
+An eight-prompt, 16-token greedy suite produces recognizable factual,
+explanatory, narrative, and procedural text with no identical-token runs and
+consistent 7,477,440-byte attention state. The code prompt is not a good code
+completion and the testing prompt drifts into a multiple-choice format, so
+this proves generation works rather than broad task quality.
+
+Full-prompt versus split-prompt final logits are bit-identical. Reset
+generation returns the same tokens and stable cache counters, and EOS
+termination is unit-tested. Complete prefill succeeds at 512 and 2,048 tokens
+in 24.10 and 81.77 seconds. Peak process RSS is 2.14 and 2.57 GB.
+
+The main blocker is decode speed. A 33-token prefill takes 4.65 seconds, then
+seven model steps take 38.26 seconds—about 5.47 seconds per decoded token.
+Quality testing can proceed, but interactive use requires a dedicated
+single-row AVX2 MLP/projection path and removal of the Transformers shell.
+
 CUDA remains an optional training accelerator only; the serialized format and
 inference mechanism are CPU-native. Repeating IVF, candidate-count,
 regularization, prototype-density, small residual, post-hoc bit allocation,

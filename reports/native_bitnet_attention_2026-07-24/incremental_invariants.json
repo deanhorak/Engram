@@ -1,0 +1,51 @@
+{
+  "experiment": "native_bitnet_incremental_invariants",
+  "full_vs_chunked": {
+    "maximum_absolute_logit_error": 0.0,
+    "relative_l2": 0.0,
+    "top1_equal": true
+  },
+  "passed": true,
+  "prefix_split": 3,
+  "prompt_tokens": 6,
+  "reset_determinism": {
+    "first_state": {
+      "layers": 30,
+      "logical_read_bytes": 27648000,
+      "native_stream_calls": 120,
+      "native_stream_seconds": 0.07075127200369025,
+      "output_projection_seconds": 2.813442679005675,
+      "qkv_projection_seconds": 4.427491189024295,
+      "rope_seconds": 0.05932544299867004,
+      "scratch_bytes": 7200,
+      "state_bytes": 7477440,
+      "tokens_seen": 9
+    },
+    "first_tokens": [
+      12366,
+      13,
+      12366,
+      374
+    ],
+    "identical": true,
+    "second_state": {
+      "layers": 30,
+      "logical_read_bytes": 27648000,
+      "native_stream_calls": 120,
+      "native_stream_seconds": 0.07215333599015139,
+      "output_projection_seconds": 2.7986047649901593,
+      "qkv_projection_seconds": 4.39688133103482,
+      "rope_seconds": 0.06131416100106435,
+      "scratch_bytes": 7200,
+      "state_bytes": 7477440,
+      "tokens_seen": 9
+    },
+    "second_tokens": [
+      12366,
+      13,
+      12366,
+      374
+    ],
+    "stable_state_identical": true
+  }
+}

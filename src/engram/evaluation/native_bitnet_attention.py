@@ -919,6 +919,7 @@ def evaluate_native_bitnet_attention_substitution(
     out: str | Path,
     library: str | Path | None = None,
     threads: int | None = None,
+    native_projections: bool = False,
     sequence_count: int = 2,
     prediction_positions: int = 32,
     record_offset: int = 0,
@@ -954,6 +955,7 @@ def evaluate_native_bitnet_attention_substitution(
         package,
         library=library,
         threads=threads,
+        native_projections=native_projections,
     ) as runtime:
         num_attention_heads = int(runtime.model.config.num_attention_heads)
         num_key_value_heads = int(runtime.model.config.num_key_value_heads)
@@ -1318,6 +1320,7 @@ def evaluate_native_bitnet_attention_substitution(
             "prediction_positions": prediction_positions,
         },
         "configuration": {
+            "native_packed_attention_projections": bool(native_projections),
             "layers": selected_layers,
             "modes": list(modes),
             "local_window": local_window,
