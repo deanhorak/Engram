@@ -412,7 +412,15 @@ def test_bounded_generation_advances_absolute_positions_without_hf_cache():
         def __init__(self):
             self.calls = []
 
-        def __call__(self, *, input_ids, position_ids, use_cache):
+        def __call__(
+            self,
+            *,
+            input_ids,
+            position_ids,
+            use_cache,
+            logits_to_keep,
+        ):
+            assert logits_to_keep == 1
             self.calls.append((input_ids.clone(), position_ids.clone(), use_cache))
             logits = torch.zeros(input_ids.shape[0], input_ids.shape[1], 8)
             logits[:, -1, len(self.calls)] = 1

@@ -32,6 +32,9 @@
   8-sequence/256-position confirmation and substantially improves latency, but
   its packed decode loops are threaded without explicit AVX2 intrinsics. The
   tied 128,256-entry vocabulary head remains a materialized BF16 full scan.
+  Greedy generation computes that scan for only the final prompt/decode row,
+  reducing its measured time to 0.83 seconds in the controlled run. Tasks that
+  require logits for every input position still pay the full head cost.
 - The grouped-ternary result uses an exact serialized/reloaded artifact and
   clears the evidence floor, but it is not eligible for more training under
   its frozen rule. It closes 63.37%/62.77% of the remaining KL/NLL gaps and

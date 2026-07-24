@@ -165,6 +165,16 @@ NLL delta +0.00200, and hidden L2 0.05887. Native projection execution takes
 111.38 seconds versus 256.56 seconds materialized on that identical batch.
 The full vocabulary projection, now about 13 seconds of the 22-second
 generation run, is the dominant next target.
+
+Generation now requests only the final prompt logit from the existing
+Transformers API. This preserves the exact full-vocabulary argmax and avoids
+projecting every prompt position. At 33 tokens, vocabulary time falls from
+13.00 to 0.83 seconds and total time from 22.29 to 10.16 seconds. At 256
+tokens, the fully optimized path takes 20.72 seconds versus the earlier
+254.23-second stream-fused run, a 91.8% reduction, while generating the same
+tokens and retaining the same 7,477,440-byte bounded attention state. An
+approximate vocabulary index is therefore not justified for greedy package
+generation; the packed MLP is again the dominant measured phase.
 The detailed history below is retained so negative results remain auditable.
 
 The repository contains an end-to-end research prototype: Hugging Face model inspection and

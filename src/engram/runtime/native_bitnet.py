@@ -368,7 +368,11 @@ class NativeBitNetRuntime:
         self.kernel.clear_metrics()
         started = time.perf_counter()
         with torch.inference_mode():
-            output = self.model(input_ids=input_ids, use_cache=True)
+            output = self.model(
+                input_ids=input_ids,
+                use_cache=True,
+                logits_to_keep=1,
+            )
             past_key_values = output.past_key_values
             next_token = int(output.logits[0, -1].argmax().item())
             generated.append(next_token)
@@ -377,6 +381,7 @@ class NativeBitNetRuntime:
                     input_ids=torch.tensor([[next_token]], dtype=torch.long),
                     past_key_values=past_key_values,
                     use_cache=True,
+                    logits_to_keep=1,
                 )
                 past_key_values = output.past_key_values
                 next_token = int(output.logits[0, -1].argmax().item())
@@ -435,6 +440,7 @@ class NativeBitNetRuntime:
                 input_ids=prompt,
                 position_ids=prompt_positions.unsqueeze(0),
                 use_cache=False,
+                logits_to_keep=1,
             )
             next_token = int(output.logits[0, -1].argmax().item())
             generated.append(next_token)
@@ -447,6 +453,7 @@ class NativeBitNetRuntime:
                         dtype=torch.long,
                     ),
                     use_cache=False,
+                    logits_to_keep=1,
                 )
                 absolute_position += 1
                 next_token = int(output.logits[0, -1].argmax().item())

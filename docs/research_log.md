@@ -1,5 +1,26 @@
 # Research log
 
+## 2026-07-24 — Exact last-logit generation removes vocabulary bottleneck
+
+- Audited the existing vocabulary IVF path. It requires a duplicate float32
+  normalized embedding matrix (about 1.31 GB for this model) plus an index.
+  A zero-metadata partial-coordinate screen can recover the development greedy
+  token, but approximate search is unnecessary for the actual generation API.
+- BitNet already accepts `logits_to_keep`; package generation had used the
+  default zero and projected all prompt positions even though greedy decoding
+  consumes only the final one. Both dense-cache and bounded-cache generation
+  now request exactly one logit row.
+- With packed native projections, the 33-token run falls from 22.29 to 10.16
+  seconds. Vocabulary projection falls from 13.00 to 0.83 seconds, with
+  identical generated tokens.
+- At 256 prompt tokens plus two decode tokens, total time falls from the prior
+  254.23-second stream-fused run to 20.72 seconds (91.8%). Processing rises
+  from 1.01 to 12.40 positions/second. Attention state remains 7,477,440 bytes
+  and modeled attention reads remain 16.35% of dense.
+- Approximate vocabulary indexing is stopped for greedy generation. The exact
+  head no longer dominates; the packed MLP now consumes 13.07 of 20.72
+  seconds.
+
 ## 2026-07-24 — Packed native attention projections pass development screen
 
 - Added a shared threaded C++ kernel for the official BitNet

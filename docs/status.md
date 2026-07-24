@@ -310,6 +310,17 @@ passes with KL 0.00548, top-1 0.95703, NLL delta +0.00200, and hidden L2
 materialized on the same confirmation tensor. The projection path is promoted;
 the vocabulary head now dominates at 13.00 seconds.
 
+The vocabulary bottleneck was primarily redundant work rather than search
+quality: BitNet exposes `logits_to_keep`, but package generation had left it at
+zero and projected every prompt position. Requesting the final prompt logit
+only preserves exact full-vocabulary selection. The 33-token run falls from
+22.29 to 10.16 seconds and vocabulary time from 13.00 to 0.83 seconds. At 256
+tokens, total generation falls from 254.23 to 20.72 seconds (91.8%) with
+unchanged output tokens, traffic, and bounded state. A bounded vocabulary
+index is stopped for generation because it would add recall risk after the
+exact head ceased to dominate. The packed MLP now consumes 13.07 of 20.72
+seconds and is again the principal target.
+
 CUDA remains an optional training accelerator only; the serialized format and
 inference mechanism are CPU-native. Repeating IVF, candidate-count,
 regularization, prototype-density, small residual, post-hoc bit allocation,

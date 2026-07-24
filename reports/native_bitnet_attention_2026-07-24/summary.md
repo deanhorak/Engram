@@ -116,6 +116,16 @@ records 8–15 over
 seconds materialized on the same tensor, so the path is promoted. The full tied
 vocabulary projection now dominates the profile at 13.00 seconds.
 
+Generation had been computing vocabulary logits for every prompt row.
+Requesting `logits_to_keep=1` preserves exact full-vocabulary greedy selection
+and removes that redundancy. The 33-token run falls from 22.29 to 10.16
+seconds, with vocabulary time falling from 13.00 to 0.83 seconds. The
+256-token run falls from 254.23 to 20.72 seconds (91.8%) and reaches 12.40
+processed positions/second with identical generated tokens, bounded state,
+and logical attention reads. Approximate vocabulary indexing is not promoted:
+the exact final-row head is no longer the bottleneck, while an index would add
+candidate-recall risk and duplicate storage.
+
 Machine-readable evidence:
 [frozen_streaming_c8_k4_confirmation.json](frozen_streaming_c8_k4_confirmation.json).
 Native scaling evidence:
@@ -132,3 +142,7 @@ Packed projection semantic parity:
 [native_projection_parity.json](native_projection_parity.json).
 Frozen packed projection confirmation:
 [native_projection_frozen_confirmation.json](native_projection_frozen_confirmation.json).
+Exact final-logit timing:
+[end_to_end_generation_last_logit.json](end_to_end_generation_last_logit.json).
+Optimized 256-token generation:
+[end_to_end_long_context_optimized.json](end_to_end_long_context_optimized.json).
