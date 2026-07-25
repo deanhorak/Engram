@@ -263,15 +263,25 @@ The original older-context retrieval prototype uses a linear candidate scan.
 Native-BitNet now also has a bounded streaming operator: exact local context,
 fixed attention sinks, and an online cumulative-attention heavy-hitter cache.
 Its frozen trained-model confirmation passes without consulting evicted keys.
-Native cache execution, long-context hardware traffic, and controller
-distillation remain open. The DIP quality pass still needs systems replication.
+Hardware DRAM measurement and controller distillation remain open. The DIP
+quality pass still needs systems replication.
 For native BitNet, the memory-mapped CPU kernel now reads the independently
 fixed-stride gate/up/gain/down base-3 streams directly. The 1,538-byte figure
 is a logical per-channel payload, not a contiguous physical record. The
 source-family-specific package and generation runtime are now implemented and
 produce exact source/package output parity. The bounded W=16/C=8/K=4 streaming
 attention operator now also passes causal confirmation. The next architectural
-task is now partly complete: a stateful native sink/heavy-hitter cache and
-exact rerank pass randomized parity and trained development substitution. The
-remaining boundary is incremental cache-position integration in package
-generation, followed by end-to-end long-context latency and DRAM traffic.
+task is complete: a stateful native sink/heavy-hitter cache and exact rerank
+pass randomized parity, trained substitution, incremental package generation,
+explicit RoPE/cache-position advancement, and long-context validation.
+Attention state is fixed at 7,477,440 bytes across the complete 30-layer
+runtime, and modeled attention reads fall to 2.14% of dense at 2,048 tokens.
+These are logical interface bytes, not measured hardware DRAM traffic.
+
+Interactive chat is an orchestration layer over that runtime. It retains
+structured messages, renders the packaged tokenizer's chat template, resets
+the native caches, and re-prefills the complete rendered history for each
+turn. Greedy decoding then advances the normal incremental position path, and
+the decoded assistant text is appended to history. This validates multi-turn
+conditioning without introducing a second inference mechanism. Persistent
+cross-turn cache reuse, streaming output, and context truncation remain open.

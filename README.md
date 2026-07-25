@@ -196,22 +196,39 @@ step. This is a working research inference engine, not an interactive runtime.
 
 The package can be used through an interactive, chat-template-aware command:
 
-```bash
+```console
 PYTHONPATH=src python -m engram.cli chat-native-bitnet \
   --model work/native_bitnet/model.engram-bitnet \
   --library build/libengram_bitnet.so \
   --attention-library build/libengram_attention.so \
   --threads 12 \
   --max-tokens 32
+Engram native BitNet chat. Commands: /reset, /history, /quit
+You> write a random poem.
+Engram> In the heart of the forest, where the trees whisper,
+Lies a secret, a tale of a time.
+Of ancient roots, of earth and sky,
+[166.43s; 32 tokens; 7477440 attention-state bytes]
+You> awesome!
+Engram> I'm glad you liked it! Here's another one:
+
+In the land of the sun and the moon,
+Where the rivers run and the mountains loom,
+[153.15s; 32 tokens; 7477440 attention-state bytes]
+You>
 ```
 
 Each turn is appended to structured user/assistant history, rendered with the
 chat template stored in the packaged tokenizer, and re-prefilled through a
 fresh bounded native cache. `/history` displays the current conversation,
 `/reset` clears it while retaining the system message, and `/quit` exits.
+The second response above is conditioned on the earlier poem and follow-up,
+which validates multi-turn history rendering through the current re-prefill
+path. Both turns generated the configured 32-token limit while native
+attention state remained fixed at 7,477,440 bytes.
 This initial version does not stream tokens or preserve cache state between
-turns. At the current CPU decode speed, 32 generated tokens can take several
-minutes.
+turns. The observed turns took 166.43 and 153.15 seconds, so the interface is
+usable for behavioral testing but is not yet real-time.
 The detailed history below is retained so negative results remain auditable.
 
 The repository contains an end-to-end research prototype: Hugging Face model inspection and

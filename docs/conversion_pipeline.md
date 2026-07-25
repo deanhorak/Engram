@@ -241,4 +241,16 @@ attention. It uses the packaged tokenizer's chat template and re-prefills the
 complete structured conversation on every turn. The supported session
 commands are `/history`, `/reset`, `/quit`, and `/exit`. Persistent cross-turn
 cache reuse and token streaming are intentionally deferred until this
-re-prefill implementation has broader behavioral validation.
+re-prefill implementation has broader behavioral validation. The current
+turn lifecycle is:
+
+1. append the new user message to structured conversation history;
+2. render all system, user, and assistant messages with the packaged template;
+3. reset the bounded native attention states and prefill the rendered tokens
+   from absolute position zero;
+4. decode greedily while advancing RoPE and cache positions;
+5. decode and append the assistant response to history.
+
+A two-turn 32-token example took 166.43 and 153.15 seconds. The second answer
+acknowledged the first turn before starting another poem, while both turns
+reported the same 7,477,440-byte attention state.

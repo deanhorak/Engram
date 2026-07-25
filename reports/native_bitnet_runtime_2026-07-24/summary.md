@@ -31,3 +31,17 @@ generated tokens invoked 60 direct MLP calls. See
 
 This is a Python transformer runtime with a native C++ MLP kernel. It is not
 yet a complete C++ transformer implementation.
+
+Subsequent runtime work added packed native Q/K/V/O projections, bounded
+stateful attention with explicit RoPE/cache positions, final-row-only exact
+vocabulary projection, and the `chat-native-bitnet` interface. The chat
+command renders structured history with the tokenizer assets already sealed
+in the package and re-prefills that complete history through a fresh bounded
+cache on every turn.
+
+In an observed two-turn session, the model generated a 32-token poem in
+166.43 seconds, then responded contextually to `awesome!` and began a second
+poem in 153.15 seconds. Both turns reported 7,477,440 attention-state bytes.
+This validates the chat-history path but does not establish interactive
+performance. Token streaming, persistent cross-turn cache reuse, and context
+truncation are not implemented.

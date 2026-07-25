@@ -47,7 +47,10 @@
   turn and prints only after generation completes. It has no cross-turn cache
   reuse, token streaming, context truncation policy, sampling controls, or
   concurrent sessions. Long conversations therefore grow prefill cost until a
-  future context-management policy is added.
+  future context-management policy is added. In the documented two-turn
+  example, 32 generated tokens took 166.43 and 153.15 seconds despite fixed
+  7,477,440-byte attention state. Bounded attention memory therefore does not
+  imply low latency or bounded total prompt-processing work.
 - The grouped-ternary result uses an exact serialized/reloaded artifact and
   clears the evidence floor, but it is not eligible for more training under
   its frozen rule. It closes 63.37%/62.77% of the remaining KL/NLL gaps and

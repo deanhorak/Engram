@@ -347,10 +347,12 @@ single-row AVX2 MLP/projection path and removal of the Transformers shell.
 An interactive `chat-native-bitnet` CLI now applies the packaged tokenizer's
 chat template to structured history and re-prefills that complete history on
 each turn. It supports history display, reset, clean exit, EOF, and interrupt
-handling. A real package smoke test answered a chat-formatted France question,
-reported bounded state, reset correctly, and exited cleanly. This establishes
-the chatbot interface, not interactive performance: output is returned only
-after the turn finishes, and cross-turn native cache reuse is not implemented.
+handling. A real two-turn session generated a 32-token poem, then interpreted
+`awesome!` as a response to that poem and began another one. The turns took
+166.43 and 153.15 seconds and each reported the same 7,477,440-byte attention
+state. This establishes chat-template history and multi-turn behavior, not
+interactive performance: output is returned only after the turn finishes,
+and cross-turn native cache reuse is not implemented.
 
 CUDA remains an optional training accelerator only; the serialized format and
 inference mechanism are CPU-native. Repeating IVF, candidate-count,

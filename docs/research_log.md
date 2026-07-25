@@ -11,6 +11,12 @@
 - A real package smoke test generated `The capital` for a two-token France
   question turn in 10.50 seconds, reported 7,477,440 attention-state bytes,
   displayed history, reset to empty history, and exited cleanly.
+- A longer observed session generated a 32-token poem in 166.43 seconds. On
+  the next turn, `awesome!` elicited a contextually appropriate acknowledgment
+  and another poem in 153.15 seconds. Both turns reported the same
+  7,477,440-byte native attention state. This is direct evidence that packaged
+  chat-template history reaches generation across turns; it is not a broad
+  quality evaluation.
 - Persistent cross-turn cache reuse and token streaming remain explicitly
   deferred. Current single-row CPU decode is too slow for an interactive user
   experience despite the working interface.

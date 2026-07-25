@@ -514,6 +514,18 @@ The native C++20 runtime independently implements the same package validation an
 paths. It uses memory mapping, preallocated scratch buffers, and scalar kernels, with optional
 AVX2 dispatch on supported CPUs.
 
+The qualified native-BitNet track uses a different, currently more complete
+path. Its packaged transformer retains the source embedding, normalization,
+attention, and output tensors; executes losslessly repacked MLP and Q/K/V/O
+weights through native CPU kernels; replaces the unbounded dense KV cache with
+fixed local/sink/heavy-hitter attention state; and computes exact final-row
+vocabulary logits. For chat, structured conversation messages are rendered
+with the tokenizer's packaged chat template. The complete rendered history is
+re-prefilled from position zero on every turn, generation advances absolute
+RoPE/cache positions, and the decoded assistant message is saved for the next
+render. This is why a follow-up such as `awesome!` can condition on an earlier
+poem even though native cache state is not reused across turns.
+
 ### Current baseline versus intended inference
 
 The current loop is real and executable, but several inputs to it are not learned well enough:
@@ -525,8 +537,12 @@ The current loop is real and executable, but several inputs to it are not learne
 - sparse semantic routing recall and downstream quality are below the required level;
 - no learned rank-16 or overlapping-posting router is serialized because the semantic gate fails.
 
-Consequently, successful package generation or Python/C++ parity proves that the systems pipeline
-works. It does not prove that Engram preserves the teacher model's language ability.
+Consequently, successful package generation or Python/C++ parity proves that
+the systems pipeline works. It does not prove that this original dense-Llama
+conversion preserves the teacher model's language ability. The separate
+native-BitNet package does pass its frozen substitution gate and produces
+coherent short continuations, but its evidence is still limited to the
+documented frozen corpus and small behavioral suite.
 
 ## 7. Example: generating one token
 
