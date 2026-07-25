@@ -216,6 +216,12 @@ engram benchmark-native-bitnet-generation \
   --mlp-library build/libengram_bitnet.so \
   --attention-library build/libengram_attention.so \
   --native-projections
+
+engram chat-native-bitnet \
+  --model work/native_bitnet/model.engram-bitnet \
+  --library build/libengram_bitnet.so \
+  --attention-library build/libengram_attention.so \
+  --threads 12 --max-tokens 32
 ```
 
 The compiler copies only config/tokenizer assets and non-MLP tensors, embeds
@@ -229,3 +235,10 @@ absolute positions, and keeps the Transformers dense KV cache disabled. It
 does not consult the source checkpoint directory after compilation.
 `--native-projections` additionally executes the packaged official Q/K/V/O
 ternary tensors without expanding them to BF16 matrices.
+
+`chat-native-bitnet` always enables packed native projections and bounded
+attention. It uses the packaged tokenizer's chat template and re-prefills the
+complete structured conversation on every turn. The supported session
+commands are `/history`, `/reset`, `/quit`, and `/exit`. Persistent cross-turn
+cache reuse and token streaming are intentionally deferred until this
+re-prefill implementation has broader behavioral validation.

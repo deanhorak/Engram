@@ -191,6 +191,27 @@ at 2,048 tokens. Attention state remains 7,477,440 bytes, but process peak RSS
 is 2.14–2.57 GB because the Python/Transformers shell and prompt tensors
 remain. Seven autoregressive steps take 38.26 seconds, about 5.47 seconds per
 step. This is a working research inference engine, not an interactive runtime.
+
+### Interactive native BitNet chat
+
+The package can be used through an interactive, chat-template-aware command:
+
+```bash
+PYTHONPATH=src python -m engram.cli chat-native-bitnet \
+  --model work/native_bitnet/model.engram-bitnet \
+  --library build/libengram_bitnet.so \
+  --attention-library build/libengram_attention.so \
+  --threads 12 \
+  --max-tokens 32
+```
+
+Each turn is appended to structured user/assistant history, rendered with the
+chat template stored in the packaged tokenizer, and re-prefilled through a
+fresh bounded native cache. `/history` displays the current conversation,
+`/reset` clears it while retaining the system message, and `/quit` exits.
+This initial version does not stream tokens or preserve cache state between
+turns. At the current CPU decode speed, 32 generated tokens can take several
+minutes.
 The detailed history below is retained so negative results remain auditable.
 
 The repository contains an end-to-end research prototype: Hugging Face model inspection and

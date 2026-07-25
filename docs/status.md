@@ -344,6 +344,14 @@ seven model steps take 38.26 seconds—about 5.47 seconds per decoded token.
 Quality testing can proceed, but interactive use requires a dedicated
 single-row AVX2 MLP/projection path and removal of the Transformers shell.
 
+An interactive `chat-native-bitnet` CLI now applies the packaged tokenizer's
+chat template to structured history and re-prefills that complete history on
+each turn. It supports history display, reset, clean exit, EOF, and interrupt
+handling. A real package smoke test answered a chat-formatted France question,
+reported bounded state, reset correctly, and exited cleanly. This establishes
+the chatbot interface, not interactive performance: output is returned only
+after the turn finishes, and cross-turn native cache reuse is not implemented.
+
 CUDA remains an optional training accelerator only; the serialized format and
 inference mechanism are CPU-native. Repeating IVF, candidate-count,
 regularization, prototype-density, small residual, post-hoc bit allocation,

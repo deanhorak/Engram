@@ -1,5 +1,20 @@
 # Research log
 
+## 2026-07-24 — Chat-template-aware native CLI
+
+- Added `chat-native-bitnet`, which loads the optimized package once, keeps
+  structured system/user/assistant history, renders it with the tokenizer's
+  packaged chat template, and re-prefills a fresh bounded cache each turn.
+- Added `/history`, `/reset`, `/quit`, `/exit`, EOF, unknown-command, and
+  interrupt behavior. Unit tests verify that the second rendered prompt
+  contains the first assistant answer and that reset removes prior turns.
+- A real package smoke test generated `The capital` for a two-token France
+  question turn in 10.50 seconds, reported 7,477,440 attention-state bytes,
+  displayed history, reset to empty history, and exited cleanly.
+- Persistent cross-turn cache reuse and token streaming remain explicitly
+  deferred. Current single-row CPU decode is too slow for an interactive user
+  experience despite the working interface.
+
 ## 2026-07-24 — Complete inference stack passes first behavioral validation
 
 - The complete optimized stack passes frozen records 8–15 over 256 positions:
