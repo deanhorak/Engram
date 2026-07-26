@@ -373,6 +373,16 @@ implementation should load the authenticated non-MLP/controller state into a
 single native runtime handle and dispatch the full stage loop without Python
 or Torch.
 
+The first part of that orchestrator is now live. A persistent C++ stage-state
+handle owns normalized residual state, attention contribution, post-attention
+state, and physical RMS, enforces attention-before-semantic call ordering, and
+produces BF16 normalized inputs for both operators. Package generation uses
+this handle instead of the NumPy state loop and retains ` Paris. Paris is`;
+measured controller bookkeeping falls from roughly 26–30 ms to 11.4 ms on
+that smoke prompt. The complete suite passes at 452 Python and 16 native
+tests. Python still invokes each attention and MLP operator, so this is the
+buffer/state foundation for the all-C++ loop rather than completion of it.
+
 The low-bit-native hypothesis has passed source validation, exact
 reconstruction, the unchanged MLP byte limit, direct CPU execution, frozen
 causal confirmation, source-independent package compilation, and exact

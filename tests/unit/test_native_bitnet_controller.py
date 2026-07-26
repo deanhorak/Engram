@@ -12,6 +12,7 @@ from engram.runtime.native_bitnet_controller import (
     ControllerDrivenBitNet,
     NativeBitNetShellOps,
     NativeOperatorResidual,
+    NativeStageState,
 )
 
 
@@ -236,3 +237,46 @@ def test_native_shell_embedding_and_rms_norm_match_torch():
     torch.testing.assert_close(
         actual_key.float(), expected_key.float(), rtol=0.02, atol=0.02
     )
+
+
+def test_native_stage_state_matches_exact_operator_residual():
+    torch = pytest.importorskip("torch")
+    library = Path("build/libengram_bitnet.so")
+    if not library.is_file():
+        pytest.skip("native BitNet library has not been built")
+    embedding = torch.tensor(
+        [[[3.0, 4.0], [5.0, 12.0]]], dtype=torch.bfloat16
+    )
+    attention = torch.tensor(
+        [[[1.0, -0.5], [0.25, 0.75]]], dtype=torch.bfloat16
+    )
+    semantic = torch.tensor(
+        [[[-0.25, 0.5], [1.0, -0.5]]], dtype=torch.bfloat16
+    )
+    stage = NativeStageState(library, vectors=2, width=2)
+    stage.begin(embedding)
+    stage.accept_attention(attention)
+    stage.accept_semantic(
+        semantic,
+        semantic_scale=1.0,
+        episodic_scale=1.0,
+    )
+    state, rms = stage.copy_state(tuple(embedding.shape))
+    initial = embedding.float().numpy()
+    initial_rms = np.sqrt(np.mean(np.square(initial), axis=-1, keepdims=True))
+    residual = (
+        initial / initial_rms
+        + attention.float().numpy() / initial_rms
+        + semantic.float().numpy() / initial_rms
+    )
+    expected_rms = np.sqrt(
+        np.mean(np.square(residual), axis=-1, keepdims=True)
+    )
+    expected_state = residual / np.sqrt(
+        np.mean(np.square(residual), axis=-1, keepdims=True) + 1e-6
+    )
+    np.testing.assert_allclose(state, expected_state, rtol=2e-6, atol=2e-6)
+    np.testing.assert_allclose(
+        rms, initial_rms * expected_rms, rtol=2e-6, atol=2e-6
+    )
+    stage.close()

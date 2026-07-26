@@ -271,6 +271,152 @@ class NativeBitNetShellOps:
         return query, key
 
 
+class NativeStageState:
+    """Persistent C++ normalized residual state for one prefill/decode call."""
+
+    def __init__(self, library, *, vectors: int, width: int) -> None:
+        self._library = ctypes.CDLL(str(library))
+        self.vectors = int(vectors)
+        self.width = int(width)
+        lib = self._library
+        lib.engram_native_stage_create.argtypes = [
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        lib.engram_native_stage_create.restype = ctypes.c_void_p
+        lib.engram_native_stage_destroy.argtypes = [ctypes.c_void_p]
+        pointer_args = [ctypes.c_void_p, ctypes.c_void_p]
+        for name in (
+            "engram_native_stage_begin_bf16",
+            "engram_native_stage_accept_attention_bf16",
+        ):
+            function = getattr(lib, name)
+            function.argtypes = [*pointer_args, ctypes.c_char_p, ctypes.c_size_t]
+            function.restype = ctypes.c_int
+        for name in (
+            "engram_native_stage_attention_input_bf16",
+            "engram_native_stage_semantic_input_bf16",
+            "engram_native_stage_final_norm_bf16",
+        ):
+            function = getattr(lib, name)
+            function.argtypes = [
+                *pointer_args,
+                ctypes.c_float,
+                ctypes.c_void_p,
+                ctypes.c_char_p,
+                ctypes.c_size_t,
+            ]
+            function.restype = ctypes.c_int
+        lib.engram_native_stage_accept_semantic_bf16.argtypes = [
+            *pointer_args,
+            ctypes.c_float,
+            ctypes.c_float,
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        lib.engram_native_stage_accept_semantic_bf16.restype = ctypes.c_int
+        lib.engram_native_stage_copy_state_f32.argtypes = [
+            ctypes.c_void_p,
+            ctypes.c_void_p,
+            ctypes.c_void_p,
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        lib.engram_native_stage_copy_state_f32.restype = ctypes.c_int
+        error = ctypes.create_string_buffer(512)
+        self._handle = lib.engram_native_stage_create(
+            self.vectors, self.width, error, len(error)
+        )
+        if not self._handle:
+            raise RuntimeError(error.value.decode("utf-8", "replace"))
+
+    def _call(self, name: str, *arguments) -> None:
+        error = ctypes.create_string_buffer(512)
+        status = getattr(self._library, name)(
+            self._handle, *arguments, error, len(error)
+        )
+        if status:
+            raise RuntimeError(error.value.decode("utf-8", "replace"))
+
+    def _output(self):
+        torch, _, _ = _torch_modules()
+        return torch.empty(
+            (self.vectors, self.width), dtype=torch.bfloat16, device="cpu"
+        )
+
+    def begin(self, embedding) -> None:
+        source = embedding.contiguous().view(self.vectors, self.width)
+        self._call(
+            "engram_native_stage_begin_bf16",
+            ctypes.c_void_p(source.data_ptr()),
+        )
+
+    def norm(self, name: str, weight, epsilon: float):
+        output = self._output()
+        scale = weight.detach().cpu().contiguous()
+        self._call(
+            name,
+            ctypes.c_void_p(scale.data_ptr()),
+            float(epsilon),
+            ctypes.c_void_p(output.data_ptr()),
+        )
+        return output
+
+    def attention_input(self, weight, epsilon: float):
+        return self.norm(
+            "engram_native_stage_attention_input_bf16", weight, epsilon
+        )
+
+    def accept_attention(self, output) -> None:
+        source = output.contiguous().view(self.vectors, self.width)
+        self._call(
+            "engram_native_stage_accept_attention_bf16",
+            ctypes.c_void_p(source.data_ptr()),
+        )
+
+    def semantic_input(self, weight, epsilon: float):
+        return self.norm(
+            "engram_native_stage_semantic_input_bf16", weight, epsilon
+        )
+
+    def accept_semantic(
+        self, output, *, semantic_scale: float, episodic_scale: float
+    ) -> None:
+        source = output.contiguous().view(self.vectors, self.width)
+        self._call(
+            "engram_native_stage_accept_semantic_bf16",
+            ctypes.c_void_p(source.data_ptr()),
+            float(semantic_scale),
+            float(episodic_scale),
+        )
+
+    def final_norm(self, weight, epsilon: float):
+        return self.norm("engram_native_stage_final_norm_bf16", weight, epsilon)
+
+    def copy_state(self, shape) -> tuple[np.ndarray, np.ndarray]:
+        state = np.empty((self.vectors, self.width), dtype=np.float32)
+        rms = np.empty((self.vectors, 1), dtype=np.float32)
+        self._call(
+            "engram_native_stage_copy_state_f32",
+            ctypes.c_void_p(state.ctypes.data),
+            ctypes.c_void_p(rms.ctypes.data),
+        )
+        return state.reshape(shape), rms.reshape((*shape[:-1], 1))
+
+    def close(self) -> None:
+        if getattr(self, "_handle", None):
+            self._library.engram_native_stage_destroy(self._handle)
+            self._handle = None
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except Exception:
+            pass
+
+
 class ControllerDrivenBitNet:
     """Dispatch native stage operators from normalized controller state.
 
@@ -353,6 +499,74 @@ class ControllerDrivenBitNet:
                     position_ids=position_ids,
                 )
             )
+            if self.native_shell is not None and self.native_residual is not None:
+                stage_state = NativeStageState(
+                    self.native_shell.library_path,
+                    vectors=input_ids.numel(),
+                    width=embedded.shape[-1],
+                )
+                stage_state.begin(embedded)
+                controller_seconds = 0.0
+                for stage, layer in enumerate(self.model.model.layers):
+                    attention_input = stage_state.attention_input(
+                        layer.input_layernorm.weight,
+                        layer.input_layernorm.variance_epsilon,
+                    ).view_as(embedded)
+                    attention_output, _ = layer.self_attn(
+                        hidden_states=attention_input,
+                        attention_mask=None,
+                        position_ids=position_ids,
+                        past_key_values=None,
+                        use_cache=False,
+                        position_embeddings=position_embeddings,
+                    )
+                    stage_state.accept_attention(attention_output)
+                    semantic_input = stage_state.semantic_input(
+                        layer.post_attention_layernorm.weight,
+                        layer.post_attention_layernorm.variance_epsilon,
+                    ).view_as(embedded)
+                    semantic_output = layer.mlp(semantic_input)
+                    controller_started = time.perf_counter()
+                    assert self.controller.operator_residual_scale is not None
+                    stage_state.accept_semantic(
+                        semantic_output,
+                        semantic_scale=float(
+                            self.controller.operator_residual_scale[stage, 0]
+                        ),
+                        episodic_scale=float(
+                            self.controller.operator_residual_scale[stage, 1]
+                        ),
+                    )
+                    controller_seconds += (
+                        time.perf_counter() - controller_started
+                    )
+                hidden = stage_state.final_norm(
+                    self.model.model.norm.weight,
+                    self.model.model.norm.variance_epsilon,
+                ).view_as(embedded)
+                state, residual_rms = stage_state.copy_state(
+                    tuple(embedded.shape)
+                )
+                stage_state.close()
+                if self.native_vocab_argmax:
+                    next_token, _ = self.native_shell.vocab_argmax(
+                        hidden[0, -1],
+                        self.model.lm_head.weight,
+                        threads=self.vocab_threads,
+                    )
+                    logits = None
+                else:
+                    logits = self.model.lm_head(hidden).float()
+                return ControllerForward(
+                    logits=logits,
+                    next_token=(
+                        next_token if self.native_vocab_argmax else None
+                    ),
+                    normalized_state=state,
+                    residual_rms=residual_rms,
+                    elapsed_seconds=time.perf_counter() - started,
+                    controller_seconds=controller_seconds,
+                )
             controller_seconds = 0.0
             for stage, layer in enumerate(self.model.model.layers):
                 state_tensor = torch.from_numpy(state).to(
@@ -470,4 +684,5 @@ __all__ = [
     "ControllerForward",
     "NativeBitNetShellOps",
     "NativeOperatorResidual",
+    "NativeStageState",
 ]

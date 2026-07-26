@@ -1172,3 +1172,9 @@
   shell is stage orchestration and Torch tensor views around already-native
   projections, MLP, and attention kernels; the next boundary is one C++
   package-runtime handle for the complete 30-stage loop.
+- Added the first persistent stage-runtime handle. It owns normalized state,
+  residual RMS, attention and post-attention workspaces; emits BF16 normalized
+  operator inputs; accepts BF16 attention/semantic outputs; and rejects
+  out-of-order calls. Real package generation is token-identical, controller
+  bookkeeping falls to 11.4 ms on the four-token smoke prompt, and validation
+  advances to 452 Python plus 16 native tests.

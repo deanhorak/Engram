@@ -12,6 +12,7 @@ add_library(engram_kernels STATIC
   native/src/npy.cpp
   native/src/native_bitnet.cpp
   native/src/native_shell_c.cpp
+  native/src/native_stage_c.cpp
   native/src/operator_residual_c.cpp
   native/src/package.cpp
   native/src/runtime.cpp
@@ -36,6 +37,7 @@ set_target_properties(engram_kernels PROPERTIES POSITION_INDEPENDENT_CODE ON)
 add_library(engram_bitnet SHARED
   native/src/native_bitnet_c.cpp
   native/src/native_shell_c.cpp
+  native/src/native_stage_c.cpp
   native/src/operator_residual_c.cpp
   native/src/ternary_projection_c.cpp
 )
@@ -85,7 +87,7 @@ if(ENGRAM_BUILD_TESTS)
   target_link_libraries(engram_native_tests PRIVATE engram_kernels)
   add_test(NAME engram_native_tests COMMAND engram_native_tests)
 
-  foreach(test_name IN ITEMS controller dip episodic npy package semantic semantic_ivf semantic_quantized streaming_attention thread_pool transition_cache vector_kernels vocabulary vocabulary_ivf)
+  foreach(test_name IN ITEMS controller dip episodic native_stage npy package semantic semantic_ivf semantic_quantized streaming_attention thread_pool transition_cache vector_kernels vocabulary vocabulary_ivf)
     add_executable(engram_native_${test_name}_tests native/tests/test_${test_name}.cpp)
     target_link_libraries(engram_native_${test_name}_tests PRIVATE engram_kernels)
     add_test(NAME engram_native_${test_name}_tests COMMAND engram_native_${test_name}_tests)
