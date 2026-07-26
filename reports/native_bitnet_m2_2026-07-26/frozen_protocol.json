@@ -1,17 +1,19 @@
 {
   "experiment": "native_bitnet_milestone_2_practical_semantic_memory_confirmation",
-  "protocol_version": 4,
-  "status": "new_final_holdout_thresholds_held_out_causal_recall_definition_and_full_length_development_corpus_frozen_before_canonical_bf16_policy_refit",
+  "protocol_version": 5,
+  "status": "final_holdout_and_gates_frozen_before_live_native_bf16_development_selection_and_configuration_freeze",
   "source_model": {
     "repository": "microsoft/bitnet-b1.58-2B-4T",
     "revision": "04c3b9ad9361b824064a1f25ea60a8be9599b127",
     "weight_sha256": "8143ae115ed6babe5e5ada8fb8c5b769d8f417802b2db042ad98b4f7ed73975b"
   },
   "configuration_fit": {
-    "role": "router_and_budget_fit_only",
+    "role": "noncanonical_policy_proposal_only",
     "trace": "work/controller_distillation/bitnet_validation_16x16_b4",
     "dataset_sha256": "073e2b648a5cf84a97697330384338b1193f148ff1eb3a3cc9ec4cf21d37f977",
-    "records": 256
+    "records": 256,
+    "stored_dtype": "float16",
+    "limitation": "the stored boundary cannot reconstruct the live BF16 bit pattern or canonical native accumulation order and therefore cannot by itself approve the effective policy"
   },
   "causal_development": {
     "role": "method_development_only",
@@ -34,7 +36,8 @@
       "records_per_offset": 8,
       "prediction_positions_per_record": 32,
       "historical_status": "previously used and therefore eligible for development only"
-    }
+    },
+    "effective_policy_selection": "live CPU BF16 hooks on these declared development corpora using the exact native candidate RMS adaptive-K and selected-down kernel"
   },
   "final_confirmation": {
     "role": "untouched_by_model_execution_until_configuration_artifacts_and_kernel_are_frozen",
@@ -162,6 +165,11 @@
       "from_protocol_version": 3,
       "change": "moved qualifying candidate recall from the policy-fit trace to the same untouched 256-position final causal pass because fit-trace recall is not held-out and does not observe compounded sparse-path states",
       "quality_traffic_and_recall_threshold_values_changed": false
+    },
+    {
+      "from_protocol_version": 4,
+      "change": "demoted the float16 boundary trace to proposal-only evidence and required effective policy selection on live development CPU BF16 inputs through the exact native kernel",
+      "final_holdout_quality_traffic_and_recall_contract_changed": false
     }
   ]
 }
