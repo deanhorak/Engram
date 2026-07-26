@@ -2,11 +2,10 @@
 
 ## Current combined-gate decision
 
-As of 2026-07-24, no dense-Llama conversion passes the causal quality
-thresholds and the complete physical cold-traffic threshold together.
-Predictor-free DIP passes quality on an untouched confirmation corpus but
-reaches 83.33% cache-line traffic and is slower than dense in the checked
-native benchmark. The
+As of 2026-07-26, no dense-Llama conversion passes the causal quality
+thresholds and the complete physical cold-traffic threshold together. The
+older dense-SmolLM predictor-free DIP experiment passed quality but reached
+83.33% cache-line traffic and was slower than dense. The
 serialized mild-width compact-Q4 student reaches 44.9334% traffic but fails
 quality after 3,000,093 training positions. The latest 1M-prototype
 output-memory experiment is layer-local only and fails its predeclared
@@ -17,8 +16,8 @@ grouped-ternary artifact reaches 43.1353% traffic, but after 1,014,225 training
 positions still has KL 2.2844, top-1 0.3198, NLL delta +2.2770, and
 final-hidden relative L2 0.6036. It fails its frozen pre-3M progression rule.
 
-A separate low-bit-native source track passes the causal quality and cold-byte
-checks, but **does not pass practical routing Gate 2**. Its direct CPU kernel
+A separate low-bit-native source track first passed the causal quality and
+cold-byte checks while executing every record. Its direct CPU kernel
 memory-maps the 318,924,544-byte base-3 phase artifact, materializes no dense
 weights, and schedules 40.0527% of dense ideal-Q4 cold bytes. On the frozen
 8-sequence/256-position corpus it measures KL 0.00371, top-1 0.96094, NLL
@@ -26,15 +25,43 @@ delta +0.00224, and final-hidden relative L2 0.04678 while executing every MLP
 record. See the
 [direct-kernel result](../reports/semantic_gate_native_bitnet_2026-07-24/summary.md).
 
-The subsequent exact-membership oracle establishes that the BitNet source does
+The subsequent exact-membership oracle established that the BitNet source does
 have a viable semantic subset. A development-only layer sweep chose a 15–35%
 schedule averaging 24.8375% selected records. On the frozen
 8-sequence/256-position protocol it passes with KL 0.02543, top-1 0.94531, NLL
 delta +0.02386, and final-hidden relative L2 0.09205. Fixed 25% missed only the
 hidden-state limit (0.10448). These are oracle results: dense gate/up
 coefficients still determine membership, so neither candidate recall nor
-practical traffic is claimed. See the
+practical traffic was claimed. See the
 [oracle report](../reports/native_bitnet_oracle_2026-07-26/summary.md).
+
+That practical route now exists. A source-bound v2 coordinate index and
+CPU-only native DIP kernel use the largest 1,920/2,560 live-BF16 input
+coordinates, per-layer candidate and maximum-K schedules, token-adaptive
+nonzero selection, candidate-ratio RMS estimation except for a layer-9
+eight-record audit, and selected down-row reads. On the declared
+8-sequence/256-position development corpus it passes:
+
+| Measure | Result | Requirement |
+|---|---:|---:|
+| Mean KL | 0.0044706883 | <= 0.05 |
+| Top-1 agreement | 0.94921875 | >= 0.90 |
+| NLL delta | +0.0013608933 | <= +0.05 |
+| Final-hidden relative L2 | 0.0498965010 | <= 0.10 |
+| Mean active fraction | 0.2008071899 | <= 0.25 |
+| Modeled physical cold traffic | 0.4096389557 | <= 0.45 |
+| Global micro candidate recall | 0.9995917258 | >= 0.95 |
+| Worst-layer mean recall | 0.9939353303 | >= 0.95 |
+
+The timed sparse pass makes no dense full-record calls. Dense teacher
+membership is computed only in a separate untimed diagnostic pass against a
+fixed per-layer top-K schedule. Six rows in each of all 30 layers have
+bit-exact Python/native coordinate, candidate, selected-record, selected-count,
+and BF16-output parity. The frozen policy authorizes one sealed final
+confirmation; therefore this is a development-gate pass, not a Milestone 2
+pass. Its sparse end-to-end elapsed time is 1.1565x dense (15.65% slower), and
+the traffic ratio is modeled from the v2 serialized layout rather than
+measured with DRAM counters.
 
 See [Project status](status.md) and the
 [machine-readable snapshot](../reports/semantic_gate_status_2026-07-23/summary.json).
@@ -90,6 +117,47 @@ Official BF16 layer outputs are not bit-identical because PyTorch GEMM and the
 stream kernel reduce in different orders; their maximum checked relative L2
 is 0.00982. The causal thresholds, rather than bit identity, determine the
 formal outcome.
+
+## Native BitNet practical-routing protocol
+
+The practical DIP evaluator is stricter than the earlier trace screens:
+
+1. It reloads the source-bound base record artifact and v2 coordinate index.
+2. It substitutes the native CPU DIP kernel into all 30 MLPs at live BF16
+   boundaries. No dense MLP fallback is permitted.
+3. The timed sparse pass records selected counts and cache-line traffic but
+   does not call the dense teacher.
+4. An untimed debug pass exposes the exact route and evaluates recall against
+   a frozen, router-independent dense-teacher top-K schedule on the same actual
+   sparse causal states.
+5. Global micro recall and every layer's mean recall must each reach 0.95.
+   Adaptive K is not used as the recall denominator.
+6. Quality, mean activity, and physical traffic must pass on at least eight
+   unique sequences and 256 positions.
+
+The frozen route uses `q=1920`, `minK=346`, and energy target 1.0 in all
+layers. `C` and `Kmax` are layer-specific and authenticated in the
+[policy manifest](../reports/native_bitnet_m2_2026-07-26/frozen_dip_policy.json).
+Energy target 1.0 means the token's target K is its number of positive exact
+candidate utilities, clipped to `[346,Kmax]`; it is not a fixed-density
+selection. Candidate-ratio RMS estimates the unseen tail by the ratio between
+exact and proxy squared energy inside the candidate set. Layer 9 instead uses
+corrected proxy energy and eight top-proxy-raw-square audit candidates inside
+the same fixed `C=4480`.
+
+The policy manifest binds the base artifact, coordinate index, native
+libraries, package manifest, tokenizer, protocol, development report, and
+parity report by SHA-256. The original float16 trace proposal cannot approve
+the route because it does not reproduce live BF16 boundaries or native
+accumulation. The v2 coordinate index, not that proposal, is the executable
+policy authority.
+
+After this development pass, no configuration field may change. The final
+runner may open the independent 8-sequence/256-position holdout once. A policy
+change after opening requires a new holdout. The holdout is plaintext in the
+repository, so this protection is procedural and honor-system-based rather
+than cryptographic; the fail-closed runner and committed hashes make misuse
+auditable.
 
 ## Budget-edge local progression protocol
 
@@ -408,8 +476,11 @@ The relative-improvement check passes, but the absolute ceiling fails by 0.1957.
 is rejected before another causal run. The next architecture should test layer-adaptive capacity or
 a more expressive structured basis under an aggregate, rather than per-layer, 45% traffic budget.
 
-The next experiment replaced learned membership prediction with a predictor-free, DIP-inspired
-selector. The published DIP method motivates top-magnitude input pruning and partial activation
+### Earlier dense-SmolLM DIP experiment
+
+This historical experiment replaced learned membership prediction with a
+predictor-free, DIP-inspired selector. The published DIP method motivates
+top-magnitude input pruning and partial activation
 scoring; candidate-only exact completion and contribution-norm reranking are Engram extensions. A
 trace-only sweep retains the largest absolute MLP-input coordinates, evaluates partial gate/up
 projections for all records, exactly completes only candidate records, and reranks their full
@@ -428,16 +499,16 @@ frontier then establishes the checked-grid boundary:
 | 0.750 | 896 | 0.7639 | 0.9899 | 0.0339 | 0.9124 | +0.0262 | 0.0938 | pass |
 | 0.750 | 1,024 | 0.7778 | 0.9971 | 0.0316 | 0.9246 | +0.0308 | 0.0921 | pass |
 
-The recommended development point is 75%/896: its small traffic premium over the cheapest pass
+The selected development point was 75%/896: its small traffic premium over the cheapest pass
 buys better margin on recall, top-1 agreement, and hidden drift. That configuration was then frozen
 and run once on a new 16-sequence corpus: 1,184 input states, 1,168 next-token positions, and zero
 exact token-sequence overlap with the configuration-selection corpus. The confirmation arm passes
 with recall 0.9897, score-mass recall 0.9961, KL 0.0286, top-1 agreement 0.9101, NLL delta +0.0326,
-and final-hidden relative L2 0.0905. The machine-readable decision is now
-`eligible_for_selector_serialization`. This does not yet
-authorize a performance claim: both evaluators express the algorithm using dense operations, and
-the byte formula excludes index traffic, activations, cache-line waste, and sorting. A packed
-cache-aware kernel and hardware measurement remain required.
+and final-hidden relative L2 0.0905. The machine-readable decision was
+`eligible_for_selector_serialization`. The later packed cache-aware benchmark
+raised traffic to 83.33% and ran slower than dense, so this dense-source arm
+did not pass the systems gate. It must not be confused with the newer
+native-BitNet DIP policy above.
 
 The experiments were run in stages. The checked
 [composite report](../reports/smollm2_mlp_intervention_composite/mlp_intervention.json) verifies

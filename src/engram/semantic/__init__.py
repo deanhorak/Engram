@@ -20,6 +20,28 @@ from .dip_package import (
     build_serialized_dip_package,
     write_serialized_dip_layer,
 )
+from .native_bitnet_dip import (
+    NativeBitNetDIPConfiguration,
+    NativeBitNetDIPDiagnostics,
+    NativeBitNetDIPLayer,
+    NativeBitNetDIPResult,
+    build_native_bitnet_dip_mlp,
+    substitute_native_bitnet_dip_mlps,
+)
+from .native_bitnet_dip_index import (
+    LoadedNativeBitNetDIPIndex,
+    MappedNativeBitNetDIPLayer,
+    NativeBitNetDIPPolicy,
+    build_native_bitnet_dip_index,
+    load_native_bitnet_dip_index,
+)
+from .native_bitnet_dip_policy_manifest import (
+    FrozenNativeBitNetDIPLayerPolicy,
+    LoadedNativeBitNetDIPPolicyManifest,
+    NativeBitNetDIPPolicyManifestError,
+    build_native_bitnet_dip_policy_manifest,
+    load_native_bitnet_dip_policy_manifest,
+)
 from .product_quantization import (
     ProductAdditiveEncoding,
     ProductAdditiveMetadata,
@@ -53,6 +75,22 @@ __all__ = [
     "SerializedDIPRead",
     "build_serialized_dip_package",
     "write_serialized_dip_layer",
+    "NativeBitNetDIPConfiguration",
+    "NativeBitNetDIPDiagnostics",
+    "NativeBitNetDIPLayer",
+    "NativeBitNetDIPResult",
+    "build_native_bitnet_dip_mlp",
+    "substitute_native_bitnet_dip_mlps",
+    "LoadedNativeBitNetDIPIndex",
+    "MappedNativeBitNetDIPLayer",
+    "NativeBitNetDIPPolicy",
+    "build_native_bitnet_dip_index",
+    "load_native_bitnet_dip_index",
+    "FrozenNativeBitNetDIPLayerPolicy",
+    "LoadedNativeBitNetDIPPolicyManifest",
+    "NativeBitNetDIPPolicyManifestError",
+    "build_native_bitnet_dip_policy_manifest",
+    "load_native_bitnet_dip_policy_manifest",
     "ProductAdditiveEncoding",
     "ProductAdditiveMetadata",
     "ProductAdditiveQuantizationError",

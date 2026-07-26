@@ -21,7 +21,8 @@ def sha256_json(value: Any) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def atomic_json(path: Path, value: Any) -> None:
+def atomic_json(path: str | Path, value: Any) -> None:
+    path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.name}.tmp-{os.getpid()}")
     with temporary.open("w", encoding="utf-8") as handle:

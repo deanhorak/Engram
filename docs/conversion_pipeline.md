@@ -151,9 +151,10 @@ changed basis cannot be represented by router deltas alone. It also supports dev
 full-weight/optimizer checkpoints for time-sliced CPU training. Neither checkpoint nor final
 safetensors output is a compiler input until the hard-path causal gate passes on held-out data.
 
-The predictor-free DIP-inspired selector is the materially different arm that changes the quality
-decision. Top-magnitude input pruning and partial scoring come from DIP; candidate-only exact
-completion and contribution reranking are Engram extensions. After choosing 75% input coordinates,
+The older dense-SmolLM predictor-free DIP-inspired selector was the materially
+different arm that changed that study's quality decision. Top-magnitude input
+pruning and partial scoring come from DIP; candidate-only exact completion and
+contribution reranking are Engram extensions. After choosing 75% input coordinates,
 896 candidates, and K=768 on the development grid, the fixed configuration passes again on a
 sequence-disjoint confirmation corpus. `--evaluation-role confirmation` requires
 `--configuration-selection-traces` and rejects any exact token-sequence overlap.
@@ -163,6 +164,45 @@ completion. An opt-in version-3 dual layout exists only to reproduce a rejected 
 experiment: it adds 66.7% MLP storage and is slower than v2. Neither format is a default `.engram`
 compiler input. The quality pass authorized this systems experiment; its measured latency failure
 does not authorize compiling the old learned-router artifacts or claiming a runtime speedup.
+This format is not the newer packed native-BitNet DIP index.
+
+## Native-BitNet practical semantic progression
+
+The native-BitNet path starts from the checksummed five-trits-per-byte
+phase-stream artifact, then builds a separate source-bound coordinate-major
+index. The selected policy must specify all 30 layers explicitly: `q`, `C`,
+`minK`, `Kmax`, energy target, RMS estimator, and any audit strategy. The
+index embeds those fields in the layer checksum and embeds the base record
+artifact SHA-256 in its global header.
+
+Policy selection is permitted only on declared development corpora and must
+use the live CPU native kernel at BF16 MLP boundaries. Float16 cached traces
+may propose a schedule, but they cannot approve it because they do not
+reproduce native BF16 quantization and accumulation. A qualifying development
+report must show:
+
+- all 30 MLPs substituted with no dense fallback;
+- at least 8 unique sequences and 256 positions;
+- KL <= 0.05, top-1 >= 0.90, NLL delta <= +0.05, and final-hidden
+  relative L2 <= 0.10;
+- mean active records <= 25%;
+- v2 modeled cache-line traffic <= 45% of dense ideal Q4;
+- global micro and every-layer candidate recall >= 95%;
+- independently reloaded source-bound index; and
+- Python/native bit parity on route identity, selected counts, and output.
+
+The frozen configuration passes that development gate at KL 0.0044707,
+top-1 0.94921875, NLL +0.0013609, hidden L2 0.0498965, active fraction
+0.2008072, modeled traffic 0.409639, global recall 0.9995917, and worst-layer
+mean recall 0.9939353. Six rows per layer have bit-exact parity.
+
+Passing development freezes every policy and artifact binding. The final
+runner may then open the independent plaintext holdout once. It must reject a
+changed commit, artifact, index, policy, tokenizer, library, protocol, or
+dataset hash. The plaintext fixture provides procedural and auditable
+separation, not cryptographic secrecy. Until that one-shot result passes, the
+native-BitNet DIP artifact is a development candidate and Milestone 2 remains
+pending.
 
 The later compact-Q4 and output-memory branches do not change that compiler
 decision. The compact artifact is physically valid at 44.9334% of dense ideal

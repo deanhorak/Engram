@@ -271,9 +271,11 @@ traffic reduction. The gate therefore stops conversion
 before those experimental parameters are serialized; it does not claim that all possible sparse
 representations must fail.
 
-The first passing follow-up avoids predicting a hard oracle-membership label. Published Dynamic
-Input Pruning (DIP) motivates pruning the current MLP input and forming partial scores. Engram
-extends that idea with candidate-only exact completion and contribution-norm reranking:
+The first passing follow-up in the earlier dense-SmolLM study avoided
+predicting a hard oracle-membership label. Published Dynamic Input Pruning
+(DIP) motivates pruning the current MLP input and forming partial scores.
+Engram extended that idea with candidate-only exact completion and
+contribution-norm reranking:
 
 1. keep the `q` coordinates of the hidden vector with the largest absolute values;
 2. multiply only those coordinates by every gate/up record to get a partial SwiGLU score;
@@ -282,12 +284,13 @@ extends that idea with candidate-only exact completion and contribution-norm rer
    exact;
 5. rerank the exact candidates and read the `K` selected down-projection values.
 
-This is predictor-free: it uses the source MLP weights rather than a separate learned router. On
-the current SmolLM2 study, retaining 75% of input coordinates, completing 896/1,536 candidates,
+This is predictor-free: it uses the source MLP weights rather than a separate learned router. In
+the historical SmolLM2 study, retaining 75% of input coordinates, completing 896/1,536 candidates,
 and selecting K=768 passes both the development grid and a sequence-disjoint confirmation run.
-Its projected weight reads are 76.4% of a dense MLP. That is a real quality progression result,
-but only a modest traffic reduction; the cache-aware packed layout and native kernel needed to
-realize it have not yet been built.
+Its projected weight reads were 76.4% of a dense MLP. That was a real quality
+progression result, but cache-line accounting reached 83.33% and its later
+native kernel was slower than dense. That dense-source arm therefore remains
+historical rather than the current Milestone 2 candidate.
 
 ### Stage 5: fit missing behavior
 
@@ -399,16 +402,46 @@ passes causal quality and cold-byte checks as a full-record systems substrate.
 Because every MLP record executes, it does not pass routed semantic-memory
 Milestone 2.
 
-The next BitNet experiment tests the missing semantic premise directly. After
+The next BitNet experiment tested the missing semantic premise directly. After
 the full gate/up coefficient path, each normalized intermediate coefficient
 multiplies one transposed-down record, giving an exact additive decomposition.
 An oracle ranks those contributions and reads only its selected down records.
 A layer-adaptive 15–35% schedule averages 24.84% and passes the frozen causal
 gate. This means the selected semantic values are sufficient. It does not yet
-mean they are cheaply addressable: a qualifying runtime must predict the same
-memberships from a compact router, fetch only selected gate/up/down records,
-estimate the coupled RMS/Q8 scales without a dense scan, and preserve the
-frozen quality result on CPU.
+mean they are cheaply addressable: that oracle still reads the complete
+gate/up path to discover its membership.
+
+The practical native-BitNet DIP path now supplies the missing addressing
+mechanism. At each layer it:
+
+1. receives the actual BF16 MLP input and applies the teacher's Q8 activation
+   quantization;
+2. selects the 1,920 largest-magnitude coordinates out of 2,560;
+3. streams those coordinate rows from a packed ternary gate/up index to score
+   all 6,912 records approximately;
+4. keeps the layer's frozen candidate count `C` and computes each candidate's
+   complete gate/up coefficient exactly;
+5. estimates the shared RMS without completing the non-candidates;
+6. quantizes the normalized candidate coefficients exactly, ranks their
+   down-weighted utility, and chooses the token's nonzero count clipped to
+   `[346,Kmax]`;
+7. reads and accumulates only those selected packed down rows.
+
+Most layers estimate the unseen RMS energy by multiplying proxy-tail energy
+by the exact/proxy candidate-energy ratio. Layer 9 is the exception: it uses
+corrected proxy energy and reserves eight slots inside its candidate union for
+large raw-square proxy records as an audit. This avoids a fitted predictor and
+does not add candidate traffic beyond layer 9's frozen `C`.
+
+The source-bound v2 index, C/K schedule, RMS policy, and CPU shared library are
+independently reloaded before evaluation. On eight development sequences and
+256 positions, all 30 native sparse MLPs pass the causal, recall, activity, and
+modeled-traffic limits with no dense fallback. Six rows per layer have
+bit-exact Python/native route and BF16 output parity. The policy is now frozen
+for one sealed final confirmation, so this is a development-gate pass rather
+than a completed Milestone 2. The end-to-end sparse development run is 1.1565x
+the dense elapsed time and the 40.9639% traffic result is modeled from
+cache-line touches, not measured DRAM.
 
 The source-family-specific package and generation boundary are now complete.
 Compilation writes a 1,108,116,808-byte checksummed package containing 332
@@ -432,11 +465,12 @@ window. It exact-reranks those eight old keys to four values and never reads an
 evicted key. The frozen 256-position result passes every causal threshold.
 Native integration and a genuinely long-context hardware benchmark remain.
 
-The present compiler still writes initialized or heuristic fallbacks and
-records that fact in its conversion report. DIP supplies a passing semantic
-substitution arm and now has an experimental serialized layout/native kernel,
-but that kernel is slower than dense. Attention/controller distillation
-remains separate open work.
+The generic dense-Llama compiler still writes initialized or heuristic
+fallbacks and records that fact in its conversion report. The native-BitNet
+DIP route is a separate source-family candidate: its serialized index and
+native kernel pass development but remain pending the sealed final. Its
+1.1565x-dense development timing also leaves substantial performance work
+even if the semantic gate passes.
 
 A later 3M-position compact-Q4 run establishes the opposite frontier: its
 serialized MLP payload fits the 45% traffic budget, but its causal quality is
@@ -568,8 +602,12 @@ The current loop is real and executable, but several inputs to it are not learne
 - the controller is initialized, not distilled from teacher state transitions;
 - episodic mixing is heuristic, not trained to match source attention;
 - correction capsules are empty;
-- sparse semantic routing recall and downstream quality are below the required level;
-- no learned rank-16 or overlapping-posting router is serialized because the semantic gate fails.
+- dense-Llama sparse semantic routing recall and downstream quality are below
+  the required level;
+- no dense-Llama learned rank-16 or overlapping-posting router is serialized
+  because that source track fails its semantic gate;
+- native-BitNet DIP passes development but is not promoted until its sealed
+  final completes.
 
 Consequently, successful package generation or Python/C++ parity proves that
 the systems pipeline works. It does not prove that this original dense-Llama

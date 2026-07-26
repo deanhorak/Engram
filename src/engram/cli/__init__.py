@@ -27,8 +27,13 @@ from engram.evaluation.native_bitnet_oracle import (
     evaluate_native_bitnet_oracle_layer_sweep,
 )
 from engram.evaluation.native_bitnet_router import (
+    evaluate_native_bitnet_dip_all_layers,
     evaluate_native_bitnet_dip_router,
     evaluate_native_bitnet_low_rank_router,
+)
+from engram.evaluation.native_bitnet_adaptive_k import (
+    evaluate_native_bitnet_dip_adaptive_k,
+    evaluate_native_bitnet_dip_joint_policy,
 )
 from engram.evaluation.native_bitnet_attention import (
     evaluate_native_bitnet_attention_substitution,
@@ -328,6 +333,117 @@ def _parser() -> argparse.ArgumentParser:
     bitnet_dip.add_argument(
         "--candidate-multipliers", nargs="+", type=float, default=(1.0, 1.25, 1.5)
     )
+
+    bitnet_dip_all = commands.add_parser(
+        "sweep-native-bitnet-dip-all-layers",
+        help=(
+            "measure held-out DIP recall for every frozen adaptive BitNet "
+            "oracle layer budget"
+        ),
+    )
+    bitnet_dip_all.add_argument("--model", required=True, type=Path)
+    bitnet_dip_all.add_argument(
+        "--validation-trace", required=True, type=Path
+    )
+    bitnet_dip_all.add_argument(
+        "--oracle-schedule", required=True, type=Path
+    )
+    bitnet_dip_all.add_argument("--out", required=True, type=Path)
+    bitnet_dip_all.add_argument("--input-fraction", type=float, default=0.75)
+    bitnet_dip_all.add_argument(
+        "--candidate-multipliers",
+        nargs="+",
+        type=float,
+        default=(
+            1.0,
+            1.25,
+            1.5,
+            1.75,
+            2.0,
+            2.5,
+            3.0,
+            3.5,
+            4.0,
+            4.5,
+            5.0,
+            5.5,
+            6.0,
+        ),
+    )
+    bitnet_dip_all.add_argument(
+        "--maximum-traffic-fraction", type=float, default=0.45
+    )
+    bitnet_dip_all.add_argument("--recall-gate", type=float, default=0.95)
+    bitnet_dip_all.add_argument(
+        "--tail-recall-preference", type=float, default=0.99
+    )
+    bitnet_dip_all.add_argument(
+        "--worst-row-recall-preference", type=float, default=0.95
+    )
+
+    bitnet_adaptive_k = commands.add_parser(
+        "sweep-native-bitnet-dip-adaptive-k",
+        help=(
+            "sweep token-adaptive exact candidate-energy K on protected "
+            "BitNet validation states"
+        ),
+    )
+    bitnet_adaptive_k.add_argument("--model", required=True, type=Path)
+    bitnet_adaptive_k.add_argument(
+        "--validation-trace", required=True, type=Path
+    )
+    bitnet_adaptive_k.add_argument(
+        "--router-policy", required=True, type=Path
+    )
+    bitnet_adaptive_k.add_argument("--out", required=True, type=Path)
+    bitnet_adaptive_k.add_argument(
+        "--energy-targets",
+        nargs="+",
+        type=float,
+        default=(0.90, 0.95, 0.975, 0.99, 0.995, 0.999),
+    )
+    bitnet_adaptive_k.add_argument(
+        "--minimum-fraction", type=float, default=0.05
+    )
+    bitnet_adaptive_k.add_argument(
+        "--maximum-fraction", type=float, default=0.425
+    )
+    bitnet_adaptive_k.add_argument(
+        "--mean-budget-fraction", type=float, default=0.25
+    )
+    bitnet_adaptive_k.add_argument("--device", default="cuda")
+
+    bitnet_joint_policy = commands.add_parser(
+        "optimize-native-bitnet-dip-joint-policy",
+        help=(
+            "jointly optimize practical DIP candidate C and target=1 "
+            "adaptive K under physical traffic"
+        ),
+    )
+    bitnet_joint_policy.add_argument("--model", required=True, type=Path)
+    bitnet_joint_policy.add_argument(
+        "--validation-trace", required=True, type=Path
+    )
+    bitnet_joint_policy.add_argument("--out", required=True, type=Path)
+    bitnet_joint_policy.add_argument(
+        "--candidate-counts",
+        nargs="+",
+        type=int,
+        default=(3200, 3456, 3712, 3968, 4224, 4480, 4736, 4992, 5248, 5504),
+    )
+    bitnet_joint_policy.add_argument(
+        "--input-fraction", type=float, default=0.75
+    )
+    bitnet_joint_policy.add_argument(
+        "--minimum-fraction", type=float, default=0.05
+    )
+    bitnet_joint_policy.add_argument(
+        "--mean-budget-fraction", type=float, default=0.25
+    )
+    bitnet_joint_policy.add_argument(
+        "--maximum-traffic-fraction", type=float, default=0.45
+    )
+    bitnet_joint_policy.add_argument("--device", default="cuda")
 
     fixture = commands.add_parser(
         "create-fixture", help="create deterministic random Llama-shaped weights"
@@ -1688,6 +1804,54 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0 if result["best_arm"]["meets_joint_screen"] else 2
+    elif args.command == "sweep-native-bitnet-dip-all-layers":
+        result = evaluate_native_bitnet_dip_all_layers(
+            args.model,
+            args.validation_trace,
+            args.oracle_schedule,
+            out=args.out,
+            input_fraction=args.input_fraction,
+            candidate_multipliers=args.candidate_multipliers,
+            maximum_traffic_fraction=args.maximum_traffic_fraction,
+            recall_gate=args.recall_gate,
+            tail_recall_preference=args.tail_recall_preference,
+            worst_row_recall_preference=args.worst_row_recall_preference,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["progression_screen"]["passed"] else 2
+    elif args.command == "sweep-native-bitnet-dip-adaptive-k":
+        result = evaluate_native_bitnet_dip_adaptive_k(
+            args.model,
+            args.validation_trace,
+            args.router_policy,
+            out=args.out,
+            energy_targets=args.energy_targets,
+            minimum_fraction=args.minimum_fraction,
+            maximum_fraction=args.maximum_fraction,
+            mean_budget_fraction=args.mean_budget_fraction,
+            device=args.device,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return (
+            0
+            if result["selected_highest_energy_target_within_mean_budget"]
+            is not None
+            else 2
+        )
+    elif args.command == "optimize-native-bitnet-dip-joint-policy":
+        result = evaluate_native_bitnet_dip_joint_policy(
+            args.model,
+            args.validation_trace,
+            out=args.out,
+            candidate_counts=args.candidate_counts,
+            input_fraction=args.input_fraction,
+            minimum_fraction=args.minimum_fraction,
+            mean_budget_fraction=args.mean_budget_fraction,
+            maximum_traffic_fraction=args.maximum_traffic_fraction,
+            device=args.device,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["progression_screen"]["passed"] else 2
     elif args.command == "create-fixture":
         print(create_tiny_fixture(args.out, seed=args.seed))
     elif args.command == "trace":

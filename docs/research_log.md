@@ -1,5 +1,40 @@
 # Research log
 
+## 2026-07-26 — Native BitNet practical DIP passes development and freezes
+
+- Implemented a CPU-only, memory-mapped native DIP kernel and source-bound v2
+  coordinate index. The sparse pass accepts live BF16 MLP boundaries, performs
+  native Q8 input quantization, scans the 1,920 largest-magnitude input
+  coordinates, exactly completes per-layer candidates, estimates the shared
+  intermediate RMS, and reads only token-adaptive selected down rows. It never
+  calls the dense full-record MLP during sparse inference.
+- Froze `q=1920`, `minK=346`, energy target 1.0, and explicit per-layer C and
+  Kmax schedules. The token's K is its positive candidate-utility count clipped
+  to `[346,Kmax]`, not a fixed density. Layers other than 9 use candidate-ratio
+  RMS. Layer 9 uses corrected-proxy RMS and an eight-record
+  top-proxy-raw-square audit inside its unchanged candidate union.
+- The live native-BF16 8-sequence/256-position development run passes every
+  frozen threshold: KL 0.0044707, top-1 0.94921875, NLL delta +0.0013609,
+  final-hidden relative L2 0.0498965, mean active fraction 0.2008072, modeled
+  physical traffic 0.409639, global candidate recall 0.9995917, and
+  worst-layer mean recall 0.9939353.
+- Candidate recall uses a fixed router-independent dense-teacher top-K schedule
+  in a separate untimed diagnostic pass; adaptive K is not its denominator.
+  Six rows in every layer have bit-exact Python/native input-coordinate,
+  candidate, selected-record, selected-count, and BF16-output parity.
+- The 216,688,448-byte index plus 318,924,544-byte base records occupy
+  535,612,992 bytes, or 67.2659% of dense Q4. The 40.9639% per-token result is
+  modeled cache-line traffic, not measured DRAM.
+- The sparse end-to-end development evaluation takes 1.1565x the dense elapsed
+  time, so the gate pass is not a speedup claim.
+- Froze the policy, artifact, tokenizer, library, protocol, report, and parity
+  bindings for one sealed final confirmation. This advances Milestone 2 from
+  “no practical router” to “development-qualified, final pending”; it does not
+  claim Milestone 2 has passed.
+- The independent holdout is a plaintext repository fixture. Its non-use
+  before the one-shot run is procedural and honor-system-based, backed by a
+  fail-closed runner and committed hashes rather than cryptographic secrecy.
+
 ## 2026-07-26 — BitNet oracle semantic ceiling passes
 
 - Corrected the milestone accounting: lossless full-record BitNet execution is
@@ -13,9 +48,9 @@
   a strict aggregate ceiling. The chosen 15–35% schedule averages 24.8375%.
 - On the untouched 8-sequence/256-position protocol the adaptive oracle passes:
   KL 0.02543, top-1 0.94531, NLL delta +0.02386, and hidden L2 0.09205.
-- Milestone 2 remains blocked at practical selection. The next work is compact
-  membership prediction, selected-key coefficient reconstruction, serialized
-  traffic accounting, and CPU causal confirmation.
+- At this historical checkpoint, Milestone 2 remained blocked at practical
+  selection. The native DIP development pass recorded above subsequently
+  supplied the missing practical route.
 
 ## 2026-07-26 — Analytic BitNet router crosses representative recall screen
 
@@ -31,9 +66,9 @@
   about 35%, 35%, and 41% of dense ideal Q4.
 - Fixed a recall-harness defect: exact-zero oracle ties now use stable ordering
   rather than arbitrary `argpartition` membership.
-- These are representative-layer screens, not a Milestone-2 pass. All-layer
-  recall, selected-record coefficient reconstruction, serialized physical
-  traffic, causal quality, and CPU latency remain.
+- At this historical checkpoint these were representative-layer screens, not
+  a Milestone-2 pass. The later all-layer native development run recorded
+  above completed the listed work and froze the one-shot-final policy.
 
 ## 2026-07-25 — Package-owned native controller boundary
 

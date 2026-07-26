@@ -2,9 +2,10 @@
 
 Date: **2026-07-26**
 
-Milestone 2 remains blocked, but an analytic practical-router candidate now
-passes held-out recall and modeled-traffic screens at representative early,
-middle, and late layers.
+This file records the initial, historical router screen. It is superseded by
+the all-layer native development result described below: the practical DIP
+implementation now passes the qualifying development gate, while Milestone 2
+remains pending its sealed one-shot final confirmation.
 
 ## Rejected learned router
 
@@ -33,11 +34,20 @@ complete packed gate/up/gain/down candidate records. It does not yet include
 headers or alignment, so the late-layer configuration retains only about four
 percentage points of provisional headroom.
 
-## Next gate
+## Subsequent outcome
 
-The configuration must now pass an all-layer recall sweep using the
-layer-adaptive oracle K schedule. If it does, the next implementation is a
-native selected-record kernel that computes candidate coefficients, estimates
-the coupled intermediate RMS/Q8 scales without a dense scan, reranks, and runs
-the frozen all-layer causal protocol. Only the serialized kernel's complete
-cold traffic and measured CPU latency can close Milestone 2.
+The all-layer sweep, adaptive-K fit, coupled RMS estimator, source-bound
+coordinate index, and memory-mapped CPU selected-record kernel were completed.
+On the declared 8-sequence/256-position development corpus, the frozen policy
+reached KL 0.0044707, top-1 agreement 0.94921875, NLL delta +0.0013609,
+final-hidden relative L2 0.0498965, 20.08072% mean active records, 40.9639%
+modeled physical cold traffic, 99.95917% global candidate recall, and
+99.39353% worst-layer mean recall. Python/native output and route identities
+are bit-exact on six live rows per layer.
+
+This is a development-gate pass, not the final Milestone 2 result. The exact
+policy is frozen in
+[`../native_bitnet_m2_2026-07-26/frozen_dip_policy.json`](../native_bitnet_m2_2026-07-26/frozen_dip_policy.json);
+the independent final holdout remains sealed. Timed sparse development was
+1.1565x dense, and the traffic figure is modeled cache-line accounting rather
+than measured DRAM.

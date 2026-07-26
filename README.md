@@ -47,13 +47,34 @@ safety requirements, and separate research gates.
 
 ## Where the project stands
 
-**Current decision:** Milestone 2 remains blocked. The original dense-Llama
-router fails the joint quality/traffic gate. The low-bit-native track now has
-a qualifying *oracle* semantic ceiling: a layer-adaptive exact-membership
-schedule reads 24.84% of records on average and passes the frozen
-8-sequence/256-position causal protocol. It still obtains membership from the
-dense teacher coefficient path, so practical routing, selected-key
-coefficient reconstruction, and honest traffic/latency remain open.
+**Current decision:** the native-BitNet Milestone 2 implementation has passed
+its qualifying development gate and its policy is frozen, but Milestone 2 has
+not passed yet. The remaining scientific step is one sealed, one-shot
+confirmation on the independent 8-sequence/256-position holdout. The
+development run used live BF16 boundaries and the CPU-only native Dynamic
+Input Pruning (DIP) kernel in all 30 MLPs, with no dense fallback. It measured
+KL **0.0044707**, teacher top-1 agreement **0.94921875**, NLL delta
+**+0.0013609**, final-hidden relative L2 **0.0498965**, mean active-record
+fraction **0.2008072**, modeled physical cold traffic **0.409639** of dense
+ideal Q4, global candidate recall **0.9995917**, and worst-layer mean recall
+**0.9939353**. Python and native routes and BF16 output bits match on six
+rows per layer.
+
+The practical selector keeps the largest 1,920 of 2,560 BF16 input
+coordinates, scans their coordinate-major packed ternary gate/up keys, exactly
+completes a frozen per-layer candidate budget, estimates the coupled
+intermediate RMS, and reads down rows only for token-adaptive nonzero
+candidates. This is now a real routed semantic-memory implementation, not the
+earlier dense-membership oracle. Its complete end-to-end development run was
+still **1.1565x the dense elapsed time** (15.65% slower), however. The traffic
+result is deterministic cache-line accounting, not a hardware-counter
+measurement of DRAM.
+
+The original dense-Llama conversion track remains blocked; this development
+pass belongs to the separately trained native-BitNet source track. The sealed
+holdout is a checked-in plaintext fixture whose non-use is enforced by project
+procedure and the fail-closed runner, not by cryptographic secrecy.
+
 CUDA is permitted for training and distillation only. Packaged inference,
 including the passing BitNet MLP and attention kernels, remains CPU-only and
 does not call llama.cpp.
@@ -193,8 +214,36 @@ schedule, averaging **24.84%**. On the frozen 256-position protocol it reaches
 KL **0.02543**, teacher top-1 **94.53%**, NLL delta **+0.02386**, and
 final-hidden relative L2 **0.09205**. This proves that a small routed subset
 can carry the teacher semantics, but it is an oracle ceiling rather than a
-Milestone 2 pass: the current selector still scans dense gate/up coefficients.
+Milestone 2 pass: that oracle selector still scans dense gate/up coefficients.
 See the [oracle report](reports/native_bitnet_oracle_2026-07-26/summary.md).
+
+The practical follow-up now removes that dense coefficient path. The frozen
+native DIP policy uses `q=1920` input coordinates in every layer, `minK=346`,
+an energy target of 1.0, and the following layer-0-through-29 candidate and
+maximum adaptive-K schedules:
+
+```text
+C    = [4224,5504,4224,4224,4224,4224,4224,4224,4480,4480,
+        4736,4992,4480,4992,4992,4736,4992,4992,5248,4736,
+        3456,5248,5248,5248,4992,3968,3200,4992,4224,4992]
+Kmax = [4224,1705,4224,4224,4224,4224,4224,4224,3753,3753,
+        3241,2729,3753,2729,2729,3241,2729,2729,2217,3241,
+        3456,2217,2217,2217,2729,3968,3200,2729,4224,2729]
+```
+
+After exact candidate completion, the kernel selects the number of
+positive-utility records for the current token, clipped to `[346,Kmax]`.
+All layers except layer 9 estimate missing RMS energy by applying the
+exact-to-proxy candidate-energy ratio to the proxy tail. Layer 9 uses
+corrected proxy energy and reserves eight positions inside its unchanged
+`C=4480` union for a top-proxy-raw-square audit. The qualifying live-BF16
+development run passes every quality, activity, modeled-traffic, and recall
+threshold. The source-bound v2 index and policy are independently reloaded,
+and six rows in each layer have bit-exact Python/native input-coordinate,
+candidate, selected-record, selected-count, and BF16-output parity. The
+[frozen policy](reports/native_bitnet_m2_2026-07-26/frozen_dip_policy.json)
+authorizes only the sealed final confirmation; it explicitly does not claim
+that Milestone 2 has passed.
 
 This is not evidence that a dense Llama checkpoint can be converted
 losslessly. It also does not claim measured hardware DRAM events: the traffic
@@ -492,10 +541,12 @@ standalone factorized controller now has a first protected micro-distillation
 result. It is not yet integrated because the project has not demonstrated
 acceptable end-to-end controller language quality. Learned rank-16,
 posting-group, residual-capsule, and first sparse-teacher artifacts
-remain blocked. The new predictor-free arm is the first realizable selector algorithm to clear the
-semantic quality prerequisite, and its experimental package/kernel now expose the next blocker:
-measured native latency. It is intentionally not present in default `.engram` packages or the
-generation runtime because the checked kernel is slower than dense. The original sparse-teacher
+remain blocked. The older dense-SmolLM DIP arm was the first realizable
+selector to clear its semantic quality prerequisite, but it failed systems
+traffic and latency. The newer native-BitNet DIP implementation passes the
+complete development quality/recall/activity/modeled-traffic gate and is
+frozen for its one-shot final; it is not yet a default `.engram` package and
+its development timing is still slower than dense. The original sparse-teacher
 pilot's disconnected routing gradient is fixed in the hardware-aware trainer, but the complete
 low-budget evaluation, corrected LoRA/residual run, locality bound, and layer-adaptive confirmation
 all fail. These artifacts remain blocked; structured sparsity must be learned jointly with the MLP
@@ -512,8 +563,8 @@ unrestricted-codebook, and lifted-binary follow-ups also fail their local
 screens despite modeled traffic of 41.00%–44.98%. No dense-source converted
 semantic artifact is currently eligible for default package compilation; the
 separately trained native-BitNet artifact is the current teacher and CPU
-substrate for renewed Milestone 2 work, not a qualifying routed semantic
-memory by itself.
+substrate. Its new DIP index and native kernel form a qualifying routed
+semantic-memory *development candidate*, pending the sealed final result.
 See [architecture](docs/architecture.md), [evaluation](docs/evaluation.md),
 and [limitations](docs/limitations.md) for the precise design and caveats. The latest routing
 measurement is documented in the [trace-calibrated recall report](reports/smollm2_calibrated_router/recall.md).

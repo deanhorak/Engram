@@ -1,0 +1,7 @@
+{
+  "completed_sequences": 2,
+  "completed_tokens": 32,
+  "experiment": "native_bitnet_selected_record_dip_causal_checkpoint",
+  "output": "/home/dean/repos/engram/reports/native_bitnet_router_2026-07-26/dip_hybrid_causal_development_predictions_2x16.json",
+  "status": "complete"
+}

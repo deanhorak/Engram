@@ -2,23 +2,47 @@
 
 - The original dense-Llama limitation is unchanged: no serialized
   representation jointly passes the all-layer causal gate and complete cold
-  MLP traffic at or below 45% of dense ideal Q4. DIP is a quality-only pass at 83.33% cache-line
-  traffic; the mild-width compact-Q4 artifact is a traffic-only pass with
-  KL 0.887, top-1 0.566, NLL +0.884, and hidden L2 0.425 after 3M positions.
+  MLP traffic at or below 45% of dense ideal Q4. Its older SmolLM DIP arm is a
+  quality-only pass at 83.33% cache-line traffic; the mild-width compact-Q4
+  artifact is a traffic-only pass with KL 0.887, top-1 0.566, NLL +0.884,
+  and hidden L2 0.425 after 3M positions.
   The full-width grouped-ternary artifact is another traffic-only pass:
   43.1353% traffic with KL 2.284, top-1 0.320, NLL +2.277, and hidden L2
   0.604 after 1,014,225 positions.
   See [Project status](status.md).
 - The separate native-BitNet artifact reconstructs exactly and its direct
-  memory-mapped CPU kernel passes the frozen causal gate at 40.0527% scheduled
-  cold traffic. This does not say anything about losslessly converting an
-  already-trained dense Llama checkpoint. Official-layer output is numerically,
-  not bitwise, equal to PyTorch BF16 because reduction order differs (maximum
+  full-record memory-mapped CPU kernel passes its frozen causal gate at
+  40.0527% scheduled cold traffic. This does not say anything about losslessly
+  converting an already-trained dense Llama checkpoint. Official-layer output
+  is numerically, not bitwise, equal to PyTorch BF16 because reduction order differs (maximum
   checked relative L2 0.00982). No hardware DRAM counter was available, and
   package/generation integration is now implemented, but it retains the
   original attention, normalization, embedding, and output tensors and drives
   them through a Python Transformers shell. Only the MLP is a native C++
   kernel; this is not yet a complete native transformer runtime.
+- The new native-BitNet DIP route passes the complete *development* semantic
+  gate, not the sealed final. It reaches KL 0.0044707, top-1 0.94922, NLL
+  +0.00136, hidden L2 0.04990, 20.0807% mean active records, 40.9639% modeled
+  traffic, 99.9592% global recall, and 99.3935% worst-layer mean recall on
+  eight development sequences and 256 positions. The policy is frozen for
+  one one-shot independent confirmation. Milestone 2 must not be called
+  passed before that result exists.
+- The sealed holdout is a plaintext repository fixture. Avoiding inspection
+  before the one-shot run is a procedural/honor-system control, supported by
+  committed hashes and a fail-closed runner; it is not cryptographic secrecy
+  and cannot prevent a developer with filesystem access from reading it.
+- The 40.9639% practical-DIP traffic figure is a v2 cache-line model, not
+  hardware-counter DRAM measurement. The complete semantic storage is larger:
+  the 318,924,544-byte base record artifact plus 216,688,448-byte coordinate
+  index total 535,612,992 bytes, or 67.2659% of dense Q4.
+- Traffic reduction has not produced speedup. The qualifying sparse
+  development evaluation took 1.1565x the dense elapsed time, or 15.65%
+  longer. Debug recall and parity work was outside the timed pass, so it does
+  not explain this ratio.
+- The DIP evidence is one model, one host, one small development corpus, and
+  one pending final corpus. Six rows per layer establish implementation parity,
+  not broad numerical or workload coverage. Replication, hardware counters,
+  SIMD/cache tuning, and broader language-quality evaluation remain open.
 - Bounded attention is integrated into complete package generation and avoids
   the dense Hugging Face KV cache, but Q/K/V and output projections still run
   in PyTorch and every token crosses the Python/ctypes boundary at every
@@ -113,15 +137,18 @@
   screen, but both fail causal quality. The 1,472 arm reads 95.8% of record keys and still has
   KL 0.085, top-1 agreement 0.866, NLL delta +0.055, and final-hidden relative L2 0.131. Further
   candidate expansion would approach a dense scan and is not considered a viable routing result.
-- A predictor-free, DIP-inspired algorithm is the first realizable semantic selector to pass the
-  all-layer gate. Engram's candidate-only completion and exact contribution reranking extend the
-  published DIP method. After selecting 75%-input/896-candidate/K=768 on the development grid, a
+- In the historical dense-SmolLM track, a predictor-free, DIP-inspired
+  algorithm was the first realizable semantic selector to pass that track's
+  all-layer quality gate. Engram's candidate-only completion and exact
+  contribution reranking extend the published DIP method. After selecting
+  75%-input/896-candidate/K=768 on the development grid, a
   sequence-disjoint 16-sequence confirmation run has KL 0.029, top-1 agreement 0.910, NLL delta
   +0.033, final-hidden relative L2 0.090, and 0.990 candidate recall. This still covers only one
   135M-parameter model and a small generated corpus; another model and broader natural data are
   required before generalization.
-- DIP now has a versioned coordinate-major experimental package, mmap loader, Python reference,
-  and candidate-only native kernel. The optimistic scalar count is 76.4% of dense; counting
+- That dense-SmolLM DIP arm has a versioned coordinate-major experimental
+  package, mmap loader, Python reference, and candidate-only native kernel.
+  The optimistic scalar count is 76.4% of dense; counting
   touched 64-byte lines gives 83.3%. An alternating-order benchmark over all 30 serialized layers
   measures the best streamed kernel at 37.673 ms per complete 30-layer pass versus 32.639 ms
   dense: `0.863x`,
@@ -215,11 +242,12 @@
   executed on a Haswell-or-newer host or suitable CI runner.
 - Hardware performance counters are unavailable on the development host. DRAM and energy
   claims cannot be measured here.
-- Trained SmolLM2 semantic-routing and causal MLP-intervention reports are checked in, but no
-  trained end-to-end compiled Gate 5 run exists. Learned-router artifacts remain blocked; the
-  predictor-free DIP arm is quality-eligible and has an experimental serializer/kernel, but that
-  kernel fails latency and is not integrated into the compiled runtimes. Attention/controller
-  distillation and trained-package compilation remain pending.
+- Trained SmolLM2 semantic-routing and causal MLP-intervention reports are
+  checked in, but no trained end-to-end compiled Gate 5 run exists.
+  Learned-router artifacts and the older dense-SmolLM DIP runtime remain
+  blocked. Separately, native-BitNet DIP is development-qualified and frozen
+  for its sealed final; it is not evidence that the dense-Llama compiler
+  problem is solved.
   Engram downloads a model when a Hub ID is supplied explicitly; this can require substantial
   disk space, and gated models still require Hugging Face authentication and license acceptance.
 - Synthetic Gate 3 mean relative L2 is 0.456 for the heuristic hybrid; retrieval/copying

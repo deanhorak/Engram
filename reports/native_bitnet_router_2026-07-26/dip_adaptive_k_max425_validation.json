@@ -1,0 +1,4401 @@
+{
+  "arms": [
+    {
+      "captured_candidate_energy": {
+        "count": 7680,
+        "maximum": 1.0,
+        "mean": 0.9987317405045953,
+        "median": 0.9990040886744969,
+        "minimum": 0.9346611279224374,
+        "p95": 0.9990190479211024
+      },
+      "energy_target": 0.999,
+      "layers": [
+        {
+          "candidate_count": 4302,
+          "layer": 0,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.07425907238588747,
+            "mean": 0.026676162979747578,
+            "median": 0.023618644513516338,
+            "minimum": 0.016328730827944324,
+            "p95": 0.047171177036551874
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.3306460910373264,
+          "mean_k": 2285.42578125,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.66796875
+        },
+        {
+          "candidate_count": 2737,
+          "layer": 1,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.03195679061537095,
+            "mean": 0.027943448207887446,
+            "median": 0.028366524224902327,
+            "minimum": 0.0,
+            "p95": 0.03081202219291983
+          },
+          "maximum_k": 1252,
+          "maximum_k_clamp": 2737,
+          "mean_fraction": 0.11034252025462964,
+          "mean_k": 762.6875,
+          "p95_k": 982.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 2902,
+          "layer": 2,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.12066547437046374,
+            "mean": 0.03078521384381801,
+            "median": 0.02980513390198064,
+            "minimum": 0.0,
+            "p95": 0.03343752044915867
+          },
+          "maximum_k": 2889,
+          "maximum_k_clamp": 2902,
+          "mean_fraction": 0.0913543701171875,
+          "mean_k": 631.44140625,
+          "p95_k": 857.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3694,
+          "layer": 3,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.2111716559829316,
+            "mean": 0.03686398061536244,
+            "median": 0.030311652871983796,
+            "minimum": 0.012439288006241079,
+            "p95": 0.06700787872404217
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.13747547290943288,
+          "mean_k": 950.23046875,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.921875
+        },
+        {
+          "candidate_count": 4629,
+          "layer": 4,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.14975337908794487,
+            "mean": 0.034270215350579294,
+            "median": 0.029638447319583247,
+            "minimum": 0.01230128458727778,
+            "p95": 0.06779818147725712
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.15311573169849538,
+          "mean_k": 1058.3359375,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.921875
+        },
+        {
+          "candidate_count": 3534,
+          "layer": 5,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.20965238684972134,
+            "mean": 0.0371637756897904,
+            "median": 0.02983009193573239,
+            "minimum": 0.017943977920263456,
+            "p95": 0.07087699366082757
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.16683903446903936,
+          "mean_k": 1153.19140625,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91015625
+        },
+        {
+          "candidate_count": 3287,
+          "layer": 6,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.19674950586979742,
+            "mean": 0.03500917381081967,
+            "median": 0.02979764287604294,
+            "minimum": 0.021597216487987552,
+            "p95": 0.0374639688754528
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.13986488624855323,
+          "mean_k": 966.74609375,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.9140625
+        },
+        {
+          "candidate_count": 5359,
+          "layer": 7,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.11754170478511917,
+            "mean": 0.031544173971293304,
+            "median": 0.029383151863006527,
+            "minimum": 0.0,
+            "p95": 0.031814277861124604
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.12880904586226852,
+          "mean_k": 890.328125,
+          "p95_k": 1156.5,
+          "target_attainment_rate": 0.96875
+        },
+        {
+          "candidate_count": 3301,
+          "layer": 8,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0329177312416538,
+            "mean": 0.029042159714729787,
+            "median": 0.029289158160093608,
+            "minimum": 0.01975131527498391,
+            "p95": 0.031150674574043226
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.18353101942274305,
+          "mean_k": 1268.56640625,
+          "p95_k": 2699.25,
+          "target_attainment_rate": 0.96875
+        },
+        {
+          "candidate_count": 3596,
+          "layer": 9,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.03214206052108344,
+            "mean": 0.028182557072644283,
+            "median": 0.028903622688047817,
+            "minimum": 0.01126214665752724,
+            "p95": 0.030546877376445264
+          },
+          "maximum_k": 2810,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.20923868815104166,
+          "mean_k": 1446.2578125,
+          "p95_k": 2713.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4083,
+          "layer": 10,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.032480686903988795,
+            "mean": 0.027837138623542215,
+            "median": 0.02885081643244158,
+            "minimum": 0.013909057642963227,
+            "p95": 0.030759607787771745
+          },
+          "maximum_k": 2772,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.24226944534866898,
+          "mean_k": 1674.56640625,
+          "p95_k": 2680.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4034,
+          "layer": 11,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.032154145089242386,
+            "mean": 0.028526122317080897,
+            "median": 0.0291908059778148,
+            "minimum": 0.019679749986275502,
+            "p95": 0.031002426264617258
+          },
+          "maximum_k": 2236,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.25885970504195605,
+          "mean_k": 1789.23828125,
+          "p95_k": 2076.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4493,
+          "layer": 12,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.03256195400548255,
+            "mean": 0.028688907667635623,
+            "median": 0.029029489435623994,
+            "minimum": 0.015410964806050908,
+            "p95": 0.030586947508001186
+          },
+          "maximum_k": 2135,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.23874070909288195,
+          "mean_k": 1650.17578125,
+          "p95_k": 2013.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4353,
+          "layer": 13,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0333598672945194,
+            "mean": 0.028299233866226042,
+            "median": 0.02914174059659929,
+            "minimum": 0.01387459234753609,
+            "p95": 0.03196600093954225
+          },
+          "maximum_k": 2435,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.25328629105179395,
+          "mean_k": 1750.71484375,
+          "p95_k": 2360.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4388,
+          "layer": 14,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.03213178187718518,
+            "mean": 0.027648801627146988,
+            "median": 0.028499984438483464,
+            "minimum": 0.015586821760011168,
+            "p95": 0.030645354481687065
+          },
+          "maximum_k": 2456,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.26707515010127314,
+          "mean_k": 1846.0234375,
+          "p95_k": 2248.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4784,
+          "layer": 15,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.03262209037411369,
+            "mean": 0.02801422498639001,
+            "median": 0.028532239328670946,
+            "minimum": 0.01717571897627239,
+            "p95": 0.03075921557806634
+          },
+          "maximum_k": 2494,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2532704671223958,
+          "mean_k": 1750.60546875,
+          "p95_k": 2213.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4245,
+          "layer": 16,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.03437376500621314,
+            "mean": 0.02749087873327155,
+            "median": 0.027958116633062288,
+            "minimum": 0.018688660814577995,
+            "p95": 0.030172078572217924
+          },
+          "maximum_k": 2337,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2287608959056713,
+          "mean_k": 1581.1953125,
+          "p95_k": 1970.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4289,
+          "layer": 17,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.03348780155741263,
+            "mean": 0.028094132769973627,
+            "median": 0.02830835013800427,
+            "minimum": 0.01810904298036572,
+            "p95": 0.031177590241363864
+          },
+          "maximum_k": 2167,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.18935196487991898,
+          "mean_k": 1308.80078125,
+          "p95_k": 1758.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3934,
+          "layer": 18,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.03175842476400911,
+            "mean": 0.02724079868326682,
+            "median": 0.027433733961290122,
+            "minimum": 0.018914969782134895,
+            "p95": 0.02993781491545367
+          },
+          "maximum_k": 1863,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.16304524739583334,
+          "mean_k": 1126.96875,
+          "p95_k": 1567.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4306,
+          "layer": 19,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0464247538214397,
+            "mean": 0.029920830700404313,
+            "median": 0.029203526013519818,
+            "minimum": 0.0,
+            "p95": 0.03821422216527486
+          },
+          "maximum_k": 1812,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.16108194986979166,
+          "mean_k": 1113.3984375,
+          "p95_k": 1565.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3493,
+          "layer": 20,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.037061863046139266,
+            "mean": 0.028371407887365897,
+            "median": 0.028473639224305607,
+            "minimum": 0.0,
+            "p95": 0.032135166880786
+          },
+          "maximum_k": 1569,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.13484587492766203,
+          "mean_k": 932.0546875,
+          "p95_k": 1291.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 2974,
+          "layer": 21,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.036740690927622145,
+            "mean": 0.027651098216904438,
+            "median": 0.028262894631000877,
+            "minimum": 0.0,
+            "p95": 0.0315669685216361
+          },
+          "maximum_k": 1437,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.12352611400462964,
+          "mean_k": 853.8125,
+          "p95_k": 1222.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3150,
+          "layer": 22,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.035292714347107415,
+            "mean": 0.02782439962823698,
+            "median": 0.027767262995187305,
+            "minimum": 0.019555398917805063,
+            "p95": 0.03176625162556851
+          },
+          "maximum_k": 1691,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.14140037254050927,
+          "mean_k": 977.359375,
+          "p95_k": 1321.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3063,
+          "layer": 23,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.03722542359412307,
+            "mean": 0.027534015048831614,
+            "median": 0.027729934868593032,
+            "minimum": 0.0,
+            "p95": 0.03126812190847978
+          },
+          "maximum_k": 1500,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1299658881293403,
+          "mean_k": 898.32421875,
+          "p95_k": 1256.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3136,
+          "layer": 24,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.04674659925689416,
+            "mean": 0.02844164698450458,
+            "median": 0.028480100386058534,
+            "minimum": 0.007263457200054205,
+            "p95": 0.03284617215165994
+          },
+          "maximum_k": 1509,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.13532398365162038,
+          "mean_k": 935.359375,
+          "p95_k": 1239.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3298,
+          "layer": 25,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.044305707755522436,
+            "mean": 0.02853171641713895,
+            "median": 0.028781095028332065,
+            "minimum": 0.021348617425699722,
+            "p95": 0.032812657845247985
+          },
+          "maximum_k": 1532,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1577640109592014,
+          "mean_k": 1090.46484375,
+          "p95_k": 1356.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3499,
+          "layer": 26,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.03936323460953928,
+            "mean": 0.030160916231772788,
+            "median": 0.0301163281405042,
+            "minimum": 0.02096990814216214,
+            "p95": 0.03559579287875058
+          },
+          "maximum_k": 1692,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1667011402271412,
+          "mean_k": 1152.23828125,
+          "p95_k": 1480.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3671,
+          "layer": 27,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.04755863238470755,
+            "mean": 0.031674703075536624,
+            "median": 0.03141585273370738,
+            "minimum": 0.0,
+            "p95": 0.04069063880093379
+          },
+          "maximum_k": 1825,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.18552652994791666,
+          "mean_k": 1282.359375,
+          "p95_k": 1683.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4028,
+          "layer": 28,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.05334599136483212,
+            "mean": 0.035425767054402355,
+            "median": 0.03449381771691684,
+            "minimum": 0.0,
+            "p95": 0.04959983241732032
+          },
+          "maximum_k": 1980,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2166663275824653,
+          "mean_k": 1497.59765625,
+          "p95_k": 1851.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4521,
+          "layer": 29,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.06360220636293544,
+            "mean": 0.033767754001506674,
+            "median": 0.032376246884471674,
+            "minimum": 0.016534841004204277,
+            "p95": 0.048341568551069095
+          },
+          "maximum_k": 2308,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2607257984302662,
+          "mean_k": 1802.13671875,
+          "p95_k": 2170.75,
+          "target_attainment_rate": 1.0
+        }
+      ],
+      "local_output_cosine_similarity": {
+        "count": 7680,
+        "maximum": 1.0,
+        "mean": 0.9995548653529184,
+        "median": 0.99958634949981,
+        "minimum": 0.9912115152421602,
+        "p95": 0.9997920694716562
+      },
+      "local_output_relative_l2": {
+        "count": 7680,
+        "maximum": 0.2111716559829316,
+        "mean": 0.02995417852592704,
+        "median": 0.02897530337427679,
+        "minimum": 0.0,
+        "p95": 0.0367196292943622
+      },
+      "maximum_active_fraction": 0.42505787037037035,
+      "mean_active_fraction": 0.1853134908793885,
+      "meets_mean_k_budget": true,
+      "meets_physical_traffic_budget": true,
+      "p95_active_fraction": 0.3187210648148148,
+      "physical_cold_traffic": {
+        "accounting": "fixed coordinate scans and candidate completion from the robust C policy plus token-adaptive selected-down cache lines, gain/down-norm scans, and metadata",
+        "bytes_per_token": {
+          "count": 256,
+          "maximum": 307907200.0,
+          "mean": 300558262.0,
+          "median": 299980160.0,
+          "minimum": 296313984.0,
+          "p95": 305712384.0
+        },
+        "fraction_of_dense_q4": {
+          "count": 256,
+          "maximum": 0.38669061856995884,
+          "mean": 0.3774613268188978,
+          "median": 0.37673530735596705,
+          "minimum": 0.37213107638888887,
+          "p95": 0.3839342206790124
+        },
+        "passes_45_percent_mean": true
+      },
+      "selected_k": {
+        "count": 7680,
+        "maximum": 2938.0,
+        "mean": 1280.8868489583333,
+        "median": 1175.0,
+        "minimum": 346.0,
+        "p95": 2203.0
+      },
+      "target_attainment_rate": 0.97578125
+    },
+    {
+      "captured_candidate_energy": {
+        "count": 7680,
+        "maximum": 1.0,
+        "mean": 0.999216974832427,
+        "median": 0.9995038529677174,
+        "minimum": 0.9346611279224374,
+        "p95": 0.9995191633989595
+      },
+      "energy_target": 0.9995,
+      "layers": [
+        {
+          "candidate_count": 4302,
+          "layer": 0,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.07425907238588747,
+            "mean": 0.022694622068668215,
+            "median": 0.017540484255276028,
+            "minimum": 0.011522215404443552,
+            "p95": 0.047171177036551874
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.33791831687644674,
+          "mean_k": 2335.69140625,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.62890625
+        },
+        {
+          "candidate_count": 2737,
+          "layer": 1,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.02248781747707992,
+            "mean": 0.0197047075740764,
+            "median": 0.02006771721303446,
+            "minimum": 0.0,
+            "p95": 0.021780363329517636
+          },
+          "maximum_k": 1302,
+          "maximum_k_clamp": 2737,
+          "mean_fraction": 0.11735139069733797,
+          "mean_k": 811.1328125,
+          "p95_k": 1050.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 2902,
+          "layer": 2,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.11982125872507558,
+            "mean": 0.022771351214501773,
+            "median": 0.021063157788207713,
+            "minimum": 0.0,
+            "p95": 0.024112986672831103
+          },
+          "maximum_k": 2895,
+          "maximum_k_clamp": 2902,
+          "mean_fraction": 0.09807784469039352,
+          "mean_k": 677.9140625,
+          "p95_k": 937.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3694,
+          "layer": 3,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.2111716559829316,
+            "mean": 0.02887572682254657,
+            "median": 0.02165343821181581,
+            "minimum": 0.008611074729082997,
+            "p95": 0.06700787872404217
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1448330349392361,
+          "mean_k": 1001.0859375,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.921875
+        },
+        {
+          "candidate_count": 4629,
+          "layer": 4,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.14975337908794487,
+            "mean": 0.02632295557751951,
+            "median": 0.020815259990099443,
+            "minimum": 0.008146370988982014,
+            "p95": 0.06779818147725712
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.16091184262876157,
+          "mean_k": 1112.22265625,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.921875
+        },
+        {
+          "candidate_count": 3534,
+          "layer": 5,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.20965238684972134,
+            "mean": 0.029133208039676232,
+            "median": 0.02105207625613288,
+            "minimum": 0.012735632857668072,
+            "p95": 0.07087699366082757
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.17663630732783564,
+          "mean_k": 1220.91015625,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91015625
+        },
+        {
+          "candidate_count": 3287,
+          "layer": 6,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.19674950586979742,
+            "mean": 0.027082294332474707,
+            "median": 0.021020685706144356,
+            "minimum": 0.014201161493672761,
+            "p95": 0.0374639688754528
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1480701587818287,
+          "mean_k": 1023.4609375,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91015625
+        },
+        {
+          "candidate_count": 5359,
+          "layer": 7,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.11754170478511917,
+            "mean": 0.02325169611357921,
+            "median": 0.020644951733649893,
+            "minimum": 0.0,
+            "p95": 0.022299692595056188
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.13760997630931712,
+          "mean_k": 951.16015625,
+          "p95_k": 1279.25,
+          "target_attainment_rate": 0.96875
+        },
+        {
+          "candidate_count": 3301,
+          "layer": 8,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.028273972907825882,
+            "mean": 0.02091554086189401,
+            "median": 0.02071053443103944,
+            "minimum": 0.013039647444535713,
+            "p95": 0.02315999086439893
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.19427659776475695,
+          "mean_k": 1342.83984375,
+          "p95_k": 2873.75,
+          "target_attainment_rate": 0.96875
+        },
+        {
+          "candidate_count": 3596,
+          "layer": 9,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.026338226542427647,
+            "mean": 0.020112059412034915,
+            "median": 0.02039809985613167,
+            "minimum": 0.007718949209571297,
+            "p95": 0.021854718271674404
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.22043129249855323,
+          "mean_k": 1523.62109375,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.9453125
+        },
+        {
+          "candidate_count": 4083,
+          "layer": 10,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.022848387933032042,
+            "mean": 0.019652204875925998,
+            "median": 0.020213764474621067,
+            "minimum": 0.009652960580337936,
+            "p95": 0.02149727235892063
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2561882866753472,
+          "mean_k": 1770.7734375,
+          "p95_k": 2853.75,
+          "target_attainment_rate": 0.9921875
+        },
+        {
+          "candidate_count": 4034,
+          "layer": 11,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.02316498245749126,
+            "mean": 0.020031188292641937,
+            "median": 0.020467329199134958,
+            "minimum": 0.013521768236997614,
+            "p95": 0.021648137052806812
+          },
+          "maximum_k": 2373,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2710220902054398,
+          "mean_k": 1873.3046875,
+          "p95_k": 2211.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4493,
+          "layer": 12,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.022620172484197492,
+            "mean": 0.020166602522525674,
+            "median": 0.020427855710247404,
+            "minimum": 0.010665886558001197,
+            "p95": 0.021572002400414615
+          },
+          "maximum_k": 2284,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.24992822717737267,
+          "mean_k": 1727.50390625,
+          "p95_k": 2103.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4353,
+          "layer": 13,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.024083681257589293,
+            "mean": 0.019829690334162046,
+            "median": 0.02041935511598853,
+            "minimum": 0.009637210872664883,
+            "p95": 0.02261575616410695
+          },
+          "maximum_k": 2502,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.26516101978443285,
+          "mean_k": 1832.79296875,
+          "p95_k": 2421.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4388,
+          "layer": 14,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.022314337128300013,
+            "mean": 0.01944996059697129,
+            "median": 0.020123881680995534,
+            "minimum": 0.011237719770726828,
+            "p95": 0.021556985638555317
+          },
+          "maximum_k": 2546,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.27848250777633105,
+          "mean_k": 1924.87109375,
+          "p95_k": 2337.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4784,
+          "layer": 15,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.02341841131842148,
+            "mean": 0.019680503870542862,
+            "median": 0.020048743093909884,
+            "minimum": 0.011921144216000585,
+            "p95": 0.021727953699805565
+          },
+          "maximum_k": 2644,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2619216353804977,
+          "mean_k": 1810.40234375,
+          "p95_k": 2310.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4245,
+          "layer": 16,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.025513437566676317,
+            "mean": 0.019306704455809315,
+            "median": 0.01969275245562567,
+            "minimum": 0.012736690683072618,
+            "p95": 0.021246622497942607
+          },
+          "maximum_k": 2451,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2384818748191551,
+          "mean_k": 1648.38671875,
+          "p95_k": 2096.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4289,
+          "layer": 17,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.022949843537720303,
+            "mean": 0.019612841326862293,
+            "median": 0.019816522649699644,
+            "minimum": 0.012636478760423375,
+            "p95": 0.02191272676480684
+          },
+          "maximum_k": 2303,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.19731083622685186,
+          "mean_k": 1363.8125,
+          "p95_k": 1859.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3934,
+          "layer": 18,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.022360305964079313,
+            "mean": 0.018987486947010922,
+            "median": 0.01913196976482568,
+            "minimum": 0.01315818085614726,
+            "p95": 0.020955544800186056
+          },
+          "maximum_k": 1952,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.16924879286024305,
+          "mean_k": 1169.84765625,
+          "p95_k": 1666.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4306,
+          "layer": 19,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.03267396898705849,
+            "mean": 0.02096152067747679,
+            "median": 0.02035535131436441,
+            "minimum": 0.0,
+            "p95": 0.028100684909174205
+          },
+          "maximum_k": 1923,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.16758784541377314,
+          "mean_k": 1158.3671875,
+          "p95_k": 1665.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3493,
+          "layer": 20,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.028412667554177734,
+            "mean": 0.019780172255684184,
+            "median": 0.019777808308414274,
+            "minimum": 0.0,
+            "p95": 0.022773026018510927
+          },
+          "maximum_k": 1659,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.14098499439380788,
+          "mean_k": 974.48828125,
+          "p95_k": 1359.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 2974,
+          "layer": 21,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.027974372166832847,
+            "mean": 0.01931298932755734,
+            "median": 0.01955488270038186,
+            "minimum": 0.0,
+            "p95": 0.022599618021145094
+          },
+          "maximum_k": 1648,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.13056324146412038,
+          "mean_k": 902.453125,
+          "p95_k": 1287.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3150,
+          "layer": 22,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.025219207722956258,
+            "mean": 0.01929700712866608,
+            "median": 0.019182861145289856,
+            "minimum": 0.013403660934691398,
+            "p95": 0.022102045501576177
+          },
+          "maximum_k": 1815,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1487206353081597,
+          "mean_k": 1027.95703125,
+          "p95_k": 1440.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3063,
+          "layer": 23,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.030365542948829604,
+            "mean": 0.019102571157728447,
+            "median": 0.019168373536458026,
+            "minimum": 0.0,
+            "p95": 0.02172540942322558
+          },
+          "maximum_k": 1588,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1385498046875,
+          "mean_k": 957.65625,
+          "p95_k": 1353.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3136,
+          "layer": 24,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.03687511423061542,
+            "mean": 0.019820139551351375,
+            "median": 0.01950308685736344,
+            "minimum": 0.007263457200054205,
+            "p95": 0.02327008182805502
+          },
+          "maximum_k": 1595,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.14318452058015047,
+          "mean_k": 989.69140625,
+          "p95_k": 1331.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3298,
+          "layer": 25,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.03303267888349867,
+            "mean": 0.019551204168666812,
+            "median": 0.019582667405437286,
+            "minimum": 0.014894790185477857,
+            "p95": 0.022961515911776115
+          },
+          "maximum_k": 1716,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.16712047435619212,
+          "mean_k": 1155.13671875,
+          "p95_k": 1458.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3499,
+          "layer": 26,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.028679581222945505,
+            "mean": 0.020521563494060528,
+            "median": 0.02052953842120831,
+            "minimum": 0.014874435984316049,
+            "p95": 0.024407179170816376
+          },
+          "maximum_k": 1862,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.17592027452256945,
+          "mean_k": 1215.9609375,
+          "p95_k": 1565.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3671,
+          "layer": 27,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.040065124078482575,
+            "mean": 0.021275403212571854,
+            "median": 0.020824675742738177,
+            "minimum": 0.0,
+            "p95": 0.027149667394791438
+          },
+          "maximum_k": 1989,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1959109836154514,
+          "mean_k": 1354.13671875,
+          "p95_k": 1812.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4028,
+          "layer": 28,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.038605975069059745,
+            "mean": 0.022950562132964834,
+            "median": 0.022451176196327815,
+            "minimum": 0.0,
+            "p95": 0.03237589805804449
+          },
+          "maximum_k": 2077,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.22860265661168983,
+          "mean_k": 1580.1015625,
+          "p95_k": 1980.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4521,
+          "layer": 29,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.03957422059725371,
+            "mean": 0.021082989569895322,
+            "median": 0.02037187244980786,
+            "minimum": 0.010990985899097286,
+            "p95": 0.03146426438936732
+          },
+          "maximum_k": 2472,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.27410606101707174,
+          "mean_k": 1894.62109375,
+          "p95_k": 2311.0,
+          "target_attainment_rate": 1.0
+        }
+      ],
+      "local_output_cosine_similarity": {
+        "count": 7680,
+        "maximum": 1.0,
+        "mean": 0.9997592163631376,
+        "median": 0.9997969421945446,
+        "minimum": 0.9912115152421602,
+        "p95": 0.9998954607685456
+      },
+      "local_output_relative_l2": {
+        "count": 7680,
+        "maximum": 0.2111716559829316,
+        "mean": 0.021374582263868246,
+        "median": 0.020282546747272756,
+        "minimum": 0.0,
+        "p95": 0.0256916665693008
+      },
+      "maximum_active_fraction": 0.42505787037037035,
+      "mean_active_fraction": 0.1945037841796875,
+      "meets_mean_k_budget": true,
+      "meets_physical_traffic_budget": true,
+      "p95_active_fraction": 0.33522858796296273,
+      "physical_cold_traffic": {
+        "accounting": "fixed coordinate scans and candidate completion from the robust C policy plus token-adaptive selected-down cache lines, gain/down-norm scans, and metadata",
+        "bytes_per_token": {
+          "count": 256,
+          "maximum": 308756096.0,
+          "mean": 301533980.0,
+          "median": 301068416.0,
+          "minimum": 297082496.0,
+          "p95": 306369920.0
+        },
+        "fraction_of_dense_q4": {
+          "count": 256,
+          "maximum": 0.3877567193930041,
+          "mean": 0.3786866992589377,
+          "median": 0.3781020126028807,
+          "minimum": 0.3730962255658436,
+          "p95": 0.3847599987139918
+        },
+        "passes_45_percent_mean": true
+      },
+      "selected_k": {
+        "count": 7680,
+        "maximum": 2938.0,
+        "mean": 1344.41015625,
+        "median": 1236.0,
+        "minimum": 346.0,
+        "p95": 2317.0999999999985
+      },
+      "target_attainment_rate": 0.972265625
+    },
+    {
+      "captured_candidate_energy": {
+        "count": 7680,
+        "maximum": 1.0,
+        "mean": 0.9996027445262847,
+        "median": 0.9999036282165664,
+        "minimum": 0.9346611279224374,
+        "p95": 0.999916239757781
+      },
+      "energy_target": 0.9999,
+      "layers": [
+        {
+          "candidate_count": 4302,
+          "layer": 0,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.07425907238588747,
+            "mean": 0.017828121697786834,
+            "median": 0.009168575907468434,
+            "minimum": 0.005501652061215348,
+            "p95": 0.047171177036551874
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.3431888156467014,
+          "mean_k": 2372.12109375,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.60546875
+        },
+        {
+          "candidate_count": 2737,
+          "layer": 1,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.011600776426966986,
+            "mean": 0.00883575516212993,
+            "median": 0.008954331183298631,
+            "minimum": 0.0,
+            "p95": 0.009921885270951055
+          },
+          "maximum_k": 1344,
+          "maximum_k_clamp": 2737,
+          "mean_fraction": 0.12316442418981481,
+          "mean_k": 851.3125,
+          "p95_k": 1096.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 2902,
+          "layer": 2,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.11892768908914315,
+            "mean": 0.012116076742052473,
+            "median": 0.009542238530177006,
+            "minimum": 0.0,
+            "p95": 0.011554566082047692
+          },
+          "maximum_k": 2901,
+          "maximum_k_clamp": 2902,
+          "mean_fraction": 0.1038654468677662,
+          "mean_k": 717.91796875,
+          "p95_k": 1033.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3694,
+          "layer": 3,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.2111716559829316,
+            "mean": 0.018330451578329517,
+            "median": 0.010004420828706742,
+            "minimum": 0.003387577284347899,
+            "p95": 0.06700787872404217
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1509388111255787,
+          "mean_k": 1043.2890625,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91796875
+        },
+        {
+          "candidate_count": 4629,
+          "layer": 4,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.14975337908794487,
+            "mean": 0.01593115365852702,
+            "median": 0.009327968661358037,
+            "minimum": 0.003341364631007743,
+            "p95": 0.06779818147725712
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.16739400227864584,
+          "mean_k": 1157.02734375,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.921875
+        },
+        {
+          "candidate_count": 3534,
+          "layer": 5,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.20965238684972134,
+            "mean": 0.018282477029755224,
+            "median": 0.009196525366403911,
+            "minimum": 0.005910918729540331,
+            "p95": 0.07087699366082757
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.18485457808883102,
+          "mean_k": 1277.71484375,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91015625
+        },
+        {
+          "candidate_count": 3287,
+          "layer": 6,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.19674950586979742,
+            "mean": 0.01649647823770447,
+            "median": 0.00928832504712579,
+            "minimum": 0.006724289805380182,
+            "p95": 0.0374639688754528
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1550174289279514,
+          "mean_k": 1071.48046875,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91015625
+        },
+        {
+          "candidate_count": 5359,
+          "layer": 7,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.11754170478511917,
+            "mean": 0.012248905967466193,
+            "median": 0.009097667256495764,
+            "minimum": 0.0,
+            "p95": 0.010215121926903497
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.14497318974247686,
+          "mean_k": 1002.0546875,
+          "p95_k": 1373.75,
+          "target_attainment_rate": 0.96875
+        },
+        {
+          "candidate_count": 3301,
+          "layer": 8,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.028273972907825882,
+            "mean": 0.01038479439140557,
+            "median": 0.009206221884367313,
+            "minimum": 0.007423583321343949,
+            "p95": 0.021601444875551105
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2025592945240162,
+          "mean_k": 1400.08984375,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91015625
+        },
+        {
+          "candidate_count": 3596,
+          "layer": 9,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.026338226542427647,
+            "mean": 0.009552714261925697,
+            "median": 0.009000578362613306,
+            "minimum": 0.0032590012501632335,
+            "p95": 0.017259706282038406
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.22840598777488427,
+          "mean_k": 1578.7421875,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.94140625
+        },
+        {
+          "candidate_count": 4083,
+          "layer": 10,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0157396101511121,
+            "mean": 0.0090498954825197,
+            "median": 0.00897497112629597,
+            "minimum": 0.004086156946494369,
+            "p95": 0.01108889217581819
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.26680275245949076,
+          "mean_k": 1844.140625,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.94140625
+        },
+        {
+          "candidate_count": 4034,
+          "layer": 11,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.01059761154758261,
+            "mean": 0.008833765744602573,
+            "median": 0.00896750971386115,
+            "minimum": 0.004704125532042733,
+            "p95": 0.009580257674267307
+          },
+          "maximum_k": 2522,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2809549967447917,
+          "mean_k": 1941.9609375,
+          "p95_k": 2352.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4493,
+          "layer": 12,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.010845409479681864,
+            "mean": 0.008836703813154085,
+            "median": 0.008928180083033197,
+            "minimum": 0.004571219041859106,
+            "p95": 0.009706425704797607
+          },
+          "maximum_k": 2471,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.25907276294849535,
+          "mean_k": 1790.7109375,
+          "p95_k": 2206.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4353,
+          "layer": 13,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.01061752658046142,
+            "mean": 0.008736782955735652,
+            "median": 0.008933012328317705,
+            "minimum": 0.003919626057522721,
+            "p95": 0.009868646124614302
+          },
+          "maximum_k": 2579,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2748616536458333,
+          "mean_k": 1899.84375,
+          "p95_k": 2478.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4388,
+          "layer": 14,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.010869064108918155,
+            "mean": 0.008614175040253642,
+            "median": 0.008839686820482313,
+            "minimum": 0.004512708180885363,
+            "p95": 0.009643242452114233
+          },
+          "maximum_k": 2654,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2877785011574074,
+          "mean_k": 1989.125,
+          "p95_k": 2405.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4784,
+          "layer": 15,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.016517976957013677,
+            "mean": 0.008746854169598764,
+            "median": 0.0088186537208351,
+            "minimum": 0.004755001361797232,
+            "p95": 0.009861003346345258
+          },
+          "maximum_k": 2767,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2690005832248264,
+          "mean_k": 1859.33203125,
+          "p95_k": 2408.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4245,
+          "layer": 16,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.013947471200093809,
+            "mean": 0.00849647000276659,
+            "median": 0.008587836144861674,
+            "minimum": 0.005275846685650621,
+            "p95": 0.00939678670646988
+          },
+          "maximum_k": 2580,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2464447021484375,
+          "mean_k": 1703.42578125,
+          "p95_k": 2199.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4289,
+          "layer": 17,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.012842740239257425,
+            "mean": 0.008490189017946948,
+            "median": 0.008571353134004096,
+            "minimum": 0.005624641415516414,
+            "p95": 0.00951444430351485
+          },
+          "maximum_k": 2414,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2038105152271412,
+          "mean_k": 1408.73828125,
+          "p95_k": 1939.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3934,
+          "layer": 18,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.012239461039164724,
+            "mean": 0.00815933545034282,
+            "median": 0.008214173734480464,
+            "minimum": 0.005224743601828191,
+            "p95": 0.009011539631047397
+          },
+          "maximum_k": 2105,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.17433109989872686,
+          "mean_k": 1204.9765625,
+          "p95_k": 1744.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4306,
+          "layer": 19,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.013808439508171042,
+            "mean": 0.008670554422040403,
+            "median": 0.008579669576314244,
+            "minimum": 0.0,
+            "p95": 0.010907749116212943
+          },
+          "maximum_k": 2014,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.17293350784866898,
+          "mean_k": 1195.31640625,
+          "p95_k": 1737.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3493,
+          "layer": 20,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.013600297311254506,
+            "mean": 0.00857670299712639,
+            "median": 0.00848120271975467,
+            "minimum": 0.0,
+            "p95": 0.010580040778235131
+          },
+          "maximum_k": 1836,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.14603395815248843,
+          "mean_k": 1009.38671875,
+          "p95_k": 1443.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 2974,
+          "layer": 21,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.014356604471709772,
+            "mean": 0.008489673702851218,
+            "median": 0.008401210463739053,
+            "minimum": 0.0,
+            "p95": 0.010476911844758997
+          },
+          "maximum_k": 1826,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.13639209888599538,
+          "mean_k": 942.7421875,
+          "p95_k": 1369.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3150,
+          "layer": 22,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.01556605703148833,
+            "mean": 0.008329311231152483,
+            "median": 0.008207200292302964,
+            "minimum": 0.006215861187057092,
+            "p95": 0.009671121203982868
+          },
+          "maximum_k": 1918,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.15479871961805555,
+          "mean_k": 1069.96875,
+          "p95_k": 1500.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3063,
+          "layer": 23,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.01422613871979291,
+            "mean": 0.008237840477472811,
+            "median": 0.008218362635355522,
+            "minimum": 0.0,
+            "p95": 0.009811620765063285
+          },
+          "maximum_k": 1661,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.14574234573929398,
+          "mean_k": 1007.37109375,
+          "p95_k": 1439.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3136,
+          "layer": 24,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.016112200945870157,
+            "mean": 0.00860336864884019,
+            "median": 0.008282526119179541,
+            "minimum": 0.006220879349122626,
+            "p95": 0.011767270183083826
+          },
+          "maximum_k": 1666,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.14978762026186343,
+          "mean_k": 1035.33203125,
+          "p95_k": 1435.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3298,
+          "layer": 25,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.014246548644809422,
+            "mean": 0.008222008895340482,
+            "median": 0.008130963204479272,
+            "minimum": 0.006160611580726544,
+            "p95": 0.010203877859727616
+          },
+          "maximum_k": 1873,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.17497705530237267,
+          "mean_k": 1209.44140625,
+          "p95_k": 1561.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3499,
+          "layer": 26,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.013764805309331279,
+            "mean": 0.008278517721710732,
+            "median": 0.008159620807260641,
+            "minimum": 0.006052815022756087,
+            "p95": 0.01000485101820396
+          },
+          "maximum_k": 2011,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.18367739076967593,
+          "mean_k": 1269.578125,
+          "p95_k": 1649.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3671,
+          "layer": 27,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.018526527520449417,
+            "mean": 0.008363358143617062,
+            "median": 0.008037777899414407,
+            "minimum": 0.0,
+            "p95": 0.012042706556757724
+          },
+          "maximum_k": 2129,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.20477294921875,
+          "mean_k": 1415.390625,
+          "p95_k": 1974.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4028,
+          "layer": 28,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.019489882383631127,
+            "mean": 0.007979998479806176,
+            "median": 0.007444071559244569,
+            "minimum": 0.0,
+            "p95": 0.013159507130628849
+          },
+          "maximum_k": 2201,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.23882661042390047,
+          "mean_k": 1650.76953125,
+          "p95_k": 2089.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4521,
+          "layer": 29,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.01675012910305941,
+            "mean": 0.006422764409144891,
+            "median": 0.005989742869931343,
+            "minimum": 0.0028205136901564907,
+            "p95": 0.010892266342824008
+          },
+          "maximum_k": 2665,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.28562644675925924,
+          "mean_k": 1974.25,
+          "p95_k": 2446.0,
+          "target_attainment_rate": 1.0
+        }
+      ],
+      "local_output_cosine_similarity": {
+        "count": 7680,
+        "maximum": 1.0,
+        "mean": 0.9999158301363432,
+        "median": 0.9999616179599609,
+        "minimum": 0.9912115152421602,
+        "p95": 0.9999830666476874
+      },
+      "local_output_relative_l2": {
+        "count": 7680,
+        "maximum": 0.2111716559829316,
+        "mean": 0.010271506651103551,
+        "median": 0.008785421402438622,
+        "minimum": 0.0,
+        "p95": 0.011667078568076946
+      },
+      "maximum_active_fraction": 0.42505787037037035,
+      "mean_active_fraction": 0.2020329416534047,
+      "meets_mean_k_budget": true,
+      "meets_physical_traffic_budget": true,
+      "p95_active_fraction": 0.3504267939814812,
+      "physical_cold_traffic": {
+        "accounting": "fixed coordinate scans and candidate completion from the robust C policy plus token-adaptive selected-down cache lines, gain/down-norm scans, and metadata",
+        "bytes_per_token": {
+          "count": 256,
+          "maximum": 309278336.0,
+          "mean": 302333338.0,
+          "median": 301982336.0,
+          "minimum": 297721984.0,
+          "p95": 306606848.0
+        },
+        "fraction_of_dense_q4": {
+          "count": 256,
+          "maximum": 0.388412583590535,
+          "mean": 0.37969058692210006,
+          "median": 0.3792497749485597,
+          "minimum": 0.37389933770576134,
+          "p95": 0.3850575488683128
+        },
+        "passes_45_percent_mean": true
+      },
+      "selected_k": {
+        "count": 7680,
+        "maximum": 2938.0,
+        "mean": 1396.4516927083334,
+        "median": 1291.0,
+        "minimum": 346.0,
+        "p95": 2422.149999999998
+      },
+      "target_attainment_rate": 0.967578125
+    },
+    {
+      "captured_candidate_energy": {
+        "count": 7680,
+        "maximum": 1.0,
+        "mean": 0.9996505526999779,
+        "median": 0.9999534846383629,
+        "minimum": 0.9346611279224374,
+        "p95": 0.999964381620443
+      },
+      "energy_target": 0.99995,
+      "layers": [
+        {
+          "candidate_count": 4302,
+          "layer": 0,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.07425907238588747,
+            "mean": 0.016497469636182798,
+            "median": 0.0068239828078144734,
+            "minimum": 0.0032412934389073013,
+            "p95": 0.047171177036551874
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.3438828079788773,
+          "mean_k": 2376.91796875,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.60546875
+        },
+        {
+          "candidate_count": 2737,
+          "layer": 1,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.008368274845603953,
+            "mean": 0.006145411796418198,
+            "median": 0.006228768670019217,
+            "minimum": 0.0,
+            "p95": 0.00704555522967067
+          },
+          "maximum_k": 1349,
+          "maximum_k_clamp": 2737,
+          "mean_fraction": 0.12394883897569445,
+          "mean_k": 856.734375,
+          "p95_k": 1102.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 2902,
+          "layer": 2,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.11882767855561249,
+            "mean": 0.009409240859909154,
+            "median": 0.0066367836619003005,
+            "minimum": 0.0,
+            "p95": 0.008261057985920344
+          },
+          "maximum_k": 2902,
+          "maximum_k_clamp": 2902,
+          "mean_fraction": 0.10465833875868055,
+          "mean_k": 723.3984375,
+          "p95_k": 1045.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3694,
+          "layer": 3,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.2111716559829316,
+            "mean": 0.015587241973877989,
+            "median": 0.007075025281058571,
+            "minimum": 0.0024300177611773187,
+            "p95": 0.06700787872404217
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.15177408854166666,
+          "mean_k": 1049.0625,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91796875
+        },
+        {
+          "candidate_count": 4629,
+          "layer": 4,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.14975337908794487,
+            "mean": 0.013402112117857651,
+            "median": 0.006618387522356764,
+            "minimum": 0.0023481481589850885,
+            "p95": 0.06779818147725712
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1682564064308449,
+          "mean_k": 1162.98828125,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.921875
+        },
+        {
+          "candidate_count": 3534,
+          "layer": 5,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.20965238684972134,
+            "mean": 0.01574864072625271,
+            "median": 0.006439681278910954,
+            "minimum": 0.004412188144042034,
+            "p95": 0.07087699366082757
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.18592212818287038,
+          "mean_k": 1285.09375,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91015625
+        },
+        {
+          "candidate_count": 3287,
+          "layer": 6,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.19674950586979742,
+            "mean": 0.014001440295466816,
+            "median": 0.006494539043813958,
+            "minimum": 0.004902691651633668,
+            "p95": 0.0374639688754528
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1559273048683449,
+          "mean_k": 1077.76953125,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91015625
+        },
+        {
+          "candidate_count": 5359,
+          "layer": 7,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.11754170478511917,
+            "mean": 0.009630225150217962,
+            "median": 0.006360091954789119,
+            "minimum": 0.0,
+            "p95": 0.007573502608745761
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1459339283130787,
+          "mean_k": 1008.6953125,
+          "p95_k": 1385.5,
+          "target_attainment_rate": 0.96875
+        },
+        {
+          "candidate_count": 3301,
+          "layer": 8,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.028273972907825882,
+            "mean": 0.007881861568327984,
+            "median": 0.006417532857129761,
+            "minimum": 0.0048144208711886965,
+            "p95": 0.021601444875551105
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.20355846263744212,
+          "mean_k": 1406.99609375,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91015625
+        },
+        {
+          "candidate_count": 3596,
+          "layer": 9,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.026338226542427647,
+            "mean": 0.007033661625828155,
+            "median": 0.006267649738055141,
+            "minimum": 0.0022275440174612214,
+            "p95": 0.017259706282038406
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.22942719636140047,
+          "mean_k": 1585.80078125,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.94140625
+        },
+        {
+          "candidate_count": 4083,
+          "layer": 10,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0157396101511121,
+            "mean": 0.006538271576427878,
+            "median": 0.00624427381799205,
+            "minimum": 0.0026986188784757594,
+            "p95": 0.010967241178764143
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2681144431785301,
+          "mean_k": 1853.20703125,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.94140625
+        },
+        {
+          "candidate_count": 4034,
+          "layer": 11,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.008420617348693885,
+            "mean": 0.006188391304900762,
+            "median": 0.006236091740221926,
+            "minimum": 0.0040183588835217875,
+            "p95": 0.006809806578406365
+          },
+          "maximum_k": 2542,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2822310836226852,
+          "mean_k": 1950.78125,
+          "p95_k": 2374.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4493,
+          "layer": 12,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.008293482489790947,
+            "mean": 0.006062906505086303,
+            "median": 0.006169311873508201,
+            "minimum": 0.0028319878165782965,
+            "p95": 0.006668258837705626
+          },
+          "maximum_k": 2495,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.26024995026765047,
+          "mean_k": 1798.84765625,
+          "p95_k": 2212.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4353,
+          "layer": 13,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.008726128487531636,
+            "mean": 0.00613834861978433,
+            "median": 0.0062204061780300095,
+            "minimum": 0.0024845627910259007,
+            "p95": 0.006931784817788101
+          },
+          "maximum_k": 2592,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2760947898582176,
+          "mean_k": 1908.3671875,
+          "p95_k": 2484.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4388,
+          "layer": 14,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.009007689276455469,
+            "mean": 0.006018112899906117,
+            "median": 0.00608657778912157,
+            "minimum": 0.002598015415251097,
+            "p95": 0.0067773860937580775
+          },
+          "maximum_k": 2668,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2889743381076389,
+          "mean_k": 1997.390625,
+          "p95_k": 2417.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4784,
+          "layer": 15,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.015914970454930732,
+            "mean": 0.006066526990458371,
+            "median": 0.006105864110989458,
+            "minimum": 0.0029392922225191854,
+            "p95": 0.00710893950561017
+          },
+          "maximum_k": 2782,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2699115894458912,
+          "mean_k": 1865.62890625,
+          "p95_k": 2419.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4245,
+          "layer": 16,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.009824389281043233,
+            "mean": 0.005849551953675078,
+            "median": 0.005919860783378687,
+            "minimum": 0.003159611553113009,
+            "p95": 0.006667716031755674
+          },
+          "maximum_k": 2604,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.24748060438368055,
+          "mean_k": 1710.5859375,
+          "p95_k": 2211.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4289,
+          "layer": 17,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.011971111673226027,
+            "mean": 0.005828060957358434,
+            "median": 0.00589370005730953,
+            "minimum": 0.003941644052859181,
+            "p95": 0.006561540864858215
+          },
+          "maximum_k": 2428,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.20464296694155093,
+          "mean_k": 1414.4921875,
+          "p95_k": 1950.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3934,
+          "layer": 18,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.007856610651111515,
+            "mean": 0.005582198521253107,
+            "median": 0.005640879014841133,
+            "minimum": 0.003648462348795452,
+            "p95": 0.006506018040233811
+          },
+          "maximum_k": 2124,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.17497988100405093,
+          "mean_k": 1209.4609375,
+          "p95_k": 1757.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4306,
+          "layer": 19,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.00923129226318657,
+            "mean": 0.005752801187206234,
+            "median": 0.00576106424197971,
+            "minimum": 0.0,
+            "p95": 0.007444403347327944
+          },
+          "maximum_k": 2025,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.17362467447916666,
+          "mean_k": 1200.09375,
+          "p95_k": 1747.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3493,
+          "layer": 20,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.008648130390817356,
+            "mean": 0.005751019451591214,
+            "median": 0.005771493909730745,
+            "minimum": 0.0,
+            "p95": 0.00709831926635666
+          },
+          "maximum_k": 1861,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.14670082374855323,
+          "mean_k": 1013.99609375,
+          "p95_k": 1453.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 2974,
+          "layer": 21,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.011275243342675262,
+            "mean": 0.005854393097949018,
+            "median": 0.005769595516855583,
+            "minimum": 0.0,
+            "p95": 0.007681688142909347
+          },
+          "maximum_k": 1849,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.13715334291811343,
+          "mean_k": 948.00390625,
+          "p95_k": 1379.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3150,
+          "layer": 22,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.008475607241599044,
+            "mean": 0.005750995187389317,
+            "median": 0.0056427752957558495,
+            "minimum": 0.004214137912600364,
+            "p95": 0.007184611711211569
+          },
+          "maximum_k": 1931,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1555904812282986,
+          "mean_k": 1075.44140625,
+          "p95_k": 1508.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3063,
+          "layer": 23,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.00977021231902913,
+            "mean": 0.005572838748276652,
+            "median": 0.005625207857130127,
+            "minimum": 0.0,
+            "p95": 0.006807560239593405
+          },
+          "maximum_k": 1671,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1466861300998264,
+          "mean_k": 1013.89453125,
+          "p95_k": 1449.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3136,
+          "layer": 24,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.010120826192001593,
+            "mean": 0.005823774250181442,
+            "median": 0.005699025925781923,
+            "minimum": 0.003998692522068752,
+            "p95": 0.0075122792152964935
+          },
+          "maximum_k": 1676,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1506664134837963,
+          "mean_k": 1041.40625,
+          "p95_k": 1450.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3298,
+          "layer": 25,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.008925020658137564,
+            "mean": 0.005463230716026187,
+            "median": 0.005565099284862831,
+            "minimum": 0.0,
+            "p95": 0.006926366268578969
+          },
+          "maximum_k": 1894,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.17601747866030093,
+          "mean_k": 1216.6328125,
+          "p95_k": 1573.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3499,
+          "layer": 26,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.010426881137173844,
+            "mean": 0.005618978611284708,
+            "median": 0.005592000030631093,
+            "minimum": 0.004133574694426079,
+            "p95": 0.007009279205009983
+          },
+          "maximum_k": 2030,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.18469859935619212,
+          "mean_k": 1276.63671875,
+          "p95_k": 1661.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3671,
+          "layer": 27,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.010882042221248705,
+            "mean": 0.0055576850762812675,
+            "median": 0.005291192980482423,
+            "minimum": 0.0,
+            "p95": 0.008273055306981065
+          },
+          "maximum_k": 2148,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.20595296223958334,
+          "mean_k": 1423.546875,
+          "p95_k": 1995.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4028,
+          "layer": 28,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.011494326150549662,
+            "mean": 0.00514420355700768,
+            "median": 0.0047139955176100385,
+            "minimum": 0.0,
+            "p95": 0.009200359049124269
+          },
+          "maximum_k": 2223,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.24018238208912038,
+          "mean_k": 1660.140625,
+          "p95_k": 2104.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4521,
+          "layer": 29,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.010581973807997186,
+            "mean": 0.0039426223700083605,
+            "median": 0.0035431166773296757,
+            "minimum": 0.0020130798950487245,
+            "p95": 0.0064761518295937915
+          },
+          "maximum_k": 2697,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2872161865234375,
+          "mean_k": 1985.23828125,
+          "p95_k": 2462.25,
+          "target_attainment_rate": 1.0
+        }
+      ],
+      "local_output_cosine_similarity": {
+        "count": 7680,
+        "maximum": 1.0,
+        "mean": 0.9999349063814832,
+        "median": 0.9999816823621615,
+        "minimum": 0.9912115152421602,
+        "p95": 0.9999925950224845
+      },
+      "local_output_relative_l2": {
+        "count": 7680,
+        "maximum": 0.2111716559829316,
+        "mean": 0.007661407244413064,
+        "median": 0.006065335708036859,
+        "minimum": 0.0,
+        "p95": 0.008158893271255562
+      },
+      "maximum_active_fraction": 0.42505787037037035,
+      "mean_active_fraction": 0.2030152874228395,
+      "meets_mean_k_budget": true,
+      "meets_physical_traffic_budget": true,
+      "p95_active_fraction": 0.35230034722222203,
+      "physical_cold_traffic": {
+        "accounting": "fixed coordinate scans and candidate completion from the robust C policy plus token-adaptive selected-down cache lines, gain/down-norm scans, and metadata",
+        "bytes_per_token": {
+          "count": 256,
+          "maximum": 309339264.0,
+          "mean": 302437632.0,
+          "median": 302100608.0,
+          "minimum": 297808000.0,
+          "p95": 306635520.0
+        },
+        "fraction_of_dense_q4": {
+          "count": 256,
+          "maximum": 0.3884891010802469,
+          "mean": 0.3798215663580247,
+          "median": 0.379398308899177,
+          "minimum": 0.37400736239711935,
+          "p95": 0.3850935570987654
+        },
+        "passes_45_percent_mean": true
+      },
+      "selected_k": {
+        "count": 7680,
+        "maximum": 2938.0,
+        "mean": 1403.2416666666666,
+        "median": 1297.0,
+        "minimum": 346.0,
+        "p95": 2435.0999999999985
+      },
+      "target_attainment_rate": 0.967578125
+    },
+    {
+      "captured_candidate_energy": {
+        "count": 7680,
+        "maximum": 1.0,
+        "mean": 0.9996881644427286,
+        "median": 0.999992821058093,
+        "minimum": 0.9346611279224374,
+        "p95": 1.0
+      },
+      "energy_target": 0.99999,
+      "layers": [
+        {
+          "candidate_count": 4302,
+          "layer": 0,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.07425907238588747,
+            "mean": 0.01439722163275767,
+            "median": 0.002953783523898298,
+            "minimum": 0.0,
+            "p95": 0.047171177036551874
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.34456436722366895,
+          "mean_k": 2381.62890625,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.59765625
+        },
+        {
+          "candidate_count": 2737,
+          "layer": 1,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.006386651067798396,
+            "mean": 0.0020913839268865394,
+            "median": 0.0023439610646587214,
+            "minimum": 0.0,
+            "p95": 0.002950336383049295
+          },
+          "maximum_k": 1353,
+          "maximum_k_clamp": 2737,
+          "mean_fraction": 0.12470725730613426,
+          "mean_k": 861.9765625,
+          "p95_k": 1111.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 2902,
+          "layer": 2,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.11882767855561249,
+            "mean": 0.005245763000740002,
+            "median": 0.002537664513745914,
+            "minimum": 0.0,
+            "p95": 0.003386606315064708
+          },
+          "maximum_k": 2902,
+          "maximum_k_clamp": 2902,
+          "mean_fraction": 0.10542919017650464,
+          "mean_k": 728.7265625,
+          "p95_k": 1055.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3694,
+          "layer": 3,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.2111716559829316,
+            "mean": 0.011332851015831872,
+            "median": 0.0027012652409547605,
+            "minimum": 0.0,
+            "p95": 0.06700787872404217
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.15264157895688657,
+          "mean_k": 1055.05859375,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91796875
+        },
+        {
+          "candidate_count": 4629,
+          "layer": 4,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.14975337908794487,
+            "mean": 0.009631141313011652,
+            "median": 0.0026641386653549347,
+            "minimum": 0.0,
+            "p95": 0.06779818147725712
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1690803810402199,
+          "mean_k": 1168.68359375,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.921875
+        },
+        {
+          "candidate_count": 3534,
+          "layer": 5,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.20965238684972134,
+            "mean": 0.012230356449515417,
+            "median": 0.0026653263081122627,
+            "minimum": 0.0,
+            "p95": 0.07087699366082757
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.18684443721064814,
+          "mean_k": 1291.46875,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91015625
+        },
+        {
+          "candidate_count": 3287,
+          "layer": 6,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.19674950586979742,
+            "mean": 0.010285416255088182,
+            "median": 0.002608011788756341,
+            "minimum": 0.0,
+            "p95": 0.0374639688754528
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1567314995659722,
+          "mean_k": 1083.328125,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91015625
+        },
+        {
+          "candidate_count": 5359,
+          "layer": 7,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.11754170478511917,
+            "mean": 0.0058197363948707635,
+            "median": 0.0025674225287646507,
+            "minimum": 0.0,
+            "p95": 0.0034963042885584185
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.14677824797453703,
+          "mean_k": 1014.53125,
+          "p95_k": 1395.75,
+          "target_attainment_rate": 0.96875
+        },
+        {
+          "candidate_count": 3301,
+          "layer": 8,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.028273972907825882,
+            "mean": 0.004277601682705372,
+            "median": 0.0026002946123382534,
+            "minimum": 0.0,
+            "p95": 0.021601444875551105
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.20442990903501157,
+          "mean_k": 1413.01953125,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91015625
+        },
+        {
+          "candidate_count": 3596,
+          "layer": 9,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.026338226542427647,
+            "mean": 0.0035137098881534434,
+            "median": 0.002499974358744604,
+            "minimum": 0.0,
+            "p95": 0.017259706282038406
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2303020336009838,
+          "mean_k": 1591.84765625,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.94140625
+        },
+        {
+          "candidate_count": 4083,
+          "layer": 10,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0157396101511121,
+            "mean": 0.002976955280336163,
+            "median": 0.002563401019497111,
+            "minimum": 0.0,
+            "p95": 0.010967241178764143
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.26921985767505785,
+          "mean_k": 1860.84765625,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.94140625
+        },
+        {
+          "candidate_count": 4034,
+          "layer": 11,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.007319901116349092,
+            "mean": 0.0024623198447978395,
+            "median": 0.0024974627638589377,
+            "minimum": 0.0,
+            "p95": 0.0037776635365028718
+          },
+          "maximum_k": 2558,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2832811143663194,
+          "mean_k": 1958.0390625,
+          "p95_k": 2389.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4493,
+          "layer": 12,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.003198626029301636,
+            "mean": 0.0021335608725712037,
+            "median": 0.0023981056202862,
+            "minimum": 0.0,
+            "p95": 0.0028725018505500665
+          },
+          "maximum_k": 2515,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2612327293113426,
+          "mean_k": 1805.640625,
+          "p95_k": 2223.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4353,
+          "layer": 13,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.008240344093135872,
+            "mean": 0.00235387590142034,
+            "median": 0.002499722369889079,
+            "minimum": 0.0,
+            "p95": 0.003734219609235728
+          },
+          "maximum_k": 2603,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2771159984447338,
+          "mean_k": 1915.42578125,
+          "p95_k": 2489.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4388,
+          "layer": 14,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.007190518876752903,
+            "mean": 0.002376771686262046,
+            "median": 0.002431229138340765,
+            "minimum": 0.0,
+            "p95": 0.0031314651116945338
+          },
+          "maximum_k": 2679,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.28994468406394674,
+          "mean_k": 2004.09765625,
+          "p95_k": 2424.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4784,
+          "layer": 15,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.015395114523750525,
+            "mean": 0.002020565488724934,
+            "median": 0.0022796739593192866,
+            "minimum": 0.0,
+            "p95": 0.003113957872051482
+          },
+          "maximum_k": 2795,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.27067170319733797,
+          "mean_k": 1870.8828125,
+          "p95_k": 2429.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4245,
+          "layer": 16,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.009155798211739499,
+            "mean": 0.002008462983562424,
+            "median": 0.00229115549589094,
+            "minimum": 0.0,
+            "p95": 0.0033272736027702273
+          },
+          "maximum_k": 2623,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.24831870750144677,
+          "mean_k": 1716.37890625,
+          "p95_k": 2221.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4289,
+          "layer": 17,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.011134520626215857,
+            "mean": 0.0016372775068299878,
+            "median": 0.002103322889809212,
+            "minimum": 0.0,
+            "p95": 0.0029445662137971215
+          },
+          "maximum_k": 2440,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.20532622160734953,
+          "mean_k": 1419.21484375,
+          "p95_k": 1963.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3934,
+          "layer": 18,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.006775163642988597,
+            "mean": 0.0012670413820107178,
+            "median": 0.0016953114293109996,
+            "minimum": 0.0,
+            "p95": 0.00270156218215969
+          },
+          "maximum_k": 2140,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.17553089283130788,
+          "mean_k": 1213.26953125,
+          "p95_k": 1767.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4306,
+          "layer": 19,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.003303430912125803,
+            "mean": 0.0010131190218907,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0027156852991347784
+          },
+          "maximum_k": 2035,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.17419603135850695,
+          "mean_k": 1204.04296875,
+          "p95_k": 1757.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3493,
+          "layer": 20,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0058908712027522315,
+            "mean": 0.0012566951488836536,
+            "median": 0.001812959689277888,
+            "minimum": 0.0,
+            "p95": 0.0027300116026365293
+          },
+          "maximum_k": 1880,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.14727218062789352,
+          "mean_k": 1017.9453125,
+          "p95_k": 1460.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 2974,
+          "layer": 21,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.010102265748636392,
+            "mean": 0.0016054288463536598,
+            "median": 0.0019823909166060538,
+            "minimum": 0.0,
+            "p95": 0.003319177286864319
+          },
+          "maximum_k": 1868,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1378151222511574,
+          "mean_k": 952.578125,
+          "p95_k": 1387.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3150,
+          "layer": 22,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.006384230647503999,
+            "mean": 0.0013878539726339158,
+            "median": 0.0018956884099851623,
+            "minimum": 0.0,
+            "p95": 0.002695665560653598
+          },
+          "maximum_k": 1943,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.15626695421006945,
+          "mean_k": 1080.1171875,
+          "p95_k": 1514.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3063,
+          "layer": 23,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0031560004210199944,
+            "mean": 0.001593375887285786,
+            "median": 0.002088164964969653,
+            "minimum": 0.0,
+            "p95": 0.0027015351462681674
+          },
+          "maximum_k": 1679,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1474761962890625,
+          "mean_k": 1019.35546875,
+          "p95_k": 1457.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3136,
+          "layer": 24,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0034776047235410856,
+            "mean": 0.0017656048699872728,
+            "median": 0.0020978282803448406,
+            "minimum": 0.0,
+            "p95": 0.0028138669884839474
+          },
+          "maximum_k": 1683,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.15140844274450233,
+          "mean_k": 1046.53515625,
+          "p95_k": 1462.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3298,
+          "layer": 25,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0035900688792867333,
+            "mean": 0.0018341103537853317,
+            "median": 0.002078131611276391,
+            "minimum": 0.0,
+            "p95": 0.0028129270355183493
+          },
+          "maximum_k": 1911,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.17688892505787038,
+          "mean_k": 1222.65625,
+          "p95_k": 1583.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3499,
+          "layer": 26,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0037988553859499385,
+            "mean": 0.0019018723477179085,
+            "median": 0.0020671795593919205,
+            "minimum": 0.0,
+            "p95": 0.0029384987355752677
+          },
+          "maximum_k": 2047,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.18556495949074073,
+          "mean_k": 1282.625,
+          "p95_k": 1669.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3671,
+          "layer": 27,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0041688992736435004,
+            "mean": 0.0018511924679534618,
+            "median": 0.0019512165834371091,
+            "minimum": 0.0,
+            "p95": 0.0028456945447830517
+          },
+          "maximum_k": 2169,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.20697530110677084,
+          "mean_k": 1430.61328125,
+          "p95_k": 2012.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4028,
+          "layer": 28,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.003953678255552961,
+            "mean": 0.00163090119152123,
+            "median": 0.0016301416410524777,
+            "minimum": 0.0,
+            "p95": 0.0028223003326358076
+          },
+          "maximum_k": 2242,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2413307472511574,
+          "mean_k": 1668.078125,
+          "p95_k": 2117.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4521,
+          "layer": 29,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.002826095080651332,
+            "mean": 0.0012075116697987894,
+            "median": 0.0012162889375777752,
+            "minimum": 0.0,
+            "p95": 0.002042982315234207
+          },
+          "maximum_k": 2725,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2886369493272569,
+          "mean_k": 1995.05859375,
+          "p95_k": 2483.25,
+          "target_attainment_rate": 1.0
+        }
+      ],
+      "local_output_cosine_similarity": {
+        "count": 7680,
+        "maximum": 1.0,
+        "mean": 0.9999497998525482,
+        "median": 0.9999974227486947,
+        "minimum": 0.9912115152421602,
+        "p95": 1.0
+      },
+      "local_output_relative_l2": {
+        "count": 7680,
+        "maximum": 0.2111716559829316,
+        "mean": 0.0038369892761296095,
+        "median": 0.002276734846087042,
+        "minimum": 0.0,
+        "p95": 0.003723906990968724
+      },
+      "maximum_active_fraction": 0.42505787037037035,
+      "mean_active_fraction": 0.20386608736014658,
+      "meets_mean_k_budget": true,
+      "meets_physical_traffic_budget": true,
+      "p95_active_fraction": 0.353884548611111,
+      "physical_cold_traffic": {
+        "accounting": "fixed coordinate scans and candidate completion from the robust C policy plus token-adaptive selected-down cache lines, gain/down-norm scans, and metadata",
+        "bytes_per_token": {
+          "count": 256,
+          "maximum": 309393024.0,
+          "mean": 302527960.0,
+          "median": 302192768.0,
+          "minimum": 297887360.0,
+          "p95": 306661760.0
+        },
+        "fraction_of_dense_q4": {
+          "count": 256,
+          "maximum": 0.3885566165123457,
+          "mean": 0.3799350063496656,
+          "median": 0.3795140496399177,
+          "minimum": 0.3741070280349794,
+          "p95": 0.3851265110596708
+        },
+        "passes_45_percent_mean": true
+      },
+      "selected_k": {
+        "count": 7680,
+        "maximum": 2938.0,
+        "mean": 1409.1223958333333,
+        "median": 1302.0,
+        "minimum": 346.0,
+        "p95": 2446.0499999999993
+      },
+      "target_attainment_rate": 0.9673177083333333
+    },
+    {
+      "captured_candidate_energy": {
+        "count": 7680,
+        "maximum": 1.0,
+        "mean": 0.999694019239571,
+        "median": 1.0,
+        "minimum": 0.9346611279224374,
+        "p95": 1.0
+      },
+      "energy_target": 1.0,
+      "layers": [
+        {
+          "candidate_count": 4302,
+          "layer": 0,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.07425907238588747,
+            "mean": 0.013311253322435667,
+            "median": 0.0016030879255918569,
+            "minimum": 0.0,
+            "p95": 0.047171177036551874
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.3448418511284722,
+          "mean_k": 2383.546875,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.59375
+        },
+        {
+          "candidate_count": 2737,
+          "layer": 1,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.005707678963091922,
+            "mean": 4.515182466864043e-05,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "maximum_k": 1354,
+          "maximum_k_clamp": 2737,
+          "mean_fraction": 0.12492540147569445,
+          "mean_k": 863.484375,
+          "p95_k": 1113.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 2902,
+          "layer": 2,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.11882767855561249,
+            "mean": 0.0032137531061640313,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0004866846693689945
+          },
+          "maximum_k": 2902,
+          "maximum_k_clamp": 2902,
+          "mean_fraction": 0.10565242060908565,
+          "mean_k": 730.26953125,
+          "p95_k": 1059.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3694,
+          "layer": 3,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.2111716559829316,
+            "mean": 0.009167927815421311,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.06700787872404217
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.15291397659866898,
+          "mean_k": 1056.94140625,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91796875
+        },
+        {
+          "candidate_count": 4629,
+          "layer": 4,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.14975337908794487,
+            "mean": 0.0073788408079964955,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.06779818147725712
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1693606906467014,
+          "mean_k": 1170.62109375,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.921875
+        },
+        {
+          "candidate_count": 3534,
+          "layer": 5,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.20965238684972134,
+            "mean": 0.009939359866011695,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.07087699366082757
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.18717221860532407,
+          "mean_k": 1293.734375,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91015625
+        },
+        {
+          "candidate_count": 3287,
+          "layer": 6,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.19674950586979742,
+            "mean": 0.008255451731057014,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0374639688754528
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.15695755570023148,
+          "mean_k": 1084.890625,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91015625
+        },
+        {
+          "candidate_count": 5359,
+          "layer": 7,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.11754170478511917,
+            "mean": 0.0037558472706978375,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.002289286016161762
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.14700939037181712,
+          "mean_k": 1016.12890625,
+          "p95_k": 1398.0,
+          "target_attainment_rate": 0.96875
+        },
+        {
+          "candidate_count": 3301,
+          "layer": 8,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.028273972907825882,
+            "mean": 0.0021294085995394755,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.021601444875551105
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.20469156901041666,
+          "mean_k": 1414.828125,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.91015625
+        },
+        {
+          "candidate_count": 3596,
+          "layer": 9,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.026338226542427647,
+            "mean": 0.0013059900083354846,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.017259706282038406
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.23058347348813657,
+          "mean_k": 1593.79296875,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.94140625
+        },
+        {
+          "candidate_count": 4083,
+          "layer": 10,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0157396101511121,
+            "mean": 0.0007517423558788777,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.010967241178764143
+          },
+          "maximum_k": 2938,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.26956459327980326,
+          "mean_k": 1863.23046875,
+          "p95_k": 2938.0,
+          "target_attainment_rate": 0.94140625
+        },
+        {
+          "candidate_count": 4034,
+          "layer": 11,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.007319901116349092,
+            "mean": 0.0003235312865507269,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0030503314706062878
+          },
+          "maximum_k": 2562,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.28357668276186343,
+          "mean_k": 1960.08203125,
+          "p95_k": 2393.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4493,
+          "layer": 12,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0026117486825906642,
+            "mean": 1.0202143291369782e-05,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "maximum_k": 2520,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.2614921287254051,
+          "mean_k": 1807.43359375,
+          "p95_k": 2226.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4353,
+          "layer": 13,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.008194868724334862,
+            "mean": 0.00032213044387741183,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.003430384368532516
+          },
+          "maximum_k": 2605,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.27736296477141203,
+          "mean_k": 1917.1328125,
+          "p95_k": 2492.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4388,
+          "layer": 14,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.006789424754440736,
+            "mean": 0.0002696688477503638,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0023498541186549476
+          },
+          "maximum_k": 2682,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.29018260814525465,
+          "mean_k": 2005.7421875,
+          "p95_k": 2425.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4784,
+          "layer": 15,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.015263792893498879,
+            "mean": 0.0003327062663171683,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0024413850607315204
+          },
+          "maximum_k": 2798,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.27083785445601855,
+          "mean_k": 1872.03125,
+          "p95_k": 2431.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4245,
+          "layer": 16,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.009046895541571965,
+            "mean": 0.00025319102015792714,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0023738600365759044
+          },
+          "maximum_k": 2628,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.24850011754918983,
+          "mean_k": 1717.6328125,
+          "p95_k": 2223.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4289,
+          "layer": 17,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.011134520626215857,
+            "mean": 0.00020186917809856002,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "maximum_k": 2443,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.20544829191984953,
+          "mean_k": 1420.05859375,
+          "p95_k": 1965.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3934,
+          "layer": 18,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.006775163642988597,
+            "mean": 0.00010549842849362062,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "maximum_k": 2144,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.17562583640769677,
+          "mean_k": 1213.92578125,
+          "p95_k": 1768.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4306,
+          "layer": 19,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0027001882447047314,
+            "mean": 1.961291137126964e-05,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "maximum_k": 2037,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.17427628128616898,
+          "mean_k": 1204.59765625,
+          "p95_k": 1759.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3493,
+          "layer": 20,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0058908712027522315,
+            "mean": 2.3011215635750904e-05,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "maximum_k": 1885,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1473716453269676,
+          "mean_k": 1018.6328125,
+          "p95_k": 1461.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 2974,
+          "layer": 21,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.009703085820771756,
+            "mean": 0.0002910894523710807,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0020582521256702455
+          },
+          "maximum_k": 1872,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.13793662742332177,
+          "mean_k": 953.41796875,
+          "p95_k": 1389.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3150,
+          "layer": 22,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.006259008057428502,
+            "mean": 0.00011308076504564909,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "maximum_k": 1945,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1563850685402199,
+          "mean_k": 1080.93359375,
+          "p95_k": 1516.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3063,
+          "layer": 23,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0015450959373759319,
+            "mean": 6.035531005374734e-06,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "maximum_k": 1681,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.14763839156539352,
+          "mean_k": 1020.4765625,
+          "p95_k": 1459.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3136,
+          "layer": 24,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.003331168467013221,
+            "mean": 3.548566834444706e-05,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "maximum_k": 1685,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.1515723334418403,
+          "mean_k": 1047.66796875,
+          "p95_k": 1465.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3298,
+          "layer": 25,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.003575772959361069,
+            "mean": 2.793290482016268e-05,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "maximum_k": 1915,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.17709746184172453,
+          "mean_k": 1224.09765625,
+          "p95_k": 1585.5,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3499,
+          "layer": 26,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0016610565664438935,
+            "mean": 6.488502212671459e-06,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "maximum_k": 2051,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.18578366880063657,
+          "mean_k": 1284.13671875,
+          "p95_k": 1671.75,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 3671,
+          "layer": 27,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0035358832696563047,
+            "mean": 3.409238070475071e-05,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "maximum_k": 2177,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.20724656846788195,
+          "mean_k": 1432.48828125,
+          "p95_k": 2016.25,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4028,
+          "layer": 28,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0008301879314293935,
+            "mean": 3.2429216071460683e-06,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "maximum_k": 2247,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.24159749348958334,
+          "mean_k": 1669.921875,
+          "p95_k": 2120.0,
+          "target_attainment_rate": 1.0
+        },
+        {
+          "candidate_count": 4521,
+          "layer": 29,
+          "local_output_relative_l2": {
+            "count": 256,
+            "maximum": 0.0009557917773431856,
+            "mean": 3.7335616302468187e-06,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "maximum_k": 2732,
+          "maximum_k_clamp": 2938,
+          "mean_fraction": 0.28899750886140047,
+          "mean_k": 1997.55078125,
+          "p95_k": 2489.25,
+          "target_attainment_rate": 1.0
+        }
+      ],
+      "local_output_cosine_similarity": {
+        "count": 7680,
+        "maximum": 1.0,
+        "mean": 0.9999519815143686,
+        "median": 1.0,
+        "minimum": 0.9912115152421602,
+        "p95": 1.0
+      },
+      "local_output_relative_l2": {
+        "count": 7680,
+        "maximum": 0.2111716559829316,
+        "mean": 0.002054577671249741,
+        "median": 0.0,
+        "minimum": 0.0,
+        "p95": 0.002804340235751896
+      },
+      "maximum_active_fraction": 0.42505787037037035,
+      "mean_active_fraction": 0.204086755823206,
+      "meets_mean_k_budget": true,
+      "meets_physical_traffic_budget": true,
+      "p95_active_fraction": 0.35403645833333314,
+      "physical_cold_traffic": {
+        "accounting": "fixed coordinate scans and candidate completion from the robust C policy plus token-adaptive selected-down cache lines, gain/down-norm scans, and metadata",
+        "bytes_per_token": {
+          "count": 256,
+          "maximum": 309401728.0,
+          "mean": 302551388.0,
+          "median": 302216832.0,
+          "minimum": 297904768.0,
+          "p95": 306664960.0
+        },
+        "fraction_of_dense_q4": {
+          "count": 256,
+          "maximum": 0.38856754758230455,
+          "mean": 0.3799644288114069,
+          "median": 0.3795442708333333,
+          "minimum": 0.37412889017489714,
+          "p95": 0.385130529835391
+        },
+        "passes_45_percent_mean": true
+      },
+      "selected_k": {
+        "count": 7680,
+        "maximum": 2938.0,
+        "mean": 1410.64765625,
+        "median": 1303.0,
+        "minimum": 346.0,
+        "p95": 2447.0999999999985
+      },
+      "target_attainment_rate": 0.9671875
+    }
+  ],
+  "artifact_sha256": "4fcf598af4346d5391ba428e32ba1629daae2768b73ab6bf872d3f9fb300ab55",
+  "caveat": "Candidate membership is practical DIP, but exact teacher coefficient values and their full-width normalization scale are used to isolate adaptive-K selection and local output error. Traffic is cache-line modeled rather than hardware measured. This does not validate candidate-only scale estimation, causal quality, or CPU latency.",
+  "configuration": {
+    "device": "cpu",
+    "energy_denominator": "sum_of_exact_utility_inside_practical_candidates",
+    "energy_targets": [
+      0.999,
+      0.9995,
+      0.9999,
+      0.99995,
+      0.99999,
+      1.0
+    ],
+    "maximum_fraction": 0.42505787037037035,
+    "maximum_k": 2938,
+    "mean_budget_fraction": 0.25,
+    "minimum_fraction": 0.05005787037037037,
+    "minimum_k": 346,
+    "stable_tie_break": "descending_utility_then_ascending_source_index",
+    "utility": "exact_candidate_coefficient_squared_times_down_column_l2"
+  },
+  "decision": "evaluate_adaptive_k_in_candidate_only_causal_path",
+  "elapsed_seconds": 48.7988063810044,
+  "experiment": "native_bitnet_dip_token_adaptive_k",
+  "milestone_2_status": "blocked",
+  "package": "/home/dean/repos/engram/work/native_bitnet/model.engram-bitnet",
+  "physical_layout": {
+    "fixed_candidate_policy": [
+      4302,
+      2737,
+      2902,
+      3694,
+      4629,
+      3534,
+      3287,
+      5359,
+      3301,
+      3596,
+      4083,
+      4034,
+      4493,
+      4353,
+      4388,
+      4784,
+      4245,
+      4289,
+      3934,
+      4306,
+      3493,
+      2974,
+      3150,
+      3063,
+      3136,
+      3298,
+      3499,
+      3671,
+      4028,
+      4521
+    ],
+    "layout": {
+      "base_record_cache_lines": 8,
+      "base_record_payload_bytes": 512,
+      "cache_line_bytes": 64,
+      "coordinate_cache_lines": 22,
+      "coordinate_payload_bytes": 1383,
+      "coordinate_row_padding_bytes": 25,
+      "coordinate_stream_bytes_per_projection": 3604480,
+      "coordinate_stride_bytes": 1408,
+      "down_norm_payload_bytes_per_layer": 13824,
+      "down_norm_stream_bytes_per_layer": 13824,
+      "down_norm_value_bytes": 2,
+      "hidden_size": 2560,
+      "index_directory_block_bytes": 960,
+      "index_directory_entry_bytes": 32,
+      "index_directory_payload_bytes": 960,
+      "index_header_block_bytes": 64,
+      "index_header_bytes": 64,
+      "index_layer_block_bytes": 7222848,
+      "index_layer_header_bytes": 64,
+      "index_layer_payload_bytes": 7222848,
+      "index_layer_tail_padding_bytes": 0,
+      "intermediate_size": 6912,
+      "layer_count": 30,
+      "trits_per_byte": 5
+    },
+    "selected_down_record_bytes": 512,
+    "serialization": {
+      "base_gate_up_bytes_per_layer": 7077888,
+      "base_record_artifact_bytes": 318924544,
+      "combined_fraction_of_dense_q4": 0.6726564107510288,
+      "combined_serialized_bytes": 535611008,
+      "coordinate_gate_up_payload_bytes_per_layer": 7080960,
+      "coordinate_gate_up_row_padding_bytes_per_layer": 128000,
+      "coordinate_index_bytes": 216686464,
+      "dense_q4_bytes": 796262400,
+      "duplication_reason": "coordinate-major rows make arbitrary top-input scans sequential; record-major rows make arbitrary candidate completion cache-line deterministic",
+      "gate_up_values_are_duplicated": true
+    }
+  },
+  "router_policy": {
+    "candidate_counts": [
+      4302,
+      2737,
+      2902,
+      3694,
+      4629,
+      3534,
+      3287,
+      5359,
+      3301,
+      3596,
+      4083,
+      4034,
+      4493,
+      4353,
+      4388,
+      4784,
+      4245,
+      4289,
+      3934,
+      4306,
+      3493,
+      2974,
+      3150,
+      3063,
+      3136,
+      3298,
+      3499,
+      3671,
+      4028,
+      4521
+    ],
+    "fixed_oracle_top_ks": [
+      1728,
+      1037,
+      1037,
+      2420,
+      2420,
+      2420,
+      2420,
+      1037,
+      1728,
+      1728,
+      1728,
+      1728,
+      1728,
+      2074,
+      1728,
+      2074,
+      1728,
+      1728,
+      1383,
+      1728,
+      1383,
+      1383,
+      1383,
+      1383,
+      1383,
+      1728,
+      1728,
+      1728,
+      1728,
+      2074
+    ],
+    "input_fraction": 0.75,
+    "path": "/home/dean/repos/engram/reports/native_bitnet_router_2026-07-26/dip_all_layers_q75_physical_robust.json",
+    "sha256": "1becc3bdf6f6935292a7ba819739a296409fb7effb9332d4cb6604fedfc85a40"
+  },
+  "scope": "validation_only_local_mlp_output_ceiling",
+  "selected_highest_energy_target_within_mean_budget": {
+    "captured_candidate_energy": {
+      "count": 7680,
+      "maximum": 1.0,
+      "mean": 0.999694019239571,
+      "median": 1.0,
+      "minimum": 0.9346611279224374,
+      "p95": 1.0
+    },
+    "energy_target": 1.0,
+    "layers": [
+      {
+        "candidate_count": 4302,
+        "layer": 0,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.07425907238588747,
+          "mean": 0.013311253322435667,
+          "median": 0.0016030879255918569,
+          "minimum": 0.0,
+          "p95": 0.047171177036551874
+        },
+        "maximum_k": 2938,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.3448418511284722,
+        "mean_k": 2383.546875,
+        "p95_k": 2938.0,
+        "target_attainment_rate": 0.59375
+      },
+      {
+        "candidate_count": 2737,
+        "layer": 1,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.005707678963091922,
+          "mean": 4.515182466864043e-05,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "maximum_k": 1354,
+        "maximum_k_clamp": 2737,
+        "mean_fraction": 0.12492540147569445,
+        "mean_k": 863.484375,
+        "p95_k": 1113.75,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 2902,
+        "layer": 2,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.11882767855561249,
+          "mean": 0.0032137531061640313,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0004866846693689945
+        },
+        "maximum_k": 2902,
+        "maximum_k_clamp": 2902,
+        "mean_fraction": 0.10565242060908565,
+        "mean_k": 730.26953125,
+        "p95_k": 1059.25,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 3694,
+        "layer": 3,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.2111716559829316,
+          "mean": 0.009167927815421311,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.06700787872404217
+        },
+        "maximum_k": 2938,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.15291397659866898,
+        "mean_k": 1056.94140625,
+        "p95_k": 2938.0,
+        "target_attainment_rate": 0.91796875
+      },
+      {
+        "candidate_count": 4629,
+        "layer": 4,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.14975337908794487,
+          "mean": 0.0073788408079964955,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.06779818147725712
+        },
+        "maximum_k": 2938,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.1693606906467014,
+        "mean_k": 1170.62109375,
+        "p95_k": 2938.0,
+        "target_attainment_rate": 0.921875
+      },
+      {
+        "candidate_count": 3534,
+        "layer": 5,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.20965238684972134,
+          "mean": 0.009939359866011695,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.07087699366082757
+        },
+        "maximum_k": 2938,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.18717221860532407,
+        "mean_k": 1293.734375,
+        "p95_k": 2938.0,
+        "target_attainment_rate": 0.91015625
+      },
+      {
+        "candidate_count": 3287,
+        "layer": 6,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.19674950586979742,
+          "mean": 0.008255451731057014,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0374639688754528
+        },
+        "maximum_k": 2938,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.15695755570023148,
+        "mean_k": 1084.890625,
+        "p95_k": 2938.0,
+        "target_attainment_rate": 0.91015625
+      },
+      {
+        "candidate_count": 5359,
+        "layer": 7,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.11754170478511917,
+          "mean": 0.0037558472706978375,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.002289286016161762
+        },
+        "maximum_k": 2938,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.14700939037181712,
+        "mean_k": 1016.12890625,
+        "p95_k": 1398.0,
+        "target_attainment_rate": 0.96875
+      },
+      {
+        "candidate_count": 3301,
+        "layer": 8,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.028273972907825882,
+          "mean": 0.0021294085995394755,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.021601444875551105
+        },
+        "maximum_k": 2938,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.20469156901041666,
+        "mean_k": 1414.828125,
+        "p95_k": 2938.0,
+        "target_attainment_rate": 0.91015625
+      },
+      {
+        "candidate_count": 3596,
+        "layer": 9,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.026338226542427647,
+          "mean": 0.0013059900083354846,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.017259706282038406
+        },
+        "maximum_k": 2938,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.23058347348813657,
+        "mean_k": 1593.79296875,
+        "p95_k": 2938.0,
+        "target_attainment_rate": 0.94140625
+      },
+      {
+        "candidate_count": 4083,
+        "layer": 10,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.0157396101511121,
+          "mean": 0.0007517423558788777,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.010967241178764143
+        },
+        "maximum_k": 2938,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.26956459327980326,
+        "mean_k": 1863.23046875,
+        "p95_k": 2938.0,
+        "target_attainment_rate": 0.94140625
+      },
+      {
+        "candidate_count": 4034,
+        "layer": 11,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.007319901116349092,
+          "mean": 0.0003235312865507269,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0030503314706062878
+        },
+        "maximum_k": 2562,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.28357668276186343,
+        "mean_k": 1960.08203125,
+        "p95_k": 2393.5,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 4493,
+        "layer": 12,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.0026117486825906642,
+          "mean": 1.0202143291369782e-05,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "maximum_k": 2520,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.2614921287254051,
+        "mean_k": 1807.43359375,
+        "p95_k": 2226.5,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 4353,
+        "layer": 13,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.008194868724334862,
+          "mean": 0.00032213044387741183,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.003430384368532516
+        },
+        "maximum_k": 2605,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.27736296477141203,
+        "mean_k": 1917.1328125,
+        "p95_k": 2492.75,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 4388,
+        "layer": 14,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.006789424754440736,
+          "mean": 0.0002696688477503638,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0023498541186549476
+        },
+        "maximum_k": 2682,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.29018260814525465,
+        "mean_k": 2005.7421875,
+        "p95_k": 2425.5,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 4784,
+        "layer": 15,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.015263792893498879,
+          "mean": 0.0003327062663171683,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0024413850607315204
+        },
+        "maximum_k": 2798,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.27083785445601855,
+        "mean_k": 1872.03125,
+        "p95_k": 2431.75,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 4245,
+        "layer": 16,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.009046895541571965,
+          "mean": 0.00025319102015792714,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0023738600365759044
+        },
+        "maximum_k": 2628,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.24850011754918983,
+        "mean_k": 1717.6328125,
+        "p95_k": 2223.5,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 4289,
+        "layer": 17,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.011134520626215857,
+          "mean": 0.00020186917809856002,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "maximum_k": 2443,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.20544829191984953,
+        "mean_k": 1420.05859375,
+        "p95_k": 1965.75,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 3934,
+        "layer": 18,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.006775163642988597,
+          "mean": 0.00010549842849362062,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "maximum_k": 2144,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.17562583640769677,
+        "mean_k": 1213.92578125,
+        "p95_k": 1768.75,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 4306,
+        "layer": 19,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.0027001882447047314,
+          "mean": 1.961291137126964e-05,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "maximum_k": 2037,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.17427628128616898,
+        "mean_k": 1204.59765625,
+        "p95_k": 1759.75,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 3493,
+        "layer": 20,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.0058908712027522315,
+          "mean": 2.3011215635750904e-05,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "maximum_k": 1885,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.1473716453269676,
+        "mean_k": 1018.6328125,
+        "p95_k": 1461.25,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 2974,
+        "layer": 21,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.009703085820771756,
+          "mean": 0.0002910894523710807,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0020582521256702455
+        },
+        "maximum_k": 1872,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.13793662742332177,
+        "mean_k": 953.41796875,
+        "p95_k": 1389.5,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 3150,
+        "layer": 22,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.006259008057428502,
+          "mean": 0.00011308076504564909,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "maximum_k": 1945,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.1563850685402199,
+        "mean_k": 1080.93359375,
+        "p95_k": 1516.0,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 3063,
+        "layer": 23,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.0015450959373759319,
+          "mean": 6.035531005374734e-06,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "maximum_k": 1681,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.14763839156539352,
+        "mean_k": 1020.4765625,
+        "p95_k": 1459.25,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 3136,
+        "layer": 24,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.003331168467013221,
+          "mean": 3.548566834444706e-05,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "maximum_k": 1685,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.1515723334418403,
+        "mean_k": 1047.66796875,
+        "p95_k": 1465.5,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 3298,
+        "layer": 25,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.003575772959361069,
+          "mean": 2.793290482016268e-05,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "maximum_k": 1915,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.17709746184172453,
+        "mean_k": 1224.09765625,
+        "p95_k": 1585.5,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 3499,
+        "layer": 26,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.0016610565664438935,
+          "mean": 6.488502212671459e-06,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "maximum_k": 2051,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.18578366880063657,
+        "mean_k": 1284.13671875,
+        "p95_k": 1671.75,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 3671,
+        "layer": 27,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.0035358832696563047,
+          "mean": 3.409238070475071e-05,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "maximum_k": 2177,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.20724656846788195,
+        "mean_k": 1432.48828125,
+        "p95_k": 2016.25,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 4028,
+        "layer": 28,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.0008301879314293935,
+          "mean": 3.2429216071460683e-06,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "maximum_k": 2247,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.24159749348958334,
+        "mean_k": 1669.921875,
+        "p95_k": 2120.0,
+        "target_attainment_rate": 1.0
+      },
+      {
+        "candidate_count": 4521,
+        "layer": 29,
+        "local_output_relative_l2": {
+          "count": 256,
+          "maximum": 0.0009557917773431856,
+          "mean": 3.7335616302468187e-06,
+          "median": 0.0,
+          "minimum": 0.0,
+          "p95": 0.0
+        },
+        "maximum_k": 2732,
+        "maximum_k_clamp": 2938,
+        "mean_fraction": 0.28899750886140047,
+        "mean_k": 1997.55078125,
+        "p95_k": 2489.25,
+        "target_attainment_rate": 1.0
+      }
+    ],
+    "local_output_cosine_similarity": {
+      "count": 7680,
+      "maximum": 1.0,
+      "mean": 0.9999519815143686,
+      "median": 1.0,
+      "minimum": 0.9912115152421602,
+      "p95": 1.0
+    },
+    "local_output_relative_l2": {
+      "count": 7680,
+      "maximum": 0.2111716559829316,
+      "mean": 0.002054577671249741,
+      "median": 0.0,
+      "minimum": 0.0,
+      "p95": 0.002804340235751896
+    },
+    "maximum_active_fraction": 0.42505787037037035,
+    "mean_active_fraction": 0.204086755823206,
+    "meets_mean_k_budget": true,
+    "meets_physical_traffic_budget": true,
+    "p95_active_fraction": 0.35403645833333314,
+    "physical_cold_traffic": {
+      "accounting": "fixed coordinate scans and candidate completion from the robust C policy plus token-adaptive selected-down cache lines, gain/down-norm scans, and metadata",
+      "bytes_per_token": {
+        "count": 256,
+        "maximum": 309401728.0,
+        "mean": 302551388.0,
+        "median": 302216832.0,
+        "minimum": 297904768.0,
+        "p95": 306664960.0
+      },
+      "fraction_of_dense_q4": {
+        "count": 256,
+        "maximum": 0.38856754758230455,
+        "mean": 0.3799644288114069,
+        "median": 0.3795442708333333,
+        "minimum": 0.37412889017489714,
+        "p95": 0.385130529835391
+      },
+      "passes_45_percent_mean": true
+    },
+    "selected_k": {
+      "count": 7680,
+      "maximum": 2938.0,
+      "mean": 1410.64765625,
+      "median": 1303.0,
+      "minimum": 346.0,
+      "p95": 2447.0999999999985
+    },
+    "target_attainment_rate": 0.9671875
+  },
+  "validation_trace": {
+    "causal_or_final_confirmation_corpus_used": false,
+    "dataset_hash": "073e2b648a5cf84a97697330384338b1193f148ff1eb3a3cc9ec4cf21d37f977",
+    "manifest_sha256": "bc9730300886f65611777a9ddccc9d2fa2daaf3bab3b873758beabdefca5adf6",
+    "path": "/home/dean/repos/engram/work/controller_distillation/bitnet_validation_16x16_b4",
+    "records": 256
+  }
+}

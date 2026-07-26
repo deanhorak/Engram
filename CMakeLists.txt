@@ -11,6 +11,7 @@ add_library(engram_kernels STATIC
   native/src/episodic.cpp
   native/src/npy.cpp
   native/src/native_bitnet.cpp
+  native/src/native_bitnet_dip.cpp
   native/src/native_bitnet_weights.cpp
   native/src/native_bitnet_token_runtime.cpp
   native/src/native_shell_c.cpp
@@ -65,6 +66,19 @@ target_compile_options(engram_attention PRIVATE -Wall -Wextra -Wpedantic)
 set_target_properties(engram_attention PROPERTIES OUTPUT_NAME engram_attention)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_link_options(engram_attention PRIVATE -static-libstdc++ -static-libgcc)
+endif()
+
+add_library(engram_bitnet_dip SHARED native/src/native_bitnet_dip_c.cpp)
+target_link_libraries(engram_bitnet_dip PRIVATE engram_kernels)
+target_compile_features(engram_bitnet_dip PRIVATE cxx_std_20)
+target_compile_options(engram_bitnet_dip PRIVATE -Wall -Wextra -Wpedantic)
+set_target_properties(engram_bitnet_dip PROPERTIES
+  OUTPUT_NAME engram_bitnet_dip
+)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_link_options(engram_bitnet_dip PRIVATE
+    -static-libstdc++ -static-libgcc
+  )
 endif()
 
 add_executable(engram-native-info native/src/info.cpp)

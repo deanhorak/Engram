@@ -1,12 +1,13 @@
 # Architecture
 
 For the current implementation/evidence boundary, see
-[Project status](status.md). No representation has yet passed the original
-dense-Llama causal-quality and 45% physical cold-traffic limits together. The
-separate native-BitNet track now passes exact reconstruction, direct packed
-CPU execution, frozen causal confirmation, and source-independent package
-generation. This is a distinct low-bit-native source path, not a dense-model
-conversion result.
+[Project status](status.md). No representation has passed the original
+dense-Llama conversion gate. The separate native-BitNet track now has a
+practical CPU-only DIP route that passes the complete qualifying development
+quality, recall, activity, and modeled-traffic gate. Its policy is frozen for
+one sealed final confirmation, so Milestone 2 is pending rather than passed.
+This is a distinct low-bit-native source path, not a dense-model conversion
+result.
 
 Engram's target runtime combines a shared recurrent controller, fixed sparse semantic
 memory derived from SwiGLU records, hybrid local/recurrent/retrieval episodic memory, an
@@ -61,8 +62,27 @@ gate/up/gain/down streams follow the computation phases. Four base pointers
 retain O(1) channel addressing while avoiding cache-line rereads around the
 shared normalization. The direct CPU kernel now executes from those mapped
 streams with one scheduled cold read of each serialized line and no dense
-weight materialization. Future sparse execution would additionally need an
-exact or validated estimate of the shared RMS denominator.
+weight materialization. The new sparse DIP kernel additionally uses a
+source-bound coordinate-major gate/up index and estimates the shared RMS
+denominator without dense gate/up completion.
+
+For every live BF16 input it preserves native Q8 quantization, keeps the
+largest 1,920 of 2,560 coordinates, scans the corresponding packed ternary
+gate/up coordinate rows, exactly completes a frozen per-layer candidate set,
+and computes exact candidate utility. It then selects all nonzero candidate
+utilities, clipped to a minimum of 346 and a per-layer maximum, before reading
+only those down rows. Most layers estimate missing squared energy by scaling
+the proxy tail with the exact/proxy candidate-energy ratio. Layer 9 instead
+uses a corrected-proxy estimate and an eight-record top-proxy-raw-square audit
+inside its fixed candidate union.
+
+The v2 index authenticates q, per-layer candidate and maximum-K counts, RMS
+policy, every payload, and the SHA-256 of the base record artifact. The native
+loader fails closed on a policy, source, checksum, shape, alignment, padding,
+or encoding mismatch. A debug path returns coordinate, candidate, and selected
+record identities outside timing; an evaluation-only dense teacher path
+computes fixed top-K membership for recall and is not called by sparse
+inference.
 
 ## Semantic-memory prototype
 
@@ -83,10 +103,11 @@ Full-corpus refits use all 1,112 available calibration states per layer. Their m
 do not close either the 95% recall threshold or the much larger causal-quality gap, so they reject
 these router configurations rather than every possible sparse representation.
 
-The first realizable selector algorithm to pass is inspired by predictor-free Dynamic Input
-Pruning. The published method supplies dynamic top-magnitude input pruning and partial scoring;
-candidate-only exact completion and contribution-norm reranking are Engram extensions. For each
-state, it selects the `q` largest absolute hidden coordinates,
+The first realizable selector algorithm in the earlier dense-SmolLM study was
+inspired by predictor-free Dynamic Input Pruning. The published method
+supplies dynamic top-magnitude input pruning and partial scoring;
+candidate-only exact completion and contribution-norm reranking are Engram
+extensions. For each state, it selects the `q` largest absolute hidden coordinates,
 reads only those gate/up columns for all `I` records, and computes a partial SwiGLU contribution
 score. It keeps `C` candidates, reads their omitted gate/up coordinates to recover exact
 activations, exactly reranks to `K`, and reads only those `K` down-projection columns. Its projected
@@ -101,9 +122,11 @@ a sequence-disjoint confirmation corpus, with 98.97% confirmation oracle-set rec
 to 76.39% of dense MLP scalar reads. A separate version-2 experimental package stores gate/up
 weights coordinate-major and down weights record-major; Python and native candidate-only readers
 have exact selection parity. Cache-line amplification raises the estimate to 83.33%. The checked
-optimized float32 kernel cycles all 30 layers but is still 15.4% slower than dense, so it remains
-outside the compiled runtime. This isolates the current blocker as systems efficiency rather than
-selector quality.
+optimized float32 kernel cycles all 30 layers but is still 15.4% slower than
+dense, so it remains outside the compiled runtime. This is historical
+dense-source evidence. The native-BitNet DIP design above uses a different
+low-bit artifact, adaptive K, and RMS estimator and now passes its complete
+development gate.
 
 ## Episodic-memory prototype
 
@@ -176,15 +199,20 @@ the exact design is stopped before 3M. Another architecture must change the
 learned representation or its pretraining origin rather than append another
 small post-hoc correction to this artifact.
 
-The semantic and vocabulary proxies use IVF in both runtimes, but still scan every coarse
-centroid and their tiny-fixture centroid traffic is unfavorable. Learned semantic routing remains
-blocked: full-corpus, corpus-scaled regularization, and candidate-budget sweeps did not close its
-gap, and the rank-16 arm fails causal quality while reading 95.8% of record keys. Predictor-free
-DIP changes that quality decision, but requires a cache-aware packed layout, native sparse kernel,
-measured DRAM traffic, and replication beyond one small model before compilation. Its 1.31x
-projected reduction is also far from the long-term 10x systems target. Global and failure-region
-low-rank correction capsules have been fitted, but every tested layout worsens held-out local MLP
-error and is rejected before causal integration.
+The semantic and vocabulary proxies use IVF in both runtimes, but still scan
+every coarse centroid and their tiny-fixture centroid traffic is unfavorable.
+The dense-SmolLM learned-routing branch remains blocked: full-corpus,
+corpus-scaled regularization, and candidate-budget sweeps did not close its
+gap, and the rank-16 arm fails causal quality while reading 95.8% of record
+keys. Its older predictor-free DIP arm passed quality but failed physical
+traffic and latency. The distinct native-BitNet DIP route now has the
+cache-aware packed index, native sparse kernel, and live-BF16 all-layer
+development evidence that were previously missing. It is frozen pending the
+sealed final. Hardware DRAM measurement and replication beyond this model
+remain open, and its 1.1565x-dense development timing is not a speedup.
+Global and failure-region low-rank correction capsules have been fitted, but
+every tested dense-source layout worsens held-out local MLP error and is
+rejected before causal integration.
 The first sparse-teacher trainer keeps two model copies: an immutable dense teacher and a student
 whose attention, normalization, embeddings, and original MLP tensors are frozen. Trainable
 rank-16 router factors receive oracle-membership BCE supervision; rank-8 sparse down adapters
@@ -264,7 +292,8 @@ Native-BitNet now also has a bounded streaming operator: exact local context,
 fixed attention sinks, and an online cumulative-attention heavy-hitter cache.
 Its frozen trained-model confirmation passes without consulting evicted keys.
 Hardware DRAM measurement and controller distillation remain open. The DIP
-quality pass still needs systems replication.
+development pass still needs its one sealed final confirmation and systems
+replication.
 For native BitNet, the memory-mapped CPU kernel now reads the independently
 fixed-stride gate/up/gain/down base-3 streams directly. The 1,538-byte figure
 is a logical per-channel payload, not a contiguous physical record. The

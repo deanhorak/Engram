@@ -4,6 +4,7 @@ from .native_bitnet_kernel import (
     NativeBitNetCPUKernel,
     evaluate_native_bitnet_kernel_confirmation,
 )
+from .native_bitnet_dip_kernel import NativeBitNetDIPCPUKernel
 from .native_attention_benchmark import benchmark_native_streaming_attention
 from .router_sweep import evaluate_rank_router_regularization_sweep
 from .dip_sweep import evaluate_dip_exact_completion_sweep
@@ -32,6 +33,7 @@ __all__ = [
     "evaluate_mlp_interventions",
     "evaluate_native_bitnet_parity",
     "NativeBitNetCPUKernel",
+    "NativeBitNetDIPCPUKernel",
     "evaluate_native_bitnet_kernel_confirmation",
     "analyze_native_bitnet_layer_oracle",
     "evaluate_native_bitnet_oracle",

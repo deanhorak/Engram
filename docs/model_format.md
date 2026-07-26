@@ -56,7 +56,7 @@ An `.engram` package is a model worker, not a system-agent snapshot. It does not
 goal graphs, durable user memory, tool credentials, worker registries, or Cognitive Executive
 policy.
 
-The separate experimental DIP format defaults to version 2. Each layer stores float32
+The older dense-SmolLM experimental DIP format defaults to version 2. Each layer stores float32
 `gate_coordinates.npy` and `up_coordinates.npy` as `[hidden,records]` so selected input
 coordinates are sequential scans, `down_rows.npy` as `[records,hidden]`, precomputed
 `value_norms.npy`, and a native-readable `uint32[4]` `config.npy`. `metadata.json` checksums every
@@ -127,6 +127,42 @@ an unexpected artifact digest, and any `.mlp.` tensor that crosses into
 `non_mlp.safetensors`. Validation confines paths to the package, verifies all
 checksums, reloads the packed MLP structure, and rechecks that tensor boundary.
 The checked package contains 332 non-MLP tensors and no source MLP tensor.
+
+## Native-BitNet DIP coordinate index
+
+Practical native-BitNet routing adds a companion
+`engram-native-bitnet-dip-index` version-2 binary. It does not replace the
+318,924,544-byte base record artifact. Instead, it duplicates gate and up
+weights in coordinate-major packed-base-3 order so the selected input
+coordinates can be streamed across all 6,912 records, and stores the
+down-column nonzero-count proxy needed for candidate utility.
+
+The global 128-byte header records the version, endian marker, dimensions,
+cache-line size, encodings, directory layout, and SHA-256 of the exact base
+record artifact. Each 128-byte layer header plus directory entry authenticates
+the input-coordinate count, candidate count, minimum and maximum adaptive K,
+energy target, RMS estimator, audit strategy/count, payload offsets, and a
+policy-plus-payload SHA-256. Gate/up coordinate rows use a 1,408-byte stride:
+the canonical base-3 payload is padded to complete 64-byte lines. Load rejects
+noncanonical trits or tails, nonzero padding, invalid offsets, inconsistent
+policy bounds, unsupported RMS modes, checksum failure, and a base-artifact
+hash mismatch.
+
+The frozen 30-layer index is 216,688,448 bytes. Together with the base records,
+the semantic MLP storage is 535,612,992 bytes, or 67.2659% of the dense-Q4
+reference. That stored-size fraction must not be confused with the per-token
+modeled cold-traffic result of 40.9639%: the coordinate layout duplicates data
+to make sparse access possible, while one token touches only its selected
+coordinate, completion, gain/norm, and down lines.
+
+Version 2 embeds all effective policy fields. Every layer uses `q=1920`,
+`minK=346`, and energy target 1.0; C and Kmax are per-layer. Layers 0–8 and
+10–29 use candidate-ratio RMS with no audit. Layer 9 uses corrected-proxy RMS
+and an eight-record top-proxy-raw-square audit inside its fixed candidate
+union. The [frozen manifest](../reports/native_bitnet_m2_2026-07-26/frozen_dip_policy.json)
+binds this index, base artifact, native libraries, package/tokenizer, protocol,
+development report, and parity report. It authorizes one sealed final run and
+does not claim a Milestone 2 pass.
 
 Each compiled semantic layer contains `quantized/ivf/centroids.npy` (`float32` joint gate/up
 centroids), `posting_offsets.npy` (`uint32` CSR offsets), and `posting_indices.npy` (`uint32`
