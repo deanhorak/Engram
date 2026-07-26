@@ -406,6 +406,17 @@ safetensors into a Transformers-shaped holder and drives per-token generation;
 moving package loading and generation control into the native runtime is the
 next Milestone 6 boundary.
 
+Native package loading has now advanced past its largest storage risk. A strict
+read-only safetensors mapper validates the complete header, dtype/shape,
+contiguous offsets, payload length, and typed views. It maps the real
+780,054,616-byte non-MLP file with all 332 tensors. `NativeBitNetWeights` binds
+the 128,256x2,560 tied embedding, final and per-layer norm vectors, and all 120
+packed Q/K/V/O projections. The projection kernel now supports explicit
+lifetime-bound mapped registration, so the complete 30-layer binding reports
+zero copied projection bytes. The next loader step is to construct attention
+caches/stage descriptors plus the MLP/controller handles and expose one native
+token-step runtime.
+
 The low-bit-native hypothesis has passed source validation, exact
 reconstruction, the unchanged MLP byte limit, direct CPU execution, frozen
 causal confirmation, source-independent package compilation, and exact

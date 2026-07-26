@@ -26,6 +26,11 @@ class TernaryProjectionKernel {
   std::size_t add(std::span<const std::uint8_t> packed,
                   std::size_t input_features, std::size_t output_features,
                   float weight_scale);
+  // Register read-only mapped storage without copying. The caller must keep
+  // the backing mapping alive until this kernel is destroyed.
+  std::size_t add_mapped(std::span<const std::uint8_t> packed,
+                         std::size_t input_features,
+                         std::size_t output_features, float weight_scale);
   [[nodiscard]] std::size_t input_features(std::size_t projection) const;
   [[nodiscard]] std::size_t output_features(std::size_t projection) const;
   void forward_bf16(std::size_t projection,

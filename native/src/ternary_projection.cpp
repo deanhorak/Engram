@@ -23,10 +23,16 @@ float bf16_round(float value) noexcept {
   return bf16_to_float(float_to_bf16(value));
 }
 struct Matrix {
-  std::vector<std::uint8_t> packed;
+  std::vector<std::uint8_t> owned;
+  std::span<const std::uint8_t> mapped;
   std::size_t input{};
   std::size_t output{};
   float scale{};
+
+  [[nodiscard]] std::span<const std::uint8_t> packed() const {
+    return owned.empty() ? mapped
+                         : std::span<const std::uint8_t>(owned);
+  }
 };
 }  // namespace
 
@@ -37,8 +43,8 @@ class TernaryProjectionKernel::Impl {
       throw std::invalid_argument("ternary projection thread count is invalid");
   }
 
-  std::size_t add(std::span<const std::uint8_t> packed, std::size_t input,
-                  std::size_t output, float scale) {
+  void validate(std::span<const std::uint8_t> packed, std::size_t input,
+                std::size_t output, float scale) const {
     if (input == 0 || output == 0 || output % 4 != 0 ||
         packed.size() != (output / 4) * input || !std::isfinite(scale))
       throw std::invalid_argument("ternary projection matrix is invalid");
@@ -47,9 +53,29 @@ class TernaryProjectionKernel::Impl {
         if (((byte >> shift) & 3U) == 3U)
           throw std::invalid_argument("ternary projection code 3 is invalid");
     }
-    matrices_.push_back(
-        Matrix{std::vector<std::uint8_t>(packed.begin(), packed.end()), input,
-               output, scale});
+  }
+  std::size_t add(std::span<const std::uint8_t> packed, std::size_t input,
+                  std::size_t output, float scale) {
+    validate(packed, input, output, scale);
+    matrices_.push_back(Matrix{
+        .owned = std::vector<std::uint8_t>(packed.begin(), packed.end()),
+        .mapped = {},
+        .input = input,
+        .output = output,
+        .scale = scale,
+    });
+    return matrices_.size() - 1;
+  }
+  std::size_t add_mapped(std::span<const std::uint8_t> packed,
+                         std::size_t input, std::size_t output, float scale) {
+    validate(packed, input, output, scale);
+    matrices_.push_back(Matrix{
+        .owned = {},
+        .mapped = packed,
+        .input = input,
+        .output = output,
+        .scale = scale,
+    });
     return matrices_.size() - 1;
   }
 
@@ -88,7 +114,7 @@ class TernaryProjectionKernel::Impl {
                         (packed_row + digit * packed_rows) * rows,
                     rows, 0.0F);
       const std::uint8_t* weights =
-          matrix.packed.data() + packed_row * matrix.input;
+          matrix.packed().data() + packed_row * matrix.input;
       for (std::size_t coordinate = 0; coordinate < matrix.input; ++coordinate) {
         const float* values = quantized_.data() + coordinate * rows;
         const std::uint8_t byte = weights[coordinate];
@@ -114,7 +140,7 @@ class TernaryProjectionKernel::Impl {
       metrics->elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
                                 std::chrono::steady_clock::now() - started)
                                 .count();
-      metrics->packed_weight_bytes = matrix.packed.size();
+      metrics->packed_weight_bytes = matrix.packed().size();
       metrics->scratch_bytes =
           (quantized_.size() + accumulator_.size()) * sizeof(float);
       metrics->rows = rows;
@@ -145,6 +171,11 @@ std::size_t TernaryProjectionKernel::add(std::span<const std::uint8_t> packed,
                                          std::size_t input,
                                          std::size_t output, float scale) {
   return impl_->add(packed, input, output, scale);
+}
+std::size_t TernaryProjectionKernel::add_mapped(
+    std::span<const std::uint8_t> packed, std::size_t input,
+    std::size_t output, float scale) {
+  return impl_->add_mapped(packed, input, output, scale);
 }
 std::size_t TernaryProjectionKernel::input_features(
     std::size_t projection) const {

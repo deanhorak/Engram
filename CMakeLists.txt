@@ -11,11 +11,13 @@ add_library(engram_kernels STATIC
   native/src/episodic.cpp
   native/src/npy.cpp
   native/src/native_bitnet.cpp
+  native/src/native_bitnet_weights.cpp
   native/src/native_shell_c.cpp
   native/src/native_stage_c.cpp
   native/src/operator_residual_c.cpp
   native/src/package.cpp
   native/src/runtime.cpp
+  native/src/safetensors.cpp
   native/src/semantic.cpp
   native/src/semantic_ivf.cpp
   native/src/semantic_quantized.cpp
@@ -76,6 +78,14 @@ add_executable(engram-inspect native/src/inspect.cpp)
 target_link_libraries(engram-inspect PRIVATE engram_kernels)
 target_compile_features(engram-inspect PRIVATE cxx_std_20)
 
+add_executable(engram-safetensors-info native/src/safetensors_info.cpp)
+target_link_libraries(engram-safetensors-info PRIVATE engram_kernels)
+target_compile_features(engram-safetensors-info PRIVATE cxx_std_20)
+
+add_executable(engram-bitnet-weights-info native/src/bitnet_weights_info.cpp)
+target_link_libraries(engram-bitnet-weights-info PRIVATE engram_kernels)
+target_compile_features(engram-bitnet-weights-info PRIVATE cxx_std_20)
+
 add_executable(engram-bench native/src/bench.cpp)
 target_link_libraries(engram-bench PRIVATE engram_kernels)
 target_compile_features(engram-bench PRIVATE cxx_std_20)
@@ -90,7 +100,7 @@ if(ENGRAM_BUILD_TESTS)
   target_link_libraries(engram_native_tests PRIVATE engram_kernels)
   add_test(NAME engram_native_tests COMMAND engram_native_tests)
 
-  foreach(test_name IN ITEMS controller dip episodic native_stage npy package semantic semantic_ivf semantic_quantized streaming_attention thread_pool transition_cache vector_kernels vocabulary vocabulary_ivf)
+  foreach(test_name IN ITEMS controller dip episodic native_stage npy package safetensors semantic semantic_ivf semantic_quantized streaming_attention thread_pool transition_cache vector_kernels vocabulary vocabulary_ivf)
     add_executable(engram_native_${test_name}_tests native/tests/test_${test_name}.cpp)
     target_link_libraries(engram_native_${test_name}_tests PRIVATE engram_kernels)
     add_test(NAME engram_native_${test_name}_tests COMMAND engram_native_${test_name}_tests)

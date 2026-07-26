@@ -1191,3 +1191,9 @@
   87.5% exact prompts, correct cache positions, and zero decoder-layer calls.
   Milestone 4 orchestration is closed; native package loading and per-token
   generation control are the next Milestone 6 boundary.
+- Added a strict mmap safetensors reader and native BitNet non-MLP weight
+  binder. The real 780,054,616-byte file validates at 332 tensors; the binder
+  resolves 30 layers, a 128,256x2,560 tied embedding, every norm vector, and
+  all 120 packed attention projections. Mapped projection registration avoids
+  the previous approximately 120 MB copy and reports zero copied projection
+  bytes.
