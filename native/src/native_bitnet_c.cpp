@@ -121,6 +121,54 @@ int engram_bitnet_forward_bf16(
   }
 }
 
+int engram_bitnet_forward_oracle_bf16(
+    void* handle, const std::size_t layer, const std::uint16_t* input,
+    const std::size_t rows, const std::size_t top_k, std::uint16_t* output,
+    engram_bitnet_metrics* const metrics, char* error,
+    const std::size_t error_capacity) {
+  clear_error(error, error_capacity);
+  try {
+    auto* kernel = static_cast<engram::NativeBitNetKernel*>(handle);
+    if (kernel == nullptr || input == nullptr || output == nullptr ||
+        top_k == 0 || top_k > kernel->intermediate_size()) {
+      throw std::invalid_argument(
+          "native BitNet oracle forward received invalid storage or top-K");
+    }
+    if (rows == 0 ||
+        rows > std::numeric_limits<std::size_t>::max() /
+                   kernel->hidden_size()) {
+      throw std::invalid_argument(
+          "native BitNet oracle forward dimensions overflow");
+    }
+    const std::size_t elements = rows * kernel->hidden_size();
+    engram::NativeBitNetMetrics native_metrics;
+    kernel->forward_oracle_bf16(
+        layer, std::span<const std::uint16_t>(input, elements), rows, top_k,
+        std::span<std::uint16_t>(output, elements),
+        metrics == nullptr ? nullptr : &native_metrics);
+    if (metrics != nullptr) {
+      metrics->elapsed_ns = native_metrics.elapsed_ns;
+      metrics->gate_up_stream_bytes = native_metrics.gate_up_stream_bytes;
+      metrics->norm_stream_bytes = native_metrics.norm_stream_bytes;
+      metrics->down_stream_bytes = native_metrics.down_stream_bytes;
+      metrics->layer_metadata_bytes = native_metrics.layer_metadata_bytes;
+      metrics->scheduled_cache_line_bytes =
+          native_metrics.scheduled_cache_line_bytes;
+      metrics->scratch_bytes = native_metrics.scratch_bytes;
+      metrics->rows = native_metrics.rows;
+      metrics->threads = native_metrics.threads;
+    }
+    return 0;
+  } catch (const std::exception& exception) {
+    write_error(error, error_capacity, exception.what());
+    return 1;
+  } catch (...) {
+    write_error(error, error_capacity,
+                "unknown native BitNet oracle forward failure");
+    return 1;
+  }
+}
+
 int engram_bitnet_stage_semantic_bf16(
     void* handle, void* stage_handle, const std::size_t layer,
     const std::uint16_t* norm_weight, const float norm_epsilon,

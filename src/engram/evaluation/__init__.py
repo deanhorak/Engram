@@ -33,6 +33,10 @@ __all__ = [
     "evaluate_native_bitnet_parity",
     "NativeBitNetCPUKernel",
     "evaluate_native_bitnet_kernel_confirmation",
+    "analyze_native_bitnet_layer_oracle",
+    "evaluate_native_bitnet_oracle",
+    "evaluate_native_bitnet_oracle_causal",
+    "evaluate_native_bitnet_oracle_layer_sweep",
     "benchmark_native_streaming_attention",
     "evaluate_native_bitnet_attention_substitution",
     "evaluate_native_bitnet_controller_substitution",
@@ -77,4 +81,13 @@ def __getattr__(name):
         )
 
         return evaluate_native_bitnet_controller_generation
+    if name in {
+        "analyze_native_bitnet_layer_oracle",
+        "evaluate_native_bitnet_oracle",
+        "evaluate_native_bitnet_oracle_causal",
+        "evaluate_native_bitnet_oracle_layer_sweep",
+    }:
+        from . import native_bitnet_oracle
+
+        return getattr(native_bitnet_oracle, name)
     raise AttributeError(name)

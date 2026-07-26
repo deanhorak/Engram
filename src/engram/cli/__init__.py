@@ -21,6 +21,11 @@ from engram.evaluation.native_bitnet_parity import (
 from engram.evaluation.native_bitnet_kernel import (
     evaluate_native_bitnet_kernel_confirmation,
 )
+from engram.evaluation.native_bitnet_oracle import (
+    evaluate_native_bitnet_oracle,
+    evaluate_native_bitnet_oracle_causal,
+    evaluate_native_bitnet_oracle_layer_sweep,
+)
 from engram.evaluation.native_bitnet_attention import (
     evaluate_native_bitnet_attention_substitution,
 )
@@ -209,6 +214,81 @@ def _parser() -> argparse.ArgumentParser:
         default=(0, 14, 29),
     )
     bitnet_kernel.add_argument("--parity-states", type=int, default=2)
+
+    bitnet_oracle = commands.add_parser(
+        "analyze-native-bitnet-oracle",
+        help=(
+            "measure the trained BitNet teacher's exact additive-record "
+            "concentration ceiling"
+        ),
+    )
+    bitnet_oracle.add_argument("--model", required=True, type=Path)
+    bitnet_oracle.add_argument("--dataset", required=True, type=Path)
+    bitnet_oracle.add_argument("--out", required=True, type=Path)
+    bitnet_oracle.add_argument(
+        "--layers",
+        nargs="+",
+        type=int,
+        default=(0, 14, 29),
+    )
+    bitnet_oracle.add_argument("--samples", type=int, default=2)
+    bitnet_oracle.add_argument("--max-tokens", type=int, default=8)
+    bitnet_oracle.add_argument("--record-offset", type=int, default=0)
+    bitnet_oracle.add_argument(
+        "--fractions",
+        nargs="+",
+        type=float,
+        default=(0.05, 0.1, 0.15, 0.175, 0.25, 0.5, 1.0),
+    )
+    bitnet_oracle.add_argument("--library", type=Path)
+    bitnet_oracle.add_argument("--threads", type=int)
+
+    bitnet_oracle_causal = commands.add_parser(
+        "evaluate-native-bitnet-oracle-causal",
+        help=(
+            "substitute exact top-record oracle reads into every trained "
+            "BitNet MLP and measure causal quality"
+        ),
+    )
+    bitnet_oracle_causal.add_argument("--model", required=True, type=Path)
+    bitnet_oracle_causal.add_argument("--dataset", required=True, type=Path)
+    bitnet_oracle_causal.add_argument("--out", required=True, type=Path)
+    bitnet_oracle_causal.add_argument("--fraction", type=float, default=0.25)
+    bitnet_oracle_causal.add_argument(
+        "--layer-fractions",
+        nargs="+",
+        type=float,
+        help="optional one active-record fraction for each transformer layer",
+    )
+    bitnet_oracle_causal.add_argument("--sequence-count", type=int, default=1)
+    bitnet_oracle_causal.add_argument(
+        "--predictions-per-sequence",
+        type=int,
+        default=8,
+    )
+    bitnet_oracle_causal.add_argument("--record-offset", type=int, default=0)
+    bitnet_oracle_causal.add_argument("--library", type=Path)
+    bitnet_oracle_causal.add_argument("--threads", type=int)
+
+    bitnet_oracle_sweep = commands.add_parser(
+        "sweep-native-bitnet-oracle-layers",
+        help="fit a layer-adaptive exact-record allocation under a mean budget",
+    )
+    bitnet_oracle_sweep.add_argument("--model", required=True, type=Path)
+    bitnet_oracle_sweep.add_argument("--dataset", required=True, type=Path)
+    bitnet_oracle_sweep.add_argument("--out", required=True, type=Path)
+    bitnet_oracle_sweep.add_argument(
+        "--fractions",
+        nargs="+",
+        type=float,
+        default=(0.15, 0.20, 0.25, 0.30, 0.35),
+    )
+    bitnet_oracle_sweep.add_argument("--mean-budget", type=float, default=0.25)
+    bitnet_oracle_sweep.add_argument("--sequence-count", type=int, default=2)
+    bitnet_oracle_sweep.add_argument("--tokens-per-sequence", type=int, default=16)
+    bitnet_oracle_sweep.add_argument("--record-offset", type=int, default=0)
+    bitnet_oracle_sweep.add_argument("--library", type=Path)
+    bitnet_oracle_sweep.add_argument("--threads", type=int)
 
     fixture = commands.add_parser(
         "create-fixture", help="create deterministic random Llama-shaped weights"
@@ -1496,6 +1576,50 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0 if result.get("gate_passed") else 2
+    elif args.command == "analyze-native-bitnet-oracle":
+        result = evaluate_native_bitnet_oracle(
+            args.model,
+            args.dataset,
+            out=args.out,
+            layers=args.layers,
+            samples=args.samples,
+            max_tokens=args.max_tokens,
+            record_offset=args.record_offset,
+            fractions=args.fractions,
+            library=args.library,
+            threads=args.threads,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["progression_screen"]["passed"] else 2
+    elif args.command == "evaluate-native-bitnet-oracle-causal":
+        result = evaluate_native_bitnet_oracle_causal(
+            args.model,
+            args.dataset,
+            out=args.out,
+            fraction=args.fraction,
+            layer_fractions=args.layer_fractions,
+            sequence_count=args.sequence_count,
+            predictions_per_sequence=args.predictions_per_sequence,
+            record_offset=args.record_offset,
+            library=args.library,
+            threads=args.threads,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["quality_passed"] else 2
+    elif args.command == "sweep-native-bitnet-oracle-layers":
+        result = evaluate_native_bitnet_oracle_layer_sweep(
+            args.model,
+            args.dataset,
+            out=args.out,
+            fractions=args.fractions,
+            mean_budget=args.mean_budget,
+            sequence_count=args.sequence_count,
+            tokens_per_sequence=args.tokens_per_sequence,
+            record_offset=args.record_offset,
+            library=args.library,
+            threads=args.threads,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
     elif args.command == "create-fixture":
         print(create_tiny_fixture(args.out, seed=args.seed))
     elif args.command == "trace":

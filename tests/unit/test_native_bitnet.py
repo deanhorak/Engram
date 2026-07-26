@@ -531,3 +531,45 @@ def test_direct_cpu_phase_stream_kernel_matches_dense_artifact_oracle(tmp_path):
             == (artifact.layer_block_bytes[0])
         )
         assert kernel.calls[0]["rows"] == 2
+
+
+def test_direct_cpu_oracle_kernel_is_exact_at_full_width_and_reduces_down_reads(
+    tmp_path,
+):
+    torch = pytest.importorskip("torch")
+    library = Path("build/libengram_bitnet.so").resolve()
+    if not library.is_file():
+        pytest.skip("native BitNet shared library has not been built")
+    artifact_path = tmp_path / "native.bin"
+    save_native_bitnet_artifact(
+        artifact_path,
+        _layers(count=1),
+        rms_norm_eps=1e-5,
+    )
+    artifact = load_native_bitnet_artifact(artifact_path)
+    states = torch.tensor(
+        [[[0.25, -0.5, 0.75, 0.1, -0.2, 0.4, -0.1, 0.05]]],
+        dtype=torch.bfloat16,
+    )
+
+    with NativeBitNetCPUKernel(
+        artifact_path,
+        threads=2,
+        library=library,
+        expected_sha256=artifact.payload_sha256,
+    ) as kernel:
+        expected = kernel.forward(0, states)
+        full_oracle = kernel.forward_oracle(
+            0,
+            states,
+            top_k=artifact.intermediate_size,
+        )
+        sparse_oracle = kernel.forward_oracle(0, states, top_k=3)
+
+        assert torch.equal(expected, full_oracle)
+        assert sparse_oracle.shape == expected.shape
+        assert kernel.calls[-1]["oracle_top_k"] == 3
+        assert (
+            kernel.calls[-1]["down_stream_bytes"]
+            < kernel.calls[0]["down_stream_bytes"]
+        )

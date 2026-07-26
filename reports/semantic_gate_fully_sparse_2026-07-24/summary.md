@@ -2,8 +2,11 @@
 
 Date: **2026-07-24**
 
-Decision: **stop scaling this dense-source Q-Sparse retrofit and use the
-already qualifying native-BitNet CPU track as the Milestone 2 substrate.**
+Decision at the time: stop scaling this dense-source Q-Sparse retrofit and use
+native BitNet as the next CPU substrate.
+
+**2026-07-26 correction:** native BitNet's lossless full-record kernel is not a
+Milestone 2 pass because it performs no practical semantic-memory routing.
 
 CUDA accelerated training only. Every saved candidate used device-neutral
 tensors, independently reloaded and executed its hard sparse MLP math on CPU,
@@ -50,9 +53,9 @@ validates the CPU-only artifact boundary, but does not pass the dense-source
 semantic gate. Q-Sparse's published continuation evidence uses a dramatically
 larger token budget; another short sweep would not be informative.
 
-Engram already has a qualifying alternative: its losslessly repacked,
-memory-mapped native-BitNet phase-stream kernel passes the frozen Milestone 2
-gate at KL 0.00371, 96.09% top-1 agreement, and 40.0527% exact scheduled cold
-bytes. Development should now use that CPU-native model as the teacher and
-runtime substrate for shared-controller distillation. CUDA may train the new
-controller; packaged inference must remain CPU-only.
+Engram has a strong systems substrate: its losslessly repacked, memory-mapped
+native-BitNet phase-stream kernel reaches KL 0.00371, 96.09% top-1 agreement,
+and 40.0527% exact scheduled cold bytes. Because it executes every record, it
+does not satisfy practical routing Gate 2. It can be used as the teacher and
+CPU substrate for renewed semantic-memory work. CUDA may train offline
+components; packaged inference must remain CPU-only.

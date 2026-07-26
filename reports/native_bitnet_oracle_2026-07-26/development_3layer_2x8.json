@@ -1,0 +1,752 @@
+{
+  "artifact_sha256": "4fcf598af4346d5391ba428e32ba1629daae2768b73ab6bf872d3f9fb300ab55",
+  "caveat": "This oracle uses exact teacher coefficients and therefore cannot serve as a practical router or pass Milestone 2 by itself.",
+  "dataset": {
+    "maximum_tokens_per_sample": 8,
+    "path": "/home/dean/repos/engram/tests/fixtures/confirmation_expanded.jsonl",
+    "record_offset": 0,
+    "samples": 2,
+    "sha256": "ddca79850dbd3d97935d969f84d22983ce76517e785febd2911a53545d9bafd4"
+  },
+  "decision": "proceed_to_practical_router_and_causal_oracle_confirmation",
+  "elapsed_seconds": 55.44864772699657,
+  "experiment": "native_bitnet_oracle_record_concentration",
+  "layers": [
+    {
+      "coefficient_zero_fraction": {
+        "count": 16,
+        "maximum": 0.9827835648148148,
+        "mean": 0.6772913049768517,
+        "median": 0.6970486111111112,
+        "minimum": 0.34563078703703703,
+        "p95": 0.9827835648148148
+      },
+      "decomposition": "full native activation quantization and intermediate RMS normalization, followed by additive down-projection records",
+      "fractions": [
+        {
+          "actual_fraction": 0.05005787037037037,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 1.0,
+            "mean": 0.972669077981954,
+            "median": 0.974385431491378,
+            "minimum": 0.9320993937672072,
+            "p95": 1.0
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 0.9999999403953552,
+            "mean": 0.901170089840889,
+            "median": 0.9270631074905396,
+            "minimum": 0.7259591817855835,
+            "p95": 0.9999999403953552
+          },
+          "record_count": 346,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.4526204369516114,
+            "mean": 0.2284805935251271,
+            "median": 0.24283836517862584,
+            "minimum": 0.0,
+            "p95": 0.4253899994491495
+          },
+          "requested_fraction": 0.05
+        },
+        {
+          "actual_fraction": 0.10011574074074074,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 1.0,
+            "mean": 0.9895718533970741,
+            "median": 0.9934990021433645,
+            "minimum": 0.9713033102415536,
+            "p95": 1.0
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 0.9999999403953552,
+            "mean": 0.9547968208789825,
+            "median": 0.9772583246231079,
+            "minimum": 0.8611800074577332,
+            "p95": 0.9999999403953552
+          },
+          "record_count": 692,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.29087752772994946,
+            "mean": 0.13222722182383112,
+            "median": 0.11903234163910692,
+            "minimum": 0.0,
+            "p95": 0.27505766933717946
+          },
+          "requested_fraction": 0.1
+        },
+        {
+          "actual_fraction": 0.15002893518518517,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 1.0,
+            "mean": 0.9950168718149601,
+            "median": 0.997793156752655,
+            "minimum": 0.9854912163772562,
+            "p95": 1.0
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 1.0000001192092896,
+            "mean": 0.9757390134036541,
+            "median": 0.9906824231147766,
+            "minimum": 0.9205709099769592,
+            "p95": 0.9999999850988388
+          },
+          "record_count": 1037,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.20443737595933212,
+            "mean": 0.08697192292570533,
+            "median": 0.06761598774871183,
+            "minimum": 0.0,
+            "p95": 0.19604636859414937
+          },
+          "requested_fraction": 0.15
+        },
+        {
+          "actual_fraction": 0.17505787037037038,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 1.0,
+            "mean": 0.9963613803480151,
+            "median": 0.9984818408581104,
+            "minimum": 0.9892115452218336,
+            "p95": 1.0
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 1.0000004768371582,
+            "mean": 0.9817935638129711,
+            "median": 0.9937451481819153,
+            "minimum": 0.9387345314025879,
+            "p95": 1.0000002086162567
+          },
+          "record_count": 1210,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.17237826750907184,
+            "mean": 0.07181772238563694,
+            "median": 0.05604161256832797,
+            "minimum": 0.0,
+            "p95": 0.1666415456191221
+          },
+          "requested_fraction": 0.175
+        },
+        {
+          "actual_fraction": 0.25,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 1.0,
+            "mean": 0.9985637506460708,
+            "median": 0.9996603090917584,
+            "minimum": 0.995383868737534,
+            "p95": 1.0
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 1.0000004768371582,
+            "mean": 0.9920205920934677,
+            "median": 0.9986997544765472,
+            "minimum": 0.9710854291915894,
+            "p95": 1.0000004768371582
+          },
+          "record_count": 1728,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.10638380526071282,
+            "mean": 0.04032918465898076,
+            "median": 0.018907031540462502,
+            "minimum": 0.0,
+            "p95": 0.10152618496875623
+          },
+          "requested_fraction": 0.25
+        },
+        {
+          "actual_fraction": 0.5,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 1.0,
+            "mean": 0.9999538189512229,
+            "median": 1.0,
+            "minimum": 0.9997534138073939,
+            "p95": 1.0
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 1.0000026226043701,
+            "mean": 0.9997107908129692,
+            "median": 1.0000000298023224,
+            "minimum": 0.9983554482460022,
+            "p95": 1.0000011026859283
+          },
+          "record_count": 3456,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.023053252758652304,
+            "mean": 0.004892275619530354,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.020893260509638273
+          },
+          "requested_fraction": 0.5
+        },
+        {
+          "actual_fraction": 1.0,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999998,
+            "p95": 1.0
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 1.0000026226043701,
+            "mean": 0.9999999441206455,
+            "median": 1.0000000298023224,
+            "minimum": 0.9999980926513672,
+            "p95": 1.0000011026859283
+          },
+          "record_count": 6912,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "requested_fraction": 1.0
+        }
+      ],
+      "hidden_size": 2560,
+      "intermediate_size": 6912,
+      "layer": 0,
+      "oracle": "exact_coefficient_times_down_column_l2",
+      "records_for_independent_contribution_energy": {
+        "0.9": {
+          "mean_fraction": 0.050202546296296294,
+          "mean_records": 347.0,
+          "p95_fraction": 0.11584924768518519,
+          "p95_records": 800.75
+        },
+        "0.95": {
+          "mean_fraction": 0.0823025173611111,
+          "mean_records": 568.875,
+          "p95_fraction": 0.17842158564814814,
+          "p95_records": 1233.25
+        },
+        "0.99": {
+          "mean_fraction": 0.1721462673611111,
+          "mean_records": 1189.875,
+          "p95_fraction": 0.3361183449074074,
+          "p95_records": 2323.25
+        }
+      },
+      "states": 16
+    },
+    {
+      "coefficient_zero_fraction": {
+        "count": 16,
+        "maximum": 0.7721354166666666,
+        "mean": 0.7001862702546295,
+        "median": 0.6948061342592593,
+        "minimum": 0.6535011574074074,
+        "p95": 0.7628038194444444
+      },
+      "decomposition": "full native activation quantization and intermediate RMS normalization, followed by additive down-projection records",
+      "fractions": [
+        {
+          "actual_fraction": 0.05005787037037037,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 0.9762532853814022,
+            "mean": 0.9595581496038552,
+            "median": 0.9623155727269398,
+            "minimum": 0.9361101426901738,
+            "p95": 0.975421515031685
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 0.9426133036613464,
+            "mean": 0.9065909050405025,
+            "median": 0.9166335463523865,
+            "minimum": 0.8361738324165344,
+            "p95": 0.9414688497781754
+          },
+          "record_count": 346,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.416953385218911,
+            "mean": 0.29279483576481413,
+            "median": 0.27255643243559047,
+            "minimum": 0.218301538046381,
+            "p95": 0.416953385218911
+          },
+          "requested_fraction": 0.05
+        },
+        {
+          "actual_fraction": 0.10011574074074074,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 0.9915143518949343,
+            "mean": 0.9868004957782917,
+            "median": 0.9866559826322505,
+            "minimum": 0.9794106263140246,
+            "p95": 0.9915094085308257
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 0.9807097911834717,
+            "mean": 0.9655165299773216,
+            "median": 0.9705083668231964,
+            "minimum": 0.9276189804077148,
+            "p95": 0.9786777049303055
+          },
+          "record_count": 692,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.2353443361687214,
+            "mean": 0.16877789600041398,
+            "median": 0.1631107890217301,
+            "minimum": 0.13057501296835194,
+            "p95": 0.2353443361687214
+          },
+          "requested_fraction": 0.1
+        },
+        {
+          "actual_fraction": 0.15002893518518517,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 0.9970269634494758,
+            "mean": 0.9947986130945414,
+            "median": 0.9950234677665608,
+            "minimum": 0.9924503151648557,
+            "p95": 0.9969919890658243
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 0.9931233525276184,
+            "mean": 0.9852344579994678,
+            "median": 0.9879697263240814,
+            "minimum": 0.9644702672958374,
+            "p95": 0.9919187277555466
+          },
+          "record_count": 1037,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.1424062911400777,
+            "mean": 0.10540280357766081,
+            "median": 0.09973109968782869,
+            "minimum": 0.0771197501544338,
+            "p95": 0.1424062911400777
+          },
+          "requested_fraction": 0.15
+        },
+        {
+          "actual_fraction": 0.17505787037037038,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 0.9981408761351814,
+            "mean": 0.9967415995148938,
+            "median": 0.9968274375824691,
+            "minimum": 0.9948396706221597,
+            "p95": 0.9980455642626772
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 0.9955407977104187,
+            "mean": 0.9905442222952843,
+            "median": 0.9921271502971649,
+            "minimum": 0.9781282544136047,
+            "p95": 0.9946285337209702
+          },
+          "record_count": 1210,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.10146726531957691,
+            "mean": 0.08245223130479609,
+            "median": 0.08041581184757414,
+            "minimum": 0.06100823776240917,
+            "p95": 0.0998226948708336
+          },
+          "requested_fraction": 0.175
+        },
+        {
+          "actual_fraction": 0.25,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 1.0,
+            "mean": 0.9992184658134295,
+            "median": 0.9991854953652394,
+            "minimum": 0.9985238000235559,
+            "p95": 1.0
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 1.0000008344650269,
+            "mean": 0.997219979763031,
+            "median": 0.9979880154132843,
+            "minimum": 0.9898549318313599,
+            "p95": 0.9999999403953552
+          },
+          "record_count": 1728,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.06369283849711481,
+            "mean": 0.036096694995321046,
+            "median": 0.04036380177450495,
+            "minimum": 0.0,
+            "p95": 0.06369283849711481
+          },
+          "requested_fraction": 0.25
+        },
+        {
+          "actual_fraction": 0.5,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999999,
+            "p95": 1.0
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 1.0000022649765015,
+            "mean": 0.9999998100101948,
+            "median": 0.9999998807907104,
+            "minimum": 0.9999963641166687,
+            "p95": 1.0000011920928955
+          },
+          "record_count": 3456,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "requested_fraction": 0.5
+        },
+        {
+          "actual_fraction": 1.0,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999999,
+            "p95": 1.0
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 1.0000022649765015,
+            "mean": 0.9999998100101948,
+            "median": 0.9999998807907104,
+            "minimum": 0.9999963641166687,
+            "p95": 1.0000011920928955
+          },
+          "record_count": 6912,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "requested_fraction": 1.0
+        }
+      ],
+      "hidden_size": 2560,
+      "intermediate_size": 6912,
+      "layer": 14,
+      "oracle": "exact_coefficient_times_down_column_l2",
+      "records_for_independent_contribution_energy": {
+        "0.9": {
+          "mean_fraction": 0.04698350694444445,
+          "mean_records": 324.75,
+          "p95_fraction": 0.07884837962962964,
+          "p95_records": 545.0
+        },
+        "0.95": {
+          "mean_fraction": 0.07847764756944445,
+          "mean_records": 542.4375,
+          "p95_fraction": 0.12471064814814815,
+          "p95_records": 862.0
+        },
+        "0.99": {
+          "mean_fraction": 0.17058195891203703,
+          "mean_records": 1179.0625,
+          "p95_fraction": 0.2511574074074074,
+          "p95_records": 1736.0
+        }
+      },
+      "states": 16
+    },
+    {
+      "coefficient_zero_fraction": {
+        "count": 16,
+        "maximum": 0.7829861111111112,
+        "mean": 0.7366084346064815,
+        "median": 0.7287326388888888,
+        "minimum": 0.6932870370370371,
+        "p95": 0.78125
+      },
+      "decomposition": "full native activation quantization and intermediate RMS normalization, followed by additive down-projection records",
+      "fractions": [
+        {
+          "actual_fraction": 0.05005787037037037,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 0.9903678195407777,
+            "mean": 0.9608637008772498,
+            "median": 0.9645808109287396,
+            "minimum": 0.9173808921636929,
+            "p95": 0.9867925919065315
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 0.9787095785140991,
+            "mean": 0.9176453240215778,
+            "median": 0.9177662134170532,
+            "minimum": 0.8840399980545044,
+            "p95": 0.9454235434532166
+          },
+          "record_count": 346,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.48918442533063716,
+            "mean": 0.33792508611840977,
+            "median": 0.3268401928852992,
+            "minimum": 0.15039824179022618,
+            "p95": 0.46032526313283695
+          },
+          "requested_fraction": 0.05
+        },
+        {
+          "actual_fraction": 0.10011574074074074,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 0.9975152562579366,
+            "mean": 0.9903969864381259,
+            "median": 0.9911196980296484,
+            "minimum": 0.9806256148700793,
+            "p95": 0.9972778707559902
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 0.9939740300178528,
+            "mean": 0.9734113067388535,
+            "median": 0.9729325175285339,
+            "minimum": 0.9604450464248657,
+            "p95": 0.9873879551887512
+          },
+          "record_count": 692,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.2442876930251317,
+            "mean": 0.17611079035044203,
+            "median": 0.17623281120741108,
+            "minimum": 0.07463875297688916,
+            "p95": 0.2436698227526529
+          },
+          "requested_fraction": 0.1
+        },
+        {
+          "actual_fraction": 0.15002893518518517,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 0.9995326961921126,
+            "mean": 0.9971626865668255,
+            "median": 0.9976642208397335,
+            "minimum": 0.9935930681162007,
+            "p95": 0.9990768240910667
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 0.9974881410598755,
+            "mean": 0.9908185787498951,
+            "median": 0.9903062582015991,
+            "minimum": 0.9855099320411682,
+            "p95": 0.9970491975545883
+          },
+          "record_count": 1037,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.14265960892724286,
+            "mean": 0.09604989046042375,
+            "median": 0.0914854584227327,
+            "minimum": 0.04207610173876619,
+            "p95": 0.1415342112877543
+          },
+          "requested_fraction": 0.15
+        },
+        {
+          "actual_fraction": 0.17505787037037038,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 0.999751393433684,
+            "mean": 0.9984699342589505,
+            "median": 0.9985588688832159,
+            "minimum": 0.9965456980818023,
+            "p95": 0.9994837419196408
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 0.9985141158103943,
+            "mean": 0.9945655390620232,
+            "median": 0.9941191971302032,
+            "minimum": 0.9909071326255798,
+            "p95": 0.9984351694583893
+          },
+          "record_count": 1210,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.11975923306811057,
+            "mean": 0.06875315909316647,
+            "median": 0.068977314124964,
+            "minimum": 0.028787068967043083,
+            "p95": 0.11208609741946975
+          },
+          "requested_fraction": 0.175
+        },
+        {
+          "actual_fraction": 0.25,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 1.0,
+            "mean": 0.9997520218720415,
+            "median": 0.99991343858235,
+            "minimum": 0.9990721312729032,
+            "p95": 1.0
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 1.0000016689300537,
+            "mean": 0.9992161318659782,
+            "median": 0.9995359778404236,
+            "minimum": 0.9974137544631958,
+            "p95": 1.000001311302185
+          },
+          "record_count": 1728,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.056289264804591656,
+            "mean": 0.022131099500439448,
+            "median": 0.019741870016329127,
+            "minimum": 0.0,
+            "p95": 0.05305945777115799
+          },
+          "requested_fraction": 0.25
+        },
+        {
+          "actual_fraction": 0.5,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999999,
+            "p95": 1.0
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 1.0000017881393433,
+            "mean": 0.9999999664723873,
+            "median": 1.0000002980232239,
+            "minimum": 0.999996542930603,
+            "p95": 1.000001698732376
+          },
+          "record_count": 3456,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "requested_fraction": 0.5
+        },
+        {
+          "actual_fraction": 1.0,
+          "cosine_similarity": {
+            "count": 16,
+            "maximum": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "minimum": 0.9999999999999999,
+            "p95": 1.0
+          },
+          "independent_contribution_energy": {
+            "count": 16,
+            "maximum": 1.0000017881393433,
+            "mean": 0.9999999664723873,
+            "median": 1.0000002980232239,
+            "minimum": 0.999996542930603,
+            "p95": 1.000001698732376
+          },
+          "record_count": 6912,
+          "relative_l2": {
+            "count": 16,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "minimum": 0.0,
+            "p95": 0.0
+          },
+          "requested_fraction": 1.0
+        }
+      ],
+      "hidden_size": 2560,
+      "intermediate_size": 6912,
+      "layer": 29,
+      "oracle": "exact_coefficient_times_down_column_l2",
+      "records_for_independent_contribution_energy": {
+        "0.9": {
+          "mean_fraction": 0.04233579282407407,
+          "mean_records": 292.625,
+          "p95_fraction": 0.055591724537037035,
+          "p95_records": 384.25
+        },
+        "0.95": {
+          "mean_fraction": 0.07030345775462964,
+          "mean_records": 485.9375,
+          "p95_fraction": 0.08752893518518519,
+          "p95_records": 605.0
+        },
+        "0.99": {
+          "mean_fraction": 0.1433648003472222,
+          "mean_records": 990.9375,
+          "p95_fraction": 0.16666666666666669,
+          "p95_records": 1152.0
+        }
+      },
+      "states": 16
+    }
+  ],
+  "milestone_2_status": "blocked",
+  "package": "/home/dean/repos/engram/work/native_bitnet/model.engram-bitnet",
+  "progression_screen": {
+    "maximum_mean_relative_l2": 0.1,
+    "maximum_worst_layer_p95_relative_l2": 0.2,
+    "minimum_mean_cosine_similarity": 0.99,
+    "observed_mean_cosine_similarity": 0.9991780794438473,
+    "observed_mean_relative_l2": 0.032852326384913755,
+    "observed_worst_layer_p95_relative_l2": 0.10152618496875623,
+    "passed": true,
+    "target_fraction": 0.25
+  },
+  "scope": "local_mlp_gate1_ceiling"
+}

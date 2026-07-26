@@ -17,12 +17,24 @@ grouped-ternary artifact reaches 43.1353% traffic, but after 1,014,225 training
 positions still has KL 2.2844, top-1 0.3198, NLL delta +2.2770, and
 final-hidden relative L2 0.6036. It fails its frozen pre-3M progression rule.
 
-A separate low-bit-native source track now **passes**. Its direct CPU kernel
+A separate low-bit-native source track passes the causal quality and cold-byte
+checks, but **does not pass practical routing Gate 2**. Its direct CPU kernel
 memory-maps the 318,924,544-byte base-3 phase artifact, materializes no dense
 weights, and schedules 40.0527% of dense ideal-Q4 cold bytes. On the frozen
 8-sequence/256-position corpus it measures KL 0.00371, top-1 0.96094, NLL
-delta +0.00224, and final-hidden relative L2 0.04678. See the
+delta +0.00224, and final-hidden relative L2 0.04678 while executing every MLP
+record. See the
 [direct-kernel result](../reports/semantic_gate_native_bitnet_2026-07-24/summary.md).
+
+The subsequent exact-membership oracle establishes that the BitNet source does
+have a viable semantic subset. A development-only layer sweep chose a 15–35%
+schedule averaging 24.8375% selected records. On the frozen
+8-sequence/256-position protocol it passes with KL 0.02543, top-1 0.94531, NLL
+delta +0.02386, and final-hidden relative L2 0.09205. Fixed 25% missed only the
+hidden-state limit (0.10448). These are oracle results: dense gate/up
+coefficients still determine membership, so neither candidate recall nor
+practical traffic is claimed. See the
+[oracle report](../reports/native_bitnet_oracle_2026-07-26/summary.md).
 
 See [Project status](status.md) and the
 [machine-readable snapshot](../reports/semantic_gate_status_2026-07-23/summary.json).
@@ -69,7 +81,7 @@ combined gate produced:
 | Causal quality | KL 0.00371; top-1 0.96094; NLL +0.00224; hidden L2 0.04678 | pass frozen thresholds |
 | Packed-kernel latency and traffic | 9.737 s summed MLP time; exact 40.0527% scheduled cold bytes | report against dense baseline |
 
-`engram evaluate-native-bitnet-kernel` is the qualifying command. It verifies
+`engram evaluate-native-bitnet-kernel` is the full-record systems command. It verifies
 the pinned source and artifact hashes, loads the pinned tokenizer with its
 regex compatibility fix, selects the frozen records deterministically,
 checks layers 0/14/29 against the dense oracle, substitutes the direct kernel

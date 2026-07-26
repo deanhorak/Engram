@@ -395,7 +395,20 @@ low-bit-native source family. A direct CPU kernel memory-maps and executes the
 packed phase streams without dense weights. The frozen 8-sequence,
 256-position confirmation reaches KL 0.00371, 96.09% teacher top-1 agreement,
 NLL delta +0.00224, and final-hidden relative L2 0.04678, so this source track
-passes Milestone 2.
+passes causal quality and cold-byte checks as a full-record systems substrate.
+Because every MLP record executes, it does not pass routed semantic-memory
+Milestone 2.
+
+The next BitNet experiment tests the missing semantic premise directly. After
+the full gate/up coefficient path, each normalized intermediate coefficient
+multiplies one transposed-down record, giving an exact additive decomposition.
+An oracle ranks those contributions and reads only its selected down records.
+A layer-adaptive 15–35% schedule averages 24.84% and passes the frozen causal
+gate. This means the selected semantic values are sufficient. It does not yet
+mean they are cheaply addressable: a qualifying runtime must predict the same
+memberships from a compact router, fetch only selected gate/up/down records,
+estimate the coupled RMS/Q8 scales without a dense scan, and preserve the
+frozen quality result on CPU.
 
 The source-family-specific package and generation boundary are now complete.
 Compilation writes a 1,108,116,808-byte checksummed package containing 332

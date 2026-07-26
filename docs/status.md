@@ -9,15 +9,14 @@ execute fixture packages in Python and C++. The native-BitNet track now also
 compiles and validates a source-independent trained-model package and performs
 real greedy generation with its direct C++ MLP kernel.
 
-The separate low-bit-native track has now passed the **Milestone 2 semantic
-and serialized cold-traffic gate** with a direct CPU phase-stream kernel. The
-original dense-Llama conversion track remains blocked: it still has no
-representation that preserves its teacher closely enough below 45% of dense
-ideal Q4. This distinction matters—the passing result starts from a model
-trained natively with ternary MLP weights and is not a lossless conversion of
-an arbitrary dense Llama checkpoint.
+**Milestone 2 remains blocked.** The low-bit-native track passes causal quality
+and now has a passing layer-adaptive exact-membership oracle at 24.84% mean
+active records. That oracle still computes dense teacher coefficients to choose
+the records, so it does not implement practical semantic-memory retrieval. The
+dense-Llama track also remains blocked because no practical routed
+representation preserves its teacher within the traffic target.
 
-The new qualifying evidence is the
+The strongest full-record systems evidence is the
 [2026-07-24 direct-kernel confirmation](../reports/semantic_gate_native_bitnet_2026-07-24/kernel_confirmation.json);
 the prior cross-track snapshot remains the
 [2026-07-23 semantic-gate summary](../reports/semantic_gate_status_2026-07-23/summary.json).
@@ -51,7 +50,8 @@ semantic thresholds, and exact scheduled cold-byte accounting.
 
 | Representation | Quality result | Systems result | Decision |
 |---|---|---|---|
-| Native BitNet phase-stream base-3 records | Frozen 8-sequence/256-position result: KL 0.00371, top-1 0.96094, NLL +0.00224, hidden L2 0.04678 | Direct memory-mapped CPU kernel; 318,924,544 scheduled cold bytes, 40.0527% of dense Q4; zero dense-weight materialization | **Low-bit-native Milestone 2 gate pass**; not a dense-Llama conversion pass |
+| Native BitNet layer-adaptive exact-membership oracle | Frozen 8-sequence/256-position result: KL 0.02543, top-1 0.94531, NLL +0.02386, hidden L2 0.09205 | 15–35% per layer, 24.8375% mean selected down records; dense gate/up coefficient scan remains | **Oracle ceiling passes**; train practical router and selected-key reconstruction |
+| Native BitNet phase-stream base-3 records | Frozen 8-sequence/256-position result: KL 0.00371, top-1 0.96094, NLL +0.00224, hidden L2 0.04678 | Direct memory-mapped CPU kernel; 318,924,544 scheduled cold bytes, 40.0527% of dense Q4; all MLP records execute | **Systems substrate only**; not routed semantic memory or a Milestone 2 pass |
 | Exact float magnitude oracle, K=768 | KL 0.0336, top-1 0.9124, NLL +0.0153, hidden L2 0.0953 | More than 4x the dense-Q4 payload before a practical selector | Semantic capacity exists, but this is not deployable |
 | Predictor-free DIP, q=432/C=896/K=768 | Untouched confirmation: recall 0.9897, KL 0.0286, top-1 0.9101, NLL +0.0326, hidden L2 0.0905 | 76.39% scalar traffic, 83.33% cache-line traffic; native kernel is 0.863x dense throughput | Quality pass, systems fail |
 | Mild layer-adaptive compact Q4 student | At 3,000,093 training positions: KL 0.8866, top-1 0.5659, NLL +0.8838, hidden L2 0.4245 | Serialized/reloaded artifact is 44.9334% of dense ideal Q4 | Traffic pass, quality fail; stopped at the frozen 3M rule |
@@ -66,6 +66,28 @@ because its measured traffic and native latency fail the systems objective.
 The compact Q4 artifact demonstrates the opposite frontier: it fits the
 physical byte budget and maps cleanly to contiguous CPU kernels, but it is not
 close to the teacher.
+
+### Native-BitNet oracle semantic ceiling
+
+The corrected Milestone-2 restart first tested the actual BitNet teacher rather
+than treating lossless full-record execution as semantic routing. A new direct
+CPU oracle ranks additive records after the teacher's Q8 activation,
+ReLU-squared gate/up product, intermediate RMS normalization, gain, and second
+Q8 quantization. Fixed 25% selection passed 32-position development but missed
+the frozen final-hidden limit at 0.10448.
+
+A development-only all-layer sweep then allocated 15–35% per layer while
+holding the exact aggregate below 25%. The selected schedule averages 24.8375%
+and passes the untouched frozen protocol: KL 0.02543, top-1 0.94531, NLL delta
++0.02386, and final-hidden relative L2 0.09205. The report is
+[here](../reports/native_bitnet_oracle_2026-07-26/summary.md).
+
+This establishes semantic concentration and the target membership schedule.
+It does not close Gate 2 because selection still consults all dense gate/up
+coefficients. The remaining qualifying sequence is: fit a compact router
+against these memberships, reconstruct coefficients from selected gate/up
+keys only, serialize the router/index, then rerun causal quality, recall,
+complete cold traffic, and CPU latency.
 
 ## What the latest experiments changed
 
@@ -249,7 +271,7 @@ scientific exit criterion has passed.
 | Milestone | Implementation status | Evidence status |
 |---|---|---|
 | 1. Inspection, tracing, exact MLP decomposition, oracle experiment | Complete | Complete for the fixture and exercised on SmolLM2 |
-| 2. Semantic package, routing, quantization, Python substitution runtime | Native-BitNet phase artifact, direct CPU kernel, package compiler, validator, and generation runtime implemented | **Low-bit-native track passes** the frozen causal/cold-byte gate and exact package parity; dense-Llama track remains blocked |
+| 2. Semantic package, routing, quantization, Python substitution runtime | Semantic record formats, quantization, routers, substitution evaluators, and a full-record native-BitNet substrate exist | **Blocked**: no practical routed semantic memory passes joint causal quality and traffic/active-record requirements |
 | 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, and incremental package integration implemented | **Frozen trained-model confirmation passes**; randomized parity, bounded-state scaling, cache-position advancement, and incremental generation pass; hardware counters remain |
 | 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, authenticated package installation, persistent native stage state, and a one-call 30-stage C++ attention/semantic runner implemented | **Controller, compiled-substitution, incremental-generation, and C++ orchestration gates pass**; frozen generation reaches 96.875% token agreement, 87.5% exact prompts, correct cache positions, and zero decoder-layer calls |
 | 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, native vocabulary argmax, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and passes source/package parity; generic vocabulary/cache/correction paths are not all active in the promoted native-BitNet runtime |

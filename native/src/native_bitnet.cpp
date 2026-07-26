@@ -201,7 +201,8 @@ class NativeBitNetKernel::Impl {
                const std::span<const std::uint16_t> input,
                const std::size_t rows,
                const std::span<std::uint16_t> output,
-               NativeBitNetMetrics* const metrics) {
+               NativeBitNetMetrics* const metrics,
+               const std::size_t oracle_top_k = 0) {
     if (layer_index >= layers_.size() || rows == 0) {
       throw std::invalid_argument("native BitNet forward dimensions are invalid");
     }
@@ -209,6 +210,9 @@ class NativeBitNetKernel::Impl {
         rows, hidden_size_, "native BitNet input dimensions overflow");
     if (input.size() != elements || output.size() != elements) {
       throw std::invalid_argument("native BitNet input/output size mismatch");
+    }
+    if (oracle_top_k > intermediate_size_) {
+      throw std::invalid_argument("native BitNet oracle top-K is invalid");
     }
     ensure_scratch(rows);
     const auto started = std::chrono::steady_clock::now();
@@ -309,48 +313,102 @@ class NativeBitNetKernel::Impl {
 
     std::fill(down_accumulator_.begin(),
               down_accumulator_.begin() + elements, 0.0F);
-    const std::size_t down_blocks =
-        (packed_width_ + kDownPackedBlock - 1) / kDownPackedBlock;
-    pool_.parallel_for(0, down_blocks, 1, [&](const std::size_t block) {
-      const std::size_t packed_begin = block * kDownPackedBlock;
-      const std::size_t packed_end =
-          std::min(packed_width_, packed_begin + kDownPackedBlock);
-      for (std::size_t record = 0; record < intermediate_size_; ++record) {
-        const float* values = quantized_normalized_.data() + record * rows;
-        const auto* down_row = layer.down + record * packed_width_;
-        for (std::size_t packed = packed_begin; packed < packed_end; ++packed) {
-          std::uint8_t down_byte = down_row[packed];
-          for (std::size_t digit = 0; digit < kTritsPerByte; ++digit) {
-            const std::size_t coordinate = packed * kTritsPerByte + digit;
-            if (coordinate >= hidden_size_) break;
-            const int trit = static_cast<int>(down_byte % 3U) - 1;
-            down_byte /= 3U;
-            float* accumulator = down_accumulator_.data() + coordinate * rows;
-            if (trit > 0) {
-              for (std::size_t row = 0; row < rows; ++row)
-                accumulator[row] += values[row];
-            } else if (trit < 0) {
-              for (std::size_t row = 0; row < rows; ++row)
-                accumulator[row] -= values[row];
+    if (oracle_top_k == 0 || oracle_top_k == intermediate_size_) {
+      const std::size_t down_blocks =
+          (packed_width_ + kDownPackedBlock - 1) / kDownPackedBlock;
+      pool_.parallel_for(0, down_blocks, 1, [&](const std::size_t block) {
+        const std::size_t packed_begin = block * kDownPackedBlock;
+        const std::size_t packed_end =
+            std::min(packed_width_, packed_begin + kDownPackedBlock);
+        for (std::size_t record = 0; record < intermediate_size_; ++record) {
+          const float* values = quantized_normalized_.data() + record * rows;
+          const auto* down_row = layer.down + record * packed_width_;
+          for (std::size_t packed = packed_begin; packed < packed_end; ++packed) {
+            std::uint8_t down_byte = down_row[packed];
+            for (std::size_t digit = 0; digit < kTritsPerByte; ++digit) {
+              const std::size_t coordinate = packed * kTritsPerByte + digit;
+              if (coordinate >= hidden_size_) break;
+              const int trit = static_cast<int>(down_byte % 3U) - 1;
+              down_byte /= 3U;
+              float* accumulator = down_accumulator_.data() + coordinate * rows;
+              if (trit > 0) {
+                for (std::size_t row = 0; row < rows; ++row)
+                  accumulator[row] += values[row];
+              } else if (trit < 0) {
+                for (std::size_t row = 0; row < rows; ++row)
+                  accumulator[row] -= values[row];
+              }
             }
           }
         }
-      }
-      for (std::size_t packed = packed_begin; packed < packed_end; ++packed) {
-        for (std::size_t digit = 0; digit < kTritsPerByte; ++digit) {
-          const std::size_t coordinate = packed * kTritsPerByte + digit;
-          if (coordinate >= hidden_size_) break;
-          const float* accumulator =
-              down_accumulator_.data() + coordinate * rows;
-          for (std::size_t row = 0; row < rows; ++row) {
-            const float value = bf16_round(
-                bf16_round(accumulator[row]) * layer.down_scale);
-            output[row * hidden_size_ + coordinate] =
-                float_to_bf16_bits(value);
+        for (std::size_t packed = packed_begin; packed < packed_end; ++packed) {
+          for (std::size_t digit = 0; digit < kTritsPerByte; ++digit) {
+            const std::size_t coordinate = packed * kTritsPerByte + digit;
+            if (coordinate >= hidden_size_) break;
+            const float* accumulator =
+                down_accumulator_.data() + coordinate * rows;
+            for (std::size_t row = 0; row < rows; ++row) {
+              const float value = bf16_round(
+                  bf16_round(accumulator[row]) * layer.down_scale);
+              output[row * hidden_size_ + coordinate] =
+                  float_to_bf16_bits(value);
+            }
           }
         }
-      }
-    });
+      });
+    } else {
+      const auto& down_norms = down_norm_squared_[layer_index];
+      pool_.parallel_for(0, rows, 1, [&](const std::size_t row) {
+        std::vector<std::size_t> order(intermediate_size_);
+        for (std::size_t record = 0; record < intermediate_size_; ++record) {
+          order[record] = record;
+        }
+        const auto stronger = [&](const std::size_t left,
+                                  const std::size_t right) {
+          const float left_value =
+              quantized_normalized_[left * rows + row];
+          const float right_value =
+              quantized_normalized_[right * rows + row];
+          const float left_utility =
+              left_value * left_value * down_norms[left];
+          const float right_utility =
+              right_value * right_value * down_norms[right];
+          return left_utility == right_utility ? left < right
+                                              : left_utility > right_utility;
+        };
+        std::partial_sort(order.begin(), order.begin() + oracle_top_k,
+                          order.end(), stronger);
+        for (std::size_t selected = 0; selected < oracle_top_k; ++selected) {
+          const std::size_t record = order[selected];
+          const float value = quantized_normalized_[record * rows + row];
+          if (value == 0.0F) continue;
+          const auto* down_row = layer.down + record * packed_width_;
+          for (std::size_t packed = 0; packed < packed_width_; ++packed) {
+            std::uint8_t down_byte = down_row[packed];
+            for (std::size_t digit = 0; digit < kTritsPerByte; ++digit) {
+              const std::size_t coordinate = packed * kTritsPerByte + digit;
+              if (coordinate >= hidden_size_) break;
+              const int trit = static_cast<int>(down_byte % 3U) - 1;
+              down_byte /= 3U;
+              float& accumulator =
+                  down_accumulator_[coordinate * rows + row];
+              if (trit > 0) {
+                accumulator += value;
+              } else if (trit < 0) {
+                accumulator -= value;
+              }
+            }
+          }
+        }
+        for (std::size_t coordinate = 0; coordinate < hidden_size_;
+             ++coordinate) {
+          const float value = bf16_round(
+              bf16_round(down_accumulator_[coordinate * rows + row]) *
+              layer.down_scale);
+          output[row * hidden_size_ + coordinate] = float_to_bf16_bits(value);
+        }
+      });
+    }
 
     if (metrics != nullptr) {
       *metrics = NativeBitNetMetrics{};
@@ -360,9 +418,15 @@ class NativeBitNetKernel::Impl {
               .count());
       metrics->gate_up_stream_bytes = 2U * stream_bytes_;
       metrics->norm_stream_bytes = intermediate_size_ * sizeof(std::uint16_t);
-      metrics->down_stream_bytes = stream_bytes_;
+      metrics->down_stream_bytes =
+          oracle_top_k == 0 ? stream_bytes_ : oracle_top_k * packed_width_;
       metrics->layer_metadata_bytes = metadata_bytes_;
-      metrics->scheduled_cache_line_bytes = layer.block_bytes;
+      metrics->scheduled_cache_line_bytes =
+          oracle_top_k == 0
+              ? layer.block_bytes
+              : metadata_bytes_ + 2U * stream_bytes_ +
+                    intermediate_size_ * sizeof(std::uint16_t) +
+                    oracle_top_k * packed_width_;
       metrics->scratch_bytes = scratch_bytes();
       metrics->rows = rows;
       metrics->threads = pool_.thread_count();
@@ -529,6 +593,21 @@ class NativeBitNetKernel::Impl {
       validate_stream(gate, intermediate_size_, packed_width_, hidden_size_);
       validate_stream(up, intermediate_size_, packed_width_, hidden_size_);
       validate_stream(down, intermediate_size_, packed_width_, hidden_size_);
+      std::vector<float> down_norms(intermediate_size_, 0.0F);
+      for (std::size_t record = 0; record < intermediate_size_; ++record) {
+        const auto* down_row = down + record * packed_width_;
+        std::size_t nonzero = 0;
+        for (std::size_t packed = 0; packed < packed_width_; ++packed) {
+          std::uint8_t value = down_row[packed];
+          for (std::size_t digit = 0; digit < kTritsPerByte; ++digit) {
+            const std::size_t coordinate = packed * kTritsPerByte + digit;
+            if (coordinate >= hidden_size_) break;
+            nonzero += value % 3U != 1U ? 1U : 0U;
+            value /= 3U;
+          }
+        }
+        down_norms[record] = static_cast<float>(nonzero);
+      }
       for (std::size_t record = 0; record < intermediate_size_; ++record) {
         if (!std::isfinite(bf16_to_float(norm[record]))) {
           throw std::invalid_argument(
@@ -537,6 +616,7 @@ class NativeBitNetKernel::Impl {
       }
       layers_.push_back({gate, up, norm, down, gate_scale, up_scale,
                          down_scale, block_bytes});
+      down_norm_squared_.push_back(std::move(down_norms));
       expected_offset += block_bytes;
     }
   }
@@ -574,6 +654,7 @@ class NativeBitNetKernel::Impl {
   std::size_t down_offset_{};
   float rms_norm_eps_{};
   std::vector<LayerView> layers_;
+  std::vector<std::vector<float>> down_norm_squared_;
   ThreadPool pool_;
   std::vector<float> quantized_input_;
   std::vector<float> gate_accumulator_;
@@ -613,6 +694,17 @@ void NativeBitNetKernel::forward_bf16(
     const std::size_t rows, const std::span<std::uint16_t> output,
     NativeBitNetMetrics* const metrics) {
   impl_->forward(layer, input, rows, output, metrics);
+}
+
+void NativeBitNetKernel::forward_oracle_bf16(
+    const std::size_t layer, const std::span<const std::uint16_t> input,
+    const std::size_t rows, const std::size_t top_k,
+    const std::span<std::uint16_t> output,
+    NativeBitNetMetrics* const metrics) {
+  if (top_k == 0) {
+    throw std::invalid_argument("native BitNet oracle top-K must be positive");
+  }
+  impl_->forward(layer, input, rows, output, metrics, top_k);
 }
 
 }  // namespace engram

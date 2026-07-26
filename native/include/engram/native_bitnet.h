@@ -48,6 +48,15 @@ class NativeBitNetKernel {
                     std::size_t rows, std::span<std::uint16_t> output,
                     NativeBitNetMetrics* metrics = nullptr);
 
+  // Gate-1 causal ceiling: execute the exact dense coefficient path, retain
+  // the top-K additive records by coefficient*down-column norm, and read only
+  // those down records. This is an oracle and is not a practical router.
+  void forward_oracle_bf16(std::size_t layer,
+                           std::span<const std::uint16_t> input,
+                           std::size_t rows, std::size_t top_k,
+                           std::span<std::uint16_t> output,
+                           NativeBitNetMetrics* metrics = nullptr);
+
  private:
   class Impl;
   std::unique_ptr<Impl> impl_;

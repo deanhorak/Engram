@@ -47,9 +47,13 @@ safety requirements, and separate research gates.
 
 ## Where the project stands
 
-**Current decision:** the original dense-Llama Milestone 2 conversion remains
-blocked, but the separate low-bit-native source track now passes the frozen
-semantic and serialized cold-traffic gate with a direct CPU kernel.
+**Current decision:** Milestone 2 remains blocked. The original dense-Llama
+router fails the joint quality/traffic gate. The low-bit-native track now has
+a qualifying *oracle* semantic ceiling: a layer-adaptive exact-membership
+schedule reads 24.84% of records on average and passes the frozen
+8-sequence/256-position causal protocol. It still obtains membership from the
+dense teacher coefficient path, so practical routing, selected-key
+coefficient reconstruction, and honest traffic/latency remain open.
 CUDA is permitted for training and distillation only. Packaged inference,
 including the passing BitNet MLP and attention kernels, remains CPU-only and
 does not call llama.cpp.
@@ -180,7 +184,17 @@ directly without materializing dense weights. On the pinned tokenizer and
 frozen 8-sequence/256-position corpus it reaches KL 0.00371, 96.09% teacher
 top-1 agreement, NLL delta +0.00224, and final-hidden relative L2 0.04678.
 The exact scheduled cold bytes remain 40.0527% of dense ideal Q4, so every
-predeclared Milestone 2 check passes on this source track.
+predeclared causal-quality and cold-byte checks pass on this source track.
+Because every MLP record executes, this is not a Milestone 2 routing pass.
+
+The renewed BitNet semantic experiment no longer executes every down record.
+An exact-membership CPU kernel retains a development-fitted 15–35% per-layer
+schedule, averaging **24.84%**. On the frozen 256-position protocol it reaches
+KL **0.02543**, teacher top-1 **94.53%**, NLL delta **+0.02386**, and
+final-hidden relative L2 **0.09205**. This proves that a small routed subset
+can carry the teacher semantics, but it is an oracle ceiling rather than a
+Milestone 2 pass: the current selector still scans dense gate/up coefficients.
+See the [oracle report](reports/native_bitnet_oracle_2026-07-26/summary.md).
 
 This is not evidence that a dense Llama checkpoint can be converted
 losslessly. It also does not claim measured hardware DRAM events: the traffic
@@ -497,7 +511,9 @@ to 1,233,005 combined records changes layer-14 error only from 0.327526 to
 unrestricted-codebook, and lifted-binary follow-ups also fail their local
 screens despite modeled traffic of 41.00%–44.98%. No dense-source converted
 semantic artifact is currently eligible for default package compilation; the
-separately trained native-BitNet artifact is the qualifying Milestone 2 path.
+separately trained native-BitNet artifact is the current teacher and CPU
+substrate for renewed Milestone 2 work, not a qualifying routed semantic
+memory by itself.
 See [architecture](docs/architecture.md), [evaluation](docs/evaluation.md),
 and [limitations](docs/limitations.md) for the precise design and caveats. The latest routing
 measurement is documented in the [trace-calibrated recall report](reports/smollm2_calibrated_router/recall.md).

@@ -2,9 +2,12 @@
 
 Date: **2026-07-24**
 
-Decision: **the separate low-bit-native BitNet track passes the Milestone 2
-semantic and serialized cold-traffic gate.** This is not a result for
-post-hoc conversion of a dense Llama checkpoint.
+Decision at the time: the separate low-bit-native BitNet track passed causal
+quality and serialized cold-byte checks.
+
+**2026-07-26 correction:** this is not a Milestone 2 practical-routing pass,
+because the direct kernel executes every MLP record. It is also not a result
+for post-hoc conversion of a dense Llama checkpoint.
 
 The evaluated source is `microsoft/bitnet-b1.58-2B-4T` pinned to revision
 `04c3b9ad9361b824064a1f25ea60a8be9599b127`. The official weight SHA-256 is
@@ -68,9 +71,6 @@ event count.
 
 ## Consequence
 
-Milestone 2 now has a qualifying path when the source model is natively
-low-bit BitNet. The original dense-Llama conversion branch remains blocked.
-The next engineering step is to promote this kernel and artifact into an
-end-to-end package/runtime boundary with generation tests; the next scientific
-milestone is attention substitution, not another MLP-router search on this
-source track.
+The result establishes a strong native full-record teacher/runtime substrate,
+not routed semantic memory. Both native-BitNet practical routing and the
+original dense-Llama conversion branch remain blocked at Milestone 2.

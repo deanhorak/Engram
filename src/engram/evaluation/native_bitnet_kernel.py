@@ -98,6 +98,18 @@ def _load_library(path: str | Path | None = None):
         ctypes.c_size_t,
     ]
     library.engram_bitnet_forward_bf16.restype = ctypes.c_int
+    library.engram_bitnet_forward_oracle_bf16.argtypes = [
+        ctypes.c_void_p,
+        ctypes.c_size_t,
+        ctypes.c_void_p,
+        ctypes.c_size_t,
+        ctypes.c_size_t,
+        ctypes.c_void_p,
+        ctypes.POINTER(_NativeMetrics),
+        ctypes.c_char_p,
+        ctypes.c_size_t,
+    ]
+    library.engram_bitnet_forward_oracle_bf16.restype = ctypes.c_int
     return library, library_path
 
 
@@ -192,6 +204,48 @@ class NativeBitNetCPUKernel:
             raise NativeBitNetKernelError(error.value.decode("utf-8", "replace"))
         call = metrics.to_dict()
         call["layer"] = int(layer)
+        self.calls.append(call)
+        return output.reshape(hidden.shape)
+
+    def forward_oracle(self, layer: int, hidden, *, top_k: int):
+        torch, _, _ = _torch_modules()
+        if not self._handle:
+            raise NativeBitNetKernelError("native BitNet kernel is closed")
+        if hidden.device.type != "cpu" or hidden.dtype != torch.bfloat16:
+            raise NativeBitNetKernelError(
+                "native BitNet kernel requires a CPU BF16 tensor"
+            )
+        if hidden.ndim < 1 or hidden.shape[-1] != self.hidden_size:
+            raise NativeBitNetKernelError("native BitNet hidden shape is invalid")
+        if not 0 <= int(layer) < self.layer_count:
+            raise NativeBitNetKernelError("native BitNet layer index is invalid")
+        if (
+            isinstance(top_k, bool)
+            or not isinstance(top_k, int)
+            or not 0 < top_k <= self.intermediate_size
+        ):
+            raise NativeBitNetKernelError("native BitNet oracle top-K is invalid")
+        source = hidden.contiguous()
+        rows = source.numel() // self.hidden_size
+        output = torch.empty_like(source)
+        metrics = _NativeMetrics()
+        error = ctypes.create_string_buffer(1024)
+        status = self._library.engram_bitnet_forward_oracle_bf16(
+            self._handle,
+            int(layer),
+            ctypes.c_void_p(source.data_ptr()),
+            rows,
+            int(top_k),
+            ctypes.c_void_p(output.data_ptr()),
+            ctypes.byref(metrics),
+            error,
+            len(error),
+        )
+        if status:
+            raise NativeBitNetKernelError(error.value.decode("utf-8", "replace"))
+        call = metrics.to_dict()
+        call["layer"] = int(layer)
+        call["oracle_top_k"] = int(top_k)
         self.calls.append(call)
         return output.reshape(hidden.shape)
 

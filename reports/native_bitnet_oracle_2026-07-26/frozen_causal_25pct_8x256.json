@@ -1,0 +1,58 @@
+{
+  "configuration": {
+    "actual_fraction": 0.25,
+    "intermediate_size": 6912,
+    "layer_count": 30,
+    "prediction_positions": 256,
+    "predictions_per_sequence": 32,
+    "requested_fraction": 0.25,
+    "sequence_count": 8,
+    "top_k": 1728
+  },
+  "dataset": {
+    "path": "/home/dean/repos/engram/tests/fixtures/confirmation_expanded.jsonl",
+    "record_offset": 0,
+    "sha256": "ddca79850dbd3d97935d969f84d22983ce76517e785febd2911a53545d9bafd4"
+  },
+  "decision": "reduce_error_before_practical_router_training",
+  "elapsed_seconds": 558.9260950469907,
+  "experiment": "native_bitnet_oracle_causal_substitution",
+  "kernel": {
+    "baseline_seconds": 259.9472043179994,
+    "calls": 30,
+    "gate_up_stream_bytes": 212336640,
+    "norm_stream_bytes": 414720,
+    "note": "exact membership still executes the full gate/up coefficient path; these bytes are not a practical-router traffic result",
+    "oracle_seconds": 278.8284275699989,
+    "selected_down_stream_bytes": 26542080
+  },
+  "milestone_2_status": "blocked",
+  "package": "/home/dean/repos/engram/work/native_bitnet/model.engram-bitnet",
+  "quality": {
+    "candidate_nll": 3.5829904079437256,
+    "final_hidden": {
+      "exact": false,
+      "maximum_absolute_error": 0.46875,
+      "mean_absolute_error": 0.004220063332468271,
+      "relative_l2": 0.1044754907488823
+    },
+    "logits": {
+      "exact": false,
+      "maximum_absolute_error": 7.625,
+      "mean_absolute_error": 0.4147208034992218,
+      "mean_kl_divergence": 0.029186774045228958,
+      "relative_l2": 0.07991522550582886,
+      "top1_agreement": 0.9375
+    },
+    "nll_delta": 0.027765512466430664,
+    "reference_nll": 3.555224895477295
+  },
+  "quality_passed": false,
+  "scope": "all_mlp_layers_exact_membership_ceiling",
+  "thresholds": {
+    "maximum_final_hidden_relative_l2": 0.1,
+    "maximum_nll_delta": 0.05,
+    "maximum_teacher_student_kl": 0.05,
+    "minimum_top1_agreement": 0.9
+  }
+}

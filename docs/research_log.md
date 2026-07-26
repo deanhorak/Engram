@@ -1,5 +1,22 @@
 # Research log
 
+## 2026-07-26 — BitNet oracle semantic ceiling passes
+
+- Corrected the milestone accounting: lossless full-record BitNet execution is
+  a systems substrate, not a Milestone-2 practical-routing pass.
+- Added an exact additive-record oracle for the trained BitNet teacher and a
+  direct CPU top-K kernel. Full-width oracle execution is bit-exact with the
+  existing packed kernel in fixture tests.
+- The first fixed 25% frozen run passed KL, top-1, and NLL but narrowly missed
+  final-hidden relative L2 at 0.10448.
+- A development-only all-layer sweep moved budget among layers while preserving
+  a strict aggregate ceiling. The chosen 15–35% schedule averages 24.8375%.
+- On the untouched 8-sequence/256-position protocol the adaptive oracle passes:
+  KL 0.02543, top-1 0.94531, NLL delta +0.02386, and hidden L2 0.09205.
+- Milestone 2 remains blocked at practical selection. The next work is compact
+  membership prediction, selected-key coefficient reconstruction, serialized
+  traffic accounting, and CPU causal confirmation.
+
 ## 2026-07-25 — Package-owned native controller boundary
 
 - Added authenticated schema-v3 controller installation to native BitNet
@@ -220,10 +237,10 @@
 - The dense-source Q-Sparse scale ladder is stopped on this corpus. Published
   continuation uses a far larger token budget, and the measured host-scale
   slopes do not support extrapolation to the unchanged gate.
-- Milestone 2 already has a qualifying CPU-native path through the direct
-  BitNet phase-stream kernel. The next scientific stage is therefore
-  GPU-assisted distillation of the shared controller from that passing
-  teacher, followed by CPU-only artifact reload and inference.
+- Historical correction (2026-07-26): the direct BitNet phase-stream kernel
+  executes every record and therefore is not a qualifying Milestone 2 semantic
+  router. Controller work built valuable systems infrastructure but did not
+  close the semantic-memory gate.
 
 ## 2026-07-24 — Exact activation-sparse dense-source screens
 
@@ -472,8 +489,10 @@
   dense ideal Q4, with zero dense-weight materialization. The 30 internal MLP
   timings total 9.737 seconds for 264 rows. This is exact scheduled traffic,
   not a hardware memory-controller measurement.
-- The separate low-bit-native track therefore passes the Milestone 2 gate.
-  Dense-Llama conversion remains blocked. See the
+- Historical correction (2026-07-26): the low-bit-native track passes causal
+  quality and serialized cold-byte checks, but executes every MLP record. It
+  does not pass routed semantic-memory Milestone 2. Dense-Llama conversion
+  also remains blocked. See the
   [direct-kernel confirmation](../reports/semantic_gate_native_bitnet_2026-07-24/summary.md).
 
 ## 2026-07-23 — Exact native-BitNet record feasibility pass
