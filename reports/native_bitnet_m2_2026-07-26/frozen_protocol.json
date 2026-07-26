@@ -1,7 +1,7 @@
 {
   "experiment": "native_bitnet_milestone_2_practical_semantic_memory_confirmation",
-  "protocol_version": 3,
-  "status": "new_final_holdout_thresholds_recall_definition_and_full_length_development_corpus_frozen_before_canonical_bf16_policy_refit",
+  "protocol_version": 4,
+  "status": "new_final_holdout_thresholds_held_out_causal_recall_definition_and_full_length_development_corpus_frozen_before_canonical_bf16_policy_refit",
   "source_model": {
     "repository": "microsoft/bitnet-b1.58-2B-4T",
     "revision": "04c3b9ad9361b824064a1f25ea60a8be9599b127",
@@ -80,13 +80,16 @@
   "practical_router_thresholds": {
     "maximum_mean_active_record_fraction": 0.25,
     "maximum_complete_physical_cold_traffic_fraction_of_dense_q4": 0.45,
-    "minimum_validation_candidate_recall": 0.95,
+    "minimum_held_out_candidate_recall": 0.95,
     "cpu_only_inference_required": true,
     "dense_gate_up_or_down_fallback_allowed": false
   },
   "candidate_recall_definition": {
-    "evaluation_split": "configuration_fit",
+    "evaluation_split": "final_confirmation_same_256_causal_positions",
+    "development_recall_on_configuration_fit_or_causal_development_is_non_qualifying": true,
+    "state_boundary": "the actual input presented to each practical sparse MLP after all preceding sparse substitutions on the same causal pass",
     "teacher_utility": "canonical native BF16 coefficient_squared_times_down_column_nonzero_count",
+    "teacher_utility_evaluation": "computed densely for diagnostics on the practical sparse-path MLP input without replacing that input by the dense teacher trajectory",
     "teacher_membership": "stable descending teacher utility with ascending record-index ties at the pre-existing fixed per-layer K schedule",
     "reference_top_ks": [
       1728,
@@ -154,6 +157,11 @@
       "from_protocol_version": 2,
       "change": "declared the already-used confirmation_expanded corpus for full-length causal development because validation_expanded contains records shorter than the frozen 33-token input requirement",
       "final_holdout_thresholds_and_recall_definition_changed": false
+    },
+    {
+      "from_protocol_version": 3,
+      "change": "moved qualifying candidate recall from the policy-fit trace to the same untouched 256-position final causal pass because fit-trace recall is not held-out and does not observe compounded sparse-path states",
+      "quality_traffic_and_recall_threshold_values_changed": false
     }
   ]
 }
