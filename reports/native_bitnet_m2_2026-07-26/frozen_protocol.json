@@ -1,0 +1,138 @@
+{
+  "experiment": "native_bitnet_milestone_2_practical_semantic_memory_confirmation",
+  "protocol_version": 2,
+  "status": "new_final_holdout_thresholds_and_recall_definition_frozen_before_canonical_bf16_policy_refit",
+  "source_model": {
+    "repository": "microsoft/bitnet-b1.58-2B-4T",
+    "revision": "04c3b9ad9361b824064a1f25ea60a8be9599b127",
+    "weight_sha256": "8143ae115ed6babe5e5ada8fb8c5b769d8f417802b2db042ad98b4f7ed73975b"
+  },
+  "configuration_fit": {
+    "role": "router_and_budget_fit_only",
+    "trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+    "dataset_sha256": "073e2b648a5cf84a97697330384338b1193f148ff1eb3a3cc9ec4cf21d37f977",
+    "records": 256
+  },
+  "causal_development": {
+    "role": "method_development_only",
+    "dataset": "tests/fixtures/validation_expanded.jsonl",
+    "dataset_sha256": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c",
+    "allowed_record_offsets": [
+      0,
+      8
+    ]
+  },
+  "final_confirmation": {
+    "role": "untouched_by_model_execution_until_configuration_artifacts_and_kernel_are_frozen",
+    "dataset": "tests/fixtures/milestone2_bitnet_holdout_v1.jsonl",
+    "dataset_sha256": "e5606e8d18241b996b4e46cbc1b9559792b1a87ddd491bad5934eed3185b03a4",
+    "record_offset": 0,
+    "sequence_count": 8,
+    "predictions_per_sequence": 32,
+    "prediction_positions": 256,
+    "required_tokens_per_sequence": 33,
+    "token_lengths": [
+      77,
+      80,
+      81,
+      109,
+      140,
+      110,
+      104,
+      89
+    ],
+    "canonical_token_sequence_hashes": [
+      "ae198314d58b60441c81ed4092baa2c449f7cc391b5f52062b78a11070263bf6",
+      "6d670055ca3719309ce963ba9d5b228d3132e1571051040755cb0cc58efd4cdb",
+      "3bc27a7621f1ed80a1bee79625df59f2cb4f1dbea416dd0a01096077f6dd83d4",
+      "d1705c9871c4555408881140c336b68aa0b000eb1b56742fa48eba0fa9ba71d2",
+      "b907737b0cae843df783b85b0d7e8582edd50249be306aa9a89c7f2b3072cb34",
+      "029af12fdfabe164771fa19fd0ee4f2d50a62ea110e7158d6b62e3feb09b3c12",
+      "2e5ac4c34abd1eb04768ba4666f2e818155eb170594871954736d849fe548049",
+      "d6d35acd14821fa6bc24f45c6f7d849b8ce1182b38050085d8c0af3cb4607e0a"
+    ],
+    "canonical_token_hash_algorithm": "engram-canonical-token-sequence-sha256-v1",
+    "tokenizer_json_sha256": "e134af98b985517b4f068e3755ae90d4e9cd2d45d328325dc503f1c6b2d06cc7",
+    "overlap_with_existing_exclusion_registry": 0,
+    "construction": "eight original, blind-authored, domain-diverse records; no teacher or candidate model was executed while authoring or selecting them",
+    "reuse_for_configuration_changes_after_opening": false
+  },
+  "quality_thresholds": {
+    "maximum_teacher_student_kl": 0.05,
+    "minimum_top1_agreement": 0.9,
+    "maximum_nll_delta": 0.05,
+    "maximum_final_hidden_relative_l2": 0.1
+  },
+  "practical_router_thresholds": {
+    "maximum_mean_active_record_fraction": 0.25,
+    "maximum_complete_physical_cold_traffic_fraction_of_dense_q4": 0.45,
+    "minimum_validation_candidate_recall": 0.95,
+    "cpu_only_inference_required": true,
+    "dense_gate_up_or_down_fallback_allowed": false
+  },
+  "candidate_recall_definition": {
+    "evaluation_split": "configuration_fit",
+    "teacher_utility": "canonical native BF16 coefficient_squared_times_down_column_nonzero_count",
+    "teacher_membership": "stable descending teacher utility with ascending record-index ties at the pre-existing fixed per-layer K schedule",
+    "reference_top_ks": [
+      1728,
+      1037,
+      1037,
+      2420,
+      2420,
+      2420,
+      2420,
+      1037,
+      1728,
+      1728,
+      1728,
+      1728,
+      1728,
+      2074,
+      1728,
+      2074,
+      1728,
+      1728,
+      1383,
+      1728,
+      1383,
+      1383,
+      1383,
+      1383,
+      1383,
+      1728,
+      1728,
+      1728,
+      1728,
+      2074
+    ],
+    "candidate_membership": "the complete practical C-set, including any in-budget RMS audit records",
+    "row_recall": "intersection_size(candidate_membership,teacher_membership)/reference_top_k",
+    "required_aggregates": {
+      "minimum_each_layer_mean_recall": 0.95,
+      "minimum_global_micro_membership_recall": 0.95
+    },
+    "required_reporting": [
+      "global_micro_membership_recall",
+      "macro_mean_layer_recall",
+      "each_layer_mean_p05_and_minimum_row_recall",
+      "secondary_teacher_positive_utility_recall_clipped_to_frozen_minimum_and_maximum_k"
+    ],
+    "timing_rule": "dense teacher recall diagnostics execute outside sparse latency and traffic measurement",
+    "policy_selected_count_is_not_used_as_the_recall_denominator": true
+  },
+  "required_system_evidence": {
+    "serialized_index_reload": true,
+    "python_native_numerical_parity": true,
+    "measured_cpu_latency": true,
+    "cache_line_honest_traffic_accounting": true
+  },
+  "configuration": null,
+  "final_result": null,
+  "supersedes": {
+    "protocol_version": 1,
+    "reason": "calibration_expanded.jsonl was historically registered and used as calibration data, so it was not an eligible untouched final corpus",
+    "superseded_dataset_sha256": "383691c11c1f3670322abb768df4362aca54c2e917907bb68ae8d33f4cf002f3",
+    "superseded_dataset_was_executed_for_this_protocol": false
+  }
+}
