@@ -12,6 +12,7 @@ add_library(engram_kernels STATIC
   native/src/npy.cpp
   native/src/native_bitnet.cpp
   native/src/native_bitnet_weights.cpp
+  native/src/native_bitnet_token_runtime.cpp
   native/src/native_shell_c.cpp
   native/src/native_stage_c.cpp
   native/src/operator_residual_c.cpp
@@ -85,6 +86,14 @@ target_compile_features(engram-safetensors-info PRIVATE cxx_std_20)
 add_executable(engram-bitnet-weights-info native/src/bitnet_weights_info.cpp)
 target_link_libraries(engram-bitnet-weights-info PRIVATE engram_kernels)
 target_compile_features(engram-bitnet-weights-info PRIVATE cxx_std_20)
+
+add_executable(engram-bitnet-token-generate
+  native/src/bitnet_token_generate.cpp
+)
+target_link_libraries(engram-bitnet-token-generate
+  PRIVATE engram_kernels engram_bitnet
+)
+target_compile_features(engram-bitnet-token-generate PRIVATE cxx_std_20)
 
 add_executable(engram-bench native/src/bench.cpp)
 target_link_libraries(engram-bench PRIVATE engram_kernels)

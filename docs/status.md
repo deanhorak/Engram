@@ -417,6 +417,18 @@ zero copied projection bytes. The next loader step is to construct attention
 caches/stage descriptors plus the MLP/controller handles and expose one native
 token-step runtime.
 
+That token-step runtime now exists. `NativeBitNetTokenRuntime` owns the mapped
+weights, memory-mapped packed MLP artifact, validated zero-correction
+controller scales, 30 persistent streaming-attention caches, position counter,
+final norm, and tied-vocabulary argmax. The standalone
+`engram-bitnet-token-generate` executable accepts raw token IDs and performs
+greedy generation without Python, Torch, safetensors, or Transformers. On the
+fixed prompt IDs for `The capital of France is`, it returns
+`12366 13 12366 374`, exactly matching ` Paris. Paris is`, across 9 processed
+positions and 120 stage executions. Native tokenizer/chat-template support and
+manifest-derived architecture parameters remain; the model execution path is
+now native from packaged token IDs to generated token IDs.
+
 The low-bit-native hypothesis has passed source validation, exact
 reconstruction, the unchanged MLP byte limit, direct CPU execution, frozen
 causal confirmation, source-independent package compilation, and exact

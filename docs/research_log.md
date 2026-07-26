@@ -1197,3 +1197,9 @@
   all 120 packed attention projections. Mapped projection registration avoids
   the previous approximately 120 MB copy and reports zero copied projection
   bytes.
+- Assembled `NativeBitNetTokenRuntime` from the mapped non-MLP weights, packed
+  MLP artifact, zero-correction controller scales, persistent attention
+  caches, one-call stage runner, final norm, and vocabulary argmax. The
+  standalone C++ token CLI reproduces `12366 13 12366 374` for the fixed
+  six-token prompt, processes 9 positions/120 stages, rejects out-of-vocabulary
+  input, and has no Python/Torch/Transformers dynamic dependency.

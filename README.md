@@ -113,6 +113,23 @@ not identical. Python/Torch still orchestrates stage dispatch and tensor
 views; replacing that shell with one C++ package-runtime handle is the next
 systems boundary.
 
+The model core can also generate greedily without constructing a Python,
+Torch, or Transformers model shell. The version-1 native BitNet token CLI
+accepts already-tokenized IDs, maps the package weights, owns all 30 attention
+caches, executes the complete C++ stage runner, and prints generated IDs:
+
+```bash
+./build/engram-bitnet-token-generate \
+  work/native_bitnet/model.engram-bitnet 4 12 \
+  128000 791 6864 315 9822 374
+```
+
+This emits `12366 13 12366 374` (` Paris. Paris is`). Add
+`--verify-reset` before the prompt IDs to repeat generation after clearing all
+native caches and require identical output. Text tokenization and chat-template
+handling remain in the Python CLI for now; the native command proves the
+package-to-token model path independently.
+
 The latest dense-source campaign implements whole-model exact Q-Sparse
 co-adaptation rather than another router guess. A causally fitted per-layer
 schedule improves the unseen 128-sequence baseline to KL 0.457, top-1 66.9%,
