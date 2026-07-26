@@ -25,7 +25,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
-from typing import Any, Mapping, Protocol
+from typing import Any, Mapping, Protocol, Sequence
 
 from engram.evaluation.native_bitnet_dip_traffic import (
     native_bitnet_dip_physical_accounting,
@@ -35,6 +35,8 @@ from engram.utils import atomic_json, sha256_file, sha256_json
 
 FINAL_CONFIRMATION_FORMAT = "engram-native-bitnet-m2-final-confirmation"
 FINAL_CONFIRMATION_VERSION = 1
+FINAL_ADJUDICATION_FORMAT = "engram-native-bitnet-m2-final-adjudication"
+FINAL_ADJUDICATION_VERSION = 1
 COMPILER_BUILD_FORMAT = "engram-native-bitnet-m2-compiler-build"
 COMPILER_BUILD_VERSION = 1
 FINAL_AUDIT_DIRECTORY = PurePosixPath("reports/native_bitnet_m2_final_audit")
@@ -44,6 +46,12 @@ PROTECTED_M2_HOLDOUT_SHA256 = (
 NATIVE_CAUSAL_EVALUATOR = (
     "engram.evaluation.native_bitnet_dip_native_causal."
     "evaluate_native_bitnet_dip_native_causal"
+)
+CANONICAL_TOKEN_HASH_ALGORITHM = (
+    "engram-canonical-token-sequence-sha256-v1"
+)
+SCORED_PREFIX_TOKEN_HASH_ALGORITHM = (
+    "engram-scored-prefix-bare-list-sha256-v1"
 )
 
 _PROTOCOL_EXPERIMENT = (
@@ -169,6 +177,83 @@ def _pinned_audit_paths(
     return tuple(paths)  # type: ignore[return-value]
 
 
+def _pinned_adjudication_path(
+    root: Path,
+    authorization: Mapping[str, Any],
+) -> Path:
+    audit = authorization.get("audit")
+    if not isinstance(audit, Mapping):
+        raise Milestone2FinalConfirmationError(
+            "final authorization has no canonical audit identity"
+        )
+    dataset_key = audit.get("dataset_key")
+    attempt_key = audit.get("attempt_key")
+    if (
+        not isinstance(dataset_key, str)
+        or _SHA256.fullmatch(dataset_key) is None
+        or not isinstance(attempt_key, str)
+        or _SHA256.fullmatch(attempt_key) is None
+    ):
+        raise Milestone2FinalConfirmationError(
+            "final authorization audit identity is invalid"
+        )
+    relative = (
+        FINAL_AUDIT_DIRECTORY
+        / dataset_key
+        / f"{attempt_key}.adjudication.json"
+    )
+    lexical = root.joinpath(*relative.parts)
+    resolved = lexical.resolve()
+    if (
+        not resolved.is_relative_to(root)
+        or lexical.absolute() != resolved
+    ):
+        raise Milestone2FinalConfirmationError(
+            "final adjudication path must remain inside the repository"
+        )
+    return resolved
+
+
+def _pinned_evidence_seal_paths(
+    root: Path,
+    authorization: Mapping[str, Any],
+) -> tuple[Path, Path]:
+    audit = authorization.get("audit")
+    if not isinstance(audit, Mapping):
+        raise Milestone2FinalConfirmationError(
+            "final authorization has no canonical audit identity"
+        )
+    dataset_key = audit.get("dataset_key")
+    attempt_key = audit.get("attempt_key")
+    if (
+        not isinstance(dataset_key, str)
+        or _SHA256.fullmatch(dataset_key) is None
+        or not isinstance(attempt_key, str)
+        or _SHA256.fullmatch(attempt_key) is None
+    ):
+        raise Milestone2FinalConfirmationError(
+            "final authorization audit identity is invalid"
+        )
+    directory = FINAL_AUDIT_DIRECTORY / dataset_key
+    relative_paths = (
+        directory / f"{attempt_key}.evidence-seal.json",
+        directory / f"{attempt_key}.authorization.json",
+    )
+    resolved_paths: list[Path] = []
+    for relative in relative_paths:
+        lexical = root.joinpath(*relative.parts)
+        resolved = lexical.resolve()
+        if (
+            not resolved.is_relative_to(root)
+            or lexical.absolute() != resolved
+        ):
+            raise Milestone2FinalConfirmationError(
+                "final evidence-seal path must remain inside the repository"
+            )
+        resolved_paths.append(resolved)
+    return resolved_paths[0], resolved_paths[1]
+
+
 class Milestone2FinalConfirmationError(RuntimeError):
     """Raised when a final attempt cannot be executed safely."""
 
@@ -216,6 +301,37 @@ class _Preflight:
     authorization_sha256: str
     observed_sha256: Mapping[str, str]
     policy_layers: tuple[Mapping[str, Any], ...]
+    adjudicator_commit: str | None = None
+
+
+@dataclass(frozen=True)
+class _TokenIdentities:
+    full_sequence_hashes: tuple[str, ...]
+    full_token_lengths: tuple[int, ...]
+    scored_prefix_hashes: tuple[str, ...]
+    scored_prefix_input_ids_sha256: str
+    scored_prefix_tokens: int
+    tokenizer_files: tuple[Mapping[str, Any], ...]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "canonical_full_sequence": {
+                "algorithm": CANONICAL_TOKEN_HASH_ALGORITHM,
+                "hashes": list(self.full_sequence_hashes),
+                "token_lengths": list(self.full_token_lengths),
+            },
+            "scored_prefix": {
+                "algorithm": SCORED_PREFIX_TOKEN_HASH_ALGORITHM,
+                "tokens_per_sequence": self.scored_prefix_tokens,
+                "sequence_hashes": list(self.scored_prefix_hashes),
+                "aggregate_input_ids_sha256": (
+                    self.scored_prefix_input_ids_sha256
+                ),
+            },
+            "tokenizer_files": [
+                dict(descriptor) for descriptor in self.tokenizer_files
+            ],
+        }
 
 
 def _utc_now() -> str:
@@ -380,6 +496,115 @@ def _verify_git_state(
     return commit
 
 
+def _verify_worktree_blobs_at_commit(
+    root: Path,
+    *,
+    commit: str,
+    paths: Sequence[Path],
+) -> None:
+    for path in paths:
+        relative = _repository_relative(root, path, "commit-bound file")
+        committed_blob = _git(
+            root,
+            "rev-parse",
+            f"{commit}:{relative}",
+        ).stdout.strip()
+        worktree_blob = _git(
+            root,
+            "hash-object",
+            "--",
+            relative,
+        ).stdout.strip()
+        if not committed_blob or worktree_blob != committed_blob:
+            raise Milestone2FinalConfirmationError(
+                f"worktree file differs from adjudicator commit: {relative}"
+            )
+
+
+def _verify_historical_adjudication_git_state(
+    root: Path,
+    *,
+    original_commit: str,
+    original_tracked_paths: tuple[Path, ...],
+    adjudication_evidence_paths: tuple[Path, ...],
+    adjudication_output_path: Path,
+) -> str:
+    """Bind a postmortem audit to both the original and adjudicator commits."""
+
+    top = Path(_git(root, "rev-parse", "--show-toplevel").stdout.strip()).resolve()
+    if top != root:
+        raise Milestone2FinalConfirmationError(
+            "implementation repository root mismatch"
+        )
+    original_exists = _git(
+        root,
+        "cat-file",
+        "-e",
+        f"{original_commit}^{{commit}}",
+        check=False,
+    )
+    if original_exists.returncode != 0:
+        raise Milestone2FinalConfirmationError(
+            "original implementation commit is unavailable"
+        )
+    current_commit = _git(root, "rev-parse", "HEAD").stdout.strip().lower()
+    if _COMMIT.fullmatch(current_commit) is None:
+        raise Milestone2FinalConfirmationError(
+            "adjudicator repository has no full Git commit"
+        )
+    ancestor = _git(
+        root,
+        "merge-base",
+        "--is-ancestor",
+        original_commit,
+        current_commit,
+        check=False,
+    )
+    if ancestor.returncode != 0:
+        raise Milestone2FinalConfirmationError(
+            "original implementation is not an ancestor of the adjudicator"
+        )
+    for path in original_tracked_paths:
+        relative = _repository_relative(
+            root,
+            path,
+            "historical frozen input",
+        )
+        committed = _git(
+            root,
+            "cat-file",
+            "-e",
+            f"{original_commit}:{relative}",
+            check=False,
+        )
+        if committed.returncode != 0:
+            raise Milestone2FinalConfirmationError(
+                f"historical frozen input was not committed: {relative}"
+            )
+
+    current_sources = tuple(
+        root.joinpath(*PurePosixPath(relative).parts).resolve()
+        for relative in _RUNTIME_SOURCE_PATHS.values()
+    )
+    bound_paths = (
+        *original_tracked_paths,
+        *adjudication_evidence_paths,
+        *current_sources,
+    )
+    _verify_git_state(
+        root,
+        expected_commit=current_commit,
+        tracked_paths=bound_paths,
+        excluded_paths=(adjudication_output_path,),
+    )
+    _verify_worktree_blobs_at_commit(
+        root,
+        commit=current_commit,
+        paths=bound_paths,
+    )
+    return current_commit
+
+
 def _tracked_native_build_dependencies(
     root: Path,
     required_paths: tuple[Path, ...],
@@ -509,6 +734,263 @@ def _verify_runtime_source_origins(root: Path) -> tuple[Path, Path]:
             )
         verified.append(resolved)
     return verified[0], verified[1]
+
+
+def _verify_adjudicator_source_origin(root: Path) -> Path:
+    """Verify this module without importing the historical evaluator."""
+
+    relative = _RUNTIME_SOURCE_PATHS["final confirmation runner"]
+    lexical = Path(__file__).absolute()
+    resolved = Path(__file__).resolve()
+    expected = root.joinpath(*PurePosixPath(relative).parts)
+    if resolved != expected or lexical != resolved or not resolved.is_file():
+        raise Milestone2FinalConfirmationError(
+            "final adjudicator does not originate from the repository"
+        )
+    tracked = _git(
+        root,
+        "ls-files",
+        "--error-unmatch",
+        "--",
+        relative,
+        check=False,
+    )
+    if tracked.returncode != 0:
+        raise Milestone2FinalConfirmationError(
+            "final adjudicator source is not committed in the repository"
+        )
+    return resolved
+
+
+def _canonical_full_sequence_hash(input_ids: Sequence[int]) -> str:
+    return sha256_json({"input_ids": [int(value) for value in input_ids]})
+
+
+def _scored_prefix_hash(input_ids: Sequence[int]) -> str:
+    return sha256_json([int(value) for value in input_ids])
+
+
+def _load_identity_records(
+    path: Path,
+    *,
+    offset: int,
+    count: int,
+) -> list[dict[str, Any]]:
+    selected: list[dict[str, Any]] = []
+    usable = 0
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            for line_number, line in enumerate(handle, 1):
+                if not line.strip():
+                    continue
+                try:
+                    record = json.loads(line)
+                except json.JSONDecodeError as exc:
+                    raise Milestone2FinalConfirmationError(
+                        f"invalid final JSONL at line {line_number}"
+                    ) from exc
+                if not isinstance(record, dict):
+                    raise Milestone2FinalConfirmationError(
+                        f"final JSONL record {line_number} is not an object"
+                    )
+                if usable >= offset:
+                    selected.append(record)
+                    if len(selected) == count:
+                        break
+                usable += 1
+    except OSError as exc:
+        raise Milestone2FinalConfirmationError(
+            f"cannot read opened final dataset: {exc}"
+        ) from exc
+    if len(selected) != count:
+        raise Milestone2FinalConfirmationError(
+            f"final dataset contains only {len(selected)} selected records"
+        )
+    return selected
+
+
+def _derive_final_token_identities(
+    request: Milestone2FinalRequest,
+) -> _TokenIdentities:
+    """Tokenize the opened records without constructing or executing a model."""
+
+    try:
+        import transformers.utils as transformers_utils
+        import transformers.utils.import_utils as transformers_imports
+
+        if transformers_imports.is_sklearn_available():
+            try:
+                import sklearn  # noqa: F401
+            except Exception:
+
+                def sklearn_unavailable() -> bool:
+                    return False
+
+                transformers_imports.is_sklearn_available = sklearn_unavailable
+                transformers_utils.is_sklearn_available = sklearn_unavailable
+        from transformers import AutoTokenizer
+    except ImportError as exc:
+        raise Milestone2FinalConfirmationError(
+            "token-identity verification requires the local tokenizer runtime"
+        ) from exc
+
+    package_manifest = _json_object(
+        request.package_manifest,
+        "native package manifest",
+    )
+    tokenizer_record = package_manifest.get("tokenizer")
+    if not isinstance(tokenizer_record, Mapping):
+        raise Milestone2FinalConfirmationError(
+            "native package tokenizer record is missing"
+        )
+    tokenizer_file_names = tokenizer_record.get("files")
+    package_inventory = package_manifest.get("files")
+    if (
+        not isinstance(tokenizer_file_names, list)
+        or not tokenizer_file_names
+        or any(
+            not isinstance(value, str)
+            or not value
+            or PurePosixPath(value).name != value
+            for value in tokenizer_file_names
+        )
+        or len(set(tokenizer_file_names)) != len(tokenizer_file_names)
+        or not isinstance(package_inventory, Mapping)
+    ):
+        raise Milestone2FinalConfirmationError(
+            "native package tokenizer inventory is incomplete"
+        )
+    tokenizer_root = request.tokenizer_json.parent
+    expected_files = set(tokenizer_file_names)
+    actual_files = {
+        path.name
+        for path in tokenizer_root.iterdir()
+        if path.is_file()
+    }
+    if actual_files != expected_files:
+        raise Milestone2FinalConfirmationError(
+            "native package tokenizer directory differs from its inventory"
+        )
+    tokenizer_descriptors: list[dict[str, Any]] = []
+    for name in tokenizer_file_names:
+        lexical = tokenizer_root / name
+        resolved = lexical.resolve()
+        relative = f"{tokenizer_root.name}/{name}"
+        inventory_record = package_inventory.get(relative)
+        if (
+            lexical.absolute() != resolved
+            or not resolved.is_file()
+            or not isinstance(inventory_record, Mapping)
+            or inventory_record.get("bytes") != resolved.stat().st_size
+            or inventory_record.get("sha256") != sha256_file(resolved)
+        ):
+            raise Milestone2FinalConfirmationError(
+                f"native package tokenizer file differs from inventory: {name}"
+            )
+        tokenizer_descriptors.append(
+            {
+                "path": relative,
+                "bytes": resolved.stat().st_size,
+                "sha256": str(inventory_record["sha256"]),
+            }
+        )
+    records = _load_identity_records(
+        request.dataset,
+        offset=request.record_offset,
+        count=request.sequence_count,
+    )
+    tokenizer = AutoTokenizer.from_pretrained(
+        tokenizer_root,
+        local_files_only=True,
+        trust_remote_code=False,
+        fix_mistral_regex=bool(
+            tokenizer_record.get("fix_mistral_regex", False)
+        ),
+    )
+    required_tokens = request.predictions_per_sequence + 1
+    full_sequences: list[list[int]] = []
+    scored_prefixes: list[list[int]] = []
+    for sequence, record in enumerate(records):
+        raw_input_ids = record.get("input_ids")
+        if raw_input_ids is not None:
+            if (
+                not isinstance(raw_input_ids, list)
+                or any(
+                    isinstance(value, bool) or not isinstance(value, int)
+                    for value in raw_input_ids
+                )
+            ):
+                raise Milestone2FinalConfirmationError(
+                    f"final record {sequence} has invalid input_ids"
+                )
+            token_ids = [int(value) for value in raw_input_ids]
+        else:
+            text = record.get("text")
+            if not isinstance(text, str):
+                raise Milestone2FinalConfirmationError(
+                    f"final record {sequence} has neither text nor input_ids"
+                )
+            token_ids = [
+                int(value)
+                for value in tokenizer.encode(
+                    text,
+                    add_special_tokens=True,
+                )
+            ]
+        if len(token_ids) < required_tokens:
+            raise Milestone2FinalConfirmationError(
+                f"final record {sequence} has only {len(token_ids)} tokens"
+            )
+        full_sequences.append(token_ids)
+        scored_prefixes.append(token_ids[:required_tokens])
+    return _TokenIdentities(
+        full_sequence_hashes=tuple(
+            _canonical_full_sequence_hash(values)
+            for values in full_sequences
+        ),
+        full_token_lengths=tuple(len(values) for values in full_sequences),
+        scored_prefix_hashes=tuple(
+            _scored_prefix_hash(values)
+            for values in scored_prefixes
+        ),
+        scored_prefix_input_ids_sha256=sha256_json(scored_prefixes),
+        scored_prefix_tokens=required_tokens,
+        tokenizer_files=tuple(tokenizer_descriptors),
+    )
+
+
+def _validate_protocol_token_identities(
+    protocol: Mapping[str, Any],
+    identities: _TokenIdentities,
+) -> dict[str, bool]:
+    final = protocol.get("final_confirmation")
+    if not isinstance(final, Mapping):
+        raise Milestone2FinalConfirmationError(
+            "frozen protocol final-confirmation record is missing"
+        )
+    checks = {
+        "canonical_hash_algorithm": (
+            final.get("canonical_token_hash_algorithm")
+            == CANONICAL_TOKEN_HASH_ALGORITHM
+        ),
+        "full_sequence_hashes": (
+            final.get("canonical_token_sequence_hashes")
+            == list(identities.full_sequence_hashes)
+        ),
+        "full_token_lengths": (
+            final.get("token_lengths")
+            == list(identities.full_token_lengths)
+        ),
+        "scored_prefix_length": (
+            final.get("required_tokens_per_sequence")
+            == identities.scored_prefix_tokens
+        ),
+    }
+    if not all(checks.values()):
+        raise Milestone2FinalConfirmationError(
+            "opened dataset/tokenizer identities differ from the frozen protocol"
+        )
+    return checks
 
 
 def _cmake_cache_value(cache: str, name: str) -> str:
@@ -1276,6 +1758,9 @@ def _preflight(
     result_path: Path,
     opened_marker_path: Path,
     raw_report_path: Path,
+    historical_adjudication: bool = False,
+    adjudication_output_path: Path | None = None,
+    additional_adjudication_evidence_paths: tuple[Path, ...] = (),
 ) -> _Preflight:
     authorization = _json_object(
         authorization_path,
@@ -1341,7 +1826,10 @@ def _preflight(
         raise Milestone2FinalConfirmationError("unsupported Milestone 2 final protocol")
     test_mode = protocol.get("test_fixture_only") is True
     if not test_mode:
-        _verify_runtime_source_origins(root)
+        if historical_adjudication:
+            _verify_adjudicator_source_origin(root)
+        else:
+            _verify_runtime_source_origins(root)
 
     artifact_pins = authorization.get("artifacts")
     if not isinstance(artifact_pins, dict) or not _REQUIRED_PINS.issubset(
@@ -1433,21 +1921,45 @@ def _preflight(
     # The dataset is intentionally excluded.  Its committed-path membership is
     # checked without reading bytes; its worktree content is authenticated only
     # after the opened marker exists.
-    commit = _verify_git_state(
-        root,
-        expected_commit=expected_commit,
-        tracked_paths=(
-            pinned_protocol_path,
-            paths["policy_manifest"],
-            paths["dataset"],
-        ),
-        excluded_paths=(
-            paths["dataset"],
-            result_path.resolve(),
-            opened_marker_path.resolve(),
-            raw_report_path.resolve(),
-        ),
+    original_tracked_paths = (
+        pinned_protocol_path,
+        paths["policy_manifest"],
+        paths["dataset"],
     )
+    adjudicator_commit: str | None = None
+    if historical_adjudication:
+        if adjudication_output_path is None:
+            raise Milestone2FinalConfirmationError(
+                "historical adjudication output path is missing"
+            )
+        adjudicator_commit = _verify_historical_adjudication_git_state(
+            root,
+            original_commit=expected_commit,
+            original_tracked_paths=original_tracked_paths,
+            adjudication_evidence_paths=(
+                result_path.resolve(),
+                opened_marker_path.resolve(),
+                raw_report_path.resolve(),
+                *(
+                    path.resolve()
+                    for path in additional_adjudication_evidence_paths
+                ),
+            ),
+            adjudication_output_path=adjudication_output_path.resolve(),
+        )
+        commit = expected_commit
+    else:
+        commit = _verify_git_state(
+            root,
+            expected_commit=expected_commit,
+            tracked_paths=original_tracked_paths,
+            excluded_paths=(
+                paths["dataset"],
+                result_path.resolve(),
+                opened_marker_path.resolve(),
+                raw_report_path.resolve(),
+            ),
+        )
 
     policy = _json_object(paths["policy_manifest"], "frozen DIP policy")
     policy_layers: tuple[Mapping[str, Any], ...]
@@ -1670,6 +2182,7 @@ def _preflight(
         authorization_sha256=sha256_file(authorization_path),
         observed_sha256=dict(observed),
         policy_layers=policy_layers,
+        adjudicator_commit=adjudicator_commit,
     )
 
 
@@ -1795,6 +2308,8 @@ def _validate_evaluator_report(
     preflight: _Preflight,
     *,
     dataset_sha256: str,
+    token_identities: _TokenIdentities,
+    historical_hash_schema: bool = False,
 ) -> tuple[bool, dict[str, Any]]:
     if (
         not isinstance(report, Mapping)
@@ -1884,18 +2399,11 @@ def _validate_evaluator_report(
         raise Milestone2FinalConfirmationError(
             "native evaluator did not execute the exact frozen 8x32 slice"
         )
-    _sha256(
+    input_token_hash = _sha256(
         dataset.get("input_token_ids_sha256"),
         "evaluator dataset.input_token_ids_sha256",
     )
     sequence_hashes = dataset.get("sequence_token_ids_sha256")
-    canonical_hashes = preflight.protocol["final_confirmation"].get(
-        "canonical_token_sequence_hashes"
-    )
-    if canonical_hashes is not None and sequence_hashes != canonical_hashes:
-        raise Milestone2FinalConfirmationError(
-            "native evaluator token sequences differ from frozen canonical hashes"
-        )
     if (
         not isinstance(sequence_hashes, list)
         or len(sequence_hashes) != request.sequence_count
@@ -1904,6 +2412,34 @@ def _validate_evaluator_report(
         raise Milestone2FinalConfirmationError(
             "native evaluator token-sequence hashes are incomplete"
         )
+    expected_prefix_hashes = list(token_identities.scored_prefix_hashes)
+    if (
+        input_token_hash != token_identities.scored_prefix_input_ids_sha256
+        or sequence_hashes != expected_prefix_hashes
+    ):
+        raise Milestone2FinalConfirmationError(
+            "native evaluator scored-prefix token identities differ from the "
+            "independently derived frozen slice"
+        )
+    if not historical_hash_schema:
+        full_hashes = dataset.get("canonical_full_sequence_token_ids_sha256")
+        full_lengths = dataset.get("canonical_full_sequence_token_lengths")
+        scored_hashes = dataset.get("scored_prefix_token_ids_sha256")
+        if (
+            dataset.get("canonical_full_sequence_hash_algorithm")
+            != CANONICAL_TOKEN_HASH_ALGORITHM
+            or full_hashes != list(token_identities.full_sequence_hashes)
+            or full_lengths != list(token_identities.full_token_lengths)
+            or dataset.get("scored_prefix_hash_algorithm")
+            != SCORED_PREFIX_TOKEN_HASH_ALGORITHM
+            or scored_hashes != expected_prefix_hashes
+            or dataset.get("scored_prefix_input_token_ids_sha256")
+            != token_identities.scored_prefix_input_ids_sha256
+        ):
+            raise Milestone2FinalConfirmationError(
+                "native evaluator explicit full/prefix token identity schema "
+                "is incomplete or inconsistent"
+            )
 
     configuration = report.get("configuration")
     reference_schedule = report.get("reference_top_ks")
@@ -2572,6 +3108,608 @@ def _validate_evaluator_report(
     return passed, checks
 
 
+def _validate_consumed_hash_contract_error(
+    *,
+    result_path: Path,
+    marker_path: Path,
+    raw_report_path: Path,
+    authorization_path: Path,
+    preflight: _Preflight,
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, bool]]:
+    result = _json_object(result_path, "original final result")
+    marker = _json_object(marker_path, "original opened marker")
+    expected_error = {
+        "type": "Milestone2FinalConfirmationError",
+        "message": (
+            "native evaluator token sequences differ from frozen canonical hashes"
+        ),
+    }
+    marker_dataset = marker.get("dataset")
+    marker_result = marker.get("result")
+    checks = {
+        "result_is_consumed_execution_error": (
+            result.get("format") == FINAL_CONFIRMATION_FORMAT
+            and result.get("version") == FINAL_CONFIRMATION_VERSION
+            and result.get("status") == "error"
+            and result.get("opened") is True
+            and result.get("phase") == "execution"
+            and result.get("decision") == "final_holdout_consumed_with_error"
+            and result.get("milestone_2_passed") is False
+            and result.get("error") == expected_error
+        ),
+        "marker_is_terminal_nonreusable_error": (
+            marker.get("format")
+            == f"{FINAL_CONFIRMATION_FORMAT}-opened-marker"
+            and marker.get("version") == FINAL_CONFIRMATION_VERSION
+            and marker.get("status") == "error"
+            and marker.get("reuse_allowed") is False
+            and marker.get("error") == expected_error
+        ),
+        "attempt_identity_matches": (
+            isinstance(result.get("attempt_id"), str)
+            and result.get("attempt_id") == marker.get("attempt_id")
+        ),
+        "authorization_matches": (
+            marker.get("authorization_manifest_sha256")
+            == preflight.authorization_sha256
+            and result.get("authorization_manifest")
+            == str(authorization_path)
+        ),
+        "protocol_matches": (
+            marker.get("protocol_sha256")
+            == preflight.authorization["protocol"]["sha256"]
+            and result.get("protocol") == str(preflight.request.protocol_path)
+        ),
+        "implementation_matches": (
+            marker.get("implementation_commit")
+            == preflight.implementation_commit
+        ),
+        "dataset_matches": (
+            isinstance(marker_dataset, Mapping)
+            and marker_dataset.get("path") == str(preflight.request.dataset)
+            and marker_dataset.get("expected_sha256")
+            == preflight.request.expected_sha256["dataset"]
+            and marker_dataset.get("actual_sha256")
+            == preflight.request.expected_sha256["dataset"]
+            and result.get("dataset_sha256")
+            == preflight.request.expected_sha256["dataset"]
+        ),
+        "result_is_bound_by_marker": (
+            isinstance(marker_result, Mapping)
+            and marker_result.get("path") == str(result_path)
+            and marker_result.get("sha256") == sha256_file(result_path)
+            and marker_result.get("milestone_2_passed") is False
+        ),
+        "raw_report_is_separate_and_present": (
+            raw_report_path.is_file()
+            and raw_report_path != result_path
+            and raw_report_path != marker_path
+        ),
+    }
+    if not all(checks.values()):
+        failed = sorted(name for name, value in checks.items() if not value)
+        raise Milestone2FinalConfirmationError(
+            "original consumed-attempt audit is inconsistent: "
+            + ", ".join(failed)
+        )
+    return result, marker, checks
+
+
+def _unique_evidence_origin_commit(
+    root: Path,
+    paths: Sequence[Path],
+    *,
+    original_implementation_commit: str,
+) -> str:
+    origins: set[str] = set()
+    for path in paths:
+        relative = _repository_relative(root, path, "sealed evidence")
+        history = [
+            value
+            for value in _git(
+                root,
+                "log",
+                "--format=%H",
+                "--",
+                relative,
+            ).stdout.splitlines()
+            if value
+        ]
+        additions = [
+            value
+            for value in _git(
+                root,
+                "log",
+                "--diff-filter=A",
+                "--format=%H",
+                "--",
+                relative,
+            ).stdout.splitlines()
+            if value
+        ]
+        if (
+            len(history) != 1
+            or len(additions) != 1
+            or history[0] != additions[0]
+        ):
+            raise Milestone2FinalConfirmationError(
+                f"sealed evidence was modified after its unique origin: {relative}"
+            )
+        origin = history[0].lower()
+        origin_blob = _git(
+            root,
+            "rev-parse",
+            f"{origin}:{relative}",
+        ).stdout.strip()
+        head_blob = _git(
+            root,
+            "rev-parse",
+            f"HEAD:{relative}",
+        ).stdout.strip()
+        if not origin_blob or origin_blob != head_blob:
+            raise Milestone2FinalConfirmationError(
+                f"sealed evidence blob differs from its origin: {relative}"
+            )
+        origins.add(origin)
+    if len(origins) != 1:
+        raise Milestone2FinalConfirmationError(
+            "sealed evidence files do not share one origin commit"
+        )
+    origin_commit = next(iter(origins))
+    for ancestor, descendant in (
+        (original_implementation_commit, origin_commit),
+        (origin_commit, "HEAD"),
+    ):
+        relation = _git(
+            root,
+            "merge-base",
+            "--is-ancestor",
+            ancestor,
+            descendant,
+            check=False,
+        )
+        if relation.returncode != 0:
+            raise Milestone2FinalConfirmationError(
+                "evidence-seal Git ancestry is invalid"
+            )
+    return origin_commit
+
+
+def _validate_evidence_seal(
+    *,
+    root: Path,
+    seal_path: Path,
+    archived_authorization_path: Path,
+    authorization_path: Path,
+    result_path: Path,
+    marker_path: Path,
+    raw_report_path: Path,
+    preflight: _Preflight,
+) -> tuple[dict[str, Any], dict[str, bool], str]:
+    seal = _json_object(seal_path, "consumed-attempt evidence seal")
+    archived_authorization_hash = sha256_file(archived_authorization_path)
+    authorization_hash = sha256_file(authorization_path)
+    authorization_record = seal.get("authorization")
+    result_record = seal.get("result")
+    marker_record = seal.get("opened_marker")
+    raw_record = seal.get("raw_evaluator_report")
+    audit = preflight.authorization.get("audit")
+    checks = {
+        "schema": (
+            seal.get("format")
+            == "engram-native-bitnet-m2-consumed-attempt-evidence-seal"
+            and seal.get("version") == 1
+        ),
+        "attempt_identity": (
+            isinstance(audit, Mapping)
+            and seal.get("dataset_key") == audit.get("dataset_key")
+            and seal.get("attempt_key") == audit.get("attempt_key")
+            and seal.get("implementation_commit")
+            == preflight.implementation_commit
+        ),
+        "authorization": (
+            isinstance(authorization_record, Mapping)
+            and authorization_record.get("original_path")
+            == _repository_relative(
+                root,
+                authorization_path,
+                "original authorization",
+            )
+            and authorization_record.get("archived_path")
+            == _repository_relative(
+                root,
+                archived_authorization_path,
+                "archived authorization",
+            )
+            and authorization_record.get("sha256")
+            == preflight.authorization_sha256
+            and authorization_hash == preflight.authorization_sha256
+            and archived_authorization_hash == preflight.authorization_sha256
+        ),
+        "protocol_policy_and_dataset": (
+            seal.get("protocol_sha256")
+            == preflight.authorization["protocol"]["sha256"]
+            and seal.get("policy_sha256")
+            == preflight.request.expected_sha256["policy_manifest"]
+            and seal.get("dataset_sha256")
+            == preflight.request.expected_sha256["dataset"]
+            and seal.get("compiler_build_manifest_sha256")
+            == preflight.request.expected_sha256["compiler_build_manifest"]
+        ),
+        "original_result": (
+            isinstance(result_record, Mapping)
+            and result_record.get("path")
+            == _repository_relative(root, result_path, "original result")
+            and result_record.get("sha256") == sha256_file(result_path)
+        ),
+        "opened_marker": (
+            isinstance(marker_record, Mapping)
+            and marker_record.get("path")
+            == _repository_relative(root, marker_path, "opened marker")
+            and marker_record.get("sha256") == sha256_file(marker_path)
+        ),
+        "raw_evaluator_report": (
+            isinstance(raw_record, Mapping)
+            and raw_record.get("path")
+            == _repository_relative(
+                root,
+                raw_report_path,
+                "raw evaluator report",
+            )
+            and raw_record.get("sha256") == sha256_file(raw_report_path)
+        ),
+    }
+    if not all(checks.values()):
+        failed = sorted(name for name, value in checks.items() if not value)
+        raise Milestone2FinalConfirmationError(
+            "consumed-attempt evidence seal is inconsistent: "
+            + ", ".join(failed)
+        )
+    seal_commit = _unique_evidence_origin_commit(
+        root,
+        (
+            seal_path,
+            archived_authorization_path,
+            result_path,
+            marker_path,
+            raw_report_path,
+        ),
+        original_implementation_commit=preflight.implementation_commit,
+    )
+    return seal, checks, seal_commit
+
+
+def _historical_source_blobs(
+    root: Path,
+    commit: str,
+) -> dict[str, dict[str, str]]:
+    descriptors: dict[str, dict[str, str]] = {}
+    for label, relative in _RUNTIME_SOURCE_PATHS.items():
+        blob = _git(root, "rev-parse", f"{commit}:{relative}").stdout.strip()
+        if not blob:
+            raise Milestone2FinalConfirmationError(
+                f"cannot resolve historical {label} source"
+            )
+        descriptors[label] = {
+            "path": relative,
+            "git_blob": blob,
+        }
+    return descriptors
+
+
+def adjudicate_native_bitnet_m2_final_confirmation(
+    protocol: str | Path,
+    authorization_manifest: str | Path,
+    *,
+    out: str | Path,
+    confirm_adjudicate: bool = False,
+) -> dict[str, Any]:
+    """Adjudicate the preserved hash-contract failure without model execution.
+
+    This function is intentionally narrower than the one-shot runner.  It only
+    accepts the canonical consumed attempt, requires its three evidence files
+    to be committed and clean, independently reconstructs full-record and
+    scored-prefix token identities, and runs the original primitive validator
+    against the immutable raw report.  It never invokes the causal evaluator.
+    """
+
+    if not confirm_adjudicate:
+        raise Milestone2FinalConfirmationError(
+            "postmortem adjudication requires confirm_adjudicate=True"
+        )
+    protocol_path = Path(protocol).resolve()
+    authorization_path = Path(authorization_manifest).resolve()
+    output_path = Path(out).resolve()
+    authorization = _json_object(
+        authorization_path,
+        "final authorization manifest",
+    )
+    implementation = authorization.get("implementation")
+    if not isinstance(implementation, Mapping):
+        raise Milestone2FinalConfirmationError(
+            "final authorization implementation pin is missing"
+        )
+    root = Path(str(implementation.get("repository_root", ""))).resolve()
+    result_path, marker_path, raw_report_path = _pinned_audit_paths(
+        root,
+        authorization,
+    )
+    seal_path, archived_authorization_path = _pinned_evidence_seal_paths(
+        root,
+        authorization,
+    )
+    expected_output = _pinned_adjudication_path(root, authorization)
+    if output_path != expected_output:
+        raise Milestone2FinalConfirmationError(
+            "adjudication output path differs from the canonical attempt path"
+        )
+    if output_path.exists():
+        raise Milestone2FinalConfirmationError(
+            "refusing to overwrite an existing final adjudication"
+        )
+    if not all(
+        path.is_file()
+        for path in (
+            result_path,
+            marker_path,
+            raw_report_path,
+            seal_path,
+            archived_authorization_path,
+        )
+    ):
+        raise Milestone2FinalConfirmationError(
+            "canonical consumed-attempt evidence is incomplete"
+        )
+
+    preflight = _preflight(
+        protocol_path,
+        authorization_path,
+        result_path=result_path,
+        opened_marker_path=marker_path,
+        raw_report_path=raw_report_path,
+        historical_adjudication=True,
+        adjudication_output_path=output_path,
+        additional_adjudication_evidence_paths=(
+            seal_path,
+            archived_authorization_path,
+        ),
+    )
+    original_result, original_marker, original_checks = (
+        _validate_consumed_hash_contract_error(
+            result_path=result_path,
+            marker_path=marker_path,
+            raw_report_path=raw_report_path,
+            authorization_path=authorization_path,
+            preflight=preflight,
+        )
+    )
+    del original_marker
+    evidence_seal, seal_checks, seal_commit = _validate_evidence_seal(
+        root=root,
+        seal_path=seal_path,
+        archived_authorization_path=archived_authorization_path,
+        authorization_path=authorization_path,
+        result_path=result_path,
+        marker_path=marker_path,
+        raw_report_path=raw_report_path,
+        preflight=preflight,
+    )
+    del evidence_seal
+
+    input_paths = {
+        "package_manifest": preflight.request.package_manifest,
+        "base_artifact": preflight.request.record_artifact,
+        "coordinate_index": preflight.request.coordinate_index,
+        "policy_manifest": preflight.request.policy_manifest,
+        "tokenizer_json": preflight.request.tokenizer_json,
+        "dense_native_library": preflight.request.dense_native_library,
+        "native_library": preflight.request.native_library,
+        "compiler_build_manifest": (
+            preflight.request.compiler_build_manifest
+        ),
+        "dataset": preflight.request.dataset,
+    }
+    observed_inputs = {
+        name: sha256_file(path) for name, path in input_paths.items()
+    }
+    if observed_inputs != dict(preflight.request.expected_sha256):
+        raise Milestone2FinalConfirmationError(
+            "adjudication inputs differ from the original authorization"
+        )
+    if sha256_file(protocol_path) != preflight.authorization["protocol"]["sha256"]:
+        raise Milestone2FinalConfirmationError(
+            "adjudication protocol differs from the original authorization"
+        )
+
+    token_identities = _derive_final_token_identities(preflight.request)
+    token_checks = _validate_protocol_token_identities(
+        preflight.protocol,
+        token_identities,
+    )
+    raw_report = _json_object(
+        raw_report_path,
+        "original native causal raw report",
+    )
+    passed, evaluator_checks = _validate_evaluator_report(
+        raw_report,
+        preflight,
+        dataset_sha256=observed_inputs["dataset"],
+        token_identities=token_identities,
+        historical_hash_schema=True,
+    )
+    current_commit = preflight.adjudicator_commit
+    if (
+        not isinstance(current_commit, str)
+        or _COMMIT.fullmatch(current_commit) is None
+    ):
+        raise Milestone2FinalConfirmationError(
+            "historical preflight did not bind the adjudicator commit"
+        )
+    evidence = {
+        "original_result": {
+            "path": _repository_relative(
+                root,
+                result_path,
+                "original result",
+            ),
+            "bytes": result_path.stat().st_size,
+            "sha256": sha256_file(result_path),
+        },
+        "opened_marker": {
+            "path": _repository_relative(
+                root,
+                marker_path,
+                "opened marker",
+            ),
+            "bytes": marker_path.stat().st_size,
+            "sha256": sha256_file(marker_path),
+        },
+        "raw_evaluator_report": {
+            "path": _repository_relative(
+                root,
+                raw_report_path,
+                "raw evaluator report",
+            ),
+            "bytes": raw_report_path.stat().st_size,
+            "sha256": sha256_file(raw_report_path),
+        },
+    }
+    publication_paths = {
+        **input_paths,
+        "authorization_manifest": authorization_path,
+        "archived_authorization": archived_authorization_path,
+        "protocol": protocol_path,
+        "original_result": result_path,
+        "opened_marker": marker_path,
+        "raw_evaluator_report": raw_report_path,
+        "evidence_seal": seal_path,
+    }
+    publication_hashes = {
+        name: sha256_file(path)
+        for name, path in publication_paths.items()
+    }
+    status = "pass" if passed else "fail"
+    result = {
+        "format": FINAL_ADJUDICATION_FORMAT,
+        "version": FINAL_ADJUDICATION_VERSION,
+        "status": status,
+        "completed_at": _utc_now(),
+        "adjudication": {
+            "kind": "postmortem_hash_contract_correction",
+            "model_or_evaluator_executed": False,
+            "original_result_rewritten": False,
+            "holdout_reused_for_configuration": False,
+            "historical_hash_schema": {
+                "protocol": (
+                    "full sequence with canonical input_ids object envelope"
+                ),
+                "raw_evaluator": (
+                    "first 33 scored input tokens with bare-list envelope"
+                ),
+            },
+        },
+        "implementation": {
+            "evaluated_commit": preflight.implementation_commit,
+            "evidence_seal_commit": seal_commit,
+            "adjudicator_commit": current_commit,
+            "historical_runtime_source_blobs": _historical_source_blobs(
+                root,
+                preflight.implementation_commit,
+            ),
+        },
+        "authorization_manifest": {
+            "path": str(authorization_path),
+            "bytes": authorization_path.stat().st_size,
+            "sha256": preflight.authorization_sha256,
+        },
+        "protocol": {
+            "path": _repository_relative(root, protocol_path, "protocol"),
+            "bytes": protocol_path.stat().st_size,
+            "sha256": sha256_file(protocol_path),
+        },
+        "original_attempt": {
+            "attempt_id": original_result["attempt_id"],
+            "status": original_result["status"],
+            "decision": original_result["decision"],
+            "error": original_result["error"],
+            "evidence": evidence,
+            "evidence_seal": {
+                "path": _repository_relative(
+                    root,
+                    seal_path,
+                    "evidence seal",
+                ),
+                "bytes": seal_path.stat().st_size,
+                "sha256": sha256_file(seal_path),
+            },
+        },
+        "input_sha256": observed_inputs,
+        "publication_input_sha256": publication_hashes,
+        "token_identities": token_identities.to_dict(),
+        "checks": {
+            "evidence_seal": seal_checks,
+            "original_attempt": original_checks,
+            "protocol_token_identities": token_checks,
+            **evaluator_checks,
+        },
+        "evaluator_report": raw_report,
+        "milestone_2_passed": passed,
+        "decision": (
+            "milestone_2_semantic_gate_passed_by_postmortem_adjudication"
+            if passed
+            else "milestone_2_semantic_gate_failed_by_postmortem_adjudication"
+        ),
+        "limitations": {
+            "original_one_shot_result_remains_error": True,
+            "adjudication_is_post_hoc": True,
+            "raw_report_not_contemporaneously_bound": True,
+            "raw_report_seal_is_prospective_only": True,
+            "host_bound_absolute_paths_and_ignored_artifacts": True,
+            "traffic_is_cache_line_model_not_measured_dram": True,
+            "latency_was_not_a_frozen_gate": True,
+            "confirmation_scale": "8 sequences x 32 prediction positions",
+        },
+    }
+    final_bound_paths = (
+        preflight.request.protocol_path,
+        preflight.request.policy_manifest,
+        preflight.request.dataset,
+        result_path,
+        marker_path,
+        raw_report_path,
+        seal_path,
+        archived_authorization_path,
+        *(
+            root.joinpath(*PurePosixPath(relative).parts).resolve()
+            for relative in _RUNTIME_SOURCE_PATHS.values()
+        ),
+    )
+    if _git(root, "rev-parse", "HEAD").stdout.strip().lower() != current_commit:
+        raise Milestone2FinalConfirmationError(
+            "adjudicator Git commit changed before publication"
+        )
+    _verify_git_state(
+        root,
+        expected_commit=current_commit,
+        tracked_paths=final_bound_paths,
+        excluded_paths=(output_path,),
+    )
+    _verify_worktree_blobs_at_commit(
+        root,
+        commit=current_commit,
+        paths=final_bound_paths,
+    )
+    if {
+        name: sha256_file(path)
+        for name, path in publication_paths.items()
+    } != publication_hashes:
+        raise Milestone2FinalConfirmationError(
+            "an adjudication input changed before publication"
+        )
+    _exclusive_json(output_path, result)
+    return result
+
+
 def run_native_bitnet_m2_final_confirmation(
     protocol: str | Path,
     authorization_manifest: str | Path,
@@ -2705,6 +3843,11 @@ def run_native_bitnet_m2_final_confirmation(
             raise Milestone2FinalConfirmationError(
                 "final holdout dataset SHA-256 mismatch after opening"
             )
+        token_identities = _derive_final_token_identities(preflight.request)
+        _validate_protocol_token_identities(
+            preflight.protocol,
+            token_identities,
+        )
         opened_metadata["status"] = "executing"
         opened_metadata["dataset_authenticated_at"] = _utc_now()
         atomic_json(marker_path, opened_metadata)
@@ -2758,6 +3901,7 @@ def run_native_bitnet_m2_final_confirmation(
             persisted_report,
             preflight,
             dataset_sha256=dataset_hash,
+            token_identities=token_identities,
         )
         status = "pass" if passed else "fail"
         completed_at = _utc_now()
@@ -2772,6 +3916,7 @@ def run_native_bitnet_m2_final_confirmation(
                 **post_control_hashes,
             },
             "checks": checks,
+            "token_identities": token_identities.to_dict(),
             "evaluator_report": persisted_report,
             "raw_evaluator_report": {
                 "path": str(preflight.request.raw_report),
@@ -2865,14 +4010,19 @@ def run_native_bitnet_m2_final_confirmation(
 
 
 __all__ = [
+    "CANONICAL_TOKEN_HASH_ALGORITHM",
     "COMPILER_BUILD_FORMAT",
     "COMPILER_BUILD_VERSION",
+    "FINAL_ADJUDICATION_FORMAT",
+    "FINAL_ADJUDICATION_VERSION",
     "FINAL_CONFIRMATION_FORMAT",
     "FINAL_CONFIRMATION_VERSION",
     "Milestone2FinalConfirmationError",
     "Milestone2FinalEvaluator",
     "Milestone2FinalRequest",
     "NATIVE_CAUSAL_EVALUATOR",
+    "SCORED_PREFIX_TOKEN_HASH_ALGORITHM",
+    "adjudicate_native_bitnet_m2_final_confirmation",
     "run_native_bitnet_m2_final_confirmation",
     "write_native_bitnet_m2_compiler_build_manifest",
     "write_native_bitnet_m2_final_authorization_manifest",

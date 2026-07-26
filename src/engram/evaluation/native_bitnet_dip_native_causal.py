@@ -853,6 +853,8 @@ def evaluate_native_bitnet_dip_native_causal(
     required_tokens = predictions_per_sequence + 1
     encoded: list[list[int]] = []
     sequence_hashes: list[str] = []
+    full_sequence_hashes: list[str] = []
+    full_sequence_lengths: list[int] = []
     dense_seconds = 0.0
     sparse_seconds = 0.0
     debug_seconds = 0.0
@@ -886,6 +888,10 @@ def evaluate_native_bitnet_dip_native_causal(
             selected = token_ids[:required_tokens]
             encoded.append(selected)
             sequence_hashes.append(sha256_json(selected))
+            full_sequence_hashes.append(
+                sha256_json({"input_ids": token_ids})
+            )
+            full_sequence_lengths.append(len(token_ids))
         if len(set(map(tuple, encoded))) != sequence_count:
             unique_sequences = len(set(map(tuple, encoded)))
         else:
@@ -1343,6 +1349,22 @@ def evaluate_native_bitnet_dip_native_causal(
                     "prediction_positions": prediction_positions,
                     "input_token_ids_sha256": sha256_json(encoded),
                     "sequence_token_ids_sha256": sequence_hashes,
+                    "canonical_full_sequence_hash_algorithm": (
+                        "engram-canonical-token-sequence-sha256-v1"
+                    ),
+                    "canonical_full_sequence_token_ids_sha256": (
+                        full_sequence_hashes
+                    ),
+                    "canonical_full_sequence_token_lengths": (
+                        full_sequence_lengths
+                    ),
+                    "scored_prefix_hash_algorithm": (
+                        "engram-scored-prefix-bare-list-sha256-v1"
+                    ),
+                    "scored_prefix_token_ids_sha256": sequence_hashes,
+                    "scored_prefix_input_token_ids_sha256": (
+                        sha256_json(encoded)
+                    ),
                 },
                 "configuration": _policy_report(kernel.policies),
                 "reference_top_ks": {

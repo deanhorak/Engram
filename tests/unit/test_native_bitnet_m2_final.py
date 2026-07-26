@@ -12,11 +12,15 @@ import pytest
 
 import engram.evaluation.native_bitnet_m2_final as final_confirmation
 from engram.evaluation.native_bitnet_m2_final import (
+    CANONICAL_TOKEN_HASH_ALGORITHM,
     COMPILER_BUILD_FORMAT,
+    FINAL_ADJUDICATION_FORMAT,
     FINAL_CONFIRMATION_FORMAT,
     NATIVE_CAUSAL_EVALUATOR,
+    SCORED_PREFIX_TOKEN_HASH_ALGORITHM,
     Milestone2FinalConfirmationError,
     Milestone2FinalRequest,
+    adjudicate_native_bitnet_m2_final_confirmation,
     run_native_bitnet_m2_final_confirmation,
     write_native_bitnet_m2_compiler_build_manifest,
     write_native_bitnet_m2_final_authorization_manifest,
@@ -28,6 +32,10 @@ from engram.utils import atomic_json, sha256_file, sha256_json
 
 
 _REAL_DEFAULT_EVALUATOR = final_confirmation._default_evaluator
+_REAL_REPORT_VALIDATOR = final_confirmation._validate_evaluator_report
+_REAL_TOKEN_IDENTITY_DERIVER = (
+    final_confirmation._derive_final_token_identities
+)
 
 
 def _write(path: Path, payload: bytes) -> Path:
@@ -214,7 +222,10 @@ def _fixture(tmp_path: Path) -> _Fixture:
                 "required_tokens_per_sequence": 33,
                 "tokenizer_json_sha256": sha256_file(tokenizer),
                 "canonical_token_sequence_hashes": [
-                    sha256_json([sequence, *range(32)]) for sequence in range(8)
+                    sha256_json(
+                        {"input_ids": [sequence, *range(39)]}
+                    )
+                    for sequence in range(8)
                 ],
                 "canonical_token_hash_algorithm": (
                     "engram-canonical-token-sequence-sha256-v1"
@@ -291,7 +302,7 @@ def _fixture(tmp_path: Path) -> _Fixture:
         "compiler_build_manifest": _descriptor(root, build_manifest),
         "dataset": _descriptor(root, dataset),
     }
-    authorization = tmp_path / "fixture-authorization.json"
+    authorization = root / "build" / "fixture-authorization.json"
     protocol_descriptor = _descriptor(root, protocol)
     execution = {
         "evaluator": NATIVE_CAUSAL_EVALUATOR,
@@ -338,6 +349,13 @@ def _fixture(tmp_path: Path) -> _Fixture:
 
 def _passing_report(request: Milestone2FinalRequest) -> dict[str, object]:
     protocol = json.loads(request.protocol_path.read_text())
+    full_sequences = [
+        [sequence, *range(39)] for sequence in range(request.sequence_count)
+    ]
+    scored_prefixes = [
+        values[: request.predictions_per_sequence + 1]
+        for values in full_sequences
+    ]
     positions = request.sequence_count * request.predictions_per_sequence
     configuration = {
         str(layer): {
@@ -468,12 +486,28 @@ def _passing_report(request: Milestone2FinalRequest) -> dict[str, object]:
                 request.predictions_per_sequence + 1
             ),
             "prediction_positions": positions,
-            "input_token_ids_sha256": sha256_json(
-                [[sequence, *range(32)] for sequence in range(8)]
-            ),
-            "sequence_token_ids_sha256": protocol["final_confirmation"][
-                "canonical_token_sequence_hashes"
+            "input_token_ids_sha256": sha256_json(scored_prefixes),
+            "sequence_token_ids_sha256": [
+                sha256_json(values) for values in scored_prefixes
             ],
+            "canonical_full_sequence_hash_algorithm": (
+                CANONICAL_TOKEN_HASH_ALGORITHM
+            ),
+            "canonical_full_sequence_token_ids_sha256": (
+                protocol["final_confirmation"][
+                    "canonical_token_sequence_hashes"
+                ]
+            ),
+            "canonical_full_sequence_token_lengths": [40] * 8,
+            "scored_prefix_hash_algorithm": (
+                SCORED_PREFIX_TOKEN_HASH_ALGORITHM
+            ),
+            "scored_prefix_token_ids_sha256": [
+                sha256_json(values) for values in scored_prefixes
+            ],
+            "scored_prefix_input_token_ids_sha256": (
+                sha256_json(scored_prefixes)
+            ),
         },
         "configuration": configuration,
         "reference_top_ks": {
@@ -599,13 +633,279 @@ def _passing_report(request: Milestone2FinalRequest) -> dict[str, object]:
     return report
 
 
+def _seal_consumed_attempt(fixture: _Fixture) -> Path:
+    authorization = json.loads(fixture.authorization.read_text())
+    audit = authorization["audit"]
+    directory = (
+        fixture.root
+        / audit["directory"]
+        / audit["dataset_key"]
+    )
+    raw = fixture.root / audit["raw_report"]
+    archived_authorization = (
+        directory / f"{audit['attempt_key']}.authorization.json"
+    )
+    archived_authorization.parent.mkdir(parents=True, exist_ok=True)
+    archived_authorization.write_bytes(fixture.authorization.read_bytes())
+    seal = directory / f"{audit['attempt_key']}.evidence-seal.json"
+    atomic_json(
+        seal,
+        {
+            "format": (
+                "engram-native-bitnet-m2-consumed-attempt-evidence-seal"
+            ),
+            "version": 1,
+            "sealed_at": "2026-01-01T00:00:00Z",
+            "implementation_commit": authorization["implementation"][
+                "git_commit"
+            ],
+            "dataset_key": audit["dataset_key"],
+            "attempt_key": audit["attempt_key"],
+            "dataset_sha256": authorization["artifacts"]["dataset"][
+                "sha256"
+            ],
+            "protocol_sha256": authorization["protocol"]["sha256"],
+            "policy_sha256": authorization["artifacts"][
+                "policy_manifest"
+            ]["sha256"],
+            "compiler_build_manifest_sha256": authorization["artifacts"][
+                "compiler_build_manifest"
+            ]["sha256"],
+            "authorization": {
+                "original_path": fixture.authorization.relative_to(
+                    fixture.root
+                ).as_posix(),
+                "archived_path": archived_authorization.relative_to(
+                    fixture.root
+                ).as_posix(),
+                "sha256": sha256_file(fixture.authorization),
+            },
+            "opened_marker": {
+                "path": fixture.marker.relative_to(
+                    fixture.root
+                ).as_posix(),
+                "sha256": sha256_file(fixture.marker),
+            },
+            "result": {
+                "path": fixture.out.relative_to(fixture.root).as_posix(),
+                "sha256": sha256_file(fixture.out),
+            },
+            "raw_evaluator_report": {
+                "path": raw.relative_to(fixture.root).as_posix(),
+                "sha256": sha256_file(raw),
+            },
+            "trust_limitation": (
+                "The original error result did not bind the raw report."
+            ),
+        },
+    )
+    _git(fixture.root, "add", directory.relative_to(fixture.root).as_posix())
+    _git(
+        fixture.root,
+        "-c",
+        "user.name=Engram Test",
+        "-c",
+        "user.email=engram-test@example.invalid",
+        "commit",
+        "-m",
+        "seal consumed fixture evidence",
+    )
+    return directory / f"{audit['attempt_key']}.adjudication.json"
+
+
+def _consume_and_seal_hash_contract_error(
+    fixture: _Fixture,
+    monkeypatch,
+) -> tuple[Path, Path, dict[str, str]]:
+    def historical_hash_contract_bug(*_args, **_kwargs):
+        raise Milestone2FinalConfirmationError(
+            "native evaluator token sequences differ from frozen canonical hashes"
+        )
+
+    monkeypatch.setattr(
+        final_confirmation,
+        "_validate_evaluator_report",
+        historical_hash_contract_bug,
+    )
+    with pytest.raises(
+        Milestone2FinalConfirmationError,
+        match="token sequences differ",
+    ):
+        run_native_bitnet_m2_final_confirmation(
+            fixture.protocol,
+            fixture.authorization,
+            out=fixture.out,
+            opened_marker=fixture.marker,
+            confirm_open=True,
+        )
+    authorization = json.loads(fixture.authorization.read_text())
+    raw = fixture.root / authorization["audit"]["raw_report"]
+    before = {
+        "result": sha256_file(fixture.out),
+        "marker": sha256_file(fixture.marker),
+        "raw": sha256_file(raw),
+    }
+    adjudication_path = _seal_consumed_attempt(fixture)
+    monkeypatch.setattr(
+        final_confirmation,
+        "_validate_evaluator_report",
+        _REAL_REPORT_VALIDATOR,
+    )
+    return raw, adjudication_path, before
+
+
 @pytest.fixture(autouse=True)
 def _fixture_native_evaluator(monkeypatch):
+    def token_identities(request: Milestone2FinalRequest):
+        full_sequences = [
+            [sequence, *range(39)]
+            for sequence in range(request.sequence_count)
+        ]
+        prefixes = [
+            values[: request.predictions_per_sequence + 1]
+            for values in full_sequences
+        ]
+        return final_confirmation._TokenIdentities(
+            full_sequence_hashes=tuple(
+                sha256_json({"input_ids": values})
+                for values in full_sequences
+            ),
+            full_token_lengths=tuple(
+                len(values) for values in full_sequences
+            ),
+            scored_prefix_hashes=tuple(
+                sha256_json(values) for values in prefixes
+            ),
+            scored_prefix_input_ids_sha256=sha256_json(prefixes),
+            scored_prefix_tokens=request.predictions_per_sequence + 1,
+            tokenizer_files=(),
+        )
+
     monkeypatch.setattr(
         final_confirmation,
         "_default_evaluator",
         _passing_report,
     )
+    monkeypatch.setattr(
+        final_confirmation,
+        "_derive_final_token_identities",
+        token_identities,
+    )
+
+
+def test_real_token_identity_deriver_separates_full_and_scored_domains(
+    tmp_path,
+):
+    tokenizers = pytest.importorskip("tokenizers")
+    tokenizer_root = tmp_path / "package" / "tokenizer"
+    tokenizer_root.mkdir(parents=True)
+    vocabulary = {
+        "<unk>": 0,
+        "<s>": 1,
+        "alpha": 2,
+        **{f"seq{index}": index + 3 for index in range(8)},
+    }
+    tokenizer = tokenizers.Tokenizer(
+        tokenizers.models.WordLevel(
+            vocabulary,
+            unk_token="<unk>",
+        )
+    )
+    tokenizer.pre_tokenizer = tokenizers.pre_tokenizers.Whitespace()
+    tokenizer.post_processor = tokenizers.processors.TemplateProcessing(
+        single="<s> $A",
+        special_tokens=[("<s>", 1)],
+    )
+    tokenizer.save(str(tokenizer_root / "tokenizer.json"))
+    atomic_json(
+        tokenizer_root / "tokenizer_config.json",
+        {
+            "bos_token": "<s>",
+            "tokenizer_class": "PreTrainedTokenizerFast",
+            "unk_token": "<unk>",
+        },
+    )
+    atomic_json(
+        tokenizer_root / "special_tokens_map.json",
+        {
+            "bos_token": "<s>",
+            "unk_token": "<unk>",
+        },
+    )
+    tokenizer_files = [
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "special_tokens_map.json",
+    ]
+    inventory = {
+        f"tokenizer/{name}": {
+            "bytes": (tokenizer_root / name).stat().st_size,
+            "sha256": sha256_file(tokenizer_root / name),
+        }
+        for name in tokenizer_files
+    }
+    package_manifest = tmp_path / "package" / "manifest.json"
+    atomic_json(
+        package_manifest,
+        {
+            "tokenizer": {
+                "path": "tokenizer",
+                "files": tokenizer_files,
+                "fix_mistral_regex": False,
+            },
+            "files": inventory,
+        },
+    )
+    dataset = tmp_path / "holdout.jsonl"
+    dataset.write_text(
+        "".join(
+            json.dumps(
+                {
+                    "text": " ".join(
+                        [*(["alpha"] * 38), f"seq{sequence}"]
+                    )
+                }
+            )
+            + "\n"
+            for sequence in range(8)
+        )
+    )
+    unused = tmp_path / "unused"
+    request = Milestone2FinalRequest(
+        protocol_path=unused,
+        authorization_manifest_path=unused,
+        package=package_manifest.parent,
+        package_manifest=package_manifest,
+        record_artifact=unused,
+        coordinate_index=unused,
+        policy_manifest=unused,
+        tokenizer_json=tokenizer_root / "tokenizer.json",
+        dense_native_library=unused,
+        native_library=unused,
+        compiler_build_manifest=unused,
+        dataset=dataset,
+        raw_report=unused,
+        record_offset=0,
+        sequence_count=8,
+        predictions_per_sequence=32,
+        threads=1,
+        reference_top_ks=(1,),
+        expected_sha256={},
+    )
+
+    identities = _REAL_TOKEN_IDENTITY_DERIVER(request)
+
+    assert identities.full_token_lengths == (40,) * 8
+    assert identities.scored_prefix_tokens == 33
+    assert all(
+        full != prefix
+        for full, prefix in zip(
+            identities.full_sequence_hashes,
+            identities.scored_prefix_hashes,
+            strict=True,
+        )
+    )
+    assert len(identities.tokenizer_files) == 3
 
 
 def test_final_runner_opens_fixture_once_and_persists_passing_audit(
@@ -644,6 +944,18 @@ def test_final_runner_opens_fixture_once_and_persists_passing_audit(
     assert marker["status"] == "pass"
     assert marker["reuse_allowed"] is False
     assert marker["dataset"]["actual_sha256"] == sha256_file(fixture.dataset)
+    protocol = json.loads(fixture.protocol.read_text())
+    assert (
+        persisted["evaluator_report"]["dataset"][
+            "sequence_token_ids_sha256"
+        ]
+        != protocol["final_confirmation"][
+            "canonical_token_sequence_hashes"
+        ]
+    )
+    assert persisted["token_identities"]["canonical_full_sequence"][
+        "token_lengths"
+    ] == [40] * 8
 
     with pytest.raises(
         Milestone2FinalConfirmationError,
@@ -914,6 +1226,159 @@ def test_final_runner_persists_native_error_after_opening(
     assert marker["reuse_allowed"] is False
 
 
+def test_postmortem_adjudicates_only_the_sealed_hash_contract_error(
+    tmp_path,
+    monkeypatch,
+):
+    fixture = _fixture(tmp_path)
+    raw, adjudication_path, before = (
+        _consume_and_seal_hash_contract_error(
+            fixture,
+            monkeypatch,
+        )
+    )
+
+    def forbidden_evaluator(_request):
+        raise AssertionError("postmortem must not execute the evaluator")
+
+    monkeypatch.setattr(
+        final_confirmation,
+        "_default_evaluator",
+        forbidden_evaluator,
+    )
+    adjudication = adjudicate_native_bitnet_m2_final_confirmation(
+        fixture.protocol,
+        fixture.authorization,
+        out=adjudication_path,
+        confirm_adjudicate=True,
+    )
+
+    assert adjudication["format"] == FINAL_ADJUDICATION_FORMAT
+    assert adjudication["status"] == "pass"
+    assert adjudication["milestone_2_passed"] is True
+    assert adjudication["adjudication"]["model_or_evaluator_executed"] is False
+    assert adjudication["original_attempt"]["status"] == "error"
+    assert adjudication["checks"]["protocol_token_identities"] == {
+        "canonical_hash_algorithm": True,
+        "full_sequence_hashes": True,
+        "full_token_lengths": True,
+        "scored_prefix_length": True,
+    }
+    assert before == {
+        "result": sha256_file(fixture.out),
+        "marker": sha256_file(fixture.marker),
+        "raw": sha256_file(raw),
+    }
+
+    with pytest.raises(
+        Milestone2FinalConfirmationError,
+        match="overwrite an existing final adjudication",
+    ):
+        adjudicate_native_bitnet_m2_final_confirmation(
+            fixture.protocol,
+            fixture.authorization,
+            out=adjudication_path,
+            confirm_adjudicate=True,
+        )
+
+
+def test_postmortem_rejects_evidence_resealed_in_a_later_commit(
+    tmp_path,
+    monkeypatch,
+):
+    fixture = _fixture(tmp_path)
+    raw, adjudication_path, _before = (
+        _consume_and_seal_hash_contract_error(
+            fixture,
+            monkeypatch,
+        )
+    )
+    authorization = json.loads(fixture.authorization.read_text())
+    audit = authorization["audit"]
+    seal = (
+        fixture.root
+        / audit["directory"]
+        / audit["dataset_key"]
+        / f"{audit['attempt_key']}.evidence-seal.json"
+    )
+    forged = json.loads(raw.read_text())
+    forged["quality"]["mean_kl_divergence"] = 0.02
+    atomic_json(raw, forged)
+    resealed = json.loads(seal.read_text())
+    resealed["raw_evaluator_report"]["sha256"] = sha256_file(raw)
+    atomic_json(seal, resealed)
+    directory = seal.parent.relative_to(fixture.root).as_posix()
+    _git(fixture.root, "add", directory)
+    _git(
+        fixture.root,
+        "-c",
+        "user.name=Engram Test",
+        "-c",
+        "user.email=engram-test@example.invalid",
+        "commit",
+        "-m",
+        "attempt to reseal evidence",
+    )
+
+    with pytest.raises(
+        Milestone2FinalConfirmationError,
+        match="modified after its unique origin",
+    ):
+        adjudicate_native_bitnet_m2_final_confirmation(
+            fixture.protocol,
+            fixture.authorization,
+            out=adjudication_path,
+            confirm_adjudicate=True,
+        )
+    assert not adjudication_path.exists()
+
+
+def test_postmortem_rejects_head_change_before_publication(
+    tmp_path,
+    monkeypatch,
+):
+    fixture = _fixture(tmp_path)
+    _raw, adjudication_path, _before = (
+        _consume_and_seal_hash_contract_error(
+            fixture,
+            monkeypatch,
+        )
+    )
+
+    def advance_head(*args, **kwargs):
+        result = _REAL_REPORT_VALIDATOR(*args, **kwargs)
+        _write(fixture.root / "post-preflight.txt", b"advance HEAD")
+        _git(fixture.root, "add", "post-preflight.txt")
+        _git(
+            fixture.root,
+            "-c",
+            "user.name=Engram Test",
+            "-c",
+            "user.email=engram-test@example.invalid",
+            "commit",
+            "-m",
+            "advance after adjudication preflight",
+        )
+        return result
+
+    monkeypatch.setattr(
+        final_confirmation,
+        "_validate_evaluator_report",
+        advance_head,
+    )
+    with pytest.raises(
+        Milestone2FinalConfirmationError,
+        match="Git commit changed before publication",
+    ):
+        adjudicate_native_bitnet_m2_final_confirmation(
+            fixture.protocol,
+            fixture.authorization,
+            out=adjudication_path,
+            confirm_adjudicate=True,
+        )
+    assert not adjudication_path.exists()
+
+
 @pytest.mark.parametrize("target", ["protocol", "authorization"])
 def test_final_runner_rejects_control_manifest_mutation_during_execution(
     tmp_path,
@@ -982,6 +1447,46 @@ def test_final_runner_persists_a_gate_failure_without_retry(
     assert result["milestone_2_passed"] is False
     assert result["checks"]["quality"]["nll_delta"] is False
     assert json.loads(fixture.marker.read_text())["status"] == "fail"
+
+
+@pytest.mark.parametrize("forgery", ["full_hashes_as_prefix", "aggregate"])
+def test_final_runner_rejects_scored_prefix_identity_forgery(
+    tmp_path,
+    monkeypatch,
+    forgery,
+):
+    fixture = _fixture(tmp_path)
+
+    def forged_identity(request):
+        report = _passing_report(request)
+        if forgery == "full_hashes_as_prefix":
+            report["dataset"]["sequence_token_ids_sha256"] = report[
+                "dataset"
+            ]["canonical_full_sequence_token_ids_sha256"]
+        else:
+            report["dataset"]["input_token_ids_sha256"] = "0" * 64
+        atomic_json(request.raw_report, report)
+        return report
+
+    monkeypatch.setattr(
+        final_confirmation,
+        "_default_evaluator",
+        forged_identity,
+    )
+    with pytest.raises(
+        Milestone2FinalConfirmationError,
+        match="scored-prefix token identities differ",
+    ):
+        run_native_bitnet_m2_final_confirmation(
+            fixture.protocol,
+            fixture.authorization,
+            out=fixture.out,
+            opened_marker=fixture.marker,
+            confirm_open=True,
+        )
+    assert json.loads(fixture.out.read_text())["decision"] == (
+        "final_holdout_consumed_with_error"
+    )
 
 
 def test_final_runner_derives_recall_gate_from_integer_counts(
