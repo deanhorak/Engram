@@ -1,0 +1,98 @@
+{
+  "artifact_sha256": "4fcf598af4346d5391ba428e32ba1629daae2768b73ab6bf872d3f9fb300ab55",
+  "configuration": {
+    "batch_size": 64,
+    "device": "cpu",
+    "layers": [
+      14
+    ],
+    "learning_rate": 0.002,
+    "rank": 64,
+    "seed": 20260726,
+    "steps": 100,
+    "top_ks": [
+      1728
+    ]
+  },
+  "decision": "reject_or_revise_router_before_causal_work",
+  "elapsed_seconds": 4.403419249996659,
+  "eligible_for_all_layer_training": false,
+  "experiment": "native_bitnet_nonlinear_low_rank_membership_router",
+  "layers": [
+    {
+      "candidate_recall": {
+        "1728": {
+          "mean": 0.5950453016493056,
+          "meets_95_percent": false,
+          "minimum": 0.41550925925925924,
+          "p05": 0.48466435185185186,
+          "traffic": {
+            "candidate_record_bytes": 2657664,
+            "complete_modelled_bytes": 3883904,
+            "dense_q4_bytes": 26542080,
+            "excludes": "headers, alignment, and runtime scratch",
+            "fraction_of_dense_q4": 0.14633005401234567,
+            "includes": "FP16 input/output router factors and bias plus complete packed gate/up/gain/down payload for every candidate",
+            "passes_45_percent": true,
+            "router_bytes": 1226240,
+            "router_parameters": 613120
+          }
+        },
+        "2160": {
+          "mean": 0.6774314597800926,
+          "meets_95_percent": false,
+          "minimum": 0.49594907407407407,
+          "p05": 0.5665509259259259,
+          "traffic": {
+            "candidate_record_bytes": 3322080,
+            "complete_modelled_bytes": 4548320,
+            "dense_q4_bytes": 26542080,
+            "excludes": "headers, alignment, and runtime scratch",
+            "fraction_of_dense_q4": 0.17136260609567902,
+            "includes": "FP16 input/output router factors and bias plus complete packed gate/up/gain/down payload for every candidate",
+            "passes_45_percent": true,
+            "router_bytes": 1226240,
+            "router_parameters": 613120
+          }
+        },
+        "2592": {
+          "mean": 0.7433155201099537,
+          "meets_95_percent": false,
+          "minimum": 0.5677083333333334,
+          "p05": 0.6348379629629629,
+          "traffic": {
+            "candidate_record_bytes": 3986496,
+            "complete_modelled_bytes": 5212736,
+            "dense_q4_bytes": 26542080,
+            "excludes": "headers, alignment, and runtime scratch",
+            "fraction_of_dense_q4": 0.19639515817901235,
+            "includes": "FP16 input/output router factors and bias plus complete packed gate/up/gain/down payload for every candidate",
+            "passes_45_percent": true,
+            "router_bytes": 1226240,
+            "router_parameters": 613120
+          }
+        }
+      },
+      "final_training_loss": 0.6412822604179382,
+      "layer": 14,
+      "rank": 64,
+      "top_k": 1728,
+      "training_records": 1024,
+      "validation_records": 256
+    }
+  ],
+  "milestone_2_status": "blocked",
+  "package": "/home/dean/repos/engram/work/native_bitnet/model.engram-bitnet",
+  "recall_gate": 0.95,
+  "trace_reconstruction_caveat": "MLP inputs are reconstructed from normalized stage and attention traces; RMSNorm removes their shared scale up to epsilon.",
+  "training_trace": {
+    "dataset_hash": "887f4246205ca43c8f35f015509f57524019ecb56ecf6e78767172ef13ddda14",
+    "path": "/home/dean/repos/engram/work/controller_distillation/bitnet_train_64x16_b4",
+    "records": 1024
+  },
+  "validation_trace": {
+    "dataset_hash": "073e2b648a5cf84a97697330384338b1193f148ff1eb3a3cc9ec4cf21d37f977",
+    "path": "/home/dean/repos/engram/work/controller_distillation/bitnet_validation_16x16_b4",
+    "records": 256
+  }
+}

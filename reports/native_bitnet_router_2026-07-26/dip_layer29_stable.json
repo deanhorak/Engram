@@ -1,0 +1,119 @@
+{
+  "arms": [
+    {
+      "candidate_count": 3111,
+      "candidate_multiplier": 1.5,
+      "candidate_recall": {
+        "mean": 0.9386922161282545,
+        "minimum": 0.5781099324975892,
+        "p05": 0.7379459980713596
+      },
+      "input_coordinates": 1920,
+      "input_fraction": 0.75,
+      "meets_joint_screen": false,
+      "traffic": {
+        "complete_candidate_record_bytes": 4784718,
+        "complete_modelled_bytes": 10093134,
+        "coordinate_major_gate_up_bytes": 5308416,
+        "dense_q4_bytes": 26542080,
+        "fraction_of_dense_q4": 0.38026914243344906,
+        "metadata_included": false,
+        "passes_45_percent": true
+      }
+    },
+    {
+      "candidate_count": 3630,
+      "candidate_multiplier": 1.75,
+      "candidate_recall": {
+        "mean": 0.967840299541948,
+        "minimum": 0.633076181292189,
+        "p05": 0.7924300867888139
+      },
+      "input_coordinates": 1920,
+      "input_fraction": 0.75,
+      "meets_joint_screen": true,
+      "traffic": {
+        "complete_candidate_record_bytes": 5582940,
+        "complete_modelled_bytes": 10891356,
+        "coordinate_major_gate_up_bytes": 5308416,
+        "dense_q4_bytes": 26542080,
+        "fraction_of_dense_q4": 0.41034297236689815,
+        "metadata_included": false,
+        "passes_45_percent": true
+      }
+    },
+    {
+      "candidate_count": 3111,
+      "candidate_multiplier": 1.5,
+      "candidate_recall": {
+        "mean": 0.9391687258919961,
+        "minimum": 0.5766634522661523,
+        "p05": 0.7385486981677917
+      },
+      "input_coordinates": 2240,
+      "input_fraction": 0.875,
+      "meets_joint_screen": false,
+      "traffic": {
+        "complete_candidate_record_bytes": 4784718,
+        "complete_modelled_bytes": 10977870,
+        "coordinate_major_gate_up_bytes": 6193152,
+        "dense_q4_bytes": 26542080,
+        "fraction_of_dense_q4": 0.4136024757667824,
+        "metadata_included": false,
+        "passes_45_percent": true
+      }
+    },
+    {
+      "candidate_count": 3630,
+      "candidate_multiplier": 1.75,
+      "candidate_recall": {
+        "mean": 0.9676820907666346,
+        "minimum": 0.6359691417550627,
+        "p05": 0.7945998071359691
+      },
+      "input_coordinates": 2240,
+      "input_fraction": 0.875,
+      "meets_joint_screen": true,
+      "traffic": {
+        "complete_candidate_record_bytes": 5582940,
+        "complete_modelled_bytes": 11776092,
+        "coordinate_major_gate_up_bytes": 6193152,
+        "dense_q4_bytes": 26542080,
+        "fraction_of_dense_q4": 0.4436763057002315,
+        "metadata_included": false,
+        "passes_45_percent": true
+      }
+    }
+  ],
+  "best_arm": {
+    "candidate_count": 3630,
+    "candidate_multiplier": 1.75,
+    "candidate_recall": {
+      "mean": 0.967840299541948,
+      "minimum": 0.633076181292189,
+      "p05": 0.7924300867888139
+    },
+    "input_coordinates": 1920,
+    "input_fraction": 0.75,
+    "meets_joint_screen": true,
+    "traffic": {
+      "complete_candidate_record_bytes": 5582940,
+      "complete_modelled_bytes": 10891356,
+      "coordinate_major_gate_up_bytes": 5308416,
+      "dense_q4_bytes": 26542080,
+      "fraction_of_dense_q4": 0.41034297236689815,
+      "metadata_included": false,
+      "passes_45_percent": true
+    }
+  },
+  "decision": "implement_selected_record_causal_dip",
+  "elapsed_seconds": 0.6165026119997492,
+  "experiment": "native_bitnet_dynamic_input_pruning_router",
+  "layer": 29,
+  "milestone_2_status": "blocked",
+  "package": "/home/dean/repos/engram/work/native_bitnet/model.engram-bitnet",
+  "recall_gate": 0.95,
+  "records": 256,
+  "top_k": 2074,
+  "validation_trace": "/home/dean/repos/engram/work/controller_distillation/bitnet_validation_16x16_b4"
+}

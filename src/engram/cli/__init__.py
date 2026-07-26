@@ -26,6 +26,10 @@ from engram.evaluation.native_bitnet_oracle import (
     evaluate_native_bitnet_oracle_causal,
     evaluate_native_bitnet_oracle_layer_sweep,
 )
+from engram.evaluation.native_bitnet_router import (
+    evaluate_native_bitnet_dip_router,
+    evaluate_native_bitnet_low_rank_router,
+)
 from engram.evaluation.native_bitnet_attention import (
     evaluate_native_bitnet_attention_substitution,
 )
@@ -289,6 +293,41 @@ def _parser() -> argparse.ArgumentParser:
     bitnet_oracle_sweep.add_argument("--record-offset", type=int, default=0)
     bitnet_oracle_sweep.add_argument("--library", type=Path)
     bitnet_oracle_sweep.add_argument("--threads", type=int)
+
+    bitnet_router = commands.add_parser(
+        "evaluate-native-bitnet-router",
+        help="fit compact BitNet routers against exact oracle memberships",
+    )
+    bitnet_router.add_argument("--model", required=True, type=Path)
+    bitnet_router.add_argument("--training-trace", required=True, type=Path)
+    bitnet_router.add_argument("--validation-trace", required=True, type=Path)
+    bitnet_router.add_argument("--out", required=True, type=Path)
+    bitnet_router.add_argument("--layers", nargs="+", type=int, default=(0, 14, 29))
+    bitnet_router.add_argument(
+        "--top-ks", nargs="+", type=int, default=(1728, 1728, 2074)
+    )
+    bitnet_router.add_argument("--rank", type=int, default=128)
+    bitnet_router.add_argument("--steps", type=int, default=500)
+    bitnet_router.add_argument("--batch-size", type=int, default=128)
+    bitnet_router.add_argument("--learning-rate", type=float, default=2e-3)
+    bitnet_router.add_argument("--device", default="cuda")
+    bitnet_router.add_argument("--seed", type=int, default=20260726)
+
+    bitnet_dip = commands.add_parser(
+        "evaluate-native-bitnet-dip-router",
+        help="screen coordinate-pruned BitNet gate/up routing on held-out states",
+    )
+    bitnet_dip.add_argument("--model", required=True, type=Path)
+    bitnet_dip.add_argument("--validation-trace", required=True, type=Path)
+    bitnet_dip.add_argument("--out", required=True, type=Path)
+    bitnet_dip.add_argument("--layer", type=int, default=14)
+    bitnet_dip.add_argument("--top-k", type=int, default=1728)
+    bitnet_dip.add_argument(
+        "--input-fractions", nargs="+", type=float, default=(0.25, 0.5, 0.75)
+    )
+    bitnet_dip.add_argument(
+        "--candidate-multipliers", nargs="+", type=float, default=(1.0, 1.25, 1.5)
+    )
 
     fixture = commands.add_parser(
         "create-fixture", help="create deterministic random Llama-shaped weights"
@@ -1620,6 +1659,35 @@ def main(argv: Sequence[str] | None = None) -> int:
             threads=args.threads,
         )
         print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "evaluate-native-bitnet-router":
+        result = evaluate_native_bitnet_low_rank_router(
+            args.model,
+            args.training_trace,
+            args.validation_trace,
+            out=args.out,
+            layers=args.layers,
+            top_ks=args.top_ks,
+            rank=args.rank,
+            steps=args.steps,
+            batch_size=args.batch_size,
+            learning_rate=args.learning_rate,
+            device=args.device,
+            seed=args.seed,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["eligible_for_all_layer_training"] else 2
+    elif args.command == "evaluate-native-bitnet-dip-router":
+        result = evaluate_native_bitnet_dip_router(
+            args.model,
+            args.validation_trace,
+            out=args.out,
+            layer=args.layer,
+            top_k=args.top_k,
+            input_fractions=args.input_fractions,
+            candidate_multipliers=args.candidate_multipliers,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["best_arm"]["meets_joint_screen"] else 2
     elif args.command == "create-fixture":
         print(create_tiny_fixture(args.out, seed=args.seed))
     elif args.command == "trace":

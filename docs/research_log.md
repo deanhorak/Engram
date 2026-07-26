@@ -17,6 +17,24 @@
   membership prediction, selected-key coefficient reconstruction, serialized
   traffic accounting, and CPU causal confirmation.
 
+## 2026-07-26 — Analytic BitNet router crosses representative recall screen
+
+- A nonlinear rank-64 membership router recalled 74.33% of layer-14 oracle
+  records with 1.5x candidates. Rank 256 improved only to 77.75%; this learned
+  family is rejected before causal work.
+- A BitNet-specific Dynamic Input Pruning router instead approximates the
+  teacher gate/up dot products from the largest input coordinates. The
+  coordinate-major ternary index is charged at five trits per byte, and every
+  candidate is charged as a complete gate/up/gain/down record.
+- With 75% input coordinates, held-out mean recall reaches 96.23% at layer 0,
+  98.06% at layer 14, and 96.78% at layer 29. Modeled traffic is respectively
+  about 35%, 35%, and 41% of dense ideal Q4.
+- Fixed a recall-harness defect: exact-zero oracle ties now use stable ordering
+  rather than arbitrary `argpartition` membership.
+- These are representative-layer screens, not a Milestone-2 pass. All-layer
+  recall, selected-record coefficient reconstruction, serialized physical
+  traffic, causal quality, and CPU latency remain.
+
 ## 2026-07-25 — Package-owned native controller boundary
 
 - Added authenticated schema-v3 controller installation to native BitNet

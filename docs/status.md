@@ -89,6 +89,16 @@ against these memberships, reconstruct coefficients from selected gate/up
 keys only, serialize the router/index, then rerun causal quality, recall,
 complete cold traffic, and CPU latency.
 
+The first practical-router screen is now positive at representative depths.
+A direct nonlinear rank-256 membership predictor is rejected at only 77.75%
+recall with 1.5x candidates. BitNet-specific Dynamic Input Pruning instead
+scores ternary gate/up keys from the largest 75% of input coordinates and
+reaches 96.23%, 98.06%, and 96.78% recall at layers 0, 14, and 29. Its
+provisional modeled traffic is about 35–41% of dense Q4. This result advances
+to an all-layer recall sweep and selected-record causal kernel; it is not yet
+serialized or a Milestone-2 pass. See the
+[router screen](../reports/native_bitnet_router_2026-07-26/summary.md).
+
 ## What the latest experiments changed
 
 ### Exact activation-sparse training paths

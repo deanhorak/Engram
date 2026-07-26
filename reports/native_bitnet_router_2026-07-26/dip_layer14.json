@@ -1,0 +1,224 @@
+{
+  "arms": [
+    {
+      "candidate_count": 1728,
+      "candidate_multiplier": 1.0,
+      "candidate_recall": {
+        "mean": 0.7056206597222223,
+        "minimum": 0.546875,
+        "p05": 0.5831886574074074
+      },
+      "input_coordinates": 640,
+      "input_fraction": 0.25,
+      "meets_joint_screen": false,
+      "traffic": {
+        "complete_candidate_record_bytes": 2657664,
+        "complete_modelled_bytes": 4427136,
+        "coordinate_major_gate_up_bytes": 1769472,
+        "dense_q4_bytes": 26542080,
+        "fraction_of_dense_q4": 0.166796875,
+        "metadata_included": false,
+        "passes_45_percent": true
+      }
+    },
+    {
+      "candidate_count": 2160,
+      "candidate_multiplier": 1.25,
+      "candidate_recall": {
+        "mean": 0.7948698820891203,
+        "minimum": 0.6302083333333334,
+        "p05": 0.6730324074074074
+      },
+      "input_coordinates": 640,
+      "input_fraction": 0.25,
+      "meets_joint_screen": false,
+      "traffic": {
+        "complete_candidate_record_bytes": 3322080,
+        "complete_modelled_bytes": 5091552,
+        "coordinate_major_gate_up_bytes": 1769472,
+        "dense_q4_bytes": 26542080,
+        "fraction_of_dense_q4": 0.19182942708333334,
+        "metadata_included": false,
+        "passes_45_percent": true
+      }
+    },
+    {
+      "candidate_count": 2592,
+      "candidate_multiplier": 1.5,
+      "candidate_recall": {
+        "mean": 0.8606883861400463,
+        "minimum": 0.7065972222222222,
+        "p05": 0.7390046296296297
+      },
+      "input_coordinates": 640,
+      "input_fraction": 0.25,
+      "meets_joint_screen": false,
+      "traffic": {
+        "complete_candidate_record_bytes": 3986496,
+        "complete_modelled_bytes": 5755968,
+        "coordinate_major_gate_up_bytes": 1769472,
+        "dense_q4_bytes": 26542080,
+        "fraction_of_dense_q4": 0.21686197916666666,
+        "metadata_included": false,
+        "passes_45_percent": true
+      }
+    },
+    {
+      "candidate_count": 1728,
+      "candidate_multiplier": 1.0,
+      "candidate_recall": {
+        "mean": 0.8207126193576388,
+        "minimum": 0.6504629629629629,
+        "p05": 0.7024016203703703
+      },
+      "input_coordinates": 1280,
+      "input_fraction": 0.5,
+      "meets_joint_screen": false,
+      "traffic": {
+        "complete_candidate_record_bytes": 2657664,
+        "complete_modelled_bytes": 6196608,
+        "coordinate_major_gate_up_bytes": 3538944,
+        "dense_q4_bytes": 26542080,
+        "fraction_of_dense_q4": 0.23346354166666666,
+        "metadata_included": false,
+        "passes_45_percent": true
+      }
+    },
+    {
+      "candidate_count": 2160,
+      "candidate_multiplier": 1.25,
+      "candidate_recall": {
+        "mean": 0.9038605866608795,
+        "minimum": 0.7465277777777778,
+        "p05": 0.787037037037037
+      },
+      "input_coordinates": 1280,
+      "input_fraction": 0.5,
+      "meets_joint_screen": false,
+      "traffic": {
+        "complete_candidate_record_bytes": 3322080,
+        "complete_modelled_bytes": 6861024,
+        "coordinate_major_gate_up_bytes": 3538944,
+        "dense_q4_bytes": 26542080,
+        "fraction_of_dense_q4": 0.25849609375,
+        "metadata_included": false,
+        "passes_45_percent": true
+      }
+    },
+    {
+      "candidate_count": 2592,
+      "candidate_multiplier": 1.5,
+      "candidate_recall": {
+        "mean": 0.9476838288483797,
+        "minimum": 0.7818287037037037,
+        "p05": 0.8431712962962963
+      },
+      "input_coordinates": 1280,
+      "input_fraction": 0.5,
+      "meets_joint_screen": false,
+      "traffic": {
+        "complete_candidate_record_bytes": 3986496,
+        "complete_modelled_bytes": 7525440,
+        "coordinate_major_gate_up_bytes": 3538944,
+        "dense_q4_bytes": 26542080,
+        "fraction_of_dense_q4": 0.2835286458333333,
+        "metadata_included": false,
+        "passes_45_percent": true
+      }
+    },
+    {
+      "candidate_count": 1728,
+      "candidate_multiplier": 1.0,
+      "candidate_recall": {
+        "mean": 0.8930799696180555,
+        "minimum": 0.7418981481481481,
+        "p05": 0.8042534722222222
+      },
+      "input_coordinates": 1920,
+      "input_fraction": 0.75,
+      "meets_joint_screen": false,
+      "traffic": {
+        "complete_candidate_record_bytes": 2657664,
+        "complete_modelled_bytes": 7966080,
+        "coordinate_major_gate_up_bytes": 5308416,
+        "dense_q4_bytes": 26542080,
+        "fraction_of_dense_q4": 0.3001302083333333,
+        "metadata_included": false,
+        "passes_45_percent": true
+      }
+    },
+    {
+      "candidate_count": 2160,
+      "candidate_multiplier": 1.25,
+      "candidate_recall": {
+        "mean": 0.9635484483506944,
+        "minimum": 0.765625,
+        "p05": 0.8774594907407407
+      },
+      "input_coordinates": 1920,
+      "input_fraction": 0.75,
+      "meets_joint_screen": true,
+      "traffic": {
+        "complete_candidate_record_bytes": 3322080,
+        "complete_modelled_bytes": 8630496,
+        "coordinate_major_gate_up_bytes": 5308416,
+        "dense_q4_bytes": 26542080,
+        "fraction_of_dense_q4": 0.32516276041666664,
+        "metadata_included": false,
+        "passes_45_percent": true
+      }
+    },
+    {
+      "candidate_count": 2592,
+      "candidate_multiplier": 1.5,
+      "candidate_recall": {
+        "mean": 0.9806495949074074,
+        "minimum": 0.7905092592592593,
+        "p05": 0.9076967592592593
+      },
+      "input_coordinates": 1920,
+      "input_fraction": 0.75,
+      "meets_joint_screen": true,
+      "traffic": {
+        "complete_candidate_record_bytes": 3986496,
+        "complete_modelled_bytes": 9294912,
+        "coordinate_major_gate_up_bytes": 5308416,
+        "dense_q4_bytes": 26542080,
+        "fraction_of_dense_q4": 0.3501953125,
+        "metadata_included": false,
+        "passes_45_percent": true
+      }
+    }
+  ],
+  "best_arm": {
+    "candidate_count": 2592,
+    "candidate_multiplier": 1.5,
+    "candidate_recall": {
+      "mean": 0.9806495949074074,
+      "minimum": 0.7905092592592593,
+      "p05": 0.9076967592592593
+    },
+    "input_coordinates": 1920,
+    "input_fraction": 0.75,
+    "meets_joint_screen": true,
+    "traffic": {
+      "complete_candidate_record_bytes": 3986496,
+      "complete_modelled_bytes": 9294912,
+      "coordinate_major_gate_up_bytes": 5308416,
+      "dense_q4_bytes": 26542080,
+      "fraction_of_dense_q4": 0.3501953125,
+      "metadata_included": false,
+      "passes_45_percent": true
+    }
+  },
+  "decision": "implement_selected_record_causal_dip",
+  "elapsed_seconds": 0.8438324760063551,
+  "experiment": "native_bitnet_dynamic_input_pruning_router",
+  "layer": 14,
+  "milestone_2_status": "blocked",
+  "package": "/home/dean/repos/engram/work/native_bitnet/model.engram-bitnet",
+  "recall_gate": 0.95,
+  "records": 256,
+  "top_k": 1728,
+  "validation_trace": "/home/dean/repos/engram/work/controller_distillation/bitnet_validation_16x16_b4"
+}
