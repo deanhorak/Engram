@@ -1,0 +1,83 @@
+{
+  "artifacts": {
+    "base_artifact": {
+      "bytes": 318924544,
+      "path": "work/native_bitnet/model.engram-bitnet/mlp/model.bitnet-records.bin",
+      "sha256": "4fcf598af4346d5391ba428e32ba1629daae2768b73ab6bf872d3f9fb300ab55"
+    },
+    "compiler_build_manifest": {
+      "bytes": 18550,
+      "path": "build/native_bitnet_m2_compiler_build_manifest.json",
+      "sha256": "0dd36dcceb1b3cbf62973552f1c871721b2f7eb953961bac09d0819e868a52f3"
+    },
+    "coordinate_index": {
+      "bytes": 216688448,
+      "path": "work/native_bitnet/model.provisional.bitnet-dip-index.bin",
+      "sha256": "b98ce4e46c8ae67d9d92d4d13f5de3d4fe45ef2c76400bd9d50be08b2bd60e15"
+    },
+    "dataset": {
+      "bytes": 4341,
+      "path": "tests/fixtures/milestone2_bitnet_holdout_v1.jsonl",
+      "sha256": "e5606e8d18241b996b4e46cbc1b9559792b1a87ddd491bad5934eed3185b03a4"
+    },
+    "dense_native_library": {
+      "bytes": 2091328,
+      "path": "build/libengram_bitnet.so",
+      "sha256": "400b5614ec20871b4edd06b9a7c783ccff295ead03a1f53d155a3a46e1a34586"
+    },
+    "native_library": {
+      "bytes": 2043960,
+      "path": "build/libengram_bitnet_dip.so",
+      "sha256": "a3b05bdc29bc2e43fa0e9325b632a27297f3f2a94e71b7fd02d8c8e8b7197cdc"
+    },
+    "package_manifest": {
+      "bytes": 4367,
+      "path": "work/native_bitnet/model.engram-bitnet/manifest.json",
+      "sha256": "cddd96a01ff03bd565c108ab58925e7463aad35ebd8b1cc315eb7b050030cd35"
+    },
+    "policy_manifest": {
+      "bytes": 22037,
+      "path": "reports/native_bitnet_m2_2026-07-26/frozen_dip_policy.json",
+      "sha256": "c572754e597a760bc5ea6ba337bdaaf092e4ae1d5b5e90b6a2a14cbfbea3768e"
+    },
+    "tokenizer_json": {
+      "bytes": 9085698,
+      "path": "work/native_bitnet/model.engram-bitnet/tokenizer/tokenizer.json",
+      "sha256": "e134af98b985517b4f068e3755ae90d4e9cd2d45d328325dc503f1c6b2d06cc7"
+    }
+  },
+  "audit": {
+    "attempt_key": "0fdce5a3eb2eaaec5e3b47587d7693bfdc0fed6fde53e3a40a74b8d2a76d4aa3",
+    "dataset_key": "49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2",
+    "directory": "reports/native_bitnet_m2_final_audit",
+    "opened_marker": "reports/native_bitnet_m2_final_audit/49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2/opened.json",
+    "raw_report": "reports/native_bitnet_m2_final_audit/49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2/0fdce5a3eb2eaaec5e3b47587d7693bfdc0fed6fde53e3a40a74b8d2a76d4aa3.native-causal.raw.json",
+    "result": "reports/native_bitnet_m2_final_audit/49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2/0fdce5a3eb2eaaec5e3b47587d7693bfdc0fed6fde53e3a40a74b8d2a76d4aa3.result.json"
+  },
+  "execution": {
+    "dataset_role": "final",
+    "debug_recall": true,
+    "evaluator": "engram.evaluation.native_bitnet_dip_native_causal.evaluate_native_bitnet_dip_native_causal",
+    "threads": 12
+  },
+  "format": "engram-native-bitnet-m2-final-confirmation",
+  "implementation": {
+    "git_commit": "c725a46b8280a49513d9530f9a84161e70cd7e11",
+    "repository_root": "/home/dean/repos/engram",
+    "require_clean_worktree": true
+  },
+  "protocol": {
+    "bytes": 7515,
+    "path": "reports/native_bitnet_m2_2026-07-26/frozen_protocol.json",
+    "sha256": "206c40b2b8ffcc6fe7afd44cbfcae247d3f635dee3d738abc8d4a9c0d1c47809"
+  },
+  "status": "frozen",
+  "trust_chain": {
+    "acyclic": true,
+    "authorization_independently_pins_policy_and_compiler_build": true,
+    "compiler_build_binds_same_native_libraries": true,
+    "dataset_contents_read": false,
+    "policy_binds_compiler_build_manifest": false
+  },
+  "version": 1
+}

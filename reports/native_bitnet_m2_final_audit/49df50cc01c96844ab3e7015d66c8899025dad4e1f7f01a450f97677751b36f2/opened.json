@@ -1,0 +1,27 @@
+{
+  "attempt_id": "ff246cc6-592c-47f0-8fb7-b22fda6df2ec",
+  "authorization_manifest_sha256": "8bd7a713bf1f1dac2f62d8b7640f1063933902c98a885eae6af3c9f924d26aa0",
+  "completed_at": "2026-07-26T21:43:46.219047Z",
+  "created_at": "2026-07-26T21:27:31.539574Z",
+  "dataset": {
+    "actual_sha256": "e5606e8d18241b996b4e46cbc1b9559792b1a87ddd491bad5934eed3185b03a4",
+    "expected_sha256": "e5606e8d18241b996b4e46cbc1b9559792b1a87ddd491bad5934eed3185b03a4",
+    "path": "/home/dean/repos/engram/tests/fixtures/milestone2_bitnet_holdout_v1.jsonl"
+  },
+  "dataset_authenticated_at": "2026-07-26T21:27:31.542990Z",
+  "error": {
+    "message": "native evaluator token sequences differ from frozen canonical hashes",
+    "type": "Milestone2FinalConfirmationError"
+  },
+  "format": "engram-native-bitnet-m2-final-confirmation-opened-marker",
+  "implementation_commit": "c725a46b8280a49513d9530f9a84161e70cd7e11",
+  "protocol_sha256": "206c40b2b8ffcc6fe7afd44cbfcae247d3f635dee3d738abc8d4a9c0d1c47809",
+  "result": {
+    "milestone_2_passed": false,
+    "path": "/home/dean/repos/engram/reports/native_bitnet_m2_final_audit/49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2/0fdce5a3eb2eaaec5e3b47587d7693bfdc0fed6fde53e3a40a74b8d2a76d4aa3.result.json",
+    "sha256": "bab8592ff9c3b457c529f9a35f12c16b9c8441a3311106565159e7175026e83b"
+  },
+  "reuse_allowed": false,
+  "status": "error",
+  "version": 1
+}

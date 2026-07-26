@@ -1,0 +1,30 @@
+{
+  "attempt_key": "0fdce5a3eb2eaaec5e3b47587d7693bfdc0fed6fde53e3a40a74b8d2a76d4aa3",
+  "authorization": {
+    "archived_path": "reports/native_bitnet_m2_final_audit/49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2/0fdce5a3eb2eaaec5e3b47587d7693bfdc0fed6fde53e3a40a74b8d2a76d4aa3.authorization.json",
+    "original_path": "build/native_bitnet_m2_final_authorization.json",
+    "sha256": "8bd7a713bf1f1dac2f62d8b7640f1063933902c98a885eae6af3c9f924d26aa0"
+  },
+  "compiler_build_manifest_sha256": "0dd36dcceb1b3cbf62973552f1c871721b2f7eb953961bac09d0819e868a52f3",
+  "dataset_key": "49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2",
+  "dataset_sha256": "e5606e8d18241b996b4e46cbc1b9559792b1a87ddd491bad5934eed3185b03a4",
+  "format": "engram-native-bitnet-m2-consumed-attempt-evidence-seal",
+  "implementation_commit": "c725a46b8280a49513d9530f9a84161e70cd7e11",
+  "opened_marker": {
+    "path": "reports/native_bitnet_m2_final_audit/49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2/opened.json",
+    "sha256": "d14b8ff5a08676eb99b82bec2cec35fe4779e5ffcfe685cf45b5506d8cc292d7"
+  },
+  "policy_sha256": "c572754e597a760bc5ea6ba337bdaaf092e4ae1d5b5e90b6a2a14cbfbea3768e",
+  "protocol_sha256": "206c40b2b8ffcc6fe7afd44cbfcae247d3f635dee3d738abc8d4a9c0d1c47809",
+  "raw_evaluator_report": {
+    "path": "reports/native_bitnet_m2_final_audit/49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2/0fdce5a3eb2eaaec5e3b47587d7693bfdc0fed6fde53e3a40a74b8d2a76d4aa3.native-causal.raw.json",
+    "sha256": "34ee92ab0dd93c0419440866d1398d9730d9d9b5fb6ae584f22f4e92ac606f0b"
+  },
+  "result": {
+    "path": "reports/native_bitnet_m2_final_audit/49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2/0fdce5a3eb2eaaec5e3b47587d7693bfdc0fed6fde53e3a40a74b8d2a76d4aa3.result.json",
+    "sha256": "bab8592ff9c3b457c529f9a35f12c16b9c8441a3311106565159e7175026e83b"
+  },
+  "sealed_at": "2026-07-26T21:56:28Z",
+  "trust_limitation": "This seal anchors the preserved raw report prospectively; the original error result did not contain its SHA-256.",
+  "version": 1
+}
