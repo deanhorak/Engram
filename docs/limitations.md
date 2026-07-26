@@ -20,28 +20,37 @@
   original attention, normalization, embedding, and output tensors and drives
   them through a Python Transformers shell. Only the MLP is a native C++
   kernel; this is not yet a complete native transformer runtime.
-- The new native-BitNet DIP route passes the complete *development* semantic
-  gate, not the sealed final. It reaches KL 0.0044707, top-1 0.94922, NLL
-  +0.00136, hidden L2 0.04990, 20.0807% mean active records, 40.9639% modeled
-  traffic, 99.9592% global recall, and 99.3935% worst-layer mean recall on
-  eight development sequences and 256 positions. The policy is frozen for
-  one one-shot independent confirmation. Milestone 2 must not be called
-  passed before that result exists.
+- The native-BitNet DIP semantic gate passes **by postmortem adjudication**,
+  not by a pristine final-runner result. On the consumed 8-sequence,
+  256-position holdout, the raw evaluator reports KL 0.00404129, top-1
+  0.98828125, NLL +0.00482893, hidden L2 0.0477494, 21.3800% mean active
+  records, 41.1371% modeled traffic, 99.9406% global recall, and 99.3943%
+  worst-layer mean recall. The original runner ended in error after evaluation
+  because it compared full-record canonical-object hashes with first-33-token
+  bare-list hashes. A separate no-model adjudicator corrected that verifier
+  contract and checked all frozen thresholds. This supports the semantic-gate
+  decision, not a claim that every generic Milestone 2 deliverable is complete.
+- The original error result did not contemporaneously bind the raw evaluator
+  report. That report was prospectively hash-sealed about 13 minutes later,
+  before the postmortem adjudication. This is weaker evidence custody than a
+  clean independently sealed one-shot result, and the consumed holdout cannot
+  be rerun as a fresh final.
 - The sealed holdout is a plaintext repository fixture. Avoiding inspection
   before the one-shot run is a procedural/honor-system control, supported by
   committed hashes and a fail-closed runner; it is not cryptographic secrecy
   and cannot prevent a developer with filesystem access from reading it.
-- The 40.9639% practical-DIP traffic figure is a v2 cache-line model, not
+- The 41.1371% final practical-DIP traffic figure is a v2 cache-line model, not
   hardware-counter DRAM measurement. The complete semantic storage is larger:
   the 318,924,544-byte base record artifact plus 216,688,448-byte coordinate
   index total 535,612,992 bytes, or 67.2659% of dense Q4.
-- Traffic reduction has not produced speedup. The qualifying sparse
-  development evaluation took 1.1565x the dense elapsed time, or 15.65%
-  longer. Debug recall and parity work was outside the timed pass, so it does
-  not explain this ratio.
-- The DIP evidence is one model, one host, one small development corpus, and
-  one pending final corpus. Six rows per layer establish implementation parity,
-  not broad numerical or workload coverage. Replication, hardware counters,
+- Traffic reduction has not produced speedup. The final sparse evaluation took
+  1.1449x the dense elapsed time (295.3364 versus 257.9552 seconds), or 14.49%
+  longer. Latency was measured but was not a frozen gate. Debug recall and
+  parity work was outside the timed pass.
+- The DIP evidence is one model, one host-bound artifact/library set, one
+  development corpus, and one 8-sequence/256-position consumed final corpus.
+  Six rows per layer establish implementation parity, not broad numerical or
+  workload coverage. Independent-host replication, hardware counters,
   SIMD/cache tuning, and broader language-quality evaluation remain open.
 - Bounded attention is integrated into complete package generation and avoids
   the dense Hugging Face KV cache, but Q/K/V and output projections still run
@@ -245,9 +254,9 @@
 - Trained SmolLM2 semantic-routing and causal MLP-intervention reports are
   checked in, but no trained end-to-end compiled Gate 5 run exists.
   Learned-router artifacts and the older dense-SmolLM DIP runtime remain
-  blocked. Separately, native-BitNet DIP is development-qualified and frozen
-  for its sealed final; it is not evidence that the dense-Llama compiler
-  problem is solved.
+  blocked. Separately, native-BitNet DIP passes its semantic gate by postmortem
+  adjudication; it is not evidence that the dense-Llama compiler problem is
+  solved.
   Engram downloads a model when a Hub ID is supplied explicitly; this can require substantial
   disk space, and gated models still require Hugging Face authentication and license acceptance.
 - Synthetic Gate 3 mean relative L2 is 0.456 for the heuristic hybrid; retrieval/copying

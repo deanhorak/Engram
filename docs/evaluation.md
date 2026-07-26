@@ -57,11 +57,41 @@ The timed sparse pass makes no dense full-record calls. Dense teacher
 membership is computed only in a separate untimed diagnostic pass against a
 fixed per-layer top-K schedule. Six rows in each of all 30 layers have
 bit-exact Python/native coordinate, candidate, selected-record, selected-count,
-and BF16-output parity. The frozen policy authorizes one sealed final
-confirmation; therefore this is a development-gate pass, not a Milestone 2
-pass. Its sparse end-to-end elapsed time is 1.1565x dense (15.65% slower), and
-the traffic ratio is modeled from the v2 serialized layout rather than
+and BF16-output parity. This development result froze the policy for the final
+attempt. Its sparse end-to-end elapsed time was 1.1565x dense (15.65% slower),
+and the traffic ratio is modeled from the v2 serialized layout rather than
 measured with DRAM counters.
+
+The independent 8-sequence/256-position final raw report subsequently passed
+every frozen threshold:
+
+| Measure | Final raw result | Requirement |
+|---|---:|---:|
+| Mean KL | 0.0040412880 | <= 0.05 |
+| Top-1 agreement | 0.98828125 | >= 0.90 |
+| NLL delta | +0.0048289299 | <= +0.05 |
+| Final-hidden relative L2 | 0.0477494113 | <= 0.10 |
+| Mean active fraction | 0.2138000677 | <= 0.25 |
+| Modeled physical cold traffic | 0.4113713394 | <= 0.45 |
+| Global micro candidate recall | 0.9994058295 | >= 0.95 |
+| Worst-layer mean recall | 0.9939428640 | >= 0.95 |
+
+The original wrapper nevertheless recorded
+`final_holdout_consumed_with_error`. Its verifier compared hashes made from
+two different representations: full records with the canonical `input_ids`
+object envelope versus the evaluator's first 33 scored tokens in a bare list.
+A separate no-model postmortem adjudicator reconstructed the canonical token
+identities and verified all raw primitive evidence, frozen artifacts, and
+attestations. The semantic-memory gate therefore passes **by postmortem
+adjudication**, not by a pristine runner result.
+
+The raw report was prospectively hash-sealed about 13 minutes after the error;
+the original result did not contemporaneously bind it. Artifacts and native
+libraries are host-bound, the 41.1371% traffic number is cache-line modeling
+rather than measured DRAM, and the final sparse pass was 1.1449x dense
+(295.3364 versus 257.9552 seconds). Latency was measured but was not a frozen
+gate. The confirmation covers only 8 sequences and 256 positions. See the
+[preserved evidence summary](../reports/native_bitnet_m2_final_audit/49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2/summary.md).
 
 See [Project status](status.md) and the
 [machine-readable snapshot](../reports/semantic_gate_status_2026-07-23/summary.json).

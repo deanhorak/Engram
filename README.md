@@ -47,33 +47,46 @@ safety requirements, and separate research gates.
 
 ## Where the project stands
 
-**Current decision:** the native-BitNet Milestone 2 implementation has passed
-its qualifying development gate and its policy is frozen, but Milestone 2 has
-not passed yet. The remaining scientific step is one sealed, one-shot
-confirmation on the independent 8-sequence/256-position holdout. The
-development run used live BF16 boundaries and the CPU-only native Dynamic
-Input Pruning (DIP) kernel in all 30 MLPs, with no dense fallback. It measured
-KL **0.0044707**, teacher top-1 agreement **0.94921875**, NLL delta
-**+0.0013609**, final-hidden relative L2 **0.0498965**, mean active-record
-fraction **0.2008072**, modeled physical cold traffic **0.409639** of dense
-ideal Q4, global candidate recall **0.9995917**, and worst-layer mean recall
-**0.9939353**. Python and native routes and BF16 output bits match on six
-rows per layer.
+**Current decision:** the native-BitNet practical semantic-memory gate has
+**passed by postmortem adjudication** on its independent, frozen
+8-sequence/256-position holdout. The CPU-only native Dynamic Input Pruning
+(DIP) kernel substituted all 30 MLPs with live BF16 boundaries and no dense
+fallback. The final raw evaluator report measured KL **0.00404129**, teacher
+top-1 agreement **0.98828125**, NLL delta **+0.00482893**, final-hidden
+relative L2 **0.0477494**, mean active-record fraction **0.2138001**, modeled
+physical cold traffic **0.4113713** of dense ideal Q4, global candidate recall
+**0.9994058**, and worst-layer mean recall **0.9939429**.
+
+This is not a pristine one-shot runner pass. The original runner consumed the
+holdout and ended in `error` after the completed raw evaluator report because
+its verifier compared the protocol's frozen full-record hashes, made with the
+canonical `input_ids` object envelope, against evaluator hashes of the first
+33 scored tokens made with a bare-list envelope. A separate no-model
+postmortem adjudicator corrected that hash contract, checked the preserved
+evidence and every frozen threshold, and returned
+`milestone_2_semantic_gate_passed_by_postmortem_adjudication`. The
+raw report was prospectively hash-sealed about 13 minutes after the runner
+error, not contemporaneously bound by the original result. The evidence is
+therefore sufficient for this repository's semantic-gate decision, but weaker
+than a clean independently sealed rerun.
 
 The practical selector keeps the largest 1,920 of 2,560 BF16 input
 coordinates, scans their coordinate-major packed ternary gate/up keys, exactly
 completes a frozen per-layer candidate budget, estimates the coupled
 intermediate RMS, and reads down rows only for token-adaptive nonzero
 candidates. This is now a real routed semantic-memory implementation, not the
-earlier dense-membership oracle. Its complete end-to-end development run was
-still **1.1565x the dense elapsed time** (15.65% slower), however. The traffic
-result is deterministic cache-line accounting, not a hardware-counter
-measurement of DRAM.
+earlier dense-membership oracle. Its complete final sparse run was still
+**1.1449x the dense elapsed time** (14.49% slower), however, and latency was
+not a frozen gate. The traffic result is deterministic cache-line accounting,
+not a hardware-counter measurement of DRAM. The artifact and native-library
+bindings are also host-bound; broader replication remains required.
 
-The original dense-Llama conversion track remains blocked; this development
-pass belongs to the separately trained native-BitNet source track. The sealed
-holdout is a checked-in plaintext fixture whose non-use is enforced by project
-procedure and the fail-closed runner, not by cryptographic secrecy.
+The original dense-Llama conversion track remains blocked; this pass belongs
+to the separately trained native-BitNet source track. The holdout is a
+checked-in plaintext fixture whose non-use before the attempt was enforced by
+project procedure, not by cryptographic secrecy. This adjudicated semantic
+result does not establish a quality-preserving dense-Llama conversion and does
+not, by itself, certify every broader Milestone 2 deliverable as complete.
 
 CUDA is permitted for training and distillation only. Packaged inference,
 including the passing BitNet MLP and attention kernels, remains CPU-only and
@@ -237,13 +250,16 @@ All layers except layer 9 estimate missing RMS energy by applying the
 exact-to-proxy candidate-energy ratio to the proxy tail. Layer 9 uses
 corrected proxy energy and reserves eight positions inside its unchanged
 `C=4480` union for a top-proxy-raw-square audit. The qualifying live-BF16
-development run passes every quality, activity, modeled-traffic, and recall
-threshold. The source-bound v2 index and policy are independently reloaded,
+development run passed every quality, activity, modeled-traffic, and recall
+threshold. The source-bound v2 index and policy were independently reloaded,
 and six rows in each layer have bit-exact Python/native input-coordinate,
 candidate, selected-record, selected-count, and BF16-output parity. The
-[frozen policy](reports/native_bitnet_m2_2026-07-26/frozen_dip_policy.json)
-authorizes only the sealed final confirmation; it explicitly does not claim
-that Milestone 2 has passed.
+same [frozen policy](reports/native_bitnet_m2_2026-07-26/frozen_dip_policy.json)
+was used for the consumed final attempt. Its raw report passes every
+threshold; the original wrapper errored on the token-hash schema defect
+described above, and the
+[preserved evidence and adjudication](reports/native_bitnet_m2_final_audit/49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2/summary.md)
+support the semantic-gate pass-by-adjudication.
 
 This is not evidence that a dense Llama checkpoint can be converted
 losslessly. It also does not claim measured hardware DRAM events: the traffic
@@ -563,8 +579,10 @@ unrestricted-codebook, and lifted-binary follow-ups also fail their local
 screens despite modeled traffic of 41.00%–44.98%. No dense-source converted
 semantic artifact is currently eligible for default package compilation; the
 separately trained native-BitNet artifact is the current teacher and CPU
-substrate. Its new DIP index and native kernel form a qualifying routed
-semantic-memory *development candidate*, pending the sealed final result.
+substrate. Its DIP index and native kernel now form an adjudicated
+semantic-gate-passing routed-memory candidate. This closes the practical
+native-BitNet semantic evidence gate, not the dense-Llama conversion problem
+or every remaining integration and replication item in Milestone 2.
 See [architecture](docs/architecture.md), [evaluation](docs/evaluation.md),
 and [limitations](docs/limitations.md) for the precise design and caveats. The latest routing
 measurement is documented in the [trace-calibrated recall report](reports/smollm2_calibrated_router/recall.md).

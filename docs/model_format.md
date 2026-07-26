@@ -161,8 +161,13 @@ Version 2 embeds all effective policy fields. Every layer uses `q=1920`,
 and an eight-record top-proxy-raw-square audit inside its fixed candidate
 union. The [frozen manifest](../reports/native_bitnet_m2_2026-07-26/frozen_dip_policy.json)
 binds this index, base artifact, native libraries, package/tokenizer, protocol,
-development report, and parity report. It authorizes one sealed final run and
-does not claim a Milestone 2 pass.
+development report, and parity report. Those exact bindings were used for the
+consumed final attempt. Its raw evaluator report passes every semantic,
+activity, recall, and modeled-traffic threshold; the semantic gate is accepted
+by postmortem adjudication because the original wrapper's
+full-record/object-versus-33-token/list hash check failed after evaluation.
+This evidence is host-bound and does not promote the layout into the generic
+dense-Llama package format.
 
 Each compiled semantic layer contains `quantized/ivf/centroids.npy` (`float32` joint gate/up
 centroids), `posting_offsets.npy` (`uint32` CSR offsets), and `posting_indices.npy` (`uint32`

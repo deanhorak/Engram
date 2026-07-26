@@ -1,5 +1,43 @@
 # Research log
 
+## 2026-07-26 — Native BitNet semantic gate passes by postmortem adjudication
+
+- Consumed the one authorized independent 8-sequence/256-position holdout with
+  the frozen native-BitNet DIP policy and host-bound artifact/library hashes.
+  The CPU-only raw evaluator substituted all 30 MLPs, reloaded the serialized
+  index, used no dense fallback, and completed its separate untimed
+  teacher-recall diagnostics.
+- The raw report passes every frozen primitive threshold: KL 0.0040412880,
+  top-1 agreement 0.98828125, NLL delta +0.0048289299, final-hidden relative
+  L2 0.0477494113, mean active fraction 0.2138000677, modeled physical cold
+  traffic 0.4113713394, global micro candidate recall 0.9994058295, and
+  worst-layer mean recall 0.9939428640.
+- The original one-shot wrapper nevertheless recorded
+  `final_holdout_consumed_with_error`. Its post-evaluation verifier compared
+  the protocol's full token sequences hashed with the canonical `input_ids`
+  object envelope against the evaluator's first 33 scored tokens hashed as
+  bare lists. This was a verifier-contract defect, not a failed quality,
+  activity, traffic, recall, parity, or execution measurement.
+- Preserved the error result and marker without rewriting them. A separate
+  no-model/no-evaluator postmortem adjudicator reconstructed the two historical
+  hash schemas, verified full-sequence identities and scored-prefix lengths,
+  and checked the frozen authorization, implementation, artifacts, raw
+  primitives, and evaluator attestations. Its decision is
+  `milestone_2_semantic_gate_passed_by_postmortem_adjudication`.
+- Evidence custody is imperfect and explicitly retained as a limitation. The
+  raw evaluator report was prospectively hash-sealed about 13 minutes after
+  the original error; it was not contemporaneously bound by that result. The
+  checked-in holdout was plaintext and separation was procedural, not
+  cryptographic.
+- The final sparse pass took 295.3364 seconds versus 257.9552 seconds dense,
+  or 1.1449x dense. Latency was not a frozen upper-bound gate, and this is not
+  a speedup. The 41.1371% traffic result is deterministic cache-line modeling,
+  not a hardware-counter DRAM measurement.
+- Decision: the native-BitNet practical semantic-memory gate passes by
+  adjudication. This does not solve dense-Llama conversion, establish
+  independent-host replication, or declare every integration item in
+  Milestone 2 complete.
+
 ## 2026-07-26 — Native BitNet practical DIP passes development and freezes
 
 - Implemented a CPU-only, memory-mapped native DIP kernel and source-bound v2
@@ -28,9 +66,10 @@
 - The sparse end-to-end development evaluation takes 1.1565x the dense elapsed
   time, so the gate pass is not a speedup claim.
 - Froze the policy, artifact, tokenizer, library, protocol, report, and parity
-  bindings for one sealed final confirmation. This advances Milestone 2 from
-  “no practical router” to “development-qualified, final pending”; it does not
-  claim Milestone 2 has passed.
+  bindings for one sealed final confirmation. At this development checkpoint,
+  that advanced Milestone 2 from “no practical router” to a
+  development-qualified route awaiting confirmation; the later adjudication
+  above records the final semantic-gate decision.
 - The independent holdout is a plaintext repository fixture. Its non-use
   before the one-shot run is procedural and honor-system-based, backed by a
   fail-closed runner and committed hashes rather than cryptographic secrecy.

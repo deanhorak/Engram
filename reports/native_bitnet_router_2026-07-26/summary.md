@@ -4,8 +4,9 @@ Date: **2026-07-26**
 
 This file records the initial, historical router screen. It is superseded by
 the all-layer native development result described below: the practical DIP
-implementation now passes the qualifying development gate, while Milestone 2
-remains pending its sealed one-shot final confirmation.
+implementation passed the qualifying development gate and subsequently passed
+the native-BitNet semantic-memory gate by postmortem adjudication of its
+consumed final attempt.
 
 ## Rejected learned router
 
@@ -45,9 +46,22 @@ modeled physical cold traffic, 99.95917% global candidate recall, and
 99.39353% worst-layer mean recall. Python/native output and route identities
 are bit-exact on six live rows per layer.
 
-This is a development-gate pass, not the final Milestone 2 result. The exact
-policy is frozen in
+This development result froze the exact policy in
 [`../native_bitnet_m2_2026-07-26/frozen_dip_policy.json`](../native_bitnet_m2_2026-07-26/frozen_dip_policy.json);
-the independent final holdout remains sealed. Timed sparse development was
-1.1565x dense, and the traffic figure is modeled cache-line accounting rather
-than measured DRAM.
+timed sparse development was 1.1565x dense.
+
+The subsequent independent 8-sequence/256-position raw final report passed:
+KL 0.00404129, top-1 0.98828125, NLL +0.00482893, hidden L2 0.0477494,
+21.3800% mean active records, 41.1371% modeled traffic, 99.9406% global
+candidate recall, and 99.3943% worst-layer mean recall. The original wrapper
+still ended in error because its verifier compared canonical full-record
+`input_ids` object hashes with first-33-token bare-list hashes. A separate
+no-model postmortem adjudicator corrected that contract and verified the
+preserved evidence, producing a semantic-gate pass-by-adjudication.
+
+This is not a pristine runner pass: the raw report was prospectively sealed
+about 13 minutes after the error rather than contemporaneously bound by the
+original result. The evidence is host-bound, final scale is only 8x32, and
+traffic remains modeled cache-line accounting rather than measured DRAM.
+Final sparse timing was 1.1449x dense; latency was not a frozen gate. See the
+[final audit summary](../native_bitnet_m2_final_audit/49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2/summary.md).

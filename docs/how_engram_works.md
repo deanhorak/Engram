@@ -437,11 +437,26 @@ The source-bound v2 index, C/K schedule, RMS policy, and CPU shared library are
 independently reloaded before evaluation. On eight development sequences and
 256 positions, all 30 native sparse MLPs pass the causal, recall, activity, and
 modeled-traffic limits with no dense fallback. Six rows per layer have
-bit-exact Python/native route and BF16 output parity. The policy is now frozen
-for one sealed final confirmation, so this is a development-gate pass rather
-than a completed Milestone 2. The end-to-end sparse development run is 1.1565x
-the dense elapsed time and the 40.9639% traffic result is modeled from
-cache-line touches, not measured DRAM.
+bit-exact Python/native route and BF16 output parity. That run froze the policy.
+
+On the independent final 8-sequence/256-position holdout, the identical
+CPU-only route produced KL 0.00404129, top-1 agreement 0.98828125, NLL delta
++0.00482893, final-hidden relative L2 0.0477494, 21.3800% mean active records,
+41.1371% modeled traffic, 99.9406% global candidate recall, and 99.3943%
+worst-layer mean recall. All thresholds pass with no dense fallback. The
+semantic-memory gate is classified as **passed by postmortem adjudication**:
+the original wrapper errored after evaluation because it compared a
+full-record canonical object hash with a 33-token bare-list evaluator hash. A
+separate no-model adjudicator corrected the contract and checked the preserved
+evidence.
+
+That distinction matters. The raw report was only prospectively sealed about
+13 minutes after the original error and was not contemporaneously bound by the
+runner result. The artifacts are host-bound, the confirmation is only 8x32,
+and the 41.1371% number is modeled cache-line traffic rather than measured
+DRAM. The final sparse pass is 1.1449x dense, and latency was not a frozen
+gate. This is therefore neither a speedup nor a blanket declaration that all
+Milestone 2 packaging and replication work is complete.
 
 The source-family-specific package and generation boundary are now complete.
 Compilation writes a 1,108,116,808-byte checksummed package containing 332
@@ -468,9 +483,9 @@ Native integration and a genuinely long-context hardware benchmark remain.
 The generic dense-Llama compiler still writes initialized or heuristic
 fallbacks and records that fact in its conversion report. The native-BitNet
 DIP route is a separate source-family candidate: its serialized index and
-native kernel pass development but remain pending the sealed final. Its
-1.1565x-dense development timing also leaves substantial performance work
-even if the semantic gate passes.
+native kernel pass the semantic gate by postmortem adjudication. Its
+1.1449x-dense final timing leaves substantial performance work despite that
+semantic result.
 
 A later 3M-position compact-Q4 run establishes the opposite frontier: its
 serialized MLP payload fits the 45% traffic budget, but its causal quality is

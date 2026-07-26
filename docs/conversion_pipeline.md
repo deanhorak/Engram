@@ -196,13 +196,26 @@ top-1 0.94921875, NLL +0.0013609, hidden L2 0.0498965, active fraction
 0.2008072, modeled traffic 0.409639, global recall 0.9995917, and worst-layer
 mean recall 0.9939353. Six rows per layer have bit-exact parity.
 
-Passing development freezes every policy and artifact binding. The final
-runner may then open the independent plaintext holdout once. It must reject a
-changed commit, artifact, index, policy, tokenizer, library, protocol, or
-dataset hash. The plaintext fixture provides procedural and auditable
-separation, not cryptographic secrecy. Until that one-shot result passes, the
-native-BitNet DIP artifact is a development candidate and Milestone 2 remains
-pending.
+Passing development froze every policy and artifact binding. The final runner
+then consumed the independent plaintext holdout in the single authorized
+model attempt, using the same commit, artifact, index, policy, tokenizer,
+libraries, protocol, and dataset hashes. The raw evaluator passed every
+threshold: KL 0.00404129, top-1 0.98828125, NLL +0.00482893, hidden L2
+0.0477494, active fraction 0.2138001, modeled traffic 0.4113713, global recall
+0.9994058, and worst-layer mean recall 0.9939429.
+
+The original runner result is nevertheless an error, not a pass. Its
+post-evaluation verifier compared full-record hashes using the canonical
+`input_ids` object envelope with first-33-token evaluator hashes using a bare
+list envelope. A no-model postmortem adjudicator corrected that hash contract
+and verified the preserved raw report and frozen evidence, so the
+native-BitNet semantic gate is **passed by adjudication**. The raw report was
+prospectively sealed about 13 minutes after the error and was not
+contemporaneously bound by the original result. The fixture remains
+plaintext/procedurally separated, artifacts are host-bound, and broader
+replication is still required. This decision does not make the native route a
+generic dense-Llama compiler input or prove every Milestone 2 deliverable
+complete.
 
 The later compact-Q4 and output-memory branches do not change that compiler
 decision. The compact artifact is physically valid at 44.9334% of dense ideal

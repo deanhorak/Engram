@@ -4,10 +4,13 @@ For the current implementation/evidence boundary, see
 [Project status](status.md). No representation has passed the original
 dense-Llama conversion gate. The separate native-BitNet track now has a
 practical CPU-only DIP route that passes the complete qualifying development
-quality, recall, activity, and modeled-traffic gate. Its policy is frozen for
-one sealed final confirmation, so Milestone 2 is pending rather than passed.
-This is a distinct low-bit-native source path, not a dense-model conversion
-result.
+quality, recall, activity, and modeled-traffic gate. The same frozen route
+also passes the independent final raw evaluation, and its semantic-memory gate
+is recorded as passed by postmortem adjudication. The original final wrapper
+ended in error on a full-record/object-versus-33-token/list hash-contract
+defect after evaluation completed, so this is not a pristine runner pass.
+This remains a distinct low-bit-native source path, not a dense-model
+conversion result or proof that all Milestone 2 work is complete.
 
 Engram's target runtime combines a shared recurrent controller, fixed sparse semantic
 memory derived from SwiGLU records, hybrid local/recurrent/retrieval episodic memory, an
@@ -207,9 +210,11 @@ gap, and the rank-16 arm fails causal quality while reading 95.8% of record
 keys. Its older predictor-free DIP arm passed quality but failed physical
 traffic and latency. The distinct native-BitNet DIP route now has the
 cache-aware packed index, native sparse kernel, and live-BF16 all-layer
-development evidence that were previously missing. It is frozen pending the
-sealed final. Hardware DRAM measurement and replication beyond this model
-remain open, and its 1.1565x-dense development timing is not a speedup.
+development evidence that were previously missing. Its final raw report also
+passes, and the semantic gate is accepted by postmortem adjudication because
+the original wrapper's token-hash schema check was defective. Hardware DRAM
+measurement and replication beyond this host and model remain open. The final
+sparse timing is 1.1449x dense, so it is not a speedup.
 Global and failure-region low-rank correction capsules have been fitted, but
 every tested dense-source layout worsens held-out local MLP error and is
 rejected before causal integration.
@@ -292,8 +297,8 @@ Native-BitNet now also has a bounded streaming operator: exact local context,
 fixed attention sinks, and an online cumulative-attention heavy-hitter cache.
 Its frozen trained-model confirmation passes without consulting evicted keys.
 Hardware DRAM measurement and controller distillation remain open. The DIP
-development pass still needs its one sealed final confirmation and systems
-replication.
+semantic gate passes by postmortem adjudication, while clean independent
+replication and systems tuning remain open.
 For native BitNet, the memory-mapped CPU kernel now reads the independently
 fixed-stride gate/up/gain/down base-3 streams directly. The 1,538-byte figure
 is a logical per-channel payload, not a contiguous physical record. The

@@ -2,9 +2,10 @@
 
 Status: **durable policy/session and adapter scaffolds implemented; production workers and learned predictors are not**
 
-This subsystem is tracked separately from the compiled model worker's blocked
-Milestone 2 semantic gate. See [Project status](status.md) for the combined
-repository snapshot.
+This subsystem is tracked separately from the compiled model worker's
+native-BitNet semantic gate, which now passes by postmortem adjudication. See
+[Project status](status.md) for the precise evidence boundary and the remaining
+Milestone 2 work.
 
 Engram now distinguishes two very different control problems. Inside a compiled model, the
 token-level recurrent controller updates a numeric state during generation. Above one or more

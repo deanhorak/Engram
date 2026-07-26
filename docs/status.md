@@ -9,23 +9,31 @@ execute fixture packages in Python and C++. The native-BitNet track now also
 compiles and validates a source-independent trained-model package and performs
 real greedy generation with its direct C++ MLP kernel.
 
-**Milestone 2 is pending one sealed final confirmation.** The low-bit-native
-track now has a practical, CPU-only native DIP semantic-memory implementation,
-not just the earlier dense-membership oracle. Its qualifying 8-sequence,
-256-position development run substitutes all 30 MLPs with no dense fallback
-and passes quality, activity, modeled physical cold-traffic, and candidate
-recall. The exact policy and artifact bindings are frozen; they authorize one
-one-shot run on the independent holdout but do not themselves constitute a
-Milestone 2 pass.
+**The native-BitNet Milestone 2 semantic-memory gate has passed by postmortem
+adjudication.** The low-bit-native track has a practical, CPU-only native DIP
+implementation, not just the earlier dense-membership oracle. Its consumed
+8-sequence/256-position final attempt substituted all 30 MLPs with no dense
+fallback. The preserved raw report passes quality, activity, modeled physical
+cold-traffic, and candidate recall.
 
-The development result is KL 0.0044707, top-1 0.94921875, NLL delta
-+0.0013609, final-hidden relative L2 0.0498965, 20.08072% mean active records,
-40.9639% modeled traffic, 99.95917% global candidate recall, and 99.39353%
-worst-layer mean recall. Six live-BF16 rows per layer have bit-exact
-Python/native route and output parity. End-to-end sparse evaluation took
-1.1565x the dense elapsed time, so the current kernel is still 15.65% slower;
-latency is disclosed but is not part of this frozen semantic gate. The
-dense-Llama conversion track remains blocked.
+The final raw result is KL 0.00404129, top-1 0.98828125, NLL delta
++0.00482893, final-hidden relative L2 0.0477494, 21.38001% mean active records,
+41.13713% modeled traffic, 99.94058% global candidate recall, and 99.39429%
+worst-layer mean recall. End-to-end sparse evaluation took 1.1449x the dense
+elapsed time, so the kernel is 14.49% slower; latency was disclosed but was
+not part of the frozen semantic gate. The dense-Llama conversion track remains
+blocked.
+
+The qualification is not a pristine runner pass. After the evaluator
+completed, the original wrapper marked the consumed attempt `error`: the
+verifier compared the protocol's frozen full-record hashes, made with the
+canonical `input_ids` object envelope, against raw-evaluator hashes of the
+first 33 scored tokens made from bare lists. A separate no-model postmortem
+adjudicator verified the corrected identities, the frozen bindings, and all
+primitive measurements. The raw report was prospectively sealed about 13
+minutes after the error, rather than being contemporaneously hash-bound by
+the original result. See the
+[final evidence summary](../reports/native_bitnet_m2_final_audit/49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2/summary.md).
 
 The frozen practical-routing policy is
 [machine-readable](../reports/native_bitnet_m2_2026-07-26/frozen_dip_policy.json).
@@ -36,7 +44,7 @@ the prior cross-track snapshot remains the
 Large corpora, checkpoints, and scratch experiments remain under ignored
 `work/` paths and are not source-control artifacts.
 
-## The gate we are trying to pass
+## Semantic gate definition and outcome
 
 A candidate must use one serialized and independently reloaded artifact and
 pass all of the following on an all-layer causal evaluation:
@@ -52,11 +60,12 @@ pass all of the following on an all-layer causal evaluation:
 | Mean selected records | at most 25% of the 6,912 records |
 | Candidate recall | global micro and every layer mean at least 0.95 |
 
-Configuration selection must use development-only data. A final confirmation
-must use the identical frozen artifact on a sequence-disjoint corpus that was
-not used for fitting or selection. The checked-in holdout is plaintext, so
-this is procedural/honor-system separation enforced by the fail-closed runner,
-not cryptographic secrecy.
+Configuration selection used development-only data. The consumed final
+confirmation used the identical frozen artifact on a sequence-disjoint corpus
+that was not used for fitting or selection. The checked-in holdout is
+plaintext, so this is procedural/honor-system separation, not cryptographic
+secrecy. The passing decision is by the postmortem adjudication described
+above, not by the original runner result.
 
 ## Strongest measured frontiers
 
@@ -66,7 +75,7 @@ semantic thresholds, and exact scheduled cold-byte accounting.
 
 | Representation | Quality result | Systems result | Decision |
 |---|---|---|---|
-| Native BitNet DIP, frozen practical policy | Development 8-sequence/256-position result: KL 0.0044707, top-1 0.94922, NLL +0.00136, hidden L2 0.04990; global recall 0.99959, worst-layer mean 0.99394 | 20.0807% mean active records; 40.9639% modeled physical cold traffic; CPU-only native kernel; 1.1565x dense elapsed time | **Development gate passes; policy frozen; sealed final pending** |
+| Native BitNet DIP, frozen practical policy | Final 8-sequence/256-position raw result: KL 0.00404129, top-1 0.98828125, NLL +0.00482893, hidden L2 0.0477494; global recall 0.9994058, worst-layer mean 0.9939429 | 21.3800% mean active records; 41.1371% modeled physical cold traffic; CPU-only native kernel; 1.1449x dense elapsed time | **Semantic gate passed by postmortem adjudication; original wrapper ended in error** |
 | Native BitNet layer-adaptive exact-membership oracle | Historical oracle result: KL 0.02543, top-1 0.94531, NLL +0.02386, hidden L2 0.09205 | 15–35% per layer, 24.8375% mean selected down records; dense gate/up coefficient scan remains | **Oracle ceiling passed** and motivated practical DIP |
 | Native BitNet phase-stream base-3 records | Frozen 8-sequence/256-position result: KL 0.00371, top-1 0.96094, NLL +0.00224, hidden L2 0.04678 | Direct memory-mapped CPU kernel; 318,924,544 scheduled cold bytes, 40.0527% of dense Q4; all MLP records execute | **Systems substrate only**; not routed semantic memory or a Milestone 2 pass |
 | Exact float magnitude oracle, K=768 | KL 0.0336, top-1 0.9124, NLL +0.0153, hidden L2 0.0953 | More than 4x the dense-Q4 payload before a practical selector | Semantic capacity exists, but this is not deployable |
@@ -78,10 +87,11 @@ semantic thresholds, and exact scheduled cold-byte accounting.
 | Fully sparse top-K activation path | Best unseen all-layer result after causal schedule fitting and verified attention/norm co-adaptation: KL 0.4517, top-1 0.6714, NLL +0.4585, hidden L2 0.3272 | Fixed per-layer q/K schedule is exactly 45% ideal traffic before metadata; every artifact reloads and executes on CPU | Whole-model hypothesis tested and stopped; far from every semantic threshold |
 
 The native-BitNet DIP result is the first tested practical mechanism to clear
-the complete development quality, recall, mean-activity, and modeled physical
-traffic gate. It remains outside the default compiler until the sealed final
-is complete. The older SmolLM DIP quality result in the table is a separate
-dense-source experiment that failed systems traffic and latency.
+the complete final quality, recall, mean-activity, and modeled physical
+traffic gate. Its status is pass-by-adjudication, with the evidence-integrity
+caveats above. This does not promote it into the generic dense-Llama compiler.
+The older SmolLM DIP quality result in the table is a separate dense-source
+experiment that failed systems traffic and latency.
 
 ### Native-BitNet oracle semantic ceiling
 
@@ -157,11 +167,33 @@ The candidate recall denominator is a fixed, router-independent per-layer
 dense-teacher top-K schedule, not the adaptive selected count. A separate
 untimed diagnostic pass computes that reference; the timed sparse pass makes
 no dense full-record calls. Python/native route fields and BF16 outputs are
-bit-exact for six rows in all 30 layers. The end-to-end sparse pass takes
-1.1565x the dense elapsed time, so this result is not a speedup. The traffic
+bit-exact for six rows in all 30 layers. The end-to-end development sparse
+pass takes 1.1565x the dense elapsed time, so it is not a speedup. The traffic
 fraction is modeled from touched 64-byte lines and metadata, not measured
-DRAM. The only remaining Milestone 2 evidence step is the sealed final run
-under the [frozen policy](../reports/native_bitnet_m2_2026-07-26/frozen_dip_policy.json).
+DRAM.
+
+The identical [frozen policy](../reports/native_bitnet_m2_2026-07-26/frozen_dip_policy.json)
+then produced the following raw final-holdout measurements:
+
+| Measure | Final raw result | Threshold |
+|---|---:|---:|
+| KL | 0.0040412880 | <= 0.05 |
+| Top-1 agreement | 0.98828125 | >= 0.90 |
+| NLL delta | +0.0048289299 | <= +0.05 |
+| Final-hidden relative L2 | 0.0477494113 | <= 0.10 |
+| Mean active fraction | 0.2138000677 | <= 0.25 |
+| Modeled physical cold traffic | 0.4113713394 | <= 0.45 |
+| Global micro candidate recall | 0.9994058295 | >= 0.95 |
+| Worst-layer mean recall | 0.9939428640 | >= 0.95 |
+
+The slow path took 295.3364 seconds versus 257.9552 seconds dense, or 1.1449x
+dense. This is measured CPU latency but was not an upper-bound gate. The
+semantic decision is a postmortem adjudication because the original runner's
+full-record/object-versus-33-token/list hash verifier defect fired after the
+raw evaluator completed. No model or evaluator was executed during
+adjudication. The host-bound binaries and artifacts, delayed prospective
+evidence seal, modeled rather than measured DRAM traffic, and small 8x32
+confirmation scale remain material limitations.
 
 ## What the latest experiments changed
 
@@ -345,7 +377,7 @@ scientific exit criterion has passed.
 | Milestone | Implementation status | Evidence status |
 |---|---|---|
 | 1. Inspection, tracing, exact MLP decomposition, oracle experiment | Complete | Complete for the fixture and exercised on SmolLM2 |
-| 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP index, CPU-only native selected-record kernel, substitution evaluator, physical accounting, parity checks, and frozen policy exist | **Pending sealed final**: the practical route passes the complete development quality/recall/activity/modeled-traffic gate; no final-pass claim yet |
+| 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP index, CPU-only native selected-record kernel, substitution evaluator, physical accounting, parity checks, and frozen policy exist | **Semantic gate passed by postmortem adjudication** on the consumed final holdout; original runner errored on its token-hash schema check. Generic dense-Llama conversion and broader replication remain incomplete |
 | 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, and incremental package integration implemented | **Frozen trained-model confirmation passes**; randomized parity, bounded-state scaling, cache-position advancement, and incremental generation pass; hardware counters remain |
 | 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, authenticated package installation, persistent native stage state, and a one-call 30-stage C++ attention/semantic runner implemented | **Controller, compiled-substitution, incremental-generation, and C++ orchestration gates pass**; frozen generation reaches 96.875% token agreement, 87.5% exact prompts, correct cache positions, and zero decoder-layer calls |
 | 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, native vocabulary argmax, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and passes source/package parity; generic vocabulary/cache/correction paths are not all active in the promoted native-BitNet runtime |
@@ -354,18 +386,21 @@ scientific exit criterion has passed.
 
 The optional Oracle cognitive executive is a separate request-level subsystem.
 Its revisioned SQLite/JSONL event stores, worker registry, dispatch adapters,
-outcome observation, and calibration summaries are implemented, but they do
-not resolve the model-worker semantic gate.
+outcome observation, and calibration summaries are implemented, but they are
+independent of the model-worker semantic-gate evidence.
 
 ## What is intentionally not claimed
 
 - There is no quality-preserving `.engram` conversion of SmolLM2.
 - The native BitNet result is a separate source track, not evidence that a
   dense Llama model can be losslessly repacked.
-- There is no hardware-counter demonstration of DRAM traffic; the 40.9639%
-  practical-DIP result is a modeled cache-line schedule, not measured DRAM.
-- The native-BitNet practical DIP arm has passed development, not the sealed
-  final. Milestone 2 therefore remains pending.
+- There is no hardware-counter demonstration of DRAM traffic; the final
+  41.1371% practical-DIP result is a modeled cache-line schedule, not measured
+  DRAM.
+- The native-BitNet practical DIP arm has passed its semantic gate by
+  postmortem adjudication, not by a pristine final-runner result. This is not a
+  blanket claim that all generic Milestone 2 packaging and conversion work is
+  complete.
 - The final holdout is plaintext in the repository. Its separation is
   procedural and honor-system-based, with a fail-closed runner; it is not
   cryptographically hidden from developers.
