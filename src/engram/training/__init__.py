@@ -1,4 +1,8 @@
-from .corpus import build_distillation_corpus
+from .corpus import build_distillation_corpus, build_distillation_tail_holdout
+from .controller_distillation import (
+    capture_native_bitnet_controller_traces,
+    distill_factorized_controller,
+)
 from .activation_aware_aq import train_activation_aware_aq_boundaries
 from .budget_native_ternary import (
     confidence_weighted_kl,
@@ -27,6 +31,13 @@ from .entropy_q3_codec import (
     save_entropy_q3_artifact,
 )
 from .gated_background import evaluate_gated_background_ceiling
+from .fully_sparse import fully_sparse_mlp_traffic, train_fully_sparse_boundaries
+from .fully_sparse_distillation import (
+    fully_sparse_mlp_class,
+    progressive_fully_sparse_counts,
+    train_fully_sparse_student,
+    validate_fully_sparse_artifact_cpu,
+)
 from .grouped_sparse_boundaries import train_grouped_sparse_boundaries
 from .grouped_sparse_codec import (
     decode_grouped_sparse_artifact,
@@ -50,6 +61,7 @@ from .interleaved_entropy_q4_codec import (
     load_interleaved_entropy_q4_artifact,
     save_interleaved_entropy_q4_artifact,
 )
+from .intrinsic_sparsity import train_intrinsic_sparse_boundaries
 from .linear_constrained_vq import (
     block_hadamard_function,
     linear_constrained_vq_mlp_class,
@@ -107,6 +119,8 @@ from .width_ceiling import evaluate_width_pruned_local_ceiling
 
 __all__ = [
     "build_distillation_corpus",
+    "build_distillation_tail_holdout",
+    "capture_native_bitnet_controller_traces",
     "BudgetNativeTernaryLayerWeights",
     "budget_native_ternary_forward",
     "budget_native_ternary_traffic",
@@ -116,6 +130,8 @@ __all__ = [
     "evaluate_native_gate_residual_shadow",
     "evaluate_structured_expert_shadow",
     "evaluate_gated_background_ceiling",
+    "fully_sparse_mlp_traffic",
+    "fully_sparse_mlp_class",
     "EntropyQ3LayerWeights",
     "decode_entropy_q3_artifact",
     "entropy_q3_dynamic_traffic",
@@ -161,6 +177,12 @@ __all__ = [
     "train_native_gate_end_to_end",
     "train_native_gate_trace_student",
     "train_grouped_sparse_boundaries",
+    "train_fully_sparse_boundaries",
+    "train_fully_sparse_student",
+    "progressive_fully_sparse_counts",
+    "validate_fully_sparse_artifact_cpu",
+    "train_intrinsic_sparse_boundaries",
+    "distill_factorized_controller",
     "train_activation_aware_aq_boundaries",
     "train_budget_native_ternary_student",
     "train_projection_aq_layers",

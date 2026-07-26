@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import platform
 import shutil
-import sys
 from pathlib import Path
 from typing import Any, Iterator, Mapping
 
@@ -11,7 +10,6 @@ import numpy as np
 
 from engram import __version__
 from engram.utils import atomic_json, sha256_file
-
 
 TRACE_SCHEMA_VERSION = 1
 
@@ -32,6 +30,7 @@ class TraceWriter:
         split: str,
         seed: int,
         metadata: Mapping[str, Any] | None = None,
+        resume: bool = False,
     ) -> None:
         self.path = Path(out)
         self.path.mkdir(parents=True, exist_ok=True)
@@ -51,6 +50,39 @@ class TraceWriter:
             },
             "metadata": dict(metadata or {}),
         }
+        manifest_path = self.path / "manifest.json"
+        if resume and manifest_path.is_file():
+            try:
+                existing = json.loads(manifest_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as exc:
+                raise TraceFormatError(f"cannot resume trace manifest: {exc}") from exc
+            if existing.get("complete"):
+                raise TraceFormatError("cannot resume an already complete trace")
+            for name in (
+                "schema_version",
+                "engram_version",
+                "model_hash",
+                "dataset_hash",
+                "split",
+                "seed",
+                "metadata",
+            ):
+                if existing.get(name) != self._base.get(name):
+                    raise TraceFormatError(f"cannot resume trace with different {name}")
+            shards = existing.get("shards")
+            if not isinstance(shards, list):
+                raise TraceFormatError("cannot resume trace with invalid shards")
+            self._shards = shards
+            self._verify_shards()
+        elif resume:
+            # Resuming a path that has not emitted its first shard is
+            # equivalent to a fresh capture.
+            self._shards = []
+        elif not manifest_path.is_file() and any(self.path.glob("shard-*")):
+            raise TraceFormatError(
+                "trace path contains orphan shards without a manifest; "
+                "choose a clean output path"
+            )
 
     def append(self, arrays: Mapping[str, np.ndarray]) -> None:
         if self._closed:
@@ -60,7 +92,9 @@ class TraceWriter:
         normalized = {name: np.asarray(value) for name, value in arrays.items()}
         leading = {value.shape[0] for value in normalized.values() if value.ndim > 0}
         if any(value.ndim == 0 for value in normalized.values()) or len(leading) != 1:
-            raise ValueError("all trace arrays must have rank >= 1 and the same leading dimension")
+            raise ValueError(
+                "all trace arrays must have rank >= 1 and the same leading dimension"
+            )
         shard_name = f"shard-{len(self._shards):05d}"
         final_dir = self.path / shard_name
         temporary = self.path / f".{shard_name}.tmp"
@@ -89,9 +123,30 @@ class TraceWriter:
         )
         self._write_manifest(complete=False)
 
+    @property
+    def shard_count(self) -> int:
+        return len(self._shards)
+
     def _write_manifest(self, *, complete: bool) -> None:
         manifest = {**self._base, "complete": complete, "shards": self._shards}
         atomic_json(self.path / "manifest.json", manifest)
+
+    def _verify_shards(self) -> None:
+        for shard in self._shards:
+            name = shard.get("name")
+            fields = shard.get("fields")
+            if not isinstance(name, str) or not isinstance(fields, dict):
+                raise TraceFormatError("cannot resume malformed trace shard")
+            for field in fields.values():
+                if not isinstance(field, dict) or not isinstance(
+                    field.get("file"), str
+                ):
+                    raise TraceFormatError("cannot resume malformed trace field")
+                path = self.path / name / field["file"]
+                if not path.is_file() or sha256_file(path) != field.get("sha256"):
+                    raise TraceFormatError(
+                        f"cannot resume trace with corrupt shard: {path}"
+                    )
 
     def close(self) -> None:
         if not self._closed:
@@ -116,7 +171,9 @@ class TraceReader:
         except (OSError, json.JSONDecodeError) as exc:
             raise TraceFormatError(f"cannot read trace manifest: {exc}") from exc
         if self.manifest.get("schema_version") != TRACE_SCHEMA_VERSION:
-            raise TraceFormatError(f"unsupported trace schema {self.manifest.get('schema_version')}")
+            raise TraceFormatError(
+                f"unsupported trace schema {self.manifest.get('schema_version')}"
+            )
         if not self.manifest.get("complete"):
             raise TraceFormatError("trace is incomplete")
         if verify:
@@ -129,7 +186,9 @@ class TraceReader:
                 if not path.is_file() or sha256_file(path) != field["sha256"]:
                     raise TraceFormatError(f"trace checksum mismatch: {path}")
 
-    def iter_shards(self, fields: list[str] | None = None) -> Iterator[dict[str, np.ndarray]]:
+    def iter_shards(
+        self, fields: list[str] | None = None
+    ) -> Iterator[dict[str, np.ndarray]]:
         for shard in self.manifest["shards"]:
             available = shard["fields"]
             selected = list(available) if fields is None else fields
@@ -137,6 +196,8 @@ class TraceReader:
             if missing:
                 raise TraceFormatError(f"missing trace fields: {sorted(missing)}")
             yield {
-                name: np.load(self.path / shard["name"] / available[name]["file"], mmap_mode="r")
+                name: np.load(
+                    self.path / shard["name"] / available[name]["file"], mmap_mode="r"
+                )
                 for name in selected
             }

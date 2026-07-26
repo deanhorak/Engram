@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "experiment": "whole_model_fully_sparse_distillation",
+  "date": "2026-07-24",
+  "decision": "stop_dense_source_q_sparse_scale_and_use_passing_native_bitnet_track",
+  "training_accelerator": "NVIDIA GeForce RTX 3050",
+  "inference_contract": "cpu_only",
+  "confirmation_opened": false,
+  "development_holdout": {
+    "records": 128,
+    "prediction_positions": 15559,
+    "sha256": "073e2b648a5cf84a97697330384338b1193f148ff1eb3a3cc9ec4cf21d37f977",
+    "training_prefix_records": 81647,
+    "exact_token_sequence_overlap": 0
+  },
+  "uniform_baseline": {
+    "ideal_traffic_fraction_before_metadata": 0.4396701388888889,
+    "teacher_student_kl": 0.741678,
+    "teacher_top1_agreement": 0.615071,
+    "nll_delta": 0.678731,
+    "final_hidden_relative_l2": 0.350424
+  },
+  "causal_layer_schedule": {
+    "ideal_traffic_fraction_before_metadata": 0.45,
+    "maximum_input_count": 360,
+    "maximum_intermediate_count": 512,
+    "teacher_student_kl": 0.457355,
+    "teacher_top1_agreement": 0.669387,
+    "nll_delta": 0.474366,
+    "final_hidden_relative_l2": 0.328055
+  },
+  "best_trained_arm": {
+    "kind": "causal_schedule_attention_normalization_coadaptation",
+    "training_sequences": 512,
+    "training_steps": 128,
+    "batch_size": 4,
+    "teacher_student_kl": 0.451669,
+    "teacher_top1_agreement": 0.67138,
+    "nll_delta": 0.458467,
+    "final_hidden_relative_l2": 0.327199,
+    "cpu_artifact_reload_passed": true,
+    "gate_passed": false
+  },
+  "rejected_arms": {
+    "label_only_full_model_continuation_130k_tokens": {
+      "teacher_student_kl": 0.455965,
+      "teacher_top1_agreement": 0.671766,
+      "nll_delta": 0.475539,
+      "final_hidden_relative_l2": 0.328215
+    },
+    "token_adaptive_concentration_policy": {
+      "actual_traffic_fraction": 0.4624664871780961,
+      "teacher_student_kl": 2.976908302302821
+    },
+    "rank24_residual_exact_total_traffic": {
+      "total_traffic_fraction": 0.45,
+      "teacher_student_kl": 0.489966,
+      "teacher_top1_agreement": 0.660582,
+      "nll_delta": 0.50604,
+      "final_hidden_relative_l2": 0.340183
+    }
+  },
+  "gate_thresholds": {
+    "maximum_teacher_student_kl": 0.05,
+    "minimum_teacher_top1_agreement": 0.9,
+    "maximum_nll_delta": 0.05,
+    "maximum_final_hidden_relative_l2": 0.1,
+    "maximum_cold_mlp_traffic_fraction": 0.45
+  }
+}

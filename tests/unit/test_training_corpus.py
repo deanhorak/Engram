@@ -2,7 +2,10 @@ import json
 import sys
 from types import SimpleNamespace
 
-from engram.training.corpus import build_distillation_corpus
+from engram.training.corpus import (
+    build_distillation_corpus,
+    build_distillation_tail_holdout,
+)
 
 
 class _Tokenizer:
@@ -55,4 +58,29 @@ def test_build_distillation_corpus_round_robins_sources(tmp_path, monkeypatch):
     assert report["duplicate_sequences_skipped"] == 3
     assert report["deduplication"] == "exact_token_sequence_first_occurrence"
     assert report["token_positions"] == 24
+    assert output.with_suffix(".jsonl.manifest.json").is_file()
+
+
+def test_build_distillation_tail_holdout_authenticates_disjoint_prefix(tmp_path):
+    source = tmp_path / "source.jsonl"
+    source.write_text(
+        "".join(
+            json.dumps({"input_ids": [index, index + 1, index + 2]}) + "\n"
+            for index in range(6)
+        ),
+        encoding="utf-8",
+    )
+    output = tmp_path / "development.jsonl"
+
+    report = build_distillation_tail_holdout(source, output, records=2)
+
+    records = [json.loads(line) for line in output.read_text().splitlines()]
+    assert records == [
+        {"input_ids": [4, 5, 6]},
+        {"input_ids": [5, 6, 7]},
+    ]
+    assert report["partition"]["training_prefix_records"] == 4
+    assert report["partition"]["holdout_records"] == 2
+    assert report["partition"]["exact_token_sequence_overlap"] == 0
+    assert report["holdout"]["prediction_token_positions"] == 4
     assert output.with_suffix(".jsonl.manifest.json").is_file()

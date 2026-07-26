@@ -506,3 +506,95 @@ def test_native_bitnet_attention_cli_forwards_confirmation_split(tmp_path, monke
     assert captured["lsh_tables"] == 6
     assert captured["lsh_bits"] == 7
     assert captured["lsh_radius"] == 2
+
+
+def test_native_bitnet_controller_cli_forwards_compiled_protocol(
+    tmp_path,
+    monkeypatch,
+):
+    captured = {}
+
+    def fake_evaluate(package, dataset, controller, **kwargs):
+        captured.update(
+            {
+                "package": package,
+                "dataset": dataset,
+                "controller": controller,
+                **kwargs,
+            }
+        )
+        return {"frozen_gate_passed": True}
+
+    monkeypatch.setattr(
+        "engram.cli.evaluate_native_bitnet_controller_substitution",
+        fake_evaluate,
+    )
+    result = main(
+        [
+            "evaluate-native-bitnet-controller",
+            "--model",
+            str(tmp_path / "package"),
+            "--dataset",
+            str(tmp_path / "records.jsonl"),
+            "--controller",
+            str(tmp_path / "controller"),
+            "--out",
+            str(tmp_path / "report.json"),
+            "--sequence-count",
+            "8",
+            "--prediction-positions",
+            "256",
+            "--record-offset",
+            "8",
+            "--retrieval-candidates",
+            "8",
+            "--retrieval-top-k",
+            "4",
+        ]
+    )
+
+    assert result == 0
+    assert captured["package"] == tmp_path / "package"
+    assert captured["controller"] == tmp_path / "controller"
+    assert captured["record_offset"] == 8
+    assert captured["prediction_positions"] == 256
+    assert captured["native_projections"] is True
+
+
+def test_native_bitnet_controller_generation_cli_forwards_suite(
+    tmp_path,
+    monkeypatch,
+):
+    captured = {}
+
+    def fake_evaluate(**kwargs):
+        captured.update(kwargs)
+        return {"gate_passed": True}
+
+    monkeypatch.setattr(
+        "engram.cli.evaluate_native_bitnet_controller_generation",
+        fake_evaluate,
+    )
+    result = main(
+        [
+            "evaluate-native-bitnet-controller-generation",
+            "--model",
+            str(tmp_path / "package"),
+            "--controller",
+            str(tmp_path / "controller"),
+            "--prompts",
+            str(tmp_path / "prompts.jsonl"),
+            "--out",
+            str(tmp_path / "report.json"),
+            "--max-tokens",
+            "4",
+            "--threads",
+            "12",
+        ]
+    )
+
+    assert result == 0
+    assert captured["package"] == tmp_path / "package"
+    assert captured["controller"] == tmp_path / "controller"
+    assert captured["max_new_tokens"] == 4
+    assert captured["threads"] == 12

@@ -1,5 +1,263 @@
 # Research log
 
+## 2026-07-25 — Package-owned native controller boundary
+
+- Added authenticated schema-v3 controller installation to native BitNet
+  packages. The installer validates dimensions, exact-residual mode, zero
+  correction scales, all existing package hashes, and refuses to overwrite a
+  different controller.
+- Added a float32 C ABI residual/RMS kernel to `libengram_bitnet.so`. It returns
+  both normalized state and the relative RMS carried into the next stage.
+  C++ and NumPy parity tests pass.
+- Controller-driven generation now defaults to the package manifest's
+  controller when no external path is supplied and uses the native residual
+  kernel for every stage.
+- The installed working package generates `[12366, 13, 12366, 374]`
+  (` Paris. Paris is`) with the package-owned controller, nine correct cache
+  positions, native controller mode, and zero decoder-layer calls.
+- Added first-class install and generation CLI commands. Remaining work is
+  moving normalization/operator orchestration and the final head out of the
+  Torch module shell into a complete native C++ generation runtime.
+
+## 2026-07-25 — Incremental controller generation matches exactly
+
+- Added `ControllerDrivenBitNet`, an explicit 30-stage package loop that calls
+  stage normalization, persistent native attention, native packed MLP, and the
+  schema-v3 controller without invoking a decoder layer's `forward` method.
+- The runtime carries normalized width-2,560 state plus one scalar residual RMS
+  per token. This preserves the operator-output scale needed by residual
+  addition while leaving the controller vector normalized.
+- A real-package development prompt produced identical four-token output
+  `[12366, 13, 12366, 374]` (` Paris. Paris is`) in the decoder-reference and
+  controller arms. Nine prompt/decode cache positions advanced exactly and
+  decoder-layer calls remained zero.
+- Added a fixed prompt-suite evaluator with predeclared requirements: eight
+  prompts, 32 reference tokens, at least 90% weighted token agreement, at
+  least 75% exact-prompt parity, all cache positions correct, and no decoder
+  layer calls.
+- The frozen suite passes every check with 100% token agreement and 100% exact
+  prompt parity. Controller arithmetic averages 0.0427 seconds per prompt,
+  while complete controller-driven execution averages 22.581 seconds. Maximum
+  reported controller state is 112,684 bytes.
+- The next boundary is package-native installation and execution. Python/Torch
+  still orchestrates stage modules, the controller directory is external to
+  the package manifest, and the residual/RMS loop is not yet a native C++
+  kernel.
+
+## 2026-07-25 — Compiled operators pass controller replay
+
+- Corrected operator provenance: controller traces are captured from
+  `NativeBitNetRuntime`, which replaces all source MLP modules with the direct
+  packed CPU phase-stream kernel. Their semantic outputs were already
+  compiled; dense attention was the remaining teacher operator.
+- Added `evaluate-native-bitnet-controller`, which runs a dense-attention
+  package baseline and a native W16/C8/K4/S2 attention candidate, captures
+  only compiled MLP/attention outputs, replays them through the schema-v3
+  controller outside the decoder residual scaffold, and applies the package
+  final norm and language-model head.
+- A 2-sequence/32-position development run passed every quality check; only
+  the deliberately undersized sample checks failed. The configuration then
+  advanced unchanged to the sealed split.
+- On eight unique sequences and 256 positions at record offset 8, every frozen
+  check passes. Controller replay versus the dense-attention baseline has KL
+  0.011125, top-1 agreement 0.957031, NLL delta -0.008285, and final hidden
+  relative L2 0.075893.
+- Replay versus the compiled candidate has hidden relative L2 0.006810 and
+  terminal trajectory NMSE 0.000026666. The controller adds only 0.255 seconds
+  for 8 x 33 x 30 stage transitions, versus 116.27 seconds for the compiled
+  operator model pass.
+- This passes compiled-operator/controller integration at the replay boundary.
+  Incremental generation remains: controller state must directly dispatch the
+  native operators without running decoder layers to obtain their outputs.
+
+## 2026-07-25 — Exact operator residual passes the controller gate
+
+- A controlled rank-4 stage input-adapter experiment on the unchanged
+  1,024/256-position traces reduced protected terminal normalized MSE only
+  from 0.159440 to 0.157431. The 1.26% gain rejects stage-conditioned input
+  alignment as the main controller limitation.
+- Re-examined the teacher and trace contracts. Each layer output is exactly
+  the incoming residual plus its captured attention and MLP outputs, followed
+  by the next boundary's RMS normalization. The learned controller had been
+  compressing this known additive operation through rank 128.
+- Added a backward-compatible schema-v3 controller that preserves semantic
+  and episodic residual additions exactly and uses the shared factorized
+  network only as an optional correction. Schema v1/v2 artifacts retain their
+  original layouts and metadata.
+- On the frozen protected validation trace, the zero-correction artifact
+  reaches terminal normalized MSE 0.000020801, mean hidden normalized MSE
+  0.000017685, and cosine loss 0.000008841. It passes the fixed 0.0225 gate
+  with 1,081.7 times margin and reloads from NumPy within 5.72e-6 of Torch.
+- The PyTorch-free CPU hot path skips all factorized matrices when correction
+  scales are zero. A 256-state, 30-stage batch takes median 0.1847 seconds,
+  or 41,575.9 stage transitions/s.
+- This opens native-attention substitution, not end-to-end qualification.
+  Semantic outputs already come from the packaged CPU MLP kernel, while
+  attention outputs remain dense in this trace. The next experiment replaces
+  attention and replays both operator outputs through the controller.
+
+## 2026-07-25 — 1,024-position controller scale rung rejects blind scaling
+
+- Froze a larger protected protocol before execution: 64 training sequences
+  and 16 validation sequences, 16 positions each, batch-four CPU teacher
+  capture, a fresh rank-128/adapter-rank-4 controller, 1,000 CUDA steps, and
+  the unchanged terminal normalized MSE gate of 0.0225.
+- Captured 1,024 training positions in 16 checksummed shards and 256
+  validation positions in four shards. Capture took 1,044.2 and 276.2 seconds;
+  the dataset hashes are distinct.
+- The CUDA fit took 235.1 seconds. Protected terminal normalized MSE improves
+  from the prior 0.245010 to 0.159440, cosine loss averaged across stages from
+  0.333417 to 0.272803, and total loss from 1.156465 to 0.931534. CPU reload
+  parity passes at 5.90e-6.
+- The fixed substitution gate still fails by 7.1 times. A crude two-point
+  scaling fit has exponent about 0.207 and would imply roughly 13.4 million
+  positions to reach 0.0225 if that slope held. This extrapolation is only a
+  diagnostic; it makes another blind capture rung unjustified.
+- Stagewise self-fed NMSE is 1.077929/0.848588/0.679043/0.530822/0.419096/
+  0.293215/0.159440 at stages 1/5/10/15/20/25/30. Exact later teacher
+  operator outputs steadily repair the initial mismatch. The present
+  controller adapts recurrent state per stage but sends every stage's token,
+  semantic, and episodic vectors through one shared rank-128 input projection.
+- The next justified architecture experiment is a small stage-conditioned
+  low-rank input adapter into the shared bottleneck. It directly tests the
+  diagnosed alignment failure while adding only bounded CPU-resident
+  parameters. Compiled semantic/episodic substitution remains sealed.
+
+## 2026-07-25 — Batched capture and protected controller scaling
+
+- After a host reboot, the loaded NVIDIA module and userspace library both
+  report 580.173.02 and PyTorch again sees the RTX 3050. Repeating the exact
+  500-step rank-128 experiment on CUDA yields terminal validation MSE 0.246530
+  and cosine loss 0.335160, close to the CPU run's 0.245010 and 0.333417.
+  Training takes 112.6 rather than 131.8 seconds, and the exported artifact
+  reloads on CPU within 5.36e-6 maximum absolute error. Optimizer device is
+  therefore not the current quality limiter.
+- Added multi-sequence padded teacher forwards, per-record deterministic
+  cropping, batch-level checksummed shards, progress reports, record offsets,
+  and restart support. Resumption verifies all prior shard hashes and skips
+  captured sample IDs. An orphan shard without a manifest is rejected instead
+  of overwritten.
+- A two-sequence batch is bit-identical to the original single-sequence path
+  for token IDs, embeddings, all 31 residual states, all 30 MLP outputs, and
+  all 30 attention outputs.
+- Captured 128 training positions from eight sequences and 64 protected
+  validation positions from four sequences. Dataset hashes differ and every
+  shard passes checksum validation.
+- The rank-128, adapter-rank-4 controller first trained for 500 steps on CPU
+  while the host had a temporary NVIDIA kernel/userspace mismatch. The
+  post-reboot CUDA reproduction above confirms the result.
+- Protected terminal normalized MSE improved from 1.998608 to 0.245010,
+  cosine loss from 0.973363 to 0.333417, and total loss from 4.292672 to
+  1.156465. This substantially improves the earlier 8/8-position result
+  (terminal MSE 0.522350) but remains outside a defensible substitution range.
+- Added artifact-based continuation and a zero-teacher-forcing mode. A
+  500-step lower-rate continuation improves training terminal error from
+  0.060627 to 0.029324 but regresses protected validation to 0.260050 and
+  fails the development gate. More optimization on this narrow corpus is
+  stopped.
+- The retained artifact reloads without Torch, matches the trained operator
+  within 7.45e-6 maximum absolute error, and runs 64 states through 30 NumPy
+  CPU cycles at 79.7 states/s. The next justified work is broader,
+  sequence-diverse trajectory capture after the host CUDA stack is restored;
+  compiled semantic/episodic substitution remains sealed.
+
+## 2026-07-24 — CUDA-assisted shared-controller distillation begins
+
+- Replaced the impractical trained-model controller target with a factorized
+  residual-gated recurrence. The original width-2,560 FP64 GRU fixture would
+  store about 629 MB in its two large kernels. The checked rank-128,
+  adapter-rank-4 controller stores 10,649,720 FP32 bytes while sharing its core
+  across all 30 depth stages.
+- Added durable BitNet trajectory capture from the qualified packaged CPU
+  teacher. Traces keep token embeddings, layer states, MLP outputs, attention
+  outputs, source/dataset hashes, and split identity. Teacher residual values
+  exceed FP16 range, so the final contract records per-token RMS-normalized
+  states and operator outputs divided by the incoming residual RMS.
+- Added CUDA optimization with intermediate-state, transition-delta, cosine,
+  and terminal rollout losses; scheduled teacher forcing; gradient clipping;
+  protected validation checks; FP32 NumPy serialization; and independent
+  PyTorch-free CPU parity.
+- A protected eight-training/eight-validation-position micro-run reduced
+  validation loss from 4.306441 to 1.881813, terminal normalized MSE from
+  2.003824 to 0.522350, and cosine loss from 0.977434 to 0.532363. CPU reload
+  passed at 7.15e-6 maximum absolute error. This is a development/infrastructure
+  pass only; exact teacher operator outputs are still inputs.
+- The staged objective follows the progressive-granularity lesson in
+  [MOHAWK](https://arxiv.org/abs/2408.10189), while depth-shared parameters and
+  explicit stage identity follow the recurrent-depth motivation of
+  [Universal Transformers](https://arxiv.org/abs/1807.03819). The next run
+  must scale protected data, then replace teacher operator outputs with the
+  compiled semantic-memory and episodic-attention outputs during rollout.
+
+## 2026-07-24 — Whole-model Q-Sparse campaign and CPU deployment boundary
+
+- Restored host access to the RTX 3050 and made the architecture boundary
+  explicit: CUDA may accelerate training and distillation, while serialized
+  artifacts and inference remain CPU-only.
+- Added an all-layer exact Q-Sparse trainer. It applies hard top-K to the input
+  shared by gate/up and to the down input, uses an identity STE only during
+  training, freezes the dense teacher, supports causal hidden/logit/local
+  distillation and next-token continuation, saves resumable device-neutral
+  checkpoints, and independently reloads every candidate on CPU.
+- Added an authenticated 128-sequence tail holdout from the pinned 10M-token
+  pretraining-mixture corpus. It contains 15,559 prediction positions, is
+  disjoint from the 81,647-record training prefix by exact token-sequence
+  hash, and remains separate from confirmation.
+- The uniform 43.967%-traffic baseline reaches KL 0.742 and top-1 0.615 on
+  the selection set. A downstream-KL single-layer sensitivity fit produces
+  a fixed schedule at exactly 45% ideal traffic, with `q <= 360/576` and
+  `K <= 512` everywhere. It generalizes to the unseen holdout at KL 0.457,
+  top-1 0.669, NLL delta +0.474, and hidden L2 0.328.
+- Same-input teacher targets correct an initially harmful local objective.
+  MLP-only training is nearly flat. Verified attention/normalization
+  co-adaptation is the best arm but after 128 batch-four steps reaches only
+  KL 0.452, top-1 0.671, NLL +0.458, and hidden L2 0.327.
+- Full-model label-only continuation at batch eight, a token-adaptive
+  concentration policy, and a traffic-charged rank-24 correction were also
+  measured. Label-only continuation is flat; the adaptive policy violates
+  traffic and collapses quality; the residual loses to spending its bytes on
+  sparse reads. None opens confirmation.
+- The dense-source Q-Sparse scale ladder is stopped on this corpus. Published
+  continuation uses a far larger token budget, and the measured host-scale
+  slopes do not support extrapolation to the unchanged gate.
+- Milestone 2 already has a qualifying CPU-native path through the direct
+  BitNet phase-stream kernel. The next scientific stage is therefore
+  GPU-assisted distillation of the shared controller from that passing
+  teacher, followed by CPU-only artifact reload and inference.
+
+## 2026-07-24 — Exact activation-sparse dense-source screens
+
+- Researched ProSparse, CATS, Q-Sparse, and transformer-to-SSM distillation
+  against the existing failed router/codec ledger. The actionable distinction
+  is that activation-sparse training changes the teacher computation instead
+  of trying to predict diffuse source-neuron utility after training.
+- Added a leakage-safe exact-gate screen. It fits per-layer CATS/FATReLU
+  thresholds on calibration traces and evaluates disjoint development
+  boundaries. A full gate scan plus active up/down reads costs
+  `(1 + 2a) / 3` of dense MLP weights, so the 45% ideal-Q4 gate requires at
+  most 17.5% active records before metadata.
+- Zero-shot CATS at 82.5% target sparsity reaches 17.39% actual activity and
+  44.93% ideal traffic, but mean local relative L2 is 0.511. FATReLU is worse
+  at 0.591. Thresholding the unchanged teacher is rejected.
+- Added hard-forward, soft-backward boundary training with a dense warmup,
+  sine-squared threshold ramp, continuation artifacts, and exact traffic
+  reporting. On layer 14, 1,024 progressive plus 4,096 fixed-budget updates
+  lower threshold-gate error from 0.615 to 0.470 at 43.48% ideal traffic. The
+  curve flattens far above the 0.18 screen.
+- Added Q-Sparse-style exact top-K execution. Gate and up read the same
+  activation-selected input coordinates; down reads only selected
+  intermediate coordinates. No router or candidate recall is involved.
+  The selected `q=282/576`, `k=522/1,536` point costs 43.967% of dense ideal
+  Q4 before metadata.
+- On the same held-out layer-14 boundary set, that Q-Sparse point starts at
+  0.343 local error. A 1,024-step progressive stage followed by 4,096
+  fixed-budget updates reaches a best 0.3228 and ends at 0.3233. This is
+  stronger than exact gate thresholding but still fails the 0.18 progression
+  screen, so no causal or confirmation corpus was opened.
+- The local retrofit is rejected. The whole-model hypothesis and accelerator
+  scale ladder were subsequently implemented and are reported in the section
+  above.
+
 ## 2026-07-24 — Chat-template-aware native CLI
 
 - Added `chat-native-bitnet`, which loads the optimized package once, keeps
@@ -895,3 +1153,22 @@
 - The refreshed cache-bypassed benchmark measured 160.3 Python and 10,373 native tokens/s with
   36.2 and 8.2 MiB peak RSS. Combined semantic/vocabulary logical traffic is 26,464 bytes/token,
   7.24x the dense-Q4 read-once payload on this tiny fixture; this remains a failed traffic gate.
+
+## 2026-07-26 — Native controller shell boundary
+
+- Added C ABI implementations for BF16 embedding lookup, BitNet-ordered
+  RMSNorm, default RoPE, exact residual/RMS advancement, and threaded
+  tied-vocabulary argmax.
+- Removed Torch embedding, 92 RMSNorm calls, RoPE construction/application,
+  and full-logit materialization from controller-driven package generation.
+- Preserved the `The capital of France is` smoke sequence exactly while
+  reducing its four-token runtime from about 21.3 to 18.6 seconds.
+- The unchanged eight-prompt/32-token protocol passes with 96.875% weighted
+  token agreement, 87.5% exact prompts, exact cache positions, and zero
+  decoder-layer calls. One final-token BF16 near-tie differs because the
+  scalar native vocabulary dot product and PyTorch/oneDNN accumulate in
+  different orders.
+- Full validation passes: 451 Python tests and 15 native tests. The remaining
+  shell is stage orchestration and Torch tensor views around already-native
+  projections, MLP, and attention kernels; the next boundary is one C++
+  package-runtime handle for the complete 30-stage loop.

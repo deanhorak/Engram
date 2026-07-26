@@ -1,0 +1,335 @@
+{
+  "checks": {
+    "cache_positions": true,
+    "decoder_layers_bypassed": true,
+    "exact_prompt_fraction": true,
+    "generated_reference_tokens": true,
+    "prompt_count": true,
+    "weighted_token_agreement": true
+  },
+  "configuration": {
+    "controller_correction_enabled": false,
+    "episodic_operator": "native_streaming_w16_c8_k4_sinks2",
+    "greedy": true,
+    "max_new_tokens": 4,
+    "native_packed_attention_projections": true,
+    "semantic_operator": "native_packed_bitnet_phase_stream"
+  },
+  "controller": {
+    "adapter_rank": 4,
+    "format": "engram.controller.factorized_residual",
+    "input_dim": 7680,
+    "num_stages": 30,
+    "operator": "operator_residual_with_factorized_correction",
+    "operator_residual_input_order": [
+      "semantic_output",
+      "episodic_output"
+    ],
+    "parameter_count": 2662490,
+    "path": "/home/dean/repos/engram/work/native_bitnet/model.engram-bitnet/controller",
+    "rank": 128,
+    "schema_version": 3,
+    "serialized_bytes": 10649960,
+    "state_dim": 2560,
+    "state_normalization": "per_token_rms",
+    "storage_dtype": "float32",
+    "tensor_layout": {
+      "adapter_down": [
+        30,
+        2560,
+        4
+      ],
+      "adapter_up": [
+        30,
+        4,
+        2560
+      ],
+      "bias": [
+        5120
+      ],
+      "gate_up": [
+        128,
+        5120
+      ],
+      "input_down": [
+        7680,
+        128
+      ],
+      "operator_residual_scale": [
+        30,
+        2
+      ],
+      "recurrent_down": [
+        2560,
+        128
+      ],
+      "stage_embeddings": [
+        30,
+        2560
+      ],
+      "step_scale": [
+        30
+      ]
+    }
+  },
+  "decision": "incremental_controller_generation_pass_native_serialization_next",
+  "experiment": "native_bitnet_controller_incremental_generation",
+  "gate_passed": true,
+  "package": "/home/dean/repos/engram/work/native_bitnet/model.engram-bitnet",
+  "prompt_suite": {
+    "path": "/home/dean/repos/engram/tests/fixtures/inference_prompts.jsonl",
+    "prompts": 8,
+    "sha256": "dd38c4ce92045d333edd572f23bad3f41f331393edfc58796a7cf2af01554fd2"
+  },
+  "results": [
+    {
+      "attention_tokens_seen": 9,
+      "baseline_seconds": 20.488468833005754,
+      "baseline_text": " Paris. Paris is",
+      "baseline_tokens": [
+        12366,
+        13,
+        12366,
+        374
+      ],
+      "cache_position_passed": true,
+      "controller_math_seconds": 0.028808937975554727,
+      "controller_runtime_seconds": 18.877211237995652,
+      "controller_state_bytes": 61464,
+      "controller_text": " Paris. Paris is",
+      "controller_tokens": [
+        12366,
+        13,
+        12366,
+        374
+      ],
+      "decoder_layer_forward_calls": 0,
+      "exact_token_parity": true,
+      "expected_attention_tokens_seen": 9,
+      "prompt": "The capital of France is",
+      "prompt_tokens": 6,
+      "token_agreement": 1.0
+    },
+    {
+      "attention_tokens_seen": 11,
+      "baseline_seconds": 19.523127312990255,
+      "baseline_text": " the process by which",
+      "baseline_tokens": [
+        279,
+        1920,
+        555,
+        902
+      ],
+      "cache_position_passed": true,
+      "controller_math_seconds": 0.027069495044997893,
+      "controller_runtime_seconds": 18.570491889011464,
+      "controller_state_bytes": 81952,
+      "controller_text": " the process by which",
+      "controller_tokens": [
+        279,
+        1920,
+        555,
+        902
+      ],
+      "decoder_layer_forward_calls": 0,
+      "exact_token_parity": true,
+      "expected_attention_tokens_seen": 11,
+      "prompt": "In simple terms, photosynthesis is",
+      "prompt_tokens": 8,
+      "token_agreement": 1.0
+    },
+    {
+      "attention_tokens_seen": 14,
+      "baseline_seconds": 20.284461981995264,
+      "baseline_text": " one for the x",
+      "baseline_tokens": [
+        832,
+        369,
+        279,
+        865
+      ],
+      "cache_position_passed": true,
+      "controller_math_seconds": 0.030983220058260486,
+      "controller_runtime_seconds": 18.788183723998372,
+      "controller_state_bytes": 112684,
+      "controller_text": " one for the x",
+      "controller_tokens": [
+        832,
+        369,
+        279,
+        865
+      ],
+      "decoder_layer_forward_calls": 0,
+      "exact_token_parity": true,
+      "expected_attention_tokens_seen": 14,
+      "prompt": "Write a short Python function that adds two numbers:",
+      "prompt_tokens": 11,
+      "token_agreement": 1.0
+    },
+    {
+      "attention_tokens_seen": 12,
+      "baseline_seconds": 19.204688537996844,
+      "baseline_text": " the gravitational pull of",
+      "baseline_tokens": [
+        279,
+        71019,
+        6958,
+        315
+      ],
+      "cache_position_passed": true,
+      "controller_math_seconds": 0.02558070201484952,
+      "controller_runtime_seconds": 15.88699505700788,
+      "controller_state_bytes": 92196,
+      "controller_text": " the gravitational pull of",
+      "controller_tokens": [
+        279,
+        71019,
+        6958,
+        315
+      ],
+      "decoder_layer_forward_calls": 0,
+      "exact_token_parity": true,
+      "expected_attention_tokens_seen": 12,
+      "prompt": "The primary cause of ocean tides is",
+      "prompt_tokens": 9,
+      "token_agreement": 1.0
+    },
+    {
+      "attention_tokens_seen": 12,
+      "baseline_seconds": 17.101784963000682,
+      "baseline_text": " named Zorbl",
+      "baseline_tokens": [
+        7086,
+        1901,
+        269,
+        2067
+      ],
+      "cache_position_passed": true,
+      "controller_math_seconds": 0.024895216934964992,
+      "controller_runtime_seconds": 15.925333543986198,
+      "controller_state_bytes": 92196,
+      "controller_text": " named Zorbl",
+      "controller_tokens": [
+        7086,
+        1901,
+        269,
+        2067
+      ],
+      "decoder_layer_forward_calls": 0,
+      "exact_token_parity": true,
+      "expected_attention_tokens_seen": 12,
+      "prompt": "Once upon a time, a curious robot",
+      "prompt_tokens": 9,
+      "token_agreement": 1.0
+    },
+    {
+      "attention_tokens_seen": 10,
+      "baseline_seconds": 17.244147712000995,
+      "baseline_text": " include all of the",
+      "baseline_tokens": [
+        2997,
+        682,
+        315,
+        279
+      ],
+      "cache_position_passed": true,
+      "controller_math_seconds": 0.02472697402117774,
+      "controller_runtime_seconds": 16.075175082005444,
+      "controller_state_bytes": 71708,
+      "controller_text": " include all of the",
+      "controller_tokens": [
+        2997,
+        682,
+        315,
+        279
+      ],
+      "decoder_layer_forward_calls": 0,
+      "exact_token_parity": true,
+      "expected_attention_tokens_seen": 10,
+      "prompt": "A healthy software testing strategy should",
+      "prompt_tokens": 7,
+      "token_agreement": 1.0
+    },
+    {
+      "attention_tokens_seen": 12,
+      "baseline_seconds": 17.028505148991826,
+      "baseline_text": " that RAM is volatile",
+      "baseline_tokens": [
+        430,
+        22813,
+        374,
+        17509
+      ],
+      "cache_position_passed": true,
+      "controller_math_seconds": 0.023440794888301753,
+      "controller_runtime_seconds": 15.889644942988525,
+      "controller_state_bytes": 92196,
+      "controller_text": " that RAM is used",
+      "controller_tokens": [
+        430,
+        22813,
+        374,
+        1511
+      ],
+      "decoder_layer_forward_calls": 0,
+      "exact_token_parity": false,
+      "expected_attention_tokens_seen": 12,
+      "prompt": "The difference between RAM and disk storage is",
+      "prompt_tokens": 9,
+      "token_agreement": 0.75
+    },
+    {
+      "attention_tokens_seen": 12,
+      "baseline_seconds": 17.091324838998844,
+      "baseline_text": ", you need to",
+      "baseline_tokens": [
+        11,
+        499,
+        1205,
+        311
+      ],
+      "cache_position_passed": true,
+      "controller_math_seconds": 0.022703702008584514,
+      "controller_runtime_seconds": 15.965526207990479,
+      "controller_state_bytes": 92196,
+      "controller_text": ", you need to",
+      "controller_tokens": [
+        11,
+        499,
+        1205,
+        311
+      ],
+      "decoder_layer_forward_calls": 0,
+      "exact_token_parity": true,
+      "expected_attention_tokens_seen": 12,
+      "prompt": "To make a cup of tea, first",
+      "prompt_tokens": 9,
+      "token_agreement": 1.0
+    }
+  ],
+  "schema_version": 1,
+  "scope": {
+    "absolute_rope_positions_advanced": true,
+    "decoder_layer_forward_used": false,
+    "fully_native_cpp_controller_used": false,
+    "persistent_native_attention_cache_used": true,
+    "source_mlp_tensors_loaded": false,
+    "torch_module_shell_still_used": true
+  },
+  "status": "frozen_controller_generation_confirmation",
+  "summary": {
+    "exact_prompt_fraction": 0.875,
+    "generated_reference_tokens": 32,
+    "maximum_controller_state_bytes": 112684,
+    "mean_controller_math_seconds": 0.026026130368336453,
+    "mean_controller_runtime_seconds": 16.997320210623002,
+    "prompts": 8,
+    "weighted_token_agreement": 0.96875
+  },
+  "thresholds": {
+    "minimum_exact_prompt_fraction": 0.75,
+    "minimum_generated_reference_tokens": 32,
+    "minimum_prompts": 8,
+    "minimum_weighted_token_agreement": 0.9
+  }
+}

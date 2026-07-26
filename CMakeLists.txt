@@ -11,6 +11,8 @@ add_library(engram_kernels STATIC
   native/src/episodic.cpp
   native/src/npy.cpp
   native/src/native_bitnet.cpp
+  native/src/native_shell_c.cpp
+  native/src/operator_residual_c.cpp
   native/src/package.cpp
   native/src/runtime.cpp
   native/src/semantic.cpp
@@ -33,6 +35,8 @@ set_target_properties(engram_kernels PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 add_library(engram_bitnet SHARED
   native/src/native_bitnet_c.cpp
+  native/src/native_shell_c.cpp
+  native/src/operator_residual_c.cpp
   native/src/ternary_projection_c.cpp
 )
 target_link_libraries(engram_bitnet PRIVATE engram_kernels)

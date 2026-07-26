@@ -49,6 +49,10 @@ class NativeBitNetGeneration:
     stopped_on_eos: bool = False
     prefill_seconds: float = 0.0
     decode_seconds: float = 0.0
+    controller_mode: str = "decoder_layer_residual"
+    controller_seconds: float = 0.0
+    controller_state_bytes: int = 0
+    decoder_layer_forward_calls: int = 0
 
 
 def _safe_package_path(root: Path, relative: str) -> Path:
@@ -110,6 +114,12 @@ class NativeBitNetRuntime:
         self.artifact_path = _safe_package_path(
             self.path,
             self.manifest["mlp"]["path"],
+        )
+        controller_descriptor = self.manifest.get("controller")
+        self.controller_path = (
+            _safe_package_path(self.path, controller_descriptor["path"])
+            if isinstance(controller_descriptor, dict)
+            else None
         )
         configured_threads = int(self.manifest["runtime"]["kernel_threads"])
         self.native_projections = bool(native_projections)
@@ -308,6 +318,7 @@ class NativeBitNetRuntime:
         self,
         *,
         library: str | Path | None = None,
+        shell_library: str | Path | None = None,
         local_window: int = 16,
         older_candidates: int = 8,
         older_top_k: int = 4,
@@ -327,6 +338,9 @@ class NativeBitNetRuntime:
                 int(older_top_k),
                 int(sink_tokens),
                 None if library is None else str(Path(library).resolve()),
+                None
+                if shell_library is None
+                else str(Path(shell_library).resolve()),
             )
             current = (
                 configured.local_window,
@@ -336,6 +350,9 @@ class NativeBitNetRuntime:
                 None
                 if configured.library is None
                 else str(Path(configured.library).resolve()),
+                None
+                if configured.shell_library is None
+                else str(Path(configured.shell_library).resolve()),
             )
             if requested != current:
                 raise ValueError(
@@ -352,6 +369,7 @@ class NativeBitNetRuntime:
                 older_top_k=older_top_k,
                 sink_tokens=sink_tokens,
                 library=library,
+                shell_library=shell_library,
             )
             decoder_layer.self_attn = replacement
             replacements.append(replacement)
@@ -442,6 +460,7 @@ class NativeBitNetRuntime:
             raise ValueError("prompt_tokens must not be empty")
         self.enable_bounded_attention(
             library=attention_library,
+            shell_library=getattr(self.kernel, "library_path", None),
             local_window=local_window,
             older_candidates=older_candidates,
             older_top_k=older_top_k,
@@ -525,6 +544,145 @@ class NativeBitNetRuntime:
             decode_seconds=decode_seconds,
         )
 
+    def generate_tokens_controller_bounded(
+        self,
+        prompt_tokens: Sequence[int],
+        controller=None,
+        *,
+        max_new_tokens: int,
+        attention_library: str | Path | None = None,
+        local_window: int = 16,
+        older_candidates: int = 8,
+        older_top_k: int = 4,
+        sink_tokens: int = 2,
+    ) -> NativeBitNetGeneration:
+        """Generate with explicit operators and no decoder-layer forwards."""
+
+        if max_new_tokens <= 0:
+            raise ValueError("max_new_tokens must be positive")
+        if not prompt_tokens:
+            raise ValueError("prompt_tokens must not be empty")
+        from engram.controller import FactorizedRecurrentController
+        from engram.runtime.native_bitnet_attention import (
+            aggregate_native_attention_metrics,
+        )
+        from engram.runtime.native_bitnet_controller import (
+            ControllerDrivenBitNet,
+        )
+
+        if controller is None:
+            if self.controller_path is None:
+                raise ValueError("native BitNet package has no installed controller")
+            controller = self.controller_path
+        if not isinstance(controller, FactorizedRecurrentController):
+            controller = FactorizedRecurrentController.load(controller)
+        self.enable_bounded_attention(
+            library=attention_library,
+            shell_library=self.kernel.library_path,
+            local_window=local_window,
+            older_candidates=older_candidates,
+            older_top_k=older_top_k,
+            sink_tokens=sink_tokens,
+        )
+        self.reset_bounded_attention()
+        runner = ControllerDrivenBitNet(
+            self.model,
+            controller,
+            native_library=self.kernel.library_path,
+            native_vocab_argmax=True,
+            vocab_threads=self.kernel.thread_count,
+        )
+        torch, _, _ = _torch_modules()
+        prompt = torch.tensor([list(prompt_tokens)], dtype=torch.long)
+        prompt_positions = torch.arange(prompt.shape[1], dtype=torch.long)
+        generated: list[int] = []
+        controller_seconds = 0.0
+        controller_state_bytes = 0
+        self.kernel.clear_metrics()
+        started = time.perf_counter()
+        with torch.inference_mode():
+            output = runner.forward(
+                prompt,
+                position_ids=prompt_positions.unsqueeze(0),
+            )
+            prefill_seconds = time.perf_counter() - started
+            controller_seconds += output.controller_seconds
+            controller_state_bytes = max(
+                controller_state_bytes,
+                output.normalized_state.nbytes + output.residual_rms.nbytes,
+            )
+            decode_started = time.perf_counter()
+            assert output.next_token is not None
+            next_token = output.next_token
+            generated.append(next_token)
+            absolute_position = prompt.shape[1]
+            for _ in range(1, max_new_tokens):
+                if self._is_eos(next_token):
+                    break
+                output = runner.forward(
+                    torch.tensor([[next_token]], dtype=torch.long),
+                    position_ids=torch.tensor(
+                        [[absolute_position]],
+                        dtype=torch.long,
+                    ),
+                )
+                absolute_position += 1
+                controller_seconds += output.controller_seconds
+                controller_state_bytes = max(
+                    controller_state_bytes,
+                    output.normalized_state.nbytes
+                    + output.residual_rms.nbytes,
+                )
+                assert output.next_token is not None
+                next_token = output.next_token
+                generated.append(next_token)
+        decode_seconds = time.perf_counter() - decode_started
+        elapsed = time.perf_counter() - started
+        calls = list(self.kernel.calls)
+        attention = aggregate_native_attention_metrics(
+            self._native_attention_layers
+        )
+        return NativeBitNetGeneration(
+            prompt_tokens=tuple(int(value) for value in prompt_tokens),
+            generated_tokens=tuple(generated),
+            text=self.decode(generated),
+            elapsed_seconds=elapsed,
+            mlp_calls=len(calls),
+            mlp_elapsed_seconds=sum(
+                int(call["elapsed_ns"]) for call in calls
+            )
+            / 1e9,
+            scheduled_mlp_bytes=sum(
+                int(call["scheduled_cache_line_bytes"]) for call in calls
+            ),
+            maximum_scratch_bytes=max(
+                (int(call["scratch_bytes"]) for call in calls),
+                default=0,
+            ),
+            attention_mode=(
+                f"native_streaming_w{local_window}_"
+                f"c{older_candidates}_k{older_top_k}"
+            ),
+            attention_tokens_seen=int(attention["tokens_seen"]),
+            attention_logical_read_bytes=int(attention["logical_read_bytes"]),
+            attention_state_bytes=int(attention["state_bytes"]),
+            attention_scratch_bytes=int(attention["scratch_bytes"]),
+            qkv_projection_seconds=float(attention["qkv_projection_seconds"]),
+            rope_seconds=float(attention["rope_seconds"]),
+            native_attention_seconds=float(attention["native_stream_seconds"]),
+            output_projection_seconds=float(
+                attention["output_projection_seconds"]
+            ),
+            native_attention_calls=int(attention["native_stream_calls"]),
+            stopped_on_eos=bool(generated and self._is_eos(generated[-1])),
+            prefill_seconds=prefill_seconds,
+            decode_seconds=decode_seconds,
+            controller_mode="native_exact_operator_residual",
+            controller_seconds=controller_seconds,
+            controller_state_bytes=controller_state_bytes,
+            decoder_layer_forward_calls=runner.decoder_layer_forward_calls,
+        )
+
     def generate(self, prompt: str, *, max_new_tokens: int) -> NativeBitNetGeneration:
         return self.generate_tokens(
             self.encode(prompt),
@@ -540,6 +698,21 @@ class NativeBitNetRuntime:
     ) -> NativeBitNetGeneration:
         return self.generate_tokens_bounded(
             self.encode(prompt),
+            max_new_tokens=max_new_tokens,
+            **kwargs,
+        )
+
+    def generate_controller_bounded(
+        self,
+        prompt: str,
+        controller=None,
+        *,
+        max_new_tokens: int,
+        **kwargs,
+    ) -> NativeBitNetGeneration:
+        return self.generate_tokens_controller_bounded(
+            self.encode(prompt),
+            controller,
             max_new_tokens=max_new_tokens,
             **kwargs,
         )

@@ -142,14 +142,35 @@ Unlike a transformer key/value cache, these structures have configured size limi
 
 ### Token-level shared recurrent controller
 
-The controller owns the current fixed-width state. It receives the token embedding, semantic
-read, and episodic read, then applies a GRU-like transition. Its large kernels are shared across
-cycles. Small stage embeddings and low-rank adapters can distinguish different logical stages
-without storing a complete transformer block for every stage.
+The controller owns the current fixed-width state. At each logical depth stage
+it receives three vectors that will also exist in the final CPU runtime: the
+current token embedding, that stage's semantic-memory read, and its
+episodic/attention read. Teacher hidden states are targets; they are never
+allowed to become hidden runtime inputs.
 
-The target controller must be trained or distilled to reproduce useful source-model behavior.
-The current compiler only initializes this controller deterministically. That is sufficient to
-test packaging and execution, but not sufficient to preserve language quality.
+The original fixture uses a dense GRU-like transition. That is useful for
+small package tests but is not a defensible trained-model design: at BitNet's
+2,560 width its two FP64 kernels would occupy about 629 MB. The trainable path
+therefore projects the supplied input and recurrent state into a shared
+low-rank bottleneck, expands it into a residual gate and candidate, applies a
+small stage embedding and low-rank stage adapter, then returns an
+RMS-normalized residual update. The large factors are shared across all depth
+cycles. Only the small adapters, embeddings, and one update scale vary by
+stage.
+
+Distillation proceeds in explicit stages. First, the packaged CPU BitNet
+teacher records each layer state plus its exact attention and MLP outputs.
+CUDA trains the recurrent controller against intermediate state, transition
+delta, cosine-geometry, and terminal-state losses. Teacher forcing is reduced
+until the student rolls through all 30 stages on its own state. The result is
+exported as ordinary FP32 NumPy tensors and reloaded by a PyTorch-free CPU
+runtime.
+
+This first stage answers whether one shared controller can learn the depth
+trajectory when given exact operator outputs. It does not yet prove the full
+architecture. The next stage must feed the controller outputs produced by the
+compiled semantic and episodic operators, then add vocabulary/logit
+distillation and generation evaluation.
 
 ### Vocabulary index
 

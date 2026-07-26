@@ -1,0 +1,211 @@
+{
+  "checks": {
+    "controller_replay_relative_l2": true,
+    "controller_trajectory_nmse": true,
+    "final_hidden_relative_l2": true,
+    "nll_delta": true,
+    "prediction_positions": false,
+    "teacher_student_kl": true,
+    "teacher_top1_agreement": true,
+    "unique_sequences": false
+  },
+  "compiled_candidate_vs_dense_baseline": {
+    "final_hidden": {
+      "exact": false,
+      "maximum_absolute_error": 0.0390625,
+      "mean_absolute_error": 0.0007430859259329736,
+      "relative_l2": 0.02074977196753025
+    },
+    "logits": {
+      "exact": false,
+      "maximum_absolute_error": 0.625,
+      "mean_absolute_error": 0.05113338306546211,
+      "mean_kl_divergence": 0.0016717104008421302,
+      "relative_l2": 0.014928274787962437,
+      "top1_agreement": 1.0
+    },
+    "nll_delta": -0.025783061981201172
+  },
+  "configuration": {
+    "controller_correction_enabled": false,
+    "episodic_operator": "native_streaming_attention",
+    "local_window": 16,
+    "native_packed_attention_projections": true,
+    "retrieval_candidates": 8,
+    "retrieval_top_k": 4,
+    "semantic_operator": "native_packed_bitnet_phase_stream",
+    "sink_tokens": 2
+  },
+  "controller": {
+    "adapter_rank": 4,
+    "format": "engram.controller.factorized_residual",
+    "input_dim": 7680,
+    "num_stages": 30,
+    "operator": "operator_residual_with_factorized_correction",
+    "operator_residual_input_order": [
+      "semantic_output",
+      "episodic_output"
+    ],
+    "parameter_count": 2662490,
+    "path": "/home/dean/repos/engram/work/controller_distillation/bitnet_rank128_operator_residual_1024x256_exact/controller",
+    "rank": 128,
+    "schema_version": 3,
+    "serialized_bytes": 10649960,
+    "state_dim": 2560,
+    "state_normalization": "per_token_rms",
+    "storage_dtype": "float32",
+    "tensor_layout": {
+      "adapter_down": [
+        30,
+        2560,
+        4
+      ],
+      "adapter_up": [
+        30,
+        4,
+        2560
+      ],
+      "bias": [
+        5120
+      ],
+      "gate_up": [
+        128,
+        5120
+      ],
+      "input_down": [
+        7680,
+        128
+      ],
+      "operator_residual_scale": [
+        30,
+        2
+      ],
+      "recurrent_down": [
+        2560,
+        128
+      ],
+      "stage_embeddings": [
+        30,
+        2560
+      ],
+      "step_scale": [
+        30
+      ]
+    }
+  },
+  "controller_replay_vs_compiled_candidate": {
+    "final_hidden": {
+      "exact": false,
+      "maximum_absolute_error": 0.015625,
+      "mean_absolute_error": 0.00020012915774714202,
+      "relative_l2": 0.006105722393840551
+    },
+    "logits": {
+      "exact": false,
+      "maximum_absolute_error": 0.125,
+      "mean_absolute_error": 0.016481200233101845,
+      "mean_kl_divergence": 0.0008765703532844782,
+      "relative_l2": 0.004414774477481842,
+      "top1_agreement": 1.0
+    },
+    "nll_delta": 0.014435291290283203
+  },
+  "controller_replay_vs_dense_baseline": {
+    "final_hidden": {
+      "exact": false,
+      "maximum_absolute_error": 0.03515625,
+      "mean_absolute_error": 0.000796030624769628,
+      "relative_l2": 0.02060307376086712
+    },
+    "logits": {
+      "exact": false,
+      "maximum_absolute_error": 0.625,
+      "mean_absolute_error": 0.054336998611688614,
+      "mean_kl_divergence": 0.001722733722999692,
+      "relative_l2": 0.014559095725417137,
+      "top1_agreement": 1.0
+    },
+    "nll_delta": -0.011347770690917969
+  },
+  "dataset": {
+    "path": "/home/dean/repos/engram/tests/fixtures/confirmation_expanded.jsonl",
+    "prediction_positions": 32,
+    "record_offset": 0,
+    "role": "development_evaluation",
+    "selection_rule": "2_nonempty_records_in_file_order_after_offset_0",
+    "sequences": 2,
+    "sha256": "ddca79850dbd3d97935d969f84d22983ce76517e785febd2911a53545d9bafd4",
+    "tokens_per_sequence": 17,
+    "unique_sequences": 2
+  },
+  "decision": "attribute_compiled_operator_failure_before_runtime_integration",
+  "experiment": "native_bitnet_compiled_operator_controller_substitution",
+  "frozen_gate_passed": false,
+  "native_mlp_calls": {
+    "compiled_candidate": 30,
+    "dense_attention_baseline": 30
+  },
+  "package": "/home/dean/repos/engram/work/native_bitnet/model.engram-bitnet",
+  "schema_version": 1,
+  "scope": {
+    "decoder_layer_residual_scaffold_used_for_controller_replay": false,
+    "decoder_layer_residual_scaffold_used_for_operator_capture": true,
+    "episodic_outputs_from_native_bounded_kernel": true,
+    "incremental_generation_through_controller_tested": false,
+    "semantic_outputs_from_compiled_cpu_kernel": true,
+    "source_mlp_tensors_loaded": false
+  },
+  "status": "compiled_controller_development_evaluation",
+  "thresholds": {
+    "maximum_controller_replay_relative_l2": 0.01,
+    "maximum_controller_trajectory_nmse": 0.0225,
+    "maximum_final_hidden_relative_l2": 0.1,
+    "maximum_nll_delta": 0.05,
+    "maximum_teacher_student_kl": 0.05,
+    "minimum_prediction_positions": 256,
+    "minimum_teacher_top1_agreement": 0.9,
+    "minimum_unique_sequences": 8
+  },
+  "timing": {
+    "compiled_candidate_seconds": 17.08301781800037,
+    "controller_replay_seconds": 0.03274628400004076,
+    "dense_attention_baseline_seconds": 17.27050112200004
+  },
+  "trajectory": {
+    "maximum_stage_normalized_mse": 2.3291084289667197e-05,
+    "mean_stage_normalized_mse": 1.6561736629228108e-05,
+    "stage_normalized_mse": [
+      2.6767602321342565e-06,
+      5.691510978067527e-06,
+      8.518220965925138e-06,
+      9.342009434476495e-06,
+      9.974841304938309e-06,
+      1.1519341569510289e-05,
+      1.3597046745417174e-05,
+      1.5722433090559207e-05,
+      1.6626403521513566e-05,
+      1.5776086002006195e-05,
+      1.6225876606767997e-05,
+      1.511023219791241e-05,
+      1.667944343353156e-05,
+      1.7700798707664944e-05,
+      1.8990922399098054e-05,
+      1.80315528268693e-05,
+      1.8361788534093648e-05,
+      1.8375831132289022e-05,
+      1.8084208932123147e-05,
+      1.826153493311722e-05,
+      1.9102553778793663e-05,
+      2.0190862414892763e-05,
+      1.9456128939054906e-05,
+      2.0465789930312894e-05,
+      2.1424768419819884e-05,
+      2.213878178736195e-05,
+      2.278819738421589e-05,
+      2.3291084289667197e-05,
+      1.989171141758561e-05,
+      2.2835367417428643e-05
+    ],
+    "terminal_normalized_mse": 2.2835367417428643e-05
+  }
+}

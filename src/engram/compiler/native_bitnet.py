@@ -23,6 +23,7 @@ NATIVE_BITNET_PACKAGE_FORMAT = "engram-native-bitnet"
 NATIVE_BITNET_PACKAGE_VERSION = 1
 NATIVE_BITNET_ARTIFACT_PATH = PurePosixPath("mlp/model.bitnet-records.bin")
 NATIVE_BITNET_NON_MLP_PATH = PurePosixPath("transformer/non_mlp.safetensors")
+NATIVE_BITNET_CONTROLLER_PATH = PurePosixPath("controller")
 
 
 def _copy_atomic(source: Path, destination: Path) -> None:
@@ -92,6 +93,81 @@ def _inventory(root: Path) -> dict[str, dict[str, Any]]:
                 "sha256": sha256_file(path),
             }
     return files
+
+
+def install_native_bitnet_controller(
+    package: str | Path,
+    controller: str | Path,
+) -> Path:
+    """Authenticate and install a zero-correction schema-v3 controller."""
+
+    from engram.controller import FactorizedRecurrentController
+
+    root = Path(package).resolve()
+    manifest_path = root / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if (
+        manifest.get("format") != NATIVE_BITNET_PACKAGE_FORMAT
+        or manifest.get("version") != NATIVE_BITNET_PACKAGE_VERSION
+    ):
+        raise NativeBitNetValidationError("not a supported native BitNet package")
+    for relative, descriptor in manifest.get("files", {}).items():
+        path = root.joinpath(*PurePosixPath(relative).parts)
+        if (
+            not path.is_file()
+            or path.stat().st_size != descriptor.get("bytes")
+            or sha256_file(path) != descriptor.get("sha256")
+        ):
+            raise NativeBitNetValidationError(
+                f"native BitNet package is corrupt: {relative}"
+            )
+
+    source = Path(controller).resolve()
+    loaded = FactorizedRecurrentController.load(source)
+    model = manifest.get("model", {})
+    if (
+        loaded.metadata().get("schema_version") != 3
+        or not loaded.has_operator_residual
+        or loaded.state_dim != int(model.get("hidden_size", -1))
+        or loaded.num_stages != int(model.get("num_hidden_layers", -1))
+        or loaded.input_dim != 3 * loaded.state_dim
+        or bool((loaded.step_scale != 0.0).any())
+    ):
+        raise NativeBitNetValidationError(
+            "controller is not a compatible zero-correction schema-v3 artifact"
+        )
+    destination = root.joinpath(*NATIVE_BITNET_CONTROLLER_PATH.parts)
+    expected_files = {
+        "metadata.json",
+        *(f"{name}.npy" for name in loaded.tensors()),
+    }
+    if destination.exists():
+        existing = {path.name for path in destination.iterdir() if path.is_file()}
+        if existing != expected_files or any(
+            sha256_file(destination / name) != sha256_file(source / name)
+            for name in expected_files
+        ):
+            raise NativeBitNetValidationError(
+                "native BitNet package already has a different controller"
+            )
+    else:
+        destination.mkdir(parents=True)
+        for name in sorted(expected_files):
+            _copy_atomic(source / name, destination / name)
+
+    metadata_sha256 = sha256_file(destination / "metadata.json")
+    manifest["controller"] = {
+        "path": NATIVE_BITNET_CONTROLLER_PATH.as_posix(),
+        "format": loaded.metadata()["format"],
+        "schema_version": loaded.metadata()["schema_version"],
+        "operator": loaded.metadata()["operator"],
+        "metadata_sha256": metadata_sha256,
+        "serialized_bytes": loaded.serialized_bytes,
+        "correction_enabled": False,
+    }
+    manifest["files"] = _inventory(root)
+    atomic_json(manifest_path, manifest)
+    return root
 
 
 def compile_native_bitnet_package(
@@ -237,7 +313,9 @@ def compile_native_bitnet_package(
 
 __all__ = [
     "NATIVE_BITNET_ARTIFACT_PATH",
+    "NATIVE_BITNET_CONTROLLER_PATH",
     "NATIVE_BITNET_NON_MLP_PATH",
     "NATIVE_BITNET_PACKAGE_FORMAT",
     "compile_native_bitnet_package",
+    "install_native_bitnet_controller",
 ]

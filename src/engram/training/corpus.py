@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from typing import Any, Sequence
 
 from engram.models.inspection import resolve_model_path
 from engram.utils import atomic_json, sha256_file
-
 
 SOURCE_SUFFIXES = {".c", ".cc", ".cpp", ".h", ".hpp", ".md", ".py", ".rst"}
 
@@ -26,7 +26,9 @@ def _source_files(inputs: Sequence[str | Path], output: Path) -> list[Path]:
                 if path.is_file() and path.suffix.lower() in SOURCE_SUFFIXES
             )
         else:
-            raise ValueError(f"corpus input is not a supported file or directory: {source}")
+            raise ValueError(
+                f"corpus input is not a supported file or directory: {source}"
+            )
     files.discard(output.resolve())
     if not files:
         raise ValueError("corpus inputs contain no supported source files")
@@ -45,7 +47,9 @@ def build_distillation_corpus(
     """Tokenize local prose/code into round-robin, fixed-maximum-length records."""
 
     if sequence_length < 2 or max_sequences <= 0 or minimum_tokens < 2:
-        raise ValueError("sequence_length/minimum_tokens must be >=2 and max_sequences positive")
+        raise ValueError(
+            "sequence_length/minimum_tokens must be >=2 and max_sequences positive"
+        )
     if minimum_tokens > sequence_length:
         raise ValueError("minimum_tokens must not exceed sequence_length")
     try:
@@ -108,7 +112,9 @@ def build_distillation_corpus(
             break
         round_index += 1
     if not records:
-        raise ValueError("corpus sources did not produce any sufficiently long sequences")
+        raise ValueError(
+            "corpus sources did not produce any sufficiently long sequences"
+        )
     temporary = target.with_name(f".{target.name}.tmp")
     with temporary.open("w", encoding="utf-8") as handle:
         for record in records:
@@ -133,4 +139,87 @@ def build_distillation_corpus(
     return report
 
 
-__all__ = ["build_distillation_corpus"]
+def build_distillation_tail_holdout(
+    source: str | Path,
+    out: str | Path,
+    *,
+    records: int = 128,
+) -> dict[str, Any]:
+    """Reserve an authenticated tail shard from a pretokenized JSONL corpus."""
+
+    if isinstance(records, bool) or not isinstance(records, int) or records <= 0:
+        raise ValueError("records must be a positive integer")
+    source_path = Path(source)
+    target = Path(out)
+    if source_path.resolve() == target.resolve():
+        raise ValueError("source and holdout paths must differ")
+    source_records: list[dict[str, Any]] = []
+    fingerprints: list[tuple[int, ...]] = []
+    with source_path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            if not line.strip():
+                continue
+            value = json.loads(line)
+            token_ids = value.get("input_ids")
+            if (
+                not isinstance(token_ids, list)
+                or len(token_ids) < 2
+                or any(
+                    isinstance(token_id, bool) or not isinstance(token_id, int)
+                    for token_id in token_ids
+                )
+            ):
+                raise ValueError(f"source record {line_number} has invalid input_ids")
+            source_records.append(value)
+            fingerprints.append(tuple(token_ids))
+    if len(source_records) <= records:
+        raise ValueError("source must contain more records than the holdout")
+    split = len(source_records) - records
+    prefix = set(fingerprints[:split])
+    held_out = fingerprints[split:]
+    if len(set(held_out)) != len(held_out):
+        raise ValueError("holdout contains duplicate token sequences")
+    if prefix.intersection(held_out):
+        raise ValueError("training prefix and holdout token sequences overlap")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temporary = target.with_name(f".{target.name}.tmp")
+    with temporary.open("w", encoding="utf-8") as handle:
+        for value in source_records[split:]:
+            handle.write(json.dumps(value, separators=(",", ":")) + "\n")
+    temporary.replace(target)
+    digest = hashlib.sha256()
+    for fingerprint in held_out:
+        encoded = json.dumps(
+            {"input_ids": list(fingerprint)},
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        digest.update(hashlib.sha256(encoded).digest())
+    report = {
+        "schema_version": 1,
+        "kind": "engram_distillation_tail_holdout",
+        "source": {
+            "path": str(source_path.resolve()),
+            "sha256": sha256_file(source_path),
+            "records": len(source_records),
+        },
+        "partition": {
+            "method": "ordered_tail_records_v1",
+            "training_prefix_records": split,
+            "holdout_records": records,
+            "exact_token_sequence_overlap": 0,
+            "holdout_ordered_hash_digest": digest.hexdigest(),
+        },
+        "holdout": {
+            "path": str(target.resolve()),
+            "sha256": sha256_file(target),
+            "prediction_token_positions": sum(
+                len(fingerprint) - 1 for fingerprint in held_out
+            ),
+        },
+    }
+    atomic_json(target.with_suffix(target.suffix + ".manifest.json"), report)
+    return report
+
+
+__all__ = ["build_distillation_corpus", "build_distillation_tail_holdout"]

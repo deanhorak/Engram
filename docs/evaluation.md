@@ -221,6 +221,40 @@ capsule raises it to 0.259; the best tight targeted capsule still raises it to 0
 only 7.1% of held-out states. Because no arm improves held-out local error, none proceeds to a
 transformer intervention.
 
+Exact activation-sparse screens use a separate accounting model because they
+do not predict source-record membership. For CATS/FATReLU gating, the runtime
+reads the complete gate projection and only active up/down records; ideal
+traffic is `(1 + 2a) / 3`. For Q-Sparse-style execution, the top-magnitude
+input coordinates are already resident and select columns of both gate and
+up, while a second exact top-K selects the down input; ideal traffic is
+`(2q + k) / 3`. Candidate recall is not applicable to either mechanism.
+Thresholds, where used, are fitted on calibration traces only. The
+development boundary screen still requires mean relative L2 at most 0.18 and
+traffic at most 45% before permitting an all-layer causal run. Metadata,
+indices, scales, alignment, and cache-line amplification must be added by a
+serialized artifact before a formal systems pass.
+
+The later whole-model campaign executes exact hard top-K at all 30 MLPs and
+uses a training-only identity STE. CUDA is permitted only as a training
+accelerator. Candidate tensors are saved device-neutral and independently
+reloaded for a CPU hard-path execution check; this check is necessary but does
+not turn the float training artifact into a formal packed-Q4 runtime.
+
+Configuration selection uses 16 development sequences. Unbiased development
+evaluation uses an authenticated 128-sequence/15,559-position tail shard from
+the pinned pretraining-mixture corpus, disjoint from its 81,647-record training
+prefix by exact token-sequence hash. Confirmation remains sealed.
+
+The selected causal per-layer schedule keeps `q <= 360/576` and `K <= 512` and
+uses exactly 45% ideal traffic before metadata. Its unseen baseline is KL
+0.4574, top-1 0.6694, NLL delta +0.4744, and final-hidden relative L2 0.3281.
+The best verified attention/normalization co-adaptation reaches KL 0.4517,
+top-1 0.6714, NLL +0.4585, and hidden L2 0.3272. It therefore fails every
+semantic threshold. Label-only continuation, token-adaptive concentration
+thresholds, and a rank-24 correction charged against the same traffic budget
+are rejected. See the
+[whole-model campaign report](../reports/semantic_gate_fully_sparse_2026-07-24/summary.md).
+
 Sparse-teacher fine-tuning uses the same exact sequence separation, evidence floor, and held-out
 quality thresholds. The dense teacher is frozen. The student executes its sparse route during
 training, with local MLP-output, layer-hidden, logit-KL, and oracle-membership losses. The first
@@ -418,6 +452,94 @@ run, but no trained compiled-package Gate 5 evaluation has, so no Gate 5 quality
 The system-level Cognitive Executive has separate goal, confidence-calibration, action-utility,
 attention, memory, monitoring, and safety gates defined in
 [its design document](cognitive_executive.md). Compiler gates do not imply executive success.
+
+## Shared-controller distillation protocol
+
+Controller evaluation is staged so exact teacher signals cannot be confused
+with deployable compiled signals:
+
+1. Capture the packaged BitNet teacher on CPU. Each checksummed shard records
+   token identity, token position, token embedding, all 31 residual
+   boundaries, 30 MLP outputs, and 30 attention outputs.
+2. Normalize every residual state to unit per-token RMS. Divide each operator
+   output by the RMS of the residual entering its stage. Capture fails rather
+   than clipping if the normalized values are non-finite or exceed FP16.
+3. Train the shared factorized controller on CUDA with intermediate hidden,
+   transition-delta, cosine, and terminal rollout losses. Teacher forcing is
+   held at 100%, annealed, then removed for the final 20% of steps.
+4. Keep training and validation traces on different dataset hashes. Reusing
+   the same trace or dataset hash is rejected when protected validation is
+   requested.
+5. Serialize FP32 `.npy` factors, load them through the independent NumPy CPU
+   implementation, and compare a complete 30-stage rollout with Torch.
+6. Report teacher versus compiled-operator inputs explicitly. Results using
+   exact teacher MLP/attention outputs may open the next development rung but
+   cannot qualify transformer-free generation.
+
+The next protected development run uses 128 training and 64 validation
+positions across eight and four sequences. Its rank-128 artifact reduces
+terminal validation normalized MSE from 1.998608 to 0.245010 and cosine loss
+from 0.973363 to 0.333417. Serialized CPU parity passes at 7.45e-6 maximum
+absolute error. A fully self-fed 500-step continuation regresses terminal
+validation error to 0.260050 despite improving its training error, so the
+pre-continuation artifact is retained. These numbers justify broader
+trajectory coverage; they do not open compiled-operator substitution.
+
+The next frozen scale rung uses 1,024 training and 256 protected validation
+positions. A fresh 1,000-step CUDA fit reaches terminal normalized MSE
+0.159440, cosine loss 0.272803 averaged across stages, and total loss 0.931534.
+It fails the fixed 0.0225 substitution gate.
+
+A controlled rank-4 stage input adapter changes terminal normalized MSE only
+to 0.157431. The passing architecture instead preserves the teacher's known
+residual algebra: current state plus semantic output plus episodic output,
+then RMS normalization. With the factorized correction disabled, schema v3
+reaches protected terminal normalized MSE 0.000020801 and mean hidden
+normalized MSE 0.000017685. Independent NumPy reload matches Torch within
+5.72e-6. This passes the fixed controller-only gate. The semantic outputs
+already come from the packaged CPU MLP kernel, while attention remains dense;
+native bounded-attention substitution is the next evaluation boundary.
+
+The required stagewise diagnostic evaluates the self-fed state after every
+controller cycle against the corresponding RMS-normalized teacher boundary.
+For the 1,024-position artifact, NMSE is 1.077929 at stage 1, 0.679043 at
+stage 10, 0.419096 at stage 20, and 0.159440 at stage 30. Declining error
+shows that exact later teacher operator outputs are correcting an initially
+poor transition; it is not evidence that the recurrence itself becomes more
+accurate. The rank-4 input-adapter result confirms that this learned transition
+should not be promoted. Compiled-operator substitution is now open only under
+the schema-v3 exact residual controller; the following frozen experiment
+measures that compiled-input boundary.
+
+The compiled-input result now exists. Controller traces were produced by
+`NativeBitNetRuntime`, so their semantic outputs already came from the direct
+packed CPU MLP kernel. The frozen joint evaluator replaces dense attention
+with native W16/C8/K4/S2 streaming attention, captures both compiled operator
+outputs, replays them through schema v3 without decoder residual scaffolding,
+and applies the package final norm/head.
+
+On the unchanged eight-sequence, 256-position confirmation split at offset 8,
+controller replay versus the dense-attention package baseline reaches KL
+0.011125, top-1 agreement 0.957031, NLL delta -0.008285, and final hidden
+relative L2 0.075893. Replay versus the compiled candidate reaches hidden
+relative L2 0.006810 and terminal trajectory normalized MSE 0.000026666.
+Every quality and sample-size check passes. This opens direct incremental
+controller dispatch; it does not yet claim generation without decoder-layer
+operator capture.
+
+Direct incremental controller dispatch is now measured. The candidate invokes
+stage normalization, native bounded attention, native packed MLP, and the
+schema-v3 controller explicitly; it never calls a decoder layer. Absolute
+position IDs advance through prefill and one-token decode calls, and each
+native attention layer retains its bounded cache.
+
+The fixed eight-prompt suite generates four greedy tokens per prompt. All 32
+tokens exactly match the bounded decoder-scaffold reference, all eight prompts
+have exact sequence parity, every reported attention position count equals
+prompt length plus decoded inputs, and decoder-layer forward calls are zero.
+The predeclared 90% token and 75% exact-prompt thresholds therefore pass at
+100% each. This is an incremental Python/Torch-shell result; native controller
+serialization and a C++ residual/RMS loop remain.
 
 ## Native-BitNet package and Milestone 3 attention evidence
 

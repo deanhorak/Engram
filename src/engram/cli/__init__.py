@@ -24,6 +24,9 @@ from engram.evaluation.native_bitnet_kernel import (
 from engram.evaluation.native_bitnet_attention import (
     evaluate_native_bitnet_attention_substitution,
 )
+from engram.evaluation.controller_substitution import (
+    evaluate_native_bitnet_controller_substitution,
+)
 from engram.evaluation.native_attention_benchmark import (
     benchmark_native_streaming_attention,
 )
@@ -33,8 +36,15 @@ from engram.evaluation.native_bitnet_generation_benchmark import (
 from engram.evaluation.native_bitnet_generation import (
     evaluate_native_bitnet_generation,
 )
+from engram.evaluation.native_bitnet_controller_generation import (
+    evaluate_native_bitnet_controller_generation,
+)
 from engram.evaluation.router_sweep import evaluate_rank_router_regularization_sweep
 from engram.evaluation.dip_sweep import evaluate_dip_exact_completion_sweep
+from engram.evaluation.intrinsic_sparsity import (
+    evaluate_intrinsic_sparse_gate_sweep,
+    write_intrinsic_sparse_gate_report,
+)
 from engram.evaluation.correction_sweep import evaluate_correction_capsule_sweep
 from engram.evaluation.gates import (
     apply_mlp_intervention_gates,
@@ -55,7 +65,11 @@ from engram.tracing.teacher import (
     capture_teacher_traces,
     plan_teacher_trace_capture,
 )
-from engram.compiler import compile_model, compile_native_bitnet_package
+from engram.compiler import (
+    compile_model,
+    compile_native_bitnet_package,
+    install_native_bitnet_controller,
+)
 from engram.runtime import (
     EngramRuntime,
     NativeBitNetRuntime,
@@ -67,6 +81,9 @@ from engram.evaluation.end_to_end import evaluate_end_to_end
 from engram.evaluation.controller_gate import evaluate_controller_gate
 from engram.training import (
     build_distillation_corpus,
+    build_distillation_tail_holdout,
+    capture_native_bitnet_controller_traces,
+    distill_factorized_controller,
     evaluate_native_gate_channel_shadow,
     evaluate_native_gate_residual_shadow,
     evaluate_structured_expert_shadow,
@@ -81,6 +98,9 @@ from engram.training import (
     train_native_gate_end_to_end,
     train_native_gate_trace_student,
     train_grouped_sparse_boundaries,
+    train_fully_sparse_boundaries,
+    train_fully_sparse_student,
+    train_intrinsic_sparse_boundaries,
     train_shared_expert_boundaries,
     train_sparse_student,
     train_width_pruned_student,
@@ -232,6 +252,63 @@ def _parser() -> argparse.ArgumentParser:
         help="write the dry-run plan as JSON",
     )
 
+    controller_trace = commands.add_parser(
+        "trace-native-bitnet-controller",
+        help="capture CPU BitNet trajectories for shared-controller distillation",
+    )
+    controller_trace.add_argument("--model", required=True, type=Path)
+    controller_trace.add_argument("--dataset", required=True, type=Path)
+    controller_trace.add_argument("--out", required=True, type=Path)
+    controller_trace.add_argument(
+        "--split", required=True, choices=("training", "validation", "test")
+    )
+    controller_trace.add_argument("--samples", type=int, default=8)
+    controller_trace.add_argument("--max-tokens", type=int, default=64)
+    controller_trace.add_argument("--batch-size", type=int, default=1)
+    controller_trace.add_argument("--record-offset", type=int, default=0)
+    controller_trace.add_argument("--seed", type=int, default=31)
+    controller_trace.add_argument("--library", type=Path)
+    controller_trace.add_argument("--threads", type=int)
+    controller_trace.add_argument(
+        "--resume",
+        action="store_true",
+        help="continue a checksummed incomplete capture without duplicate samples",
+    )
+
+    controller_distill = commands.add_parser(
+        "distill-controller",
+        help=(
+            "fit a factorized shared controller on CUDA and export a "
+            "PyTorch-free CPU artifact"
+        ),
+    )
+    controller_distill.add_argument("--trace", required=True, type=Path)
+    controller_distill.add_argument("--validation-trace", type=Path)
+    controller_distill.add_argument("--initial-controller", type=Path)
+    controller_distill.add_argument("--out", required=True, type=Path)
+    controller_distill.add_argument("--device", default="cuda")
+    controller_distill.add_argument("--rank", type=int, default=128)
+    controller_distill.add_argument("--adapter-rank", type=int, default=8)
+    controller_distill.add_argument("--input-adapter-rank", type=int, default=0)
+    controller_distill.add_argument(
+        "--operator-residual",
+        action="store_true",
+        help=(
+            "preserve semantic and episodic outputs through their exact "
+            "residual-addition path and learn only a factorized correction"
+        ),
+    )
+    controller_distill.add_argument("--steps", type=int, default=1000)
+    controller_distill.add_argument("--batch-size", type=int, default=16)
+    controller_distill.add_argument("--learning-rate", type=float, default=3e-4)
+    controller_distill.add_argument("--weight-decay", type=float, default=1e-3)
+    controller_distill.add_argument(
+        "--teacher-forcing",
+        choices=("scheduled", "none"),
+        default="scheduled",
+    )
+    controller_distill.add_argument("--seed", type=int, default=37)
+
     analyze = commands.add_parser(
         "analyze-mlp", help="run Gate 1 contribution-magnitude oracle"
     )
@@ -333,6 +410,38 @@ def _parser() -> argparse.ArgumentParser:
     bitnet_attention.add_argument("--sink-tokens", type=int, default=2)
     bitnet_attention.add_argument("--attention-library", type=Path)
 
+    controller_substitution = commands.add_parser(
+        "evaluate-native-bitnet-controller",
+        help=(
+            "replay compiled BitNet semantic and episodic outputs through "
+            "the transformer-free controller boundary"
+        ),
+    )
+    controller_substitution.add_argument("--model", required=True, type=Path)
+    controller_substitution.add_argument("--dataset", required=True, type=Path)
+    controller_substitution.add_argument(
+        "--controller", required=True, type=Path
+    )
+    controller_substitution.add_argument("--out", required=True, type=Path)
+    controller_substitution.add_argument("--library", type=Path)
+    controller_substitution.add_argument("--attention-library", type=Path)
+    controller_substitution.add_argument("--threads", type=int)
+    controller_substitution.add_argument(
+        "--no-native-projections",
+        action="store_true",
+    )
+    controller_substitution.add_argument("--sequence-count", type=int, default=2)
+    controller_substitution.add_argument(
+        "--prediction-positions", type=int, default=32
+    )
+    controller_substitution.add_argument("--record-offset", type=int, default=0)
+    controller_substitution.add_argument("--local-window", type=int, default=16)
+    controller_substitution.add_argument(
+        "--retrieval-candidates", type=int, default=8
+    )
+    controller_substitution.add_argument("--retrieval-top-k", type=int, default=4)
+    controller_substitution.add_argument("--sink-tokens", type=int, default=2)
+
     attention_benchmark = commands.add_parser(
         "benchmark-native-attention",
         help="benchmark the bounded native attention cache at increasing contexts",
@@ -382,6 +491,24 @@ def _parser() -> argparse.ArgumentParser:
     generation_evaluation.add_argument("--attention-library", type=Path)
     generation_evaluation.add_argument("--threads", type=int)
 
+    controller_generation = commands.add_parser(
+        "evaluate-native-bitnet-controller-generation",
+        help=(
+            "compare incremental bounded generation with and without "
+            "decoder-layer residual scaffolding"
+        ),
+    )
+    controller_generation.add_argument("--model", required=True, type=Path)
+    controller_generation.add_argument(
+        "--controller", required=True, type=Path
+    )
+    controller_generation.add_argument("--prompts", required=True, type=Path)
+    controller_generation.add_argument("--out", required=True, type=Path)
+    controller_generation.add_argument("--max-tokens", type=int, default=4)
+    controller_generation.add_argument("--mlp-library", type=Path)
+    controller_generation.add_argument("--attention-library", type=Path)
+    controller_generation.add_argument("--threads", type=int)
+
     compile_command = commands.add_parser(
         "compile", help="compile a runnable Engram package"
     )
@@ -413,6 +540,15 @@ def _parser() -> argparse.ArgumentParser:
     compile_bitnet.add_argument("--cache-dir", type=Path)
     compile_bitnet.add_argument("--threads", type=int, default=12)
 
+    install_bitnet_controller = commands.add_parser(
+        "install-native-bitnet-controller",
+        help="install an authenticated schema-v3 controller into a BitNet package",
+    )
+    install_bitnet_controller.add_argument("--model", required=True, type=Path)
+    install_bitnet_controller.add_argument(
+        "--controller", required=True, type=Path
+    )
+
     generate = commands.add_parser(
         "generate", help="generate with the PyTorch-free reference runtime"
     )
@@ -430,6 +566,17 @@ def _parser() -> argparse.ArgumentParser:
     generate_bitnet.add_argument("--max-tokens", type=int, default=16)
     generate_bitnet.add_argument("--library", type=Path)
     generate_bitnet.add_argument("--threads", type=int)
+
+    generate_bitnet_controller = commands.add_parser(
+        "generate-native-bitnet-controller",
+        help="generate through the package-owned native residual controller",
+    )
+    generate_bitnet_controller.add_argument("--model", required=True, type=Path)
+    generate_bitnet_controller.add_argument("--prompt", required=True)
+    generate_bitnet_controller.add_argument("--max-tokens", type=int, default=16)
+    generate_bitnet_controller.add_argument("--library", type=Path)
+    generate_bitnet_controller.add_argument("--attention-library", type=Path)
+    generate_bitnet_controller.add_argument("--threads", type=int)
     generate_bitnet.add_argument("--native-projections", action="store_true")
     generate_bitnet.add_argument("--bounded-attention", action="store_true")
     generate_bitnet.add_argument("--attention-library", type=Path)
@@ -583,6 +730,102 @@ def _parser() -> argparse.ArgumentParser:
         help="select contiguous input blocks (16 float32 values = one cache line)",
     )
 
+    intrinsic_sparse = commands.add_parser(
+        "sweep-intrinsic-sparsity",
+        help="screen exact full-gate selection with sparse SiLU/ReLU activations",
+    )
+    intrinsic_sparse.add_argument("--model", required=True)
+    intrinsic_sparse.add_argument("--calibration-traces", required=True)
+    intrinsic_sparse.add_argument("--validation-traces", required=True)
+    intrinsic_sparse.add_argument("--out", required=True, type=Path)
+    intrinsic_sparse.add_argument(
+        "--sparsities",
+        nargs="+",
+        type=float,
+        default=(0.5, 0.7, 0.8, 0.825, 0.85, 0.9),
+    )
+    intrinsic_sparse.add_argument(
+        "--activations",
+        nargs="+",
+        choices=("cats_silu", "fatrelu"),
+        default=("cats_silu", "fatrelu"),
+    )
+    intrinsic_sparse.add_argument("--calibration-records", type=int)
+    intrinsic_sparse.add_argument("--validation-records", type=int)
+    intrinsic_sparse.add_argument(
+        "--maximum-mean-relative-l2", type=float, default=0.18
+    )
+    intrinsic_sparse.add_argument(
+        "--maximum-traffic-fraction", type=float, default=0.45
+    )
+
+    intrinsic_sparse_train = commands.add_parser(
+        "train-intrinsic-sparse-boundaries",
+        help="co-adapt exact thresholded SwiGLU records on cached teacher boundaries",
+    )
+    intrinsic_sparse_train.add_argument("--model", required=True)
+    intrinsic_sparse_train.add_argument("--training-traces", required=True)
+    intrinsic_sparse_train.add_argument("--validation-traces", required=True)
+    intrinsic_sparse_train.add_argument("--out", required=True, type=Path)
+    intrinsic_sparse_train.add_argument("--layers", nargs="+", type=int, required=True)
+    intrinsic_sparse_train.add_argument("--target-sparsity", type=float, default=0.85)
+    intrinsic_sparse_train.add_argument("--initial-artifact", type=Path)
+    intrinsic_sparse_train.add_argument("--steps", type=int, default=128)
+    intrinsic_sparse_train.add_argument("--batch-size", type=int, default=64)
+    intrinsic_sparse_train.add_argument("--learning-rate", type=float, default=1e-4)
+    intrinsic_sparse_train.add_argument("--sparsity-weight", type=float, default=1.0)
+    intrinsic_sparse_train.add_argument("--cosine-weight", type=float, default=0.1)
+    intrinsic_sparse_train.add_argument(
+        "--temperature-fraction", type=float, default=0.1
+    )
+    intrinsic_sparse_train.add_argument("--warmup-steps", type=int, default=16)
+    intrinsic_sparse_train.add_argument(
+        "--start-threshold-fraction", type=float, default=0.0
+    )
+    intrinsic_sparse_train.add_argument("--evaluation-interval", type=int, default=16)
+    intrinsic_sparse_train.add_argument(
+        "--maximum-mean-relative-l2", type=float, default=0.18
+    )
+    intrinsic_sparse_train.add_argument(
+        "--maximum-traffic-fraction", type=float, default=0.45
+    )
+    intrinsic_sparse_train.add_argument("--max-train-records", type=int, default=4096)
+    intrinsic_sparse_train.add_argument(
+        "--max-validation-records", type=int, default=2048
+    )
+    intrinsic_sparse_train.add_argument("--seed", type=int, default=1729)
+    intrinsic_sparse_train.add_argument("--device", default="cpu")
+
+    fully_sparse_train = commands.add_parser(
+        "train-fully-sparse-boundaries",
+        help="train exact top-K input/intermediate sparse MLPs on teacher boundaries",
+    )
+    fully_sparse_train.add_argument("--model", required=True)
+    fully_sparse_train.add_argument("--training-traces", required=True)
+    fully_sparse_train.add_argument("--validation-traces", required=True)
+    fully_sparse_train.add_argument("--out", required=True, type=Path)
+    fully_sparse_train.add_argument("--layers", nargs="+", type=int, required=True)
+    fully_sparse_train.add_argument("--input-fraction", type=float, default=0.49)
+    fully_sparse_train.add_argument("--intermediate-fraction", type=float, default=0.34)
+    fully_sparse_train.add_argument("--initial-artifact", type=Path)
+    fully_sparse_train.add_argument("--steps", type=int, default=1024)
+    fully_sparse_train.add_argument("--warmup-steps", type=int, default=128)
+    fully_sparse_train.add_argument("--start-sparse-fraction", type=float, default=0.0)
+    fully_sparse_train.add_argument("--batch-size", type=int, default=128)
+    fully_sparse_train.add_argument("--learning-rate", type=float, default=1e-4)
+    fully_sparse_train.add_argument("--cosine-weight", type=float, default=0.1)
+    fully_sparse_train.add_argument("--evaluation-interval", type=int, default=64)
+    fully_sparse_train.add_argument(
+        "--maximum-mean-relative-l2", type=float, default=0.18
+    )
+    fully_sparse_train.add_argument(
+        "--maximum-traffic-fraction", type=float, default=0.45
+    )
+    fully_sparse_train.add_argument("--max-train-records", type=int, default=32768)
+    fully_sparse_train.add_argument("--max-validation-records", type=int, default=2048)
+    fully_sparse_train.add_argument("--seed", type=int, default=2718)
+    fully_sparse_train.add_argument("--device", default="cpu")
+
     correction_sweep = commands.add_parser(
         "sweep-correction-capsules",
         help="fit state-selected low-rank corrections to routed MLP residuals",
@@ -620,6 +863,14 @@ def _parser() -> argparse.ArgumentParser:
     corpus.add_argument("--sequence-length", type=int, default=128)
     corpus.add_argument("--max-sequences", type=int, default=128)
     corpus.add_argument("--minimum-tokens", type=int, default=16)
+
+    holdout = commands.add_parser(
+        "build-distillation-holdout",
+        help="reserve an authenticated tail shard from a pretokenized corpus",
+    )
+    holdout.add_argument("--source", required=True, type=Path)
+    holdout.add_argument("--out", required=True, type=Path)
+    holdout.add_argument("--records", type=int, default=128)
 
     sparse_train = commands.add_parser(
         "train-sparse-student",
@@ -930,6 +1181,50 @@ def _parser() -> argparse.ArgumentParser:
     native_gate_e2e.add_argument("--resume", action="store_true")
     native_gate_e2e.add_argument("--utility-residual", type=Path)
 
+    fully_sparse_e2e = commands.add_parser(
+        "train-fully-sparse-student",
+        help=(
+            "distill all MLPs through exact hard Q-Sparse activation paths; "
+            "CUDA is training-only and the saved artifact is CPU validated"
+        ),
+    )
+    fully_sparse_e2e.add_argument("--model", required=True)
+    fully_sparse_e2e.add_argument("--training-dataset", required=True, type=Path)
+    fully_sparse_e2e.add_argument("--validation-dataset", required=True, type=Path)
+    fully_sparse_e2e.add_argument("--out", required=True, type=Path)
+    fully_sparse_e2e.add_argument("--input-fraction", type=float, default=0.49)
+    fully_sparse_e2e.add_argument("--intermediate-fraction", type=float, default=0.34)
+    fully_sparse_e2e.add_argument(
+        "--input-counts",
+        nargs="+",
+        type=int,
+        help="one hard input-coordinate count per transformer layer",
+    )
+    fully_sparse_e2e.add_argument(
+        "--intermediate-counts",
+        nargs="+",
+        type=int,
+        help="one hard intermediate-activation count per transformer layer",
+    )
+    fully_sparse_e2e.add_argument("--steps", type=int, default=8)
+    fully_sparse_e2e.add_argument("--warmup-steps", type=int, default=1)
+    fully_sparse_e2e.add_argument("--anneal-steps", type=int, default=6)
+    fully_sparse_e2e.add_argument("--batch-size", type=int, default=1)
+    fully_sparse_e2e.add_argument("--learning-rate", type=float, default=1e-5)
+    fully_sparse_e2e.add_argument("--backbone-learning-rate", type=float, default=3e-6)
+    fully_sparse_e2e.add_argument("--local-weight", type=float, default=0.25)
+    fully_sparse_e2e.add_argument("--hidden-weight", type=float, default=0.5)
+    fully_sparse_e2e.add_argument("--logit-weight", type=float, default=1.0)
+    fully_sparse_e2e.add_argument("--label-weight", type=float, default=0.0)
+    fully_sparse_e2e.add_argument("--max-train-records", type=int)
+    fully_sparse_e2e.add_argument("--max-validation-records", type=int)
+    fully_sparse_e2e.add_argument("--device", default="cuda")
+    fully_sparse_e2e.add_argument("--checkpoint-every", type=int, default=0)
+    fully_sparse_e2e.add_argument("--resume", action="store_true")
+    fully_sparse_e2e.add_argument("--coadapt-backbone", action="store_true")
+    fully_sparse_e2e.add_argument("--coadapt-embeddings-and-head", action="store_true")
+    fully_sparse_e2e.add_argument("--residual-rank", type=int, default=0)
+
     width_train = commands.add_parser(
         "train-width-pruned-student",
         help="progressively distill contiguous fixed-width SwiGLU layers",
@@ -1236,6 +1531,41 @@ def main(argv: Sequence[str] | None = None) -> int:
                 layers=args.layers,
             )
             print(args.out)
+    elif args.command == "trace-native-bitnet-controller":
+        result = capture_native_bitnet_controller_traces(
+            args.model,
+            args.dataset,
+            args.out,
+            split=args.split,
+            samples=args.samples,
+            max_tokens=args.max_tokens,
+            batch_size=args.batch_size,
+            record_offset=args.record_offset,
+            seed=args.seed,
+            library=args.library,
+            threads=args.threads,
+            resume=args.resume,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "distill-controller":
+        result = distill_factorized_controller(
+            args.trace,
+            args.out,
+            validation_trace=args.validation_trace,
+            initial_controller=args.initial_controller,
+            device=args.device,
+            rank=args.rank,
+            adapter_rank=args.adapter_rank,
+            input_adapter_rank=args.input_adapter_rank,
+            operator_residual=args.operator_residual,
+            steps=args.steps,
+            batch_size=args.batch_size,
+            learning_rate=args.learning_rate,
+            weight_decay=args.weight_decay,
+            teacher_forcing_schedule=args.teacher_forcing,
+            seed=args.seed,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
     elif args.command == "analyze-mlp":
         report = analyze_magnitude_oracle(
             args.model, args.traces, max_records=args.max_records
@@ -1317,6 +1647,25 @@ def main(argv: Sequence[str] | None = None) -> int:
             native_attention_library=args.attention_library,
         )
         print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "evaluate-native-bitnet-controller":
+        result = evaluate_native_bitnet_controller_substitution(
+            args.model,
+            args.dataset,
+            args.controller,
+            out=args.out,
+            library=args.library,
+            attention_library=args.attention_library,
+            threads=args.threads,
+            native_projections=not args.no_native_projections,
+            sequence_count=args.sequence_count,
+            prediction_positions=args.prediction_positions,
+            record_offset=args.record_offset,
+            local_window=args.local_window,
+            retrieval_candidates=args.retrieval_candidates,
+            retrieval_top_k=args.retrieval_top_k,
+            sink_tokens=args.sink_tokens,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
     elif args.command == "benchmark-native-attention":
         result = benchmark_native_streaming_attention(
             out=args.out,
@@ -1348,6 +1697,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     elif args.command == "evaluate-native-bitnet-generation":
         result = evaluate_native_bitnet_generation(
             package=args.model,
+            prompts=args.prompts,
+            out=args.out,
+            max_new_tokens=args.max_tokens,
+            mlp_library=args.mlp_library,
+            attention_library=args.attention_library,
+            threads=args.threads,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "evaluate-native-bitnet-controller-generation":
+        result = evaluate_native_bitnet_controller_generation(
+            package=args.model,
+            controller=args.controller,
             prompts=args.prompts,
             out=args.out,
             max_new_tokens=args.max_tokens,
@@ -1402,6 +1763,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                 kernel_threads=args.threads,
             )
         )
+    elif args.command == "install-native-bitnet-controller":
+        print(
+            install_native_bitnet_controller(
+                args.model,
+                args.controller,
+            )
+        )
     elif args.command == "generate":
         manifest = json.loads(
             (Path(args.model) / "manifest.json").read_text(encoding="utf-8")
@@ -1437,6 +1805,34 @@ def main(argv: Sequence[str] | None = None) -> int:
                     indent=2,
                 )
             )
+    elif args.command == "generate-native-bitnet-controller":
+        with NativeBitNetRuntime(
+            args.model,
+            library=args.library,
+            threads=args.threads,
+            native_projections=True,
+        ) as runtime:
+            result = runtime.generate_controller_bounded(
+                args.prompt,
+                max_new_tokens=args.max_tokens,
+                attention_library=args.attention_library,
+            )
+        print(result.text)
+        print(
+            json.dumps(
+                {
+                    "tokens": list(result.generated_tokens),
+                    "elapsed_seconds": result.elapsed_seconds,
+                    "controller_mode": result.controller_mode,
+                    "controller_seconds": result.controller_seconds,
+                    "attention_state_bytes": result.attention_state_bytes,
+                    "decoder_layer_forward_calls": (
+                        result.decoder_layer_forward_calls
+                    ),
+                },
+                indent=2,
+            )
+        )
     elif args.command == "generate-native-bitnet":
         with NativeBitNetRuntime(
             args.model,
@@ -1482,9 +1878,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "qkv_projection_seconds": result.qkv_projection_seconds,
                     "rope_seconds": result.rope_seconds,
                     "native_attention_seconds": result.native_attention_seconds,
-                    "output_projection_seconds": (
-                        result.output_projection_seconds
-                    ),
+                    "output_projection_seconds": (result.output_projection_seconds),
                     "native_attention_calls": result.native_attention_calls,
                 },
                 indent=2,
@@ -1597,6 +1991,75 @@ def main(argv: Sequence[str] | None = None) -> int:
         json_path, markdown_path = write_dip_sweep_report(report, args.out)
         print(json_path)
         print(markdown_path)
+    elif args.command == "sweep-intrinsic-sparsity":
+        report = evaluate_intrinsic_sparse_gate_sweep(
+            args.model,
+            args.calibration_traces,
+            args.validation_traces,
+            sparsities=args.sparsities,
+            activations=args.activations,
+            calibration_records=args.calibration_records,
+            validation_records=args.validation_records,
+            maximum_mean_relative_l2=args.maximum_mean_relative_l2,
+            maximum_traffic_fraction=args.maximum_traffic_fraction,
+        )
+        json_path, markdown_path = write_intrinsic_sparse_gate_report(report, args.out)
+        print(json_path)
+        print(markdown_path)
+        return 0 if report["eligible_arms"] else 2
+    elif args.command == "train-intrinsic-sparse-boundaries":
+        report = train_intrinsic_sparse_boundaries(
+            args.model,
+            args.training_traces,
+            args.validation_traces,
+            args.out,
+            layers=args.layers,
+            target_sparsity=args.target_sparsity,
+            initial_artifact=args.initial_artifact,
+            steps=args.steps,
+            batch_size=args.batch_size,
+            learning_rate=args.learning_rate,
+            sparsity_weight=args.sparsity_weight,
+            cosine_weight=args.cosine_weight,
+            temperature_fraction=args.temperature_fraction,
+            warmup_steps=args.warmup_steps,
+            start_threshold_fraction=args.start_threshold_fraction,
+            evaluation_interval=args.evaluation_interval,
+            maximum_mean_relative_l2=args.maximum_mean_relative_l2,
+            maximum_traffic_fraction=args.maximum_traffic_fraction,
+            max_train_records=args.max_train_records,
+            max_validation_records=args.max_validation_records,
+            seed=args.seed,
+            device=args.device,
+        )
+        print(args.out / "intrinsic_sparse_boundary_training.json")
+        return 0 if report["screen"]["passed"] else 2
+    elif args.command == "train-fully-sparse-boundaries":
+        report = train_fully_sparse_boundaries(
+            args.model,
+            args.training_traces,
+            args.validation_traces,
+            args.out,
+            layers=args.layers,
+            input_fraction=args.input_fraction,
+            intermediate_fraction=args.intermediate_fraction,
+            initial_artifact=args.initial_artifact,
+            steps=args.steps,
+            warmup_steps=args.warmup_steps,
+            start_sparse_fraction=args.start_sparse_fraction,
+            batch_size=args.batch_size,
+            learning_rate=args.learning_rate,
+            cosine_weight=args.cosine_weight,
+            evaluation_interval=args.evaluation_interval,
+            maximum_mean_relative_l2=args.maximum_mean_relative_l2,
+            maximum_traffic_fraction=args.maximum_traffic_fraction,
+            max_train_records=args.max_train_records,
+            max_validation_records=args.max_validation_records,
+            seed=args.seed,
+            device=args.device,
+        )
+        print(args.out / "fully_sparse_boundary_training.json")
+        return 0 if report["screen"]["passed"] else 2
     elif args.command == "sweep-rank-router":
         report = evaluate_rank_router_regularization_sweep(
             args.model,
@@ -1648,6 +2111,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             minimum_tokens=args.minimum_tokens,
         )
         print(report["dataset_path"])
+    elif args.command == "build-distillation-holdout":
+        report = build_distillation_tail_holdout(
+            args.source,
+            args.out,
+            records=args.records,
+        )
+        print(report["holdout"]["path"])
     elif args.command == "train-sparse-student":
         report = train_sparse_student(
             args.model,
@@ -1678,6 +2148,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             gradient_diagnostics=args.gradient_diagnostics,
             checkpoint_every=args.checkpoint_every,
             resume=args.resume,
+            coadapt_backbone=args.coadapt_backbone,
+            coadapt_embeddings_and_head=args.coadapt_embeddings_and_head,
             layers=args.layers,
             exact_dense_start=args.exact_dense_start,
             dense_warmup_steps=args.dense_warmup_steps,
@@ -1922,6 +2394,37 @@ def main(argv: Sequence[str] | None = None) -> int:
             utility_residual=args.utility_residual,
         )
         print(args.out / "native_gate_end_to_end.json")
+        return 0 if report["gate"]["passed"] else 2
+    elif args.command == "train-fully-sparse-student":
+        report = train_fully_sparse_student(
+            args.model,
+            args.training_dataset,
+            args.validation_dataset,
+            args.out,
+            input_fraction=args.input_fraction,
+            intermediate_fraction=args.intermediate_fraction,
+            input_counts=args.input_counts,
+            intermediate_counts=args.intermediate_counts,
+            steps=args.steps,
+            warmup_steps=args.warmup_steps,
+            anneal_steps=args.anneal_steps,
+            batch_size=args.batch_size,
+            learning_rate=args.learning_rate,
+            backbone_learning_rate=args.backbone_learning_rate,
+            local_weight=args.local_weight,
+            hidden_weight=args.hidden_weight,
+            logit_weight=args.logit_weight,
+            label_weight=args.label_weight,
+            max_train_records=args.max_train_records,
+            max_validation_records=args.max_validation_records,
+            device=args.device,
+            checkpoint_every=args.checkpoint_every,
+            resume=args.resume,
+            coadapt_backbone=args.coadapt_backbone,
+            coadapt_embeddings_and_head=args.coadapt_embeddings_and_head,
+            residual_rank=args.residual_rank,
+        )
+        print(args.out / "fully_sparse_distillation.json")
         return 0 if report["gate"]["passed"] else 2
     elif args.command == "train-budget-native-ternary":
         report = train_budget_native_ternary_student(

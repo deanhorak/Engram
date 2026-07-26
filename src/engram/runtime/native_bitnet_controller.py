@@ -1,0 +1,473 @@
+"""Controller-driven BitNet execution without decoder-layer forward calls."""
+
+from __future__ import annotations
+
+import ctypes
+import time
+from dataclasses import dataclass
+from typing import Any
+
+import numpy as np
+
+from engram.controller import FactorizedRecurrentController
+from engram.evaluation.native_bitnet_parity import _torch_modules
+
+
+@dataclass(frozen=True)
+class ControllerForward:
+    logits: Any
+    next_token: int | None
+    normalized_state: np.ndarray
+    residual_rms: np.ndarray
+    elapsed_seconds: float
+    controller_seconds: float
+
+
+class NativeOperatorResidual:
+    """ctypes binding to the float32 exact residual/RMS kernel."""
+
+    def __init__(self, library) -> None:
+        self.library_path = str(library)
+        self._library = ctypes.CDLL(self.library_path)
+        function = self._library.engram_operator_residual_step_f32
+        pointer = ctypes.POINTER(ctypes.c_float)
+        function.argtypes = [
+            pointer,
+            pointer,
+            pointer,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.c_float,
+            ctypes.c_float,
+            pointer,
+            pointer,
+        ]
+        function.restype = ctypes.c_int
+        self._step = function
+
+    def step(
+        self,
+        state: np.ndarray,
+        semantic: np.ndarray,
+        episodic: np.ndarray,
+        *,
+        semantic_scale: float = 1.0,
+        episodic_scale: float = 1.0,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        current = np.ascontiguousarray(state, dtype=np.float32)
+        semantic_values = np.ascontiguousarray(semantic, dtype=np.float32)
+        episodic_values = np.ascontiguousarray(episodic, dtype=np.float32)
+        if (
+            current.ndim < 2
+            or semantic_values.shape != current.shape
+            or episodic_values.shape != current.shape
+        ):
+            raise ValueError("native residual operands must have matching shapes")
+        vectors = int(np.prod(current.shape[:-1]))
+        width = current.shape[-1]
+        output = np.empty_like(current)
+        relative_rms = np.empty((*current.shape[:-1], 1), dtype=np.float32)
+        pointer = ctypes.POINTER(ctypes.c_float)
+        status = self._step(
+            current.ctypes.data_as(pointer),
+            semantic_values.ctypes.data_as(pointer),
+            episodic_values.ctypes.data_as(pointer),
+            vectors,
+            width,
+            semantic_scale,
+            episodic_scale,
+            output.ctypes.data_as(pointer),
+            relative_rms.ctypes.data_as(pointer),
+        )
+        if status:
+            raise RuntimeError(f"native operator residual failed with status {status}")
+        return output, relative_rms
+
+
+class NativeBitNetShellOps:
+    """Native BF16 embedding and RMSNorm operations used around stage kernels."""
+
+    def __init__(self, library) -> None:
+        self.library_path = str(library)
+        self._library = ctypes.CDLL(self.library_path)
+        uint16_pointer = ctypes.POINTER(ctypes.c_uint16)
+        int64_pointer = ctypes.POINTER(ctypes.c_int64)
+        float_pointer = ctypes.POINTER(ctypes.c_float)
+
+        embedding = self._library.engram_embedding_lookup_bf16
+        embedding.argtypes = [
+            uint16_pointer,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            int64_pointer,
+            ctypes.c_size_t,
+            uint16_pointer,
+        ]
+        embedding.restype = ctypes.c_int
+        self._embedding = embedding
+
+        rms_norm = self._library.engram_rms_norm_f32_to_bf16
+        rms_norm.argtypes = [
+            float_pointer,
+            uint16_pointer,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.c_float,
+            uint16_pointer,
+        ]
+        rms_norm.restype = ctypes.c_int
+        self._rms_norm = rms_norm
+
+        vocab_argmax = self._library.engram_vocab_argmax_bf16
+        vocab_argmax.argtypes = [
+            uint16_pointer,
+            uint16_pointer,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_int64),
+            float_pointer,
+        ]
+        vocab_argmax.restype = ctypes.c_int
+        self._vocab_argmax = vocab_argmax
+
+        rope = self._library.engram_rope_bf16
+        rope.argtypes = [
+            uint16_pointer,
+            ctypes.c_size_t,
+            uint16_pointer,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            int64_pointer,
+            ctypes.c_size_t,
+            ctypes.c_float,
+        ]
+        rope.restype = ctypes.c_int
+        self._rope = rope
+
+    @staticmethod
+    def _bf16_bits(tensor) -> np.ndarray:
+        torch, _, _ = _torch_modules()
+        values = tensor.detach().cpu().contiguous()
+        if values.dtype != torch.bfloat16:
+            values = values.to(torch.bfloat16)
+        return values.view(torch.uint16).numpy()
+
+    def embedding(self, weight, token_ids):
+        """Look up token rows without executing a Torch embedding operator."""
+
+        torch, _, _ = _torch_modules()
+        table = self._bf16_bits(weight)
+        indices = np.ascontiguousarray(
+            token_ids.detach().cpu().numpy(), dtype=np.int64
+        )
+        if table.ndim != 2:
+            raise ValueError("embedding weight must be rank-2")
+        output = np.empty((*indices.shape, table.shape[1]), dtype=np.uint16)
+        uint16_pointer = ctypes.POINTER(ctypes.c_uint16)
+        status = self._embedding(
+            table.ctypes.data_as(uint16_pointer),
+            table.shape[0],
+            table.shape[1],
+            indices.ctypes.data_as(ctypes.POINTER(ctypes.c_int64)),
+            indices.size,
+            output.ctypes.data_as(uint16_pointer),
+        )
+        if status:
+            raise RuntimeError(f"native embedding lookup failed with status {status}")
+        return torch.from_numpy(output).view(torch.bfloat16)
+
+    def rms_norm(self, values: np.ndarray, weight, epsilon: float):
+        """Apply BitNet's BF16 RMSNorm ordering to float32 state vectors."""
+
+        torch, _, _ = _torch_modules()
+        inputs = np.ascontiguousarray(values, dtype=np.float32)
+        scales = self._bf16_bits(weight)
+        if inputs.ndim < 2 or scales.ndim != 1:
+            raise ValueError("RMSNorm requires vectors and a rank-1 weight")
+        if inputs.shape[-1] != scales.shape[0]:
+            raise ValueError("RMSNorm input and weight widths differ")
+        output = np.empty(inputs.shape, dtype=np.uint16)
+        vectors = int(np.prod(inputs.shape[:-1]))
+        uint16_pointer = ctypes.POINTER(ctypes.c_uint16)
+        status = self._rms_norm(
+            inputs.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+            scales.ctypes.data_as(uint16_pointer),
+            vectors,
+            inputs.shape[-1],
+            epsilon,
+            output.ctypes.data_as(uint16_pointer),
+        )
+        if status:
+            raise RuntimeError(f"native RMSNorm failed with status {status}")
+        return torch.from_numpy(output).view(torch.bfloat16)
+
+    def vocab_argmax(self, hidden, weight, *, threads: int) -> tuple[int, float]:
+        """Return the best tied-vocabulary row without materializing logits."""
+
+        if threads <= 0:
+            raise ValueError("vocabulary projection threads must be positive")
+        inputs = self._bf16_bits(hidden)
+        table = self._bf16_bits(weight)
+        if inputs.ndim != 1 or table.ndim != 2:
+            raise ValueError("vocabulary argmax requires a vector and matrix")
+        if inputs.shape[0] != table.shape[1]:
+            raise ValueError("vocabulary input and weight widths differ")
+        uint16_pointer = ctypes.POINTER(ctypes.c_uint16)
+        token = ctypes.c_int64()
+        score = ctypes.c_float()
+        status = self._vocab_argmax(
+            inputs.ctypes.data_as(uint16_pointer),
+            table.ctypes.data_as(uint16_pointer),
+            table.shape[0],
+            table.shape[1],
+            threads,
+            ctypes.byref(token),
+            ctypes.byref(score),
+        )
+        if status:
+            raise RuntimeError(f"native vocabulary argmax failed with status {status}")
+        return int(token.value), float(score.value)
+
+    def rope(self, query, key, position_ids, *, theta: float):
+        """Apply default RoPE in place to contiguous CPU BF16 projections."""
+
+        torch, _, _ = _torch_modules()
+        if (
+            query.device.type != "cpu"
+            or key.device.type != "cpu"
+            or query.dtype != torch.bfloat16
+            or key.dtype != torch.bfloat16
+            or query.ndim != 4
+            or key.ndim != 4
+        ):
+            raise ValueError("native RoPE requires rank-4 CPU BF16 query/key")
+        if query.shape[0] != key.shape[0] or query.shape[2:] != key.shape[2:]:
+            raise ValueError("native RoPE query/key dimensions differ")
+        query = query.contiguous()
+        key = key.contiguous()
+        positions = np.ascontiguousarray(
+            position_ids.detach().cpu().numpy(), dtype=np.int64
+        )
+        if positions.shape[0] not in (1, query.shape[0]):
+            raise ValueError("native RoPE position batch differs")
+        uint16_pointer = ctypes.POINTER(ctypes.c_uint16)
+        status = self._rope(
+            ctypes.cast(query.data_ptr(), uint16_pointer),
+            query.shape[1],
+            ctypes.cast(key.data_ptr(), uint16_pointer),
+            key.shape[1],
+            query.shape[0],
+            query.shape[2],
+            query.shape[3],
+            positions.ctypes.data_as(ctypes.POINTER(ctypes.c_int64)),
+            positions.shape[0],
+            theta,
+        )
+        if status:
+            raise RuntimeError(f"native RoPE failed with status {status}")
+        return query, key
+
+
+class ControllerDrivenBitNet:
+    """Dispatch native stage operators from normalized controller state.
+
+    The controller owns the vector residual transition. A separate scalar RMS
+    is carried for every token because BitNet's normalized operators are
+    approximately scale invariant while their residual outputs are not.
+    """
+
+    def __init__(
+        self,
+        model,
+        controller: FactorizedRecurrentController,
+        *,
+        native_library=None,
+        native_vocab_argmax: bool = False,
+        vocab_threads: int = 1,
+    ) -> None:
+        layers = model.model.layers
+        hidden_size = int(model.config.hidden_size)
+        if len(layers) != controller.num_stages:
+            raise ValueError("controller stage count does not match BitNet")
+        if hidden_size != controller.state_dim:
+            raise ValueError("controller state width does not match BitNet")
+        if not controller.has_operator_residual:
+            raise ValueError("controller must preserve operator residuals")
+        if np.any(controller.step_scale != 0.0):
+            raise ValueError(
+                "controller-driven runtime currently requires zero correction"
+            )
+        self.model = model
+        self.controller = controller
+        self.native_residual = (
+            NativeOperatorResidual(native_library)
+            if native_library is not None
+            else None
+        )
+        self.native_shell = (
+            NativeBitNetShellOps(native_library)
+            if native_library is not None
+            else None
+        )
+        if native_vocab_argmax and self.native_shell is None:
+            raise ValueError("native vocabulary argmax requires a native library")
+        self.native_vocab_argmax = bool(native_vocab_argmax)
+        self.vocab_threads = int(vocab_threads)
+        self.decoder_layer_forward_calls = 0
+
+    @staticmethod
+    def _rms(values: np.ndarray) -> np.ndarray:
+        return np.sqrt(
+            np.mean(np.square(values), axis=-1, keepdims=True)
+        ).clip(1e-6)
+
+    def forward(self, input_ids, *, position_ids) -> ControllerForward:
+        """Run prefill or decode tokens through explicit stage operators."""
+
+        torch, _, _ = _torch_modules()
+        if input_ids.ndim != 2 or position_ids.ndim != 2:
+            raise ValueError("input_ids and position_ids must be rank-2")
+        if input_ids.shape != position_ids.shape:
+            raise ValueError("input_ids and position_ids shapes must match")
+        started = time.perf_counter()
+        with torch.inference_mode():
+            if self.native_shell is None:
+                embedded = self.model.model.embed_tokens(input_ids)
+            else:
+                embedded = self.native_shell.embedding(
+                    self.model.model.embed_tokens.weight,
+                    input_ids,
+                )
+            initial = embedded.float().cpu().numpy()
+            residual_rms = self._rms(initial)
+            state = initial / residual_rms
+            token_embedding = state.copy()
+            position_embeddings = (
+                None
+                if self.native_shell is not None
+                else self.model.model.rotary_emb(
+                    embedded,
+                    position_ids=position_ids,
+                )
+            )
+            controller_seconds = 0.0
+            for stage, layer in enumerate(self.model.model.layers):
+                state_tensor = torch.from_numpy(state).to(
+                    device=embedded.device,
+                    dtype=embedded.dtype,
+                )
+                if self.native_shell is None:
+                    attention_input = layer.input_layernorm(state_tensor)
+                else:
+                    attention_input = self.native_shell.rms_norm(
+                        state,
+                        layer.input_layernorm.weight,
+                        layer.input_layernorm.variance_epsilon,
+                    )
+                attention_output, _ = layer.self_attn(
+                    hidden_states=attention_input,
+                    attention_mask=None,
+                    position_ids=position_ids,
+                    past_key_values=None,
+                    use_cache=False,
+                    position_embeddings=position_embeddings,
+                )
+                attention_normalized = (
+                    attention_output.float().cpu().numpy() / residual_rms
+                )
+                post_attention = state + attention_normalized
+                post_attention_tensor = torch.from_numpy(post_attention).to(
+                    device=embedded.device,
+                    dtype=embedded.dtype,
+                )
+                if self.native_shell is None:
+                    semantic_input = layer.post_attention_layernorm(
+                        post_attention_tensor
+                    )
+                else:
+                    semantic_input = self.native_shell.rms_norm(
+                        post_attention,
+                        layer.post_attention_layernorm.weight,
+                        layer.post_attention_layernorm.variance_epsilon,
+                    )
+                semantic_output = layer.mlp(semantic_input)
+                semantic_normalized = (
+                    semantic_output.float().cpu().numpy() / residual_rms
+                )
+                supplied = np.concatenate(
+                    (
+                        token_embedding,
+                        semantic_normalized,
+                        attention_normalized,
+                    ),
+                    axis=-1,
+                )
+                controller_started = time.perf_counter()
+                if self.native_residual is None:
+                    next_state = self.controller.step(
+                        state,
+                        supplied,
+                        stage=stage,
+                    )
+                    relative_rms = self._rms(
+                        state + attention_normalized + semantic_normalized
+                    )
+                else:
+                    assert self.controller.operator_residual_scale is not None
+                    next_state, relative_rms = self.native_residual.step(
+                        state,
+                        semantic_normalized,
+                        attention_normalized,
+                        semantic_scale=float(
+                            self.controller.operator_residual_scale[stage, 0]
+                        ),
+                        episodic_scale=float(
+                            self.controller.operator_residual_scale[stage, 1]
+                        ),
+                    )
+                controller_seconds += time.perf_counter() - controller_started
+                residual_rms = residual_rms * relative_rms
+                state = next_state
+
+            final_state = torch.from_numpy(state).to(
+                device=embedded.device,
+                dtype=embedded.dtype,
+            )
+            if self.native_shell is None:
+                hidden = self.model.model.norm(final_state)
+            else:
+                hidden = self.native_shell.rms_norm(
+                    state,
+                    self.model.model.norm.weight,
+                    self.model.model.norm.variance_epsilon,
+                )
+            if self.native_vocab_argmax:
+                if hidden.shape[0] != 1:
+                    raise ValueError("native vocabulary argmax requires batch size one")
+                next_token, _ = self.native_shell.vocab_argmax(
+                    hidden[0, -1],
+                    self.model.lm_head.weight,
+                    threads=self.vocab_threads,
+                )
+                logits = None
+            else:
+                logits = self.model.lm_head(hidden).float()
+        return ControllerForward(
+            logits=logits,
+            next_token=next_token if self.native_vocab_argmax else None,
+            normalized_state=state,
+            residual_rms=residual_rms,
+            elapsed_seconds=time.perf_counter() - started,
+            controller_seconds=controller_seconds,
+        )
+
+
+__all__ = [
+    "ControllerDrivenBitNet",
+    "ControllerForward",
+    "NativeBitNetShellOps",
+    "NativeOperatorResidual",
+]

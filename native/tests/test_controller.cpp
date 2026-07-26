@@ -1,4 +1,6 @@
 #include "engram/controller.h"
+#include "engram/native_shell_c.h"
+#include "engram/operator_residual_c.h"
 
 #include <cmath>
 #include <cstddef>
@@ -108,6 +110,67 @@ int main() {
   }
   if (!rejected_stage) {
     return fail("invalid controller stage was accepted");
+  }
+
+  const float residual_state[] = {1.0F, 2.0F, -1.0F, 0.5F};
+  const float residual_semantic[] = {0.5F, -0.5F, 0.25F, 0.25F};
+  const float residual_episodic[] = {-0.25F, 0.25F, 0.5F, -0.5F};
+  float residual_output[4] = {};
+  float residual_rms[2] = {};
+  if (engram_operator_residual_step_f32(
+          residual_state, residual_semantic, residual_episodic, 2, 2, 1.0F,
+          1.0F, residual_output, residual_rms) != 0) {
+    return fail("native operator residual rejected valid input");
+  }
+  for (std::size_t row = 0; row < 2; ++row) {
+    const float mean_square =
+        (residual_output[row * 2] * residual_output[row * 2] +
+         residual_output[row * 2 + 1] * residual_output[row * 2 + 1]) /
+        2.0F;
+    if (std::abs(mean_square - 1.0F) > 2.0e-5F ||
+        !(residual_rms[row] > 0.0F)) {
+      return fail("native operator residual normalization mismatch");
+    }
+  }
+
+  const std::uint16_t embedding_table[] = {
+      0x3F80, 0x4000, 0x4040, 0x4080, 0x40A0, 0x40C0,
+  };
+  const std::int64_t token_ids[] = {2, 0};
+  std::uint16_t embeddings[4] = {};
+  if (engram_embedding_lookup_bf16(embedding_table, 3, 2, token_ids, 2,
+                                   embeddings) != 0 ||
+      embeddings[0] != 0x40A0 || embeddings[1] != 0x40C0 ||
+      embeddings[2] != 0x3F80 || embeddings[3] != 0x4000) {
+    return fail("native BF16 embedding lookup mismatch");
+  }
+  const float norm_input[] = {3.0F, 4.0F};
+  const std::uint16_t norm_weight[] = {0x3F80, 0x3F80};
+  std::uint16_t norm_output[2] = {};
+  if (engram_rms_norm_f32_to_bf16(norm_input, norm_weight, 1, 2, 1.0e-6F,
+                                  norm_output) != 0 ||
+      norm_output[0] != 0x3F59 || norm_output[1] != 0x3F91) {
+    return fail("native BF16 RMSNorm mismatch");
+  }
+  const std::uint16_t vocabulary[] = {
+      0x3F80, 0x0000, 0x0000, 0x3F80, 0x3F80, 0x3F80,
+  };
+  const std::uint16_t vocabulary_input[] = {0x3F80, 0x4000};
+  std::int64_t best_token = -1;
+  float best_score = 0.0F;
+  if (engram_vocab_argmax_bf16(vocabulary_input, vocabulary, 3, 2, 2,
+                               &best_token, &best_score) != 0 ||
+      best_token != 2 || std::abs(best_score - 3.0F) > 1.0e-6F) {
+    return fail("native BF16 vocabulary argmax mismatch");
+  }
+  std::uint16_t rope_query[] = {0x3F80, 0x4000};
+  std::uint16_t rope_key[] = {0x4040, 0x4080};
+  const std::int64_t rope_position[] = {0};
+  if (engram_rope_bf16(rope_query, 1, rope_key, 1, 1, 1, 2, rope_position, 1,
+                       10000.0F) != 0 ||
+      rope_query[0] != 0x3F80 || rope_query[1] != 0x4000 ||
+      rope_key[0] != 0x4040 || rope_key[1] != 0x4080) {
+    return fail("native BF16 RoPE zero-position mismatch");
   }
   return 0;
 }

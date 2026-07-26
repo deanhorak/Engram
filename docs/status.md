@@ -58,6 +58,7 @@ semantic thresholds, and exact scheduled cold-byte accounting.
 | Budget-native full-width grouped ternary | At 1,014,225 training positions: KL 2.2844, top-1 0.3198, NLL +2.2770, hidden L2 0.6036 | Serialized/reloaded artifact is 43.1353% of dense ideal Q4 | Traffic pass, quality fail; top-1/hidden miss frozen 50%-gap-closure rule |
 | Exact nonparametric output memory | Layer-14 LLE-32 error 0.3275 with 233,005 local records; 0.3219 after adding 1,000,000 pretraining records | Exact search and FP16 values are not a deployable traffic result | Only 1.73% improvement; density-scaling branch closed |
 | Mixed affine LC-VQ | Development-only layer-14 hard-QAT error 0.3364 after 8,192 steps | Complete modeled cold traffic is 44.3482% | Traffic pass, local-quality fail; no causal run |
+| Fully sparse top-K activation path | Best unseen all-layer result after causal schedule fitting and verified attention/norm co-adaptation: KL 0.4517, top-1 0.6714, NLL +0.4585, hidden L2 0.3272 | Fixed per-layer q/K schedule is exactly 45% ideal traffic before metadata; every artifact reloads and executes on CPU | Whole-model hypothesis tested and stopped; far from every semantic threshold |
 
 The DIP result is the only tested practical mechanism that clears the causal
 quality thresholds. It is deliberately excluded from the default compiler
@@ -67,6 +68,34 @@ physical byte budget and maps cleanly to contiguous CPU kernels, but it is not
 close to the teacher.
 
 ## What the latest experiments changed
+
+### Exact activation-sparse training paths
+
+The latest dense-source experiment removes approximate routing from the
+critical path. CATS-style execution reads the full gate matrix, thresholds
+its activation exactly, and reads up/down records only for nonzero gates. Its
+ideal traffic fraction is `(1 + 2a) / 3`, where `a` is active-record
+fraction. At the traffic boundary, zero-shot layer-local error is 0.511 and a
+progressive plus fixed-budget boundary fit reaches only 0.470.
+
+The stronger Q-Sparse-style path selects already-resident activation
+coordinates directly. It reads `q` input columns of both gate and up and `k`
+input columns of down, for ideal traffic `(2q + k) / 3`. The selected integer
+point uses 282 of 576 input coordinates and 522 of 1,536 intermediate
+coordinates, or 43.967% before metadata. It has no router, candidate stage, or
+recall gate. On the representative layer-14 development boundary set, its
+error improves from 0.3426 to a best 0.3228 and then plateaus.
+
+Both local screens fail the unchanged 0.18 progression ceiling. The distinct
+whole-model Q-Sparse hypothesis was then tested with CUDA used only for
+training. A causal single-layer sensitivity fit improved the fixed all-layer
+baseline from KL 0.742 to 0.457 at exactly 45% ideal traffic, but verified
+attention/normalization co-adaptation moved the unseen result only to KL
+0.452, top-1 0.671, NLL +0.458, and hidden L2 0.327. Label-only full-model
+continuation, per-token concentration budgets, and a traffic-charged rank-24
+residual did not improve the frontier. Every artifact independently reloaded
+and executed on CPU; confirmation remained sealed. The dense-source
+activation-sparse branch is therefore stopped at the available scale.
 
 ### Lossless native-BitNet semantic records
 
@@ -222,7 +251,7 @@ scientific exit criterion has passed.
 | 1. Inspection, tracing, exact MLP decomposition, oracle experiment | Complete | Complete for the fixture and exercised on SmolLM2 |
 | 2. Semantic package, routing, quantization, Python substitution runtime | Native-BitNet phase artifact, direct CPU kernel, package compiler, validator, and generation runtime implemented | **Low-bit-native track passes** the frozen causal/cold-byte gate and exact package parity; dense-Llama track remains blocked |
 | 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid plus stateful C++20 cache/rerank kernel implemented | **Frozen trained-model confirmation passes**; native randomized parity and bounded-state scaling pass; incremental generation and hardware counters remain |
-| 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Prototype implemented | Controller remains initialized rather than successfully distilled |
+| 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, authenticated package installation, native residual/RMS C ABI, explicit no-decoder stage loop, and persistent cache integration implemented | **Frozen incremental generation passes** with 32/32 token parity; package-owned native controller reproduces the reference output with correct cache positions and zero decoder-layer calls; full C++ operator orchestration remains |
 | 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and has exact source/package output parity |
 | 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime plus direct memory-mapped BitNet MLP kernel implemented | Python transformer generation uses the native MLP kernel; a full C++ transformer and hardware-counter traffic remain |
 | 7. Evaluation, ablations, tuning, documentation, final report | In progress | Many negative ablations exist; no successful reproducible final report |
@@ -247,6 +276,102 @@ not resolve the model-worker semantic gate.
   architecture.
 
 ## Current development decision
+
+The shared-controller stage has started with a deployable low-rank design
+rather than the original dense FP64 GRU fixture. At width 2,560, the original
+two dense GRU kernels would occupy about 629 MB and impose that shared-weight
+traffic on every depth cycle. The new rank-128 controller has 2,662,430 FP32
+parameters (10,649,720 bytes), an identity-biased residual path, per-token RMS
+normalization, 30 stage embeddings, and rank-4 stage adapters.
+
+The next protected run expanded to 128 training and 64 validation positions
+from different dataset hashes. It reduced validation terminal normalized MSE
+from 1.998608 to 0.245010, cosine loss from 0.973363 to 0.333417, and total
+rollout loss from 4.292672 to 1.156465. A lower-rate 500-step continuation
+loaded from the serialized artifact and used no teacher forcing. It improved
+training terminal error from 0.060627 to 0.029324 but worsened validation
+terminal error to 0.260050; that continuation is rejected. Independent NumPy
+reload of the retained pre-continuation artifact matches Torch within 7.45e-6
+maximum absolute error. Sixty-four states complete 30 CPU cycles at 79.7
+states/s in the measured NumPy batch. Exact teacher MLP and attention outputs
+are still supplied at the controller boundary, so compiled-operator
+substitution remains sealed.
+
+The controller-only prerequisite for substitution is terminal normalized MSE
+at most 0.0225, corresponding to the existing hidden relative L2 limit of
+0.15. A controlled rank-4 stage input adapter improves the 1,024/256-position
+result only from 0.159440 to 0.157431, showing that another learned input
+alignment is not the solution.
+
+The host was subsequently rebooted with matching NVIDIA 580.173.02 kernel and
+userspace components. An exact CUDA reproduction reaches protected terminal
+normalized MSE 0.246530 and cosine loss 0.335160, compared with 0.245010 and
+0.333417 for the CPU-optimizer run. Serialized CPU parity passes at 5.36e-6.
+CUDA reduces the 500-step fit from 131.8 to 112.6 seconds but does not alter
+the scientific decision; the slightly better CPU artifact remains retained.
+
+A subsequent frozen 1,024/256-position rung trained a fresh rank-128
+controller for 1,000 CUDA steps. Protected terminal normalized MSE improves
+to 0.159440 and total rollout loss to 0.931534, but the artifact still fails
+the 0.0225 substitution gate by 7.1 times. The artifact reloads on CPU within
+5.90e-6 and processes a batch of 256 states through 30 cycles at 101.3
+states/s.
+
+The trace contract exposes a stronger architectural fact: teacher layer output
+is the incoming residual plus the captured attention and MLP outputs. A new
+schema-v3 controller preserves those additions exactly and reserves the shared
+factorized recurrence for corrections only. With correction scales zero, the
+protected terminal NMSE is 0.000020801, passing the gate with 1,081.7 times
+margin. CPU reload parity is 5.72e-6, and the matrix-skipping NumPy path runs
+41,575.9 stage transitions/s. Exact teacher operator outputs are still
+supplied, so the next gate is compiled semantic and episodic substitution,
+first independently and then jointly.
+
+Operator provenance was then corrected: `NativeBitNetRuntime` already replaces
+every MLP with the packaged direct CPU phase-stream kernel, so captured
+semantic outputs were compiled. A frozen controller replay now combines those
+packed semantic outputs with native W16/C8/K4/S2 attention outputs outside the
+decoder residual scaffold. Across eight held-out sequences and 256 prediction
+positions it passes every check: KL 0.011125, top-1 agreement 0.957031, NLL
+delta -0.008285, final hidden relative L2 0.075893, controller-to-candidate
+hidden L2 0.006810, and terminal trajectory NMSE 0.000026666.
+
+The next boundary is no longer another substitution-quality experiment. It is
+incremental runtime integration: controller state must directly feed the
+native MLP and attention operators, advance RoPE/cache positions, persist
+bounded episodic state, and produce logits without decoder-layer forwards.
+
+That incremental boundary now passes. `ControllerDrivenBitNet` explicitly
+dispatches all 30 normalized attention/MLP stages and advances schema-v3
+controller state while native attention owns persistent cross-token memory.
+It carries one residual RMS scalar per token so operator outputs retain their
+correct relative scale. Across the fixed eight-prompt suite, all 32 generated
+tokens match the bounded decoder reference, cache positions are exact, and
+decoder-layer forward calls are zero. Controller arithmetic is only 0.0427
+seconds per prompt versus 22.581 seconds complete execution.
+
+Package-native installation and residual execution are now implemented. The
+manifest owns and authenticates every controller tensor, generation can select
+the installed controller without an external path, and the residual/RMS loop
+runs through `libengram_bitnet.so`.
+
+The next native-shell cut is also complete. BF16 embedding lookup, all 92
+RMSNorm sites, default RoPE construction/application, and tied-vocabulary
+greedy argmax now execute through the C ABI. The vocabulary path returns only
+the selected token and no longer allocates 128,256 logits. The four-token
+`The capital of France is` smoke test remains ` Paris. Paris is` and improves
+from about 21.3 to 18.6 seconds. The frozen eight-prompt/32-token protocol
+passes at 96.875% weighted agreement and 87.5% exact prompts, with exact cache
+positions and zero decoder-layer calls. Its one fourth-token mismatch is a
+BF16 near-tie caused by native scalar versus PyTorch/oneDNN accumulation order,
+not a hidden-state or cache gate failure.
+
+The remaining Milestone 4 systems boundary is an all-C++ stage orchestrator.
+Python still sequences the 30 stages and creates Torch tensor views for the
+already-native packed projections, MLPs, and streaming attention. The next
+implementation should load the authenticated non-MLP/controller state into a
+single native runtime handle and dispatch the full stage loop without Python
+or Torch.
 
 The low-bit-native hypothesis has passed source validation, exact
 reconstruction, the unchanged MLP byte limit, direct CPU execution, frozen

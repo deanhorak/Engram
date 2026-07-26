@@ -28,6 +28,7 @@ def native_incremental_attention_class():
             older_top_k: int = 4,
             sink_tokens: int = 2,
             library: str | Path | None = None,
+            shell_library: str | Path | None = None,
         ) -> None:
             super().__init__()
             if local_window <= 0:
@@ -55,6 +56,15 @@ def native_incremental_attention_class():
             self.older_top_k = int(older_top_k)
             self.sink_tokens = int(sink_tokens)
             self.library = library
+            self.shell_library = shell_library
+            if shell_library is None:
+                self.native_shell = None
+            else:
+                from engram.runtime.native_bitnet_controller import (
+                    NativeBitNetShellOps,
+                )
+
+                self.native_shell = NativeBitNetShellOps(shell_library)
             self._caches: list[NativeStreamingAttention] = []
             self._next_position = 0
             self._logical_read_bytes = 0
@@ -178,11 +188,26 @@ def native_incremental_attention_class():
                 time.perf_counter() - projection_started
             )
             rope_started = time.perf_counter()
-            query, key = apply_rotary_pos_emb(
-                query,
-                key,
-                *position_embeddings,
-            )
+            if self.native_shell is None:
+                query, key = apply_rotary_pos_emb(
+                    query,
+                    key,
+                    *position_embeddings,
+                )
+            else:
+                rope_parameters = getattr(self.config, "rope_parameters", {})
+                theta = float(
+                    rope_parameters.get(
+                        "rope_theta",
+                        getattr(self.config, "rope_theta", 10000.0),
+                    )
+                )
+                query, key = self.native_shell.rope(
+                    query,
+                    key,
+                    position_ids,
+                    theta=theta,
+                )
             self._rope_seconds += time.perf_counter() - rope_started
 
             output_batches = []
@@ -222,7 +247,14 @@ def native_incremental_attention_class():
             )
             output = output.transpose(1, 2).reshape(*input_shape, -1).contiguous()
             output_started = time.perf_counter()
-            output = self.attn_sub_norm(output)
+            if self.native_shell is None:
+                output = self.attn_sub_norm(output)
+            else:
+                output = self.native_shell.rms_norm(
+                    output.float().cpu().numpy(),
+                    self.attn_sub_norm.weight,
+                    self.attn_sub_norm.variance_epsilon,
+                )
             output = self.o_proj(output)
             self._output_projection_seconds += (
                 time.perf_counter() - output_started

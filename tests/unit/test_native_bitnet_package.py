@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -6,7 +7,9 @@ import pytest
 from engram.compiler.native_bitnet import (
     _inventory,
     _write_non_mlp_weights,
+    install_native_bitnet_controller,
 )
+from engram.controller import FactorizedRecurrentController
 from engram.evaluation.native_bitnet_attention import (
     _attention_replacement_class,
 )
@@ -64,6 +67,48 @@ def test_non_mlp_package_excludes_source_mlp_tensors(tmp_path):
     assert inventory["transformer/non_mlp.safetensors"]["bytes"] == (
         destination.stat().st_size
     )
+
+
+def test_schema_v3_controller_is_authenticated_into_bitnet_package(tmp_path):
+    from engram.utils import atomic_json, sha256_file
+
+    package = tmp_path / "package"
+    package.mkdir()
+    payload = package / "payload.bin"
+    payload.write_bytes(b"package fixture")
+    atomic_json(
+        package / "manifest.json",
+        {
+            "format": "engram-native-bitnet",
+            "version": 1,
+            "model": {"hidden_size": 2, "num_hidden_layers": 2},
+            "files": {
+                "payload.bin": {
+                    "bytes": payload.stat().st_size,
+                    "sha256": sha256_file(payload),
+                }
+            },
+        },
+    )
+    controller = FactorizedRecurrentController.initialize(
+        input_dim=6,
+        state_dim=2,
+        num_stages=2,
+        rank=1,
+        adapter_rank=0,
+        operator_residual=True,
+    )
+    tensors = controller.tensors()
+    tensors["step_scale"][:] = 0.0
+    source = tmp_path / "controller"
+    FactorizedRecurrentController(**tensors).save(source)
+
+    assert install_native_bitnet_controller(package, source) == package.resolve()
+    manifest = json.loads((package / "manifest.json").read_text())
+    assert manifest["controller"]["schema_version"] == 3
+    assert manifest["controller"]["correction_enabled"] is False
+    assert "controller/metadata.json" in manifest["files"]
+    assert install_native_bitnet_controller(package, source) == package.resolve()
 
 
 def test_materialized_attention_linear_matches_bitnet_activation_quant():

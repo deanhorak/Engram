@@ -27,6 +27,31 @@ source-transformer independence, and every file's byte count and SHA-256. Every 
 also records dtype, shape, byte order, format version, Fortran-order flag, payload offset, and
 actual alignment. Semantic submanifests repeat array-level metadata for independent inspection.
 
+The standalone trained-controller artifact currently uses
+`engram.controller.factorized_residual` schema version 1:
+
+```text
+controller/
+  metadata.json
+  input_down.npy
+  recurrent_down.npy
+  gate_up.npy
+  bias.npy
+  stage_embeddings.npy
+  adapter_down.npy
+  adapter_up.npy
+  step_scale.npy
+```
+
+All tensors are little-endian-compatible FP32 NumPy arrays. Metadata records
+the input/state dimensions, shared bottleneck rank, stage count, adapter rank,
+parameter count, serialized bytes, per-tensor shapes, and the required
+per-token RMS state normalization. The loader rejects missing/extra tensors or
+metadata-derived shape disagreement. This artifact is independently runnable
+on CPU without Torch or CUDA. It is not yet embedded in
+`model.engram-bitnet`; package integration waits for corpus-scale trajectory
+quality and compiled semantic/episodic substitution.
+
 An `.engram` package is a model worker, not a system-agent snapshot. It does not contain executive
 goal graphs, durable user memory, tool credentials, worker registries, or Cognitive Executive
 policy.

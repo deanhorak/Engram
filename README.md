@@ -50,6 +50,79 @@ safety requirements, and separate research gates.
 **Current decision:** the original dense-Llama Milestone 2 conversion remains
 blocked, but the separate low-bit-native source track now passes the frozen
 semantic and serialized cold-traffic gate with a direct CPU kernel.
+CUDA is permitted for training and distillation only. Packaged inference,
+including the passing BitNet MLP and attention kernels, remains CPU-only and
+does not call llama.cpp.
+
+The shared-controller path now passes its fixed transition gate. The decisive
+change was architectural, not another corpus scale-up: a BitNet layer already
+defines its next residual as the current state plus its attention and MLP
+outputs, followed by normalization. Those operator outputs were present in the
+trace, but the old controller unnecessarily compressed them through a learned
+rank-128 bottleneck. A controlled rank-4 stage input adapter improved terminal
+NMSE only from 0.159440 to 0.157431, confirming that this was not a capacity
+problem.
+
+Schema-v3 controllers preserve the known operator additions exactly and keep
+the shared factorized recurrence only as an optional learned correction.
+Across the unchanged 1,024/256-position split, the zero-correction CPU artifact
+reaches protected terminal normalized MSE **0.000020801** against the
+**0.0225** gate, passes Torch/NumPy reload parity within 5.72e-6, and executes
+41,575.9 stage transitions/s without importing Torch or reading the correction
+matrices. The trace provenance is stronger than initially reported: its
+semantic outputs already come from the packaged direct CPU MLP kernel; only
+attention was still dense.
+
+The subsequent frozen compiled-operator replay also passes. On eight held-out
+sequences and 256 prediction positions, packed semantic output plus native
+W16/C8/K4/S2 attention replayed through the controller reaches KL 0.01113,
+95.70% top-1 agreement, NLL delta -0.00829, and final-hidden relative L2
+0.07589 against the dense-attention package baseline. Controller replay tracks
+the compiled candidate at hidden L2 0.00681 and terminal trajectory NMSE
+0.00002667. The next boundary is incremental generation driven directly by
+controller state; the passing replay still executes decoder layers to obtain
+operator outputs before independently replacing their residual scaffold.
+
+Incremental controller-driven generation now passes as well. The explicit
+runtime calls normalization, native attention, native MLP, and the controller
+stage by stage without invoking `decoder_layer.forward`. It carries one scalar
+RMS per token, advances absolute RoPE/cache positions, and preserves native
+bounded-attention state across decode calls. On the fixed eight-prompt suite,
+all 32 greedy tokens match the bounded decoder reference exactly, all cache
+positions match, and decoder-layer calls remain zero. Controller arithmetic
+averages 42.7 ms per prompt, about 0.19% of complete runtime.
+
+The controller is now package-owned and native at its hot boundary. An
+authenticated installer copies the schema-v3 tensors into `controller/`, adds
+every file hash and controller contract to the native BitNet manifest, and
+refuses incompatible or conflicting artifacts. The float32 residual/RMS step
+now executes through `libengram_bitnet.so`; package-owned generation reproduces
+` Paris. Paris is`, advances all positions, and still reports zero decoder
+layer calls.
+
+The surrounding decode shell has now moved substantially farther across the
+native boundary. `libengram_bitnet.so` performs BF16 embedding lookup, all
+RMSNorm operations, RoPE, exact residual/RMS advancement, and a threaded
+tied-vocabulary argmax that does not materialize full logits. Together with
+the existing packed MLP/projection and streaming-attention kernels, the
+controller command invokes no decoder-layer forwards. A frozen eight-prompt,
+32-token confirmation passes its progression gate at 96.875% token agreement,
+87.5% exact prompts, and exact cache positions. One BF16 near-tie differs from
+PyTorch/oneDNN because scalar native and library GEMM accumulation orders are
+not identical. Python/Torch still orchestrates stage dispatch and tensor
+views; replacing that shell with one C++ package-runtime handle is the next
+systems boundary.
+
+The latest dense-source campaign implements whole-model exact Q-Sparse
+co-adaptation rather than another router guess. A causally fitted per-layer
+schedule improves the unseen 128-sequence baseline to KL 0.457, top-1 66.9%,
+NLL delta +0.474, and hidden L2 0.328 at exactly 45% ideal traffic. Verified
+attention/normalization co-adaptation moves it only to
+0.452/67.1%/+0.458/0.327. Label-only continuation, token-adaptive budgets,
+and a traffic-charged rank-24 residual do not improve the frontier, so this
+dense-source arm remains stopped and confirmation stays sealed. The detailed
+results are in the
+[whole-model fully sparse report](reports/semantic_gate_fully_sparse_2026-07-24/summary.md).
 Predictor-free DIP
 passes the causal quality thresholds on an untouched confirmation corpus, but
 requires 83.33% of dense MLP traffic after cache-line accounting and its native
@@ -383,9 +456,11 @@ The first trained-model experiments used `HuggingFaceTB/SmolLM2-135M`:
 - The fitted rank-4 background operator worsened mean held-out error, so it is not currently a
   viable correction.
 
-The compiler and runtimes work, but the controller is initialized rather than distilled and the
-project has not demonstrated acceptable end-to-end language quality or its target memory-traffic
-reduction. Learned rank-16, posting-group, residual-capsule, and first sparse-teacher artifacts
+The generic compiler still installs its controller initializer, while a
+standalone factorized controller now has a first protected micro-distillation
+result. It is not yet integrated because the project has not demonstrated
+acceptable end-to-end controller language quality. Learned rank-16,
+posting-group, residual-capsule, and first sparse-teacher artifacts
 remain blocked. The new predictor-free arm is the first realizable selector algorithm to clear the
 semantic quality prerequisite, and its experimental package/kernel now expose the next blocker:
 measured native latency. It is intentionally not present in default `.engram` packages or the
@@ -403,8 +478,9 @@ pretraining positions; scaling exact output memory from 233,005 local records
 to 1,233,005 combined records changes layer-14 error only from 0.327526 to
 0.321854. Recurrent compact, normalized ternary, affine constrained-vector,
 unrestricted-codebook, and lifted-binary follow-ups also fail their local
-screens despite modeled traffic of 41.00%–44.98%. No trained semantic artifact
-is currently eligible for default package compilation.
+screens despite modeled traffic of 41.00%–44.98%. No dense-source converted
+semantic artifact is currently eligible for default package compilation; the
+separately trained native-BitNet artifact is the qualifying Milestone 2 path.
 See [architecture](docs/architecture.md), [evaluation](docs/evaluation.md),
 and [limitations](docs/limitations.md) for the precise design and caveats. The latest routing
 measurement is documented in the [trace-calibrated recall report](reports/smollm2_calibrated_router/recall.md).
@@ -421,6 +497,78 @@ The causal intervention frontier and router decisions are summarized in the
 machine-readable arm reports linked there. A
 [provenance-checked composite report](reports/smollm2_mlp_intervention_composite/mlp_intervention.json)
 applies the final gate across the separately executed arms.
+
+### Distill the shared controller
+
+Teacher capture is CPU-only and uses the already packaged native-BitNet model.
+Use different corpora for training and validation so development evidence is
+not fitted and measured on the same text:
+
+```bash
+PYTHONPATH=src python -m engram.cli trace-native-bitnet-controller \
+  --model work/native_bitnet/model.engram-bitnet \
+  --dataset work/controller_train.jsonl \
+  --out work/controller/train-trace \
+  --split training --samples 64 --max-tokens 64 --batch-size 2 \
+  --library build/libengram_bitnet.so --threads 12
+
+PYTHONPATH=src python -m engram.cli trace-native-bitnet-controller \
+  --model work/native_bitnet/model.engram-bitnet \
+  --dataset work/controller_validation.jsonl \
+  --out work/controller/validation-trace \
+  --split validation --samples 16 --max-tokens 64 --batch-size 2 \
+  --library build/libengram_bitnet.so --threads 12
+
+PYTHONPATH=src python -m engram.cli distill-controller \
+  --trace work/controller/train-trace \
+  --validation-trace work/controller/validation-trace \
+  --out work/controller/rank128 \
+  --device cuda --rank 128 --adapter-rank 4 \
+  --operator-residual --steps 0 --batch-size 16
+
+PYTHONPATH=src python -m engram.cli evaluate-native-bitnet-controller \
+  --model work/native_bitnet/model.engram-bitnet \
+  --dataset tests/fixtures/confirmation_expanded.jsonl \
+  --controller work/controller/rank128/controller \
+  --out reports/controller_compiled_substitution/frozen.json \
+  --library build/libengram_bitnet.so \
+  --attention-library build/libengram_attention.so \
+  --threads 12 --sequence-count 8 --prediction-positions 256 \
+  --record-offset 8
+
+PYTHONPATH=src python -m engram.cli \
+  evaluate-native-bitnet-controller-generation \
+  --model work/native_bitnet/model.engram-bitnet \
+  --controller work/controller/rank128/controller \
+  --prompts tests/fixtures/inference_prompts.jsonl \
+  --out reports/controller_generation/frozen.json \
+  --max-tokens 4 \
+  --mlp-library build/libengram_bitnet.so \
+  --attention-library build/libengram_attention.so \
+  --threads 12
+
+PYTHONPATH=src python -m engram.cli install-native-bitnet-controller \
+  --model work/native_bitnet/model.engram-bitnet \
+  --controller work/controller/rank128/controller
+
+PYTHONPATH=src python -m engram.cli generate-native-bitnet-controller \
+  --model work/native_bitnet/model.engram-bitnet \
+  --prompt "The capital of France is" --max-tokens 4 \
+  --library build/libengram_bitnet.so \
+  --attention-library build/libengram_attention.so --threads 12
+```
+
+An interrupted capture can be restarted with the identical arguments plus
+`--resume`; completed sample IDs and checksummed shards are not duplicated.
+CUDA is used only to accelerate fitting or evaluation when available. The
+deployable artifact is
+`work/controller/rank128/controller/`: a metadata file plus FP32 `.npy`
+tensors loaded by `FactorizedRecurrentController` on CPU. See the
+[latest controller transition report](reports/controller_distillation_bitnet_2026-07-25-operator-residual/summary.md).
+The frozen joint operator result is in the
+[compiled controller substitution report](reports/controller_compiled_substitution_2026-07-25/summary.md).
+The incremental parity result is in the
+[controller generation report](reports/controller_incremental_generation_2026-07-25/summary.md).
 The static structured-expert screens are recorded for
 [64-record blocks](reports/smollm2_structured_expert_shadow/structured_expert_shadow.md),
 [32-record blocks](reports/smollm2_structured_expert_shadow_48x32/structured_expert_shadow.md),
