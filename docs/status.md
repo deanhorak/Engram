@@ -383,6 +383,16 @@ that smoke prompt. The complete suite passes at 452 Python and 16 native
 tests. Python still invokes each attention and MLP operator, so this is the
 buffer/state foundation for the all-C++ loop rather than completion of it.
 
+The semantic half of each stage is now fused across that boundary.
+`engram_bitnet_stage_semantic_bf16` asks the stage handle for its normalized
+post-attention input, executes the selected packed phase-stream MLP directly,
+records the existing traffic/timing metrics, and inserts the semantic result
+back into normalized residual state in one native call. The smoke sequence
+remains exact, completes in 18.15 seconds, and reports only 10.4 ms of
+controller/orchestration overhead. Python no longer materializes semantic
+inputs or outputs. Attention still crosses the Python/Torch boundary and is
+the next half to fuse.
+
 The low-bit-native hypothesis has passed source validation, exact
 reconstruction, the unchanged MLP byte limit, direct CPU execution, frozen
 causal confirmation, source-independent package compilation, and exact

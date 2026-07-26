@@ -1178,3 +1178,9 @@
   out-of-order calls. Real package generation is token-identical, controller
   bookkeeping falls to 11.4 ms on the four-token smoke prompt, and validation
   advances to 452 Python plus 16 native tests.
+- Fused the semantic half of a stage: native post-attention normalization,
+  direct packed MLP execution, metric preservation, residual insertion, and
+  state renormalization now occur in one C call. The real four-token output is
+  unchanged, elapsed time is 18.15 seconds, and corrected controller/shell
+  overhead is 10.4 ms. Attention projection/cache dispatch remains the next
+  boundary.

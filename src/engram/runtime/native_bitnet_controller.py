@@ -23,6 +23,20 @@ class ControllerForward:
     controller_seconds: float
 
 
+class _StageMLPMetrics(ctypes.Structure):
+    _fields_ = [
+        ("elapsed_ns", ctypes.c_uint64),
+        ("gate_up_stream_bytes", ctypes.c_uint64),
+        ("norm_stream_bytes", ctypes.c_uint64),
+        ("down_stream_bytes", ctypes.c_uint64),
+        ("layer_metadata_bytes", ctypes.c_uint64),
+        ("scheduled_cache_line_bytes", ctypes.c_uint64),
+        ("scratch_bytes", ctypes.c_uint64),
+        ("rows", ctypes.c_uint64),
+        ("threads", ctypes.c_uint64),
+    ]
+
+
 class NativeOperatorResidual:
     """ctypes binding to the float32 exact residual/RMS kernel."""
 
@@ -325,6 +339,20 @@ class NativeStageState:
             ctypes.c_size_t,
         ]
         lib.engram_native_stage_copy_state_f32.restype = ctypes.c_int
+        lib.engram_bitnet_stage_semantic_bf16.argtypes = [
+            ctypes.c_void_p,
+            ctypes.c_void_p,
+            ctypes.c_size_t,
+            ctypes.c_void_p,
+            ctypes.c_float,
+            ctypes.c_size_t,
+            ctypes.c_float,
+            ctypes.c_float,
+            ctypes.POINTER(_StageMLPMetrics),
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        lib.engram_bitnet_stage_semantic_bf16.restype = ctypes.c_int
         error = ctypes.create_string_buffer(512)
         self._handle = lib.engram_native_stage_create(
             self.vectors, self.width, error, len(error)
@@ -391,6 +419,45 @@ class NativeStageState:
             float(semantic_scale),
             float(episodic_scale),
         )
+
+    def run_semantic(
+        self,
+        mlp,
+        weight,
+        epsilon: float,
+        *,
+        semantic_scale: float,
+        episodic_scale: float,
+    ) -> float:
+        """Normalize, run a packed MLP, and update state in one native call."""
+
+        scale = weight.detach().cpu().contiguous()
+        metrics = _StageMLPMetrics()
+        error = ctypes.create_string_buffer(512)
+        started = time.perf_counter()
+        status = self._library.engram_bitnet_stage_semantic_bf16(
+            mlp.kernel._handle,
+            self._handle,
+            mlp.layer,
+            ctypes.c_void_p(scale.data_ptr()),
+            float(epsilon),
+            self.vectors,
+            float(semantic_scale),
+            float(episodic_scale),
+            ctypes.byref(metrics),
+            error,
+            len(error),
+        )
+        elapsed = time.perf_counter() - started
+        if status:
+            raise RuntimeError(error.value.decode("utf-8", "replace"))
+        call = {
+            name: int(getattr(metrics, name))
+            for name, _ in metrics._fields_
+        }
+        call["layer"] = int(mlp.layer)
+        mlp.kernel.calls.append(call)
+        return max(elapsed - metrics.elapsed_ns / 1.0e9, 0.0)
 
     def final_norm(self, weight, epsilon: float):
         return self.norm("engram_native_stage_final_norm_bf16", weight, epsilon)
@@ -521,25 +588,36 @@ class ControllerDrivenBitNet:
                         position_embeddings=position_embeddings,
                     )
                     stage_state.accept_attention(attention_output)
-                    semantic_input = stage_state.semantic_input(
-                        layer.post_attention_layernorm.weight,
-                        layer.post_attention_layernorm.variance_epsilon,
-                    ).view_as(embedded)
-                    semantic_output = layer.mlp(semantic_input)
-                    controller_started = time.perf_counter()
                     assert self.controller.operator_residual_scale is not None
-                    stage_state.accept_semantic(
-                        semantic_output,
-                        semantic_scale=float(
-                            self.controller.operator_residual_scale[stage, 0]
-                        ),
-                        episodic_scale=float(
-                            self.controller.operator_residual_scale[stage, 1]
-                        ),
+                    semantic_scale = float(
+                        self.controller.operator_residual_scale[stage, 0]
                     )
-                    controller_seconds += (
-                        time.perf_counter() - controller_started
+                    episodic_scale = float(
+                        self.controller.operator_residual_scale[stage, 1]
                     )
+                    if hasattr(layer.mlp, "kernel"):
+                        controller_seconds += stage_state.run_semantic(
+                            layer.mlp,
+                            layer.post_attention_layernorm.weight,
+                            layer.post_attention_layernorm.variance_epsilon,
+                            semantic_scale=semantic_scale,
+                            episodic_scale=episodic_scale,
+                        )
+                    else:
+                        controller_started = time.perf_counter()
+                        semantic_input = stage_state.semantic_input(
+                            layer.post_attention_layernorm.weight,
+                            layer.post_attention_layernorm.variance_epsilon,
+                        ).view_as(embedded)
+                        semantic_output = layer.mlp(semantic_input)
+                        stage_state.accept_semantic(
+                            semantic_output,
+                            semantic_scale=semantic_scale,
+                            episodic_scale=episodic_scale,
+                        )
+                        controller_seconds += (
+                            time.perf_counter() - controller_started
+                        )
                 hidden = stage_state.final_norm(
                     self.model.model.norm.weight,
                     self.model.model.norm.variance_epsilon,

@@ -34,6 +34,14 @@ int engram_bitnet_forward_bf16(void* handle, size_t layer,
                                engram_bitnet_metrics* metrics, char* error,
                                size_t error_capacity);
 
+// Normalize the stage's post-attention state, execute one packed MLP layer,
+// and feed its output back into the persistent native stage state.
+int engram_bitnet_stage_semantic_bf16(
+    void* handle, void* stage_handle, size_t layer,
+    const uint16_t* norm_weight, float norm_epsilon, size_t rows,
+    float semantic_scale, float episodic_scale,
+    engram_bitnet_metrics* metrics, char* error, size_t error_capacity);
+
 #ifdef __cplusplus
 }
 #endif

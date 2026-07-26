@@ -1,6 +1,7 @@
 #include "engram/native_bitnet_c.h"
 
 #include "engram/native_bitnet.h"
+#include "engram/native_stage_c.h"
 
 #include <algorithm>
 #include <cstring>
@@ -8,6 +9,7 @@
 #include <filesystem>
 #include <limits>
 #include <span>
+#include <vector>
 
 namespace {
 
@@ -115,6 +117,51 @@ int engram_bitnet_forward_bf16(
     return 1;
   } catch (...) {
     write_error(error, error_capacity, "unknown native BitNet forward failure");
+    return 1;
+  }
+}
+
+int engram_bitnet_stage_semantic_bf16(
+    void* handle, void* stage_handle, const std::size_t layer,
+    const std::uint16_t* norm_weight, const float norm_epsilon,
+    const std::size_t rows, const float semantic_scale,
+    const float episodic_scale, engram_bitnet_metrics* const metrics,
+    char* error, const std::size_t error_capacity) {
+  clear_error(error, error_capacity);
+  try {
+    auto* kernel = static_cast<engram::NativeBitNetKernel*>(handle);
+    if (kernel == nullptr || stage_handle == nullptr || norm_weight == nullptr ||
+        rows == 0 ||
+        rows > std::numeric_limits<std::size_t>::max() /
+                   kernel->hidden_size()) {
+      throw std::invalid_argument(
+          "native BitNet stage semantic received invalid storage");
+    }
+    const std::size_t elements = rows * kernel->hidden_size();
+    std::vector<std::uint16_t> input(elements);
+    std::vector<std::uint16_t> output(elements);
+    if (engram_native_stage_semantic_input_bf16(
+            stage_handle, norm_weight, norm_epsilon, input.data(), error,
+            error_capacity) != 0) {
+      return 1;
+    }
+    if (engram_bitnet_forward_bf16(handle, layer, input.data(), rows,
+                                   output.data(), metrics, error,
+                                   error_capacity) != 0) {
+      return 1;
+    }
+    if (engram_native_stage_accept_semantic_bf16(
+            stage_handle, output.data(), semantic_scale, episodic_scale, error,
+            error_capacity) != 0) {
+      return 1;
+    }
+    return 0;
+  } catch (const std::exception& exception) {
+    write_error(error, error_capacity, exception.what());
+    return 1;
+  } catch (...) {
+    write_error(error, error_capacity,
+                "unknown native BitNet stage semantic failure");
     return 1;
   }
 }
