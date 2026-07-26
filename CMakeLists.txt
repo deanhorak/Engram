@@ -35,10 +35,13 @@ target_compile_options(engram_kernels PRIVATE -Wall -Wextra -Wpedantic)
 set_target_properties(engram_kernels PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 add_library(engram_bitnet SHARED
+  native/src/native_attention_stage_c.cpp
   native/src/native_bitnet_c.cpp
   native/src/native_shell_c.cpp
   native/src/native_stage_c.cpp
+  native/src/native_stage_runner_c.cpp
   native/src/operator_residual_c.cpp
+  native/src/streaming_attention_c.cpp
   native/src/ternary_projection_c.cpp
 )
 target_link_libraries(engram_bitnet PRIVATE engram_kernels)

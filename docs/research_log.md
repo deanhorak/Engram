@@ -1184,3 +1184,10 @@
   unchanged, elapsed time is 18.15 seconds, and corrected controller/shell
   overhead is 10.4 ms. Attention projection/cache dispatch remains the next
   boundary.
+- Fused the attention half and complete depth loop. A descriptor-driven C++
+  runner now executes all packed projections, RoPE, persistent bounded
+  attention, MLPs, and exact residual transitions for 30 stages in one call.
+  The frozen 8-prompt/32-token protocol passes at 96.875% weighted agreement,
+  87.5% exact prompts, correct cache positions, and zero decoder-layer calls.
+  Milestone 4 orchestration is closed; native package loading and per-token
+  generation control are the next Milestone 6 boundary.

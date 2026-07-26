@@ -180,6 +180,7 @@ def evaluate_native_bitnet_controller_generation(
             "native_rms_norm": True,
             "native_rope": True,
             "native_vocabulary_argmax": True,
+            "native_cpp_stage_runner": True,
         },
         "results": results,
         "summary": {
@@ -208,14 +209,15 @@ def evaluate_native_bitnet_controller_generation(
             "absolute_rope_positions_advanced": True,
             "source_mlp_tensors_loaded": False,
             "torch_module_shell_still_used": True,
-            "fully_native_cpp_controller_used": False,
+            "fully_native_cpp_controller_used": True,
+            "native_cpp_stage_runner_used": True,
             "torch_embedding_used": False,
             "torch_rms_norm_used": False,
             "torch_rope_used": False,
             "torch_vocabulary_projection_used": False,
         },
         "decision": (
-            "incremental_controller_generation_pass_cpp_stage_orchestration_next"
+            "incremental_controller_generation_pass_native_package_loader_next"
             if gate_passed
             else "diagnose_controller_generation_divergence"
         ),

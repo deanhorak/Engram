@@ -37,6 +37,51 @@ class _StageMLPMetrics(ctypes.Structure):
     ]
 
 
+class _FusedStreamingMetrics(ctypes.Structure):
+    _fields_ = [
+        ("tokens_seen", ctypes.c_uint64),
+        ("local_entries", ctypes.c_uint64),
+        ("active_older_entries", ctypes.c_uint64),
+        ("candidate_key_bytes", ctypes.c_uint64),
+        ("selected_value_bytes", ctypes.c_uint64),
+        ("local_kv_bytes", ctypes.c_uint64),
+        ("state_bytes", ctypes.c_uint64),
+        ("scratch_bytes", ctypes.c_uint64),
+    ]
+
+
+class _FusedAttentionMetrics(ctypes.Structure):
+    _fields_ = [
+        ("qkv_projection_ns", ctypes.c_uint64),
+        ("rope_ns", ctypes.c_uint64),
+        ("native_attention_ns", ctypes.c_uint64),
+        ("output_projection_ns", ctypes.c_uint64),
+        ("packed_weight_bytes", ctypes.c_uint64),
+        ("projection_scratch_bytes", ctypes.c_uint64),
+        ("attention", _FusedStreamingMetrics),
+    ]
+
+
+class _NativeStageDescriptor(ctypes.Structure):
+    _fields_ = [
+        ("projection_handle", ctypes.c_void_p),
+        ("query_projection", ctypes.c_size_t),
+        ("key_projection", ctypes.c_size_t),
+        ("value_projection", ctypes.c_size_t),
+        ("output_projection", ctypes.c_size_t),
+        ("attention_handles", ctypes.POINTER(ctypes.c_void_p)),
+        ("input_norm_weight", ctypes.c_void_p),
+        ("input_norm_epsilon", ctypes.c_float),
+        ("attention_norm_weight", ctypes.c_void_p),
+        ("attention_norm_epsilon", ctypes.c_float),
+        ("semantic_norm_weight", ctypes.c_void_p),
+        ("semantic_norm_epsilon", ctypes.c_float),
+        ("semantic_scale", ctypes.c_float),
+        ("episodic_scale", ctypes.c_float),
+        ("semantic_layer", ctypes.c_size_t),
+    ]
+
+
 class NativeOperatorResidual:
     """ctypes binding to the float32 exact residual/RMS kernel."""
 
@@ -353,6 +398,52 @@ class NativeStageState:
             ctypes.c_size_t,
         ]
         lib.engram_bitnet_stage_semantic_bf16.restype = ctypes.c_int
+        lib.engram_native_stage_attention_bf16.argtypes = [
+            ctypes.c_void_p,
+            ctypes.c_void_p,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_void_p),
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_int64),
+            ctypes.c_size_t,
+            ctypes.c_float,
+            ctypes.c_void_p,
+            ctypes.c_float,
+            ctypes.c_void_p,
+            ctypes.c_float,
+            ctypes.POINTER(_FusedAttentionMetrics),
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        lib.engram_native_stage_attention_bf16.restype = ctypes.c_int
+        lib.engram_native_run_stages_bf16.argtypes = [
+            ctypes.c_void_p,
+            ctypes.c_void_p,
+            ctypes.POINTER(_NativeStageDescriptor),
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_int64),
+            ctypes.c_size_t,
+            ctypes.c_float,
+            ctypes.POINTER(_FusedAttentionMetrics),
+            ctypes.POINTER(_StageMLPMetrics),
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        lib.engram_native_run_stages_bf16.restype = ctypes.c_int
         error = ctypes.create_string_buffer(512)
         self._handle = lib.engram_native_stage_create(
             self.vectors, self.width, error, len(error)
@@ -458,6 +549,253 @@ class NativeStageState:
         call["layer"] = int(mlp.layer)
         mlp.kernel.calls.append(call)
         return max(elapsed - metrics.elapsed_ns / 1.0e9, 0.0)
+
+    def run_attention(self, attention, position_ids, weight, epsilon: float) -> None:
+        """Execute packed projections and persistent attention in one C call."""
+
+        torch, _, _ = _torch_modules()
+        batch = int(position_ids.shape[0])
+        length = int(position_ids.shape[1])
+        expected = torch.arange(
+            attention._next_position,
+            attention._next_position + length,
+            dtype=position_ids.dtype,
+            device=position_ids.device,
+        )
+        if not torch.all(position_ids == expected.unsqueeze(0)):
+            raise ValueError("native attention positions must advance contiguously")
+        attention._ensure_batch(batch)
+        handles = (ctypes.c_void_p * batch)(
+            *(cache._handle for cache in attention._caches)
+        )
+        positions = np.ascontiguousarray(
+            position_ids.detach().cpu().numpy(), dtype=np.int64
+        )
+        scale = weight.detach().cpu().contiguous()
+        sub_scale = attention.attn_sub_norm.weight.detach().cpu().contiguous()
+        rope_parameters = getattr(attention.config, "rope_parameters", {})
+        theta = float(
+            rope_parameters.get(
+                "rope_theta",
+                getattr(attention.config, "rope_theta", 10000.0),
+            )
+        )
+        projections = (
+            attention.q_proj,
+            attention.k_proj,
+            attention.v_proj,
+            attention.o_proj,
+        )
+        if any(
+            projection.kernel is not projections[0].kernel
+            for projection in projections
+        ):
+            raise ValueError("native attention projections must share one kernel")
+        metrics = _FusedAttentionMetrics()
+        error = ctypes.create_string_buffer(512)
+        status = self._library.engram_native_stage_attention_bf16(
+            self._handle,
+            projections[0].kernel._handle,
+            projections[0].projection,
+            projections[1].projection,
+            projections[2].projection,
+            projections[3].projection,
+            handles,
+            batch,
+            length,
+            self.width,
+            attention.query_heads,
+            attention.key_value_heads,
+            attention.head_dim,
+            positions.ctypes.data_as(ctypes.POINTER(ctypes.c_int64)),
+            positions.shape[0],
+            theta,
+            ctypes.c_void_p(scale.data_ptr()),
+            float(epsilon),
+            ctypes.c_void_p(sub_scale.data_ptr()),
+            float(attention.attn_sub_norm.variance_epsilon),
+            ctypes.byref(metrics),
+            error,
+            len(error),
+        )
+        if status:
+            raise RuntimeError(error.value.decode("utf-8", "replace"))
+        native = metrics.attention
+        attention._next_position += length
+        attention._qkv_projection_seconds += metrics.qkv_projection_ns / 1.0e9
+        attention._rope_seconds += metrics.rope_ns / 1.0e9
+        attention._native_stream_seconds += metrics.native_attention_ns / 1.0e9
+        attention._output_projection_seconds += (
+            metrics.output_projection_ns / 1.0e9
+        )
+        attention._native_stream_calls += batch
+        attention._logical_read_bytes += (
+            native.candidate_key_bytes
+            + native.selected_value_bytes
+            + native.local_kv_bytes
+        )
+        attention._maximum_state_bytes = max(
+            attention._maximum_state_bytes,
+            int(native.state_bytes),
+        )
+        attention._maximum_scratch_bytes = max(
+            attention._maximum_scratch_bytes,
+            int(native.scratch_bytes + metrics.projection_scratch_bytes),
+        )
+
+    @staticmethod
+    def _record_attention(attention, metrics: _FusedAttentionMetrics, batch: int):
+        native = metrics.attention
+        attention._qkv_projection_seconds += metrics.qkv_projection_ns / 1.0e9
+        attention._rope_seconds += metrics.rope_ns / 1.0e9
+        attention._native_stream_seconds += metrics.native_attention_ns / 1.0e9
+        attention._output_projection_seconds += (
+            metrics.output_projection_ns / 1.0e9
+        )
+        attention._native_stream_calls += batch
+        attention._logical_read_bytes += (
+            native.candidate_key_bytes
+            + native.selected_value_bytes
+            + native.local_kv_bytes
+        )
+        attention._maximum_state_bytes = max(
+            attention._maximum_state_bytes,
+            int(native.state_bytes),
+        )
+        attention._maximum_scratch_bytes = max(
+            attention._maximum_scratch_bytes,
+            int(native.scratch_bytes + metrics.projection_scratch_bytes),
+        )
+
+    def run_stages(self, layers, position_ids, controller) -> float:
+        """Execute the complete transformer-depth loop in one native call."""
+
+        torch, _, _ = _torch_modules()
+        batch, length = (int(value) for value in position_ids.shape)
+        positions = np.ascontiguousarray(
+            position_ids.detach().cpu().numpy(), dtype=np.int64
+        )
+        descriptors = (_NativeStageDescriptor * len(layers))()
+        attention_metrics = (_FusedAttentionMetrics * len(layers))()
+        semantic_metrics = (_StageMLPMetrics * len(layers))()
+        cache_arrays = []
+        retained_weights = []
+        semantic_kernel = None
+        theta = None
+        for stage, layer in enumerate(layers):
+            attention = layer.self_attn
+            expected = torch.arange(
+                attention._next_position,
+                attention._next_position + length,
+                dtype=position_ids.dtype,
+                device=position_ids.device,
+            )
+            if not torch.all(position_ids == expected.unsqueeze(0)):
+                raise ValueError(
+                    "native attention positions must advance contiguously"
+                )
+            attention._ensure_batch(batch)
+            handles = (ctypes.c_void_p * batch)(
+                *(cache._handle for cache in attention._caches)
+            )
+            cache_arrays.append(handles)
+            projections = (
+                attention.q_proj,
+                attention.k_proj,
+                attention.v_proj,
+                attention.o_proj,
+            )
+            if any(
+                projection.kernel is not projections[0].kernel
+                for projection in projections
+            ):
+                raise ValueError(
+                    "native attention projections must share one kernel"
+                )
+            current_semantic_kernel = layer.mlp.kernel
+            if semantic_kernel is None:
+                semantic_kernel = current_semantic_kernel
+            elif current_semantic_kernel is not semantic_kernel:
+                raise ValueError("native MLP stages must share one kernel")
+            weights = (
+                layer.input_layernorm.weight.detach().cpu().contiguous(),
+                attention.attn_sub_norm.weight.detach().cpu().contiguous(),
+                layer.post_attention_layernorm.weight.detach().cpu().contiguous(),
+            )
+            retained_weights.extend(weights)
+            rope_parameters = getattr(attention.config, "rope_parameters", {})
+            current_theta = float(
+                rope_parameters.get(
+                    "rope_theta",
+                    getattr(attention.config, "rope_theta", 10000.0),
+                )
+            )
+            if theta is None:
+                theta = current_theta
+            elif current_theta != theta:
+                raise ValueError("native stages require one shared RoPE theta")
+            descriptors[stage] = _NativeStageDescriptor(
+                projections[0].kernel._handle,
+                projections[0].projection,
+                projections[1].projection,
+                projections[2].projection,
+                projections[3].projection,
+                handles,
+                ctypes.c_void_p(weights[0].data_ptr()),
+                float(layer.input_layernorm.variance_epsilon),
+                ctypes.c_void_p(weights[1].data_ptr()),
+                float(attention.attn_sub_norm.variance_epsilon),
+                ctypes.c_void_p(weights[2].data_ptr()),
+                float(layer.post_attention_layernorm.variance_epsilon),
+                float(controller.operator_residual_scale[stage, 0]),
+                float(controller.operator_residual_scale[stage, 1]),
+                layer.mlp.layer,
+            )
+        assert semantic_kernel is not None and theta is not None
+        error = ctypes.create_string_buffer(512)
+        started = time.perf_counter()
+        status = self._library.engram_native_run_stages_bf16(
+            self._handle,
+            semantic_kernel._handle,
+            descriptors,
+            len(layers),
+            batch,
+            length,
+            self.width,
+            layers[0].self_attn.query_heads,
+            layers[0].self_attn.key_value_heads,
+            layers[0].self_attn.head_dim,
+            positions.ctypes.data_as(ctypes.POINTER(ctypes.c_int64)),
+            positions.shape[0],
+            theta,
+            attention_metrics,
+            semantic_metrics,
+            error,
+            len(error),
+        )
+        elapsed = time.perf_counter() - started
+        if status:
+            raise RuntimeError(error.value.decode("utf-8", "replace"))
+        measured_ns = 0
+        for stage, layer in enumerate(layers):
+            attention = layer.self_attn
+            attention._next_position += length
+            self._record_attention(attention, attention_metrics[stage], batch)
+            metric = semantic_metrics[stage]
+            call = {
+                name: int(getattr(metric, name))
+                for name, _ in metric._fields_
+            }
+            call["layer"] = int(layer.mlp.layer)
+            semantic_kernel.calls.append(call)
+            measured_ns += (
+                attention_metrics[stage].qkv_projection_ns
+                + attention_metrics[stage].rope_ns
+                + attention_metrics[stage].native_attention_ns
+                + attention_metrics[stage].output_projection_ns
+                + metric.elapsed_ns
+            )
+        return max(elapsed - measured_ns / 1.0e9, 0.0)
 
     def final_norm(self, weight, epsilon: float):
         return self.norm("engram_native_stage_final_norm_bf16", weight, epsilon)
@@ -573,51 +911,78 @@ class ControllerDrivenBitNet:
                     width=embedded.shape[-1],
                 )
                 stage_state.begin(embedded)
-                controller_seconds = 0.0
-                for stage, layer in enumerate(self.model.model.layers):
-                    attention_input = stage_state.attention_input(
-                        layer.input_layernorm.weight,
-                        layer.input_layernorm.variance_epsilon,
-                    ).view_as(embedded)
-                    attention_output, _ = layer.self_attn(
-                        hidden_states=attention_input,
-                        attention_mask=None,
-                        position_ids=position_ids,
-                        past_key_values=None,
-                        use_cache=False,
-                        position_embeddings=position_embeddings,
+                layers = self.model.model.layers
+                fully_native = all(
+                    hasattr(layer.self_attn.q_proj, "kernel")
+                    and hasattr(layer.self_attn, "_caches")
+                    and hasattr(layer.mlp, "kernel")
+                    for layer in layers
+                )
+                if fully_native:
+                    controller_seconds = stage_state.run_stages(
+                        layers,
+                        position_ids,
+                        self.controller,
                     )
-                    stage_state.accept_attention(attention_output)
-                    assert self.controller.operator_residual_scale is not None
-                    semantic_scale = float(
-                        self.controller.operator_residual_scale[stage, 0]
-                    )
-                    episodic_scale = float(
-                        self.controller.operator_residual_scale[stage, 1]
-                    )
-                    if hasattr(layer.mlp, "kernel"):
-                        controller_seconds += stage_state.run_semantic(
-                            layer.mlp,
-                            layer.post_attention_layernorm.weight,
-                            layer.post_attention_layernorm.variance_epsilon,
-                            semantic_scale=semantic_scale,
-                            episodic_scale=episodic_scale,
+                else:
+                    controller_seconds = 0.0
+                    for stage, layer in enumerate(layers):
+                        if (
+                            hasattr(layer.self_attn.q_proj, "kernel")
+                            and hasattr(layer.self_attn, "_caches")
+                        ):
+                            stage_state.run_attention(
+                                layer.self_attn,
+                                position_ids,
+                                layer.input_layernorm.weight,
+                                layer.input_layernorm.variance_epsilon,
+                            )
+                        else:
+                            attention_input = stage_state.attention_input(
+                                layer.input_layernorm.weight,
+                                layer.input_layernorm.variance_epsilon,
+                            ).view_as(embedded)
+                            attention_output, _ = layer.self_attn(
+                                hidden_states=attention_input,
+                                attention_mask=None,
+                                position_ids=position_ids,
+                                past_key_values=None,
+                                use_cache=False,
+                                position_embeddings=position_embeddings,
+                            )
+                            stage_state.accept_attention(attention_output)
+                        assert (
+                            self.controller.operator_residual_scale is not None
                         )
-                    else:
-                        controller_started = time.perf_counter()
-                        semantic_input = stage_state.semantic_input(
-                            layer.post_attention_layernorm.weight,
-                            layer.post_attention_layernorm.variance_epsilon,
-                        ).view_as(embedded)
-                        semantic_output = layer.mlp(semantic_input)
-                        stage_state.accept_semantic(
-                            semantic_output,
-                            semantic_scale=semantic_scale,
-                            episodic_scale=episodic_scale,
+                        semantic_scale = float(
+                            self.controller.operator_residual_scale[stage, 0]
                         )
-                        controller_seconds += (
-                            time.perf_counter() - controller_started
+                        episodic_scale = float(
+                            self.controller.operator_residual_scale[stage, 1]
                         )
+                        if hasattr(layer.mlp, "kernel"):
+                            controller_seconds += stage_state.run_semantic(
+                                layer.mlp,
+                                layer.post_attention_layernorm.weight,
+                                layer.post_attention_layernorm.variance_epsilon,
+                                semantic_scale=semantic_scale,
+                                episodic_scale=episodic_scale,
+                            )
+                        else:
+                            controller_started = time.perf_counter()
+                            semantic_input = stage_state.semantic_input(
+                                layer.post_attention_layernorm.weight,
+                                layer.post_attention_layernorm.variance_epsilon,
+                            ).view_as(embedded)
+                            semantic_output = layer.mlp(semantic_input)
+                            stage_state.accept_semantic(
+                                semantic_output,
+                                semantic_scale=semantic_scale,
+                                episodic_scale=episodic_scale,
+                            )
+                            controller_seconds += (
+                                time.perf_counter() - controller_started
+                            )
                 hidden = stage_state.final_norm(
                     self.model.model.norm.weight,
                     self.model.model.norm.variance_epsilon,

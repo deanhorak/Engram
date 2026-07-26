@@ -1,6 +1,6 @@
 # Project status
 
-Snapshot date: **2026-07-24**
+Snapshot date: **2026-07-26**
 
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
@@ -250,10 +250,10 @@ scientific exit criterion has passed.
 |---|---|---|
 | 1. Inspection, tracing, exact MLP decomposition, oracle experiment | Complete | Complete for the fixture and exercised on SmolLM2 |
 | 2. Semantic package, routing, quantization, Python substitution runtime | Native-BitNet phase artifact, direct CPU kernel, package compiler, validator, and generation runtime implemented | **Low-bit-native track passes** the frozen causal/cold-byte gate and exact package parity; dense-Llama track remains blocked |
-| 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid plus stateful C++20 cache/rerank kernel implemented | **Frozen trained-model confirmation passes**; native randomized parity and bounded-state scaling pass; incremental generation and hardware counters remain |
-| 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, authenticated package installation, native residual/RMS C ABI, explicit no-decoder stage loop, and persistent cache integration implemented | **Frozen incremental generation passes** with 32/32 token parity; package-owned native controller reproduces the reference output with correct cache positions and zero decoder-layer calls; full C++ operator orchestration remains |
-| 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and has exact source/package output parity |
-| 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime plus direct memory-mapped BitNet MLP kernel implemented | Python transformer generation uses the native MLP kernel; a full C++ transformer and hardware-counter traffic remain |
+| 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, and incremental package integration implemented | **Frozen trained-model confirmation passes**; randomized parity, bounded-state scaling, cache-position advancement, and incremental generation pass; hardware counters remain |
+| 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, authenticated package installation, persistent native stage state, and a one-call 30-stage C++ attention/semantic runner implemented | **Controller, compiled-substitution, incremental-generation, and C++ orchestration gates pass**; frozen generation reaches 96.875% token agreement, 87.5% exact prompts, correct cache positions, and zero decoder-layer calls |
+| 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, native vocabulary argmax, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and passes source/package parity; generic vocabulary/cache/correction paths are not all active in the promoted native-BitNet runtime |
+| 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime, memory-mapped BitNet MLP/projection kernels, streaming attention, native shell operators, and one-call C++ depth orchestration implemented | **Partial**: stage execution is native and frozen-confirmed, but package loading, per-token generation control, and tokenizer/CLI still use Python/Transformers; hardware-counter traffic remains |
 | 7. Evaluation, ablations, tuning, documentation, final report | In progress | Many negative ablations exist; no successful reproducible final report |
 
 The optional Oracle cognitive executive is a separate request-level subsystem.
@@ -392,6 +392,19 @@ remains exact, completes in 18.15 seconds, and reports only 10.4 ms of
 controller/orchestration overhead. Python no longer materializes semantic
 inputs or outputs. Attention still crosses the Python/Torch boundary and is
 the next half to fuse.
+
+The attention half and depth loop are now fused as well. One descriptor-driven
+C++ call executes input normalization, packed Q/K/V, RoPE, persistent bounded
+attention, attention sub-normalization, packed O projection, packed MLP,
+residual insertion, and renormalization for all 30 stages. The unchanged
+eight-prompt/32-token protocol passes at 96.875% weighted agreement and 87.5%
+exact prompts, with every cache position correct and zero decoder-layer calls.
+Mean complete controller runtime is 16.50 seconds and measured
+controller/orchestration overhead is 18.0 ms per prompt. This closes the
+Milestone 4 systems-orchestration gate. Python still loads the non-MLP
+safetensors into a Transformers-shaped holder and drives per-token generation;
+moving package loading and generation control into the native runtime is the
+next Milestone 6 boundary.
 
 The low-bit-native hypothesis has passed source validation, exact
 reconstruction, the unchanged MLP byte limit, direct CPU execution, frozen
