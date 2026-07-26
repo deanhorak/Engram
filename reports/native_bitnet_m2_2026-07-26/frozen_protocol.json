@@ -1,7 +1,7 @@
 {
   "experiment": "native_bitnet_milestone_2_practical_semantic_memory_confirmation",
-  "protocol_version": 2,
-  "status": "new_final_holdout_thresholds_and_recall_definition_frozen_before_canonical_bf16_policy_refit",
+  "protocol_version": 3,
+  "status": "new_final_holdout_thresholds_recall_definition_and_full_length_development_corpus_frozen_before_canonical_bf16_policy_refit",
   "source_model": {
     "repository": "microsoft/bitnet-b1.58-2B-4T",
     "revision": "04c3b9ad9361b824064a1f25ea60a8be9599b127",
@@ -15,12 +15,26 @@
   },
   "causal_development": {
     "role": "method_development_only",
-    "dataset": "tests/fixtures/validation_expanded.jsonl",
-    "dataset_sha256": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c",
-    "allowed_record_offsets": [
-      0,
-      8
-    ]
+    "short_smoke_dataset": {
+      "path": "tests/fixtures/validation_expanded.jsonl",
+      "sha256": "48c3e84202a13a4c2eac8f5bcda0d52a0b70ce5b7dc439bbb34338b928a45a4c",
+      "allowed_record_offsets": [
+        0,
+        8
+      ],
+      "maximum_common_prediction_positions": 14
+    },
+    "full_length_dataset": {
+      "path": "tests/fixtures/confirmation_expanded.jsonl",
+      "sha256": "ddca79850dbd3d97935d969f84d22983ce76517e785febd2911a53545d9bafd4",
+      "allowed_record_offsets": [
+        0,
+        8
+      ],
+      "records_per_offset": 8,
+      "prediction_positions_per_record": 32,
+      "historical_status": "previously used and therefore eligible for development only"
+    }
   },
   "final_confirmation": {
     "role": "untouched_by_model_execution_until_configuration_artifacts_and_kernel_are_frozen",
@@ -134,5 +148,12 @@
     "reason": "calibration_expanded.jsonl was historically registered and used as calibration data, so it was not an eligible untouched final corpus",
     "superseded_dataset_sha256": "383691c11c1f3670322abb768df4362aca54c2e917907bb68ae8d33f4cf002f3",
     "superseded_dataset_was_executed_for_this_protocol": false
-  }
+  },
+  "amendments": [
+    {
+      "from_protocol_version": 2,
+      "change": "declared the already-used confirmation_expanded corpus for full-length causal development because validation_expanded contains records shorter than the frozen 33-token input requirement",
+      "final_holdout_thresholds_and_recall_definition_changed": false
+    }
+  ]
 }
