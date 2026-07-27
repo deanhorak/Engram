@@ -35,6 +35,13 @@ constexpr std::uint32_t kVersion = 1;
 constexpr std::size_t kMaximumDimension = 1U << 20U;
 constexpr std::size_t kMaximumLayers = 1U << 12U;
 
+std::size_t validated_thread_count(const std::size_t thread_count) {
+  if (thread_count == 0 || thread_count > 256) {
+    throw std::invalid_argument("native BitNet thread count is invalid");
+  }
+  return thread_count;
+}
+
 std::uint16_t little_u16(const std::byte* input) noexcept {
   return static_cast<std::uint16_t>(std::to_integer<unsigned char>(input[0])) |
          static_cast<std::uint16_t>(
@@ -158,10 +165,7 @@ void validate_stream(const std::uint8_t* stream, const std::size_t records,
 class NativeBitNetKernel::Impl {
  public:
   Impl(const std::filesystem::path& artifact, const std::size_t thread_count)
-      : pool_(thread_count) {
-    if (thread_count == 0 || thread_count > 256) {
-      throw std::invalid_argument("native BitNet thread count is invalid");
-    }
+      : pool_(validated_thread_count(thread_count)) {
     const int descriptor = ::open(artifact.c_str(), O_RDONLY | O_CLOEXEC);
     if (descriptor < 0) {
       throw std::invalid_argument("cannot open native BitNet artifact");

@@ -1,9 +1,77 @@
 #include "engram/native_bitnet_token_runtime.h"
+#include "engram/package.h"
 
+#include <algorithm>
+#include <charconv>
+#include <cstdint>
 #include <filesystem>
 #include <iostream>
+#include <limits>
+#include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
+
+namespace {
+
+std::size_t positive_size(const std::string_view text,
+                          const std::string_view name,
+                          const std::size_t maximum) {
+  std::uint64_t parsed = 0;
+  const auto result =
+      std::from_chars(text.data(), text.data() + text.size(), parsed);
+  if (text.empty() || result.ec != std::errc{} ||
+      result.ptr != text.data() + text.size() || parsed == 0 ||
+      parsed > maximum ||
+      parsed > std::numeric_limits<std::size_t>::max()) {
+    throw std::invalid_argument(std::string(name) +
+                                " must be a positive bounded integer");
+  }
+  return static_cast<std::size_t>(parsed);
+}
+
+std::int64_t token_id(const std::string_view text) {
+  std::uint64_t parsed = 0;
+  const auto result =
+      std::from_chars(text.data(), text.data() + text.size(), parsed);
+  if (text.empty() || result.ec != std::errc{} ||
+      result.ptr != text.data() + text.size() ||
+      parsed > static_cast<std::uint64_t>(
+                   std::numeric_limits<std::int64_t>::max())) {
+    throw std::invalid_argument(
+        "prompt token ids must be non-negative 64-bit integers");
+  }
+  return static_cast<std::int64_t>(parsed);
+}
+
+bool zero_metrics(const engram::NativeBitNetTokenMetrics& metrics) {
+  return metrics.positions_processed == 0 && metrics.stage_calls == 0 &&
+         metrics.semantic_calls == 0 && metrics.semantic_rows == 0 &&
+         metrics.semantic_elapsed_ns == 0 &&
+         metrics.semantic_kernel_cache_line_bytes == 0 &&
+         metrics.semantic_global_metadata_bytes == 0 &&
+         metrics.semantic_scheduled_cache_line_bytes == 0 &&
+         metrics.semantic_selected_records == 0 &&
+         metrics.attention_elapsed_ns == 0;
+}
+
+bool matching_structural_metrics(
+    const engram::NativeBitNetTokenMetrics& left,
+    const engram::NativeBitNetTokenMetrics& right) {
+  return left.positions_processed == right.positions_processed &&
+         left.stage_calls == right.stage_calls &&
+         left.semantic_calls == right.semantic_calls &&
+         left.semantic_rows == right.semantic_rows &&
+         left.semantic_kernel_cache_line_bytes ==
+             right.semantic_kernel_cache_line_bytes &&
+         left.semantic_global_metadata_bytes ==
+             right.semantic_global_metadata_bytes &&
+         left.semantic_scheduled_cache_line_bytes ==
+             right.semantic_scheduled_cache_line_bytes &&
+         left.semantic_selected_records == right.semantic_selected_records;
+}
+
+}  // namespace
 
 int main(int argc, char** argv) {
   if (argc < 5) {
@@ -13,8 +81,12 @@ int main(int argc, char** argv) {
   }
   try {
     const std::filesystem::path package(argv[1]);
-    const std::size_t max_new = std::stoull(argv[2]);
-    const std::size_t threads = std::stoull(argv[3]);
+    constexpr std::size_t kMaximumTokenBudget = 1024 * 1024;
+    constexpr std::size_t kMaximumThreads = 256;
+    const std::size_t max_new =
+        positive_size(argv[2], "MAX_NEW", kMaximumTokenBudget);
+    const std::size_t threads =
+        positive_size(argv[3], "THREADS", kMaximumThreads);
     int token_start = 4;
     const bool verify_reset =
         std::string(argv[token_start]) == "--verify-reset";
@@ -24,50 +96,99 @@ int main(int argc, char** argv) {
     }
     std::vector<std::int64_t> prompt;
     for (int index = token_start; index < argc; ++index) {
-      prompt.push_back(std::stoll(argv[index]));
+      prompt.push_back(token_id(argv[index]));
     }
-    // Version-1 native BitNet packages currently pin this architecture.
+
+    // This preflight hashes an exact, symlink-free inventory and anchors the
+    // semantic promotion in immutable reviewed digests before any large model
+    // mapping or thread-pool construction occurs.
+    const engram::NativeBitNetDIPPackageMetadata metadata =
+        engram::load_native_bitnet_dip_package(package);
+    if (std::any_of(prompt.begin(), prompt.end(),
+                    [&metadata](const std::int64_t token) {
+                      return static_cast<std::uint64_t>(token) >=
+                             metadata.vocabulary_size;
+                    })) {
+      throw std::invalid_argument(
+          "prompt token id is outside the authenticated vocabulary");
+    }
+    if (prompt.size() > metadata.max_position_embeddings ||
+        max_new - 1 >
+            metadata.max_position_embeddings - prompt.size()) {
+      throw std::invalid_argument(
+          "prompt and generation budget exceed authenticated context length");
+    }
+
     engram::NativeBitNetTokenRuntime runtime(
         engram::NativeBitNetTokenConfig{
-            .non_mlp_safetensors =
-                package / "transformer/non_mlp.safetensors",
-            .mlp_artifact = package / "mlp/model.bitnet-records.bin",
-            .controller_directory = package / "controller",
-            .layers = 30,
-            .hidden_size = 2560,
-            .query_heads = 20,
-            .key_value_heads = 5,
-            .head_dimension = 128,
+            .non_mlp_safetensors = metadata.non_mlp_safetensors,
+            .mlp_artifact = metadata.mlp_artifact,
+            .dip_coordinate_index = metadata.dip_coordinate_index,
+            .controller_directory = metadata.controller_directory,
+            .layers = metadata.layers,
+            .hidden_size = metadata.hidden_size,
+            .query_heads = metadata.query_heads,
+            .key_value_heads = metadata.key_value_heads,
+            .head_dimension = metadata.head_dimension,
             .threads = threads,
-            .local_window = 16,
-            .older_candidates = 8,
-            .older_top_k = 4,
-            .sink_tokens = 2,
-            .rms_norm_epsilon = 1.0e-5F,
-            .rope_theta = 500000.0F,
-            .eos_token_ids = {128001},
+            .local_window = metadata.local_window,
+            .older_candidates = metadata.older_candidates,
+            .older_top_k = metadata.older_top_k,
+            .sink_tokens = metadata.sink_tokens,
+            .rms_norm_epsilon = metadata.rms_norm_epsilon,
+            .rope_theta = metadata.rope_theta,
+            .eos_token_ids = metadata.eos_token_ids,
         });
     const auto generated = runtime.generate(prompt, max_new);
+    const auto first_metrics = runtime.metrics();
+    bool reset_counters_zeroed = false;
+    bool replay_tokens_match = false;
+    bool replay_metrics_match = false;
     if (verify_reset) {
       runtime.reset();
+      reset_counters_zeroed =
+          runtime.position() == 0 && zero_metrics(runtime.metrics());
       const auto repeated = runtime.generate(prompt, max_new);
-      if (repeated != generated) {
-        throw std::runtime_error("native reset generation is not deterministic");
-      }
+      replay_tokens_match = repeated == generated;
+      replay_metrics_match =
+          matching_structural_metrics(first_metrics, runtime.metrics());
     }
+    const bool reset_verified =
+        verify_reset && reset_counters_zeroed && replay_tokens_match &&
+        replay_metrics_match;
     for (std::size_t index = 0; index < generated.size(); ++index) {
       if (index != 0) std::cout << ' ';
       std::cout << generated[index];
     }
     std::cout << '\n';
-    const auto& metrics = runtime.metrics();
-    std::cerr << "positions=" << metrics.positions_processed
+    const auto& metrics = first_metrics;
+    std::cerr << "semantic_backend=" << runtime.semantic_backend()
+              << " positions=" << metrics.positions_processed
               << " stage_calls=" << metrics.stage_calls
+              << " semantic_calls=" << metrics.semantic_calls
+              << " semantic_rows=" << metrics.semantic_rows
+              << " selected_records=" << metrics.semantic_selected_records
+              << " semantic_kernel_cache_line_bytes="
+              << metrics.semantic_kernel_cache_line_bytes
+              << " semantic_global_metadata_bytes="
+              << metrics.semantic_global_metadata_bytes
+              << " semantic_cache_line_bytes="
+              << metrics.semantic_scheduled_cache_line_bytes
               << " semantic_seconds="
               << static_cast<double>(metrics.semantic_elapsed_ns) / 1.0e9
               << " attention_seconds="
               << static_cast<double>(metrics.attention_elapsed_ns) / 1.0e9
+              << " reset_verified=" << static_cast<int>(reset_verified)
+              << " reset_counters_zeroed="
+              << static_cast<int>(reset_counters_zeroed)
+              << " replay_metrics_match="
+              << static_cast<int>(replay_metrics_match)
               << '\n';
+    if (verify_reset && !reset_verified) {
+      std::cerr << "native reset replay failed: tokens_match="
+                << static_cast<int>(replay_tokens_match) << '\n';
+      return 1;
+    }
     return 0;
   } catch (const std::exception& exception) {
     std::cerr << exception.what() << '\n';

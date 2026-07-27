@@ -51,6 +51,14 @@ constexpr std::uint32_t kNormUint16 = 1;
 constexpr std::uint32_t kNormUint32 = 2;
 constexpr std::uint32_t kChecksumSha256 = 1;
 
+std::size_t validated_thread_count(const std::size_t thread_count) {
+  if (thread_count == 0 || thread_count > 256) {
+    throw std::invalid_argument(
+        "native BitNet DIP thread count is invalid");
+  }
+  return thread_count;
+}
+
 std::uint16_t little_u16(const std::byte* input) noexcept {
   return static_cast<std::uint16_t>(std::to_integer<unsigned char>(input[0])) |
          static_cast<std::uint16_t>(
@@ -394,11 +402,7 @@ class NativeBitNetDIPKernel::Impl {
        const std::size_t thread_count)
       : base_mapping_(record_artifact),
         index_mapping_(coordinate_index),
-        pool_(thread_count) {
-    if (thread_count == 0 || thread_count > 256) {
-      throw std::invalid_argument(
-          "native BitNet DIP thread count is invalid");
-    }
+        pool_(validated_thread_count(thread_count)) {
     parse_base();
     parse_index();
   }
@@ -551,6 +555,9 @@ class NativeBitNetDIPKernel::Impl {
   [[nodiscard]] std::size_t index_bytes() const noexcept {
     return index_mapping_.size();
   }
+  [[nodiscard]] std::size_t global_metadata_cache_line_bytes() const noexcept {
+    return base_global_metadata_bytes_ + index_global_metadata_bytes_;
+  }
   [[nodiscard]] const NativeBitNetDIPPolicy& policy(
       const std::size_t layer) const {
     if (layer >= index_layers_.size()) {
@@ -601,6 +608,7 @@ class NativeBitNetDIPKernel::Impl {
       throw std::invalid_argument(
           "native BitNet DIP base directory is invalid");
     }
+    base_global_metadata_bytes_ = kBaseHeaderBytes + directory_block;
     base_metadata_bytes_ =
         align_up(kBaseLayerHeaderBytes + kProjectionScaleBytes,
                  kCacheLineBytes);
@@ -740,6 +748,7 @@ class NativeBitNetDIPKernel::Impl {
       throw std::invalid_argument(
           "native BitNet DIP index directory is invalid");
     }
+    index_global_metadata_bytes_ = kIndexHeaderBytes + directory_block;
     const std::size_t norm_value_bytes =
         hidden_size_ <= std::numeric_limits<std::uint16_t>::max() ? 2 : 4;
     const std::uint32_t expected_norm_code =
@@ -1465,6 +1474,8 @@ class NativeBitNetDIPKernel::Impl {
   std::size_t intermediate_size_{};
   std::size_t packed_width_{};
   std::size_t base_metadata_bytes_{};
+  std::size_t base_global_metadata_bytes_{};
+  std::size_t index_global_metadata_bytes_{};
   std::size_t base_stream_bytes_{};
   std::size_t coordinate_payload_{};
   std::size_t coordinate_stride_{};
@@ -1519,6 +1530,10 @@ std::size_t NativeBitNetDIPKernel::record_artifact_bytes() const noexcept {
 }
 std::size_t NativeBitNetDIPKernel::coordinate_index_bytes() const noexcept {
   return impl_->index_bytes();
+}
+std::size_t
+NativeBitNetDIPKernel::global_metadata_cache_line_bytes() const noexcept {
+  return impl_->global_metadata_cache_line_bytes();
 }
 const NativeBitNetDIPPolicy& NativeBitNetDIPKernel::policy(
     const std::size_t layer) const {

@@ -454,6 +454,121 @@ def test_native_bitnet_package_cli_forwards_integrity_inputs(tmp_path, monkeypat
     assert captured["kernel_threads"] == 6
 
 
+def test_native_bitnet_semantic_memory_cli_forwards_approval_inputs(
+    tmp_path,
+    monkeypatch,
+):
+    captured = {}
+
+    def fake_install(package, index, policy, adjudication, out, **kwargs):
+        captured.update(
+            {
+                "package": package,
+                "index": index,
+                "policy": policy,
+                "adjudication": adjudication,
+                "out": out,
+                **kwargs,
+            }
+        )
+        return out
+
+    monkeypatch.setattr(
+        "engram.cli.install_native_bitnet_semantic_memory",
+        fake_install,
+    )
+    result = main(
+        [
+            "install-native-bitnet-semantic-memory",
+            "--model",
+            str(tmp_path / "source"),
+            "--index",
+            str(tmp_path / "index.bin"),
+            "--policy",
+            str(tmp_path / "policy.json"),
+            "--adjudication",
+            str(tmp_path / "adjudication.json"),
+            "--out",
+            str(tmp_path / "derived"),
+            "--index-sha256",
+            "a" * 64,
+            "--policy-sha256",
+            "b" * 64,
+            "--adjudication-sha256",
+            "c" * 64,
+        ]
+    )
+
+    assert result == 0
+    assert captured == {
+        "package": tmp_path / "source",
+        "index": tmp_path / "index.bin",
+        "policy": tmp_path / "policy.json",
+        "adjudication": tmp_path / "adjudication.json",
+        "out": tmp_path / "derived",
+        "coordinate_index_sha256": "a" * 64,
+        "policy_manifest_sha256": "b" * 64,
+        "adjudication_sha256": "c" * 64,
+    }
+
+
+def test_native_bitnet_dip_token_generation_cli_forwards_runtime_inputs(
+    tmp_path,
+    monkeypatch,
+):
+    captured = {}
+
+    def fake_evaluate(**kwargs):
+        captured.update(kwargs)
+        return {"gate_passed": True}
+
+    monkeypatch.setattr(
+        "engram.cli.evaluate_native_bitnet_dip_token_generation",
+        fake_evaluate,
+    )
+    result = main(
+        [
+            "evaluate-native-bitnet-dip-token-generation",
+            "--model",
+            str(tmp_path / "model"),
+            "--executable",
+            str(tmp_path / "runtime"),
+            "--prompts",
+            str(tmp_path / "prompts.jsonl"),
+            "--reference",
+            str(tmp_path / "reference.json"),
+            "--package-manifest-sha256",
+            "d" * 64,
+            "--executable-sha256",
+            "e" * 64,
+            "--out",
+            str(tmp_path / "result.json"),
+            "--max-tokens",
+            "6",
+            "--threads",
+            "4",
+            "--no-verify-reset",
+            "--timeout",
+            "90",
+        ]
+    )
+
+    assert result == 0
+    assert captured == {
+        "package": tmp_path / "model",
+        "executable": tmp_path / "runtime",
+        "prompts": tmp_path / "prompts.jsonl",
+        "reference_report": tmp_path / "reference.json",
+        "out": tmp_path / "result.json",
+        "package_manifest_sha256": "d" * 64,
+        "executable_sha256": "e" * 64,
+        "max_new_tokens": 6,
+        "threads": 4,
+        "verify_reset": False,
+        "timeout_seconds": 90.0,
+    }
+
+
 def test_native_bitnet_attention_cli_forwards_confirmation_split(tmp_path, monkeypatch):
     captured = {}
 

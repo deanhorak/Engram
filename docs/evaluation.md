@@ -93,6 +93,78 @@ rather than measured DRAM, and the final sparse pass was 1.1449x dense
 gate. The confirmation covers only 8 sequences and 256 positions. See the
 [preserved evidence summary](../reports/native_bitnet_m2_final_audit/49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2/summary.md).
 
+## Packaged DIP token-runtime confirmation
+
+The semantic-gate result has now been tested inside the complete C++ token
+runtime rather than only through the all-layer substitution evaluator. This
+is a separate, fixed **non-holdout** integration suite; it does not reuse the
+consumed Milestone-2 holdout.
+
+Before execution, `install-native-bitnet-semantic-memory` authenticates the
+frozen policy, passing adjudication, source-package inventory, packed base
+artifact, and v2 coordinate index. It derives a new package and never changes
+the policy-bound source package. The installed index is the runtime policy:
+the C++ loader obtains q/C/K, RMS, and audit behavior from its authenticated
+layer headers. The derived manifest declares all 30 MLPs substituted,
+`dense_fallback: false`, and
+`native_bitnet_dynamic_input_pruning_v2` as its MLP mode.
+
+The standalone executable adds an independent native preflight. Before model
+mapping or thread-pool construction, it matches the exact manifest digest and
+byte count against compiled deployment trust roots, rejects symlinks and
+inventory drift, hashes every packaged file, and cross-checks the source
+package, base records, index, policy, and adjudication. Model dimensions,
+heads, context/vocabulary limits, paths, attention settings, RoPE/RMS values,
+and EOS IDs `128001` and `128009` are then derived from those authenticated
+files. The executable directly links its kernels and has no Engram
+shared-library dependency. The Python harness also requires the exact manifest
+and executable hashes and rechecks them after all prompt processes before
+publishing the report.
+
+The evaluator runs eight unique prompts for four greedy tokens each and, by
+default, resets the runtime and repeats each prompt. It compares generated IDs
+against the previously frozen native C++ controller-stage reference and
+checks:
+
+- the runtime reports the DIP backend;
+- absolute prefill/decode positions advance exactly;
+- stage calls and semantic calls equal generated tokens × 30 layers;
+- semantic rows equal processed positions × 30 layers;
+- selected-record counts are bounded;
+- kernel and global-metadata traffic are independently recomputed;
+- reset yields the same token IDs, zeroes counters, and reproduces structural
+  counters; and
+- global and per-prompt mean activity and complete modeled traffic remain below
+  25% and 45%.
+
+The recorded result passes:
+
+| Measure | Result | Requirement |
+|---|---:|---:|
+| Prompts / reference tokens | 8 / 32 | at least 8 / 32 |
+| Greedy token-ID agreement | 32/32 | at least 90% |
+| Exact prompts | 8/8 | at least 75% |
+| Global / maximum-prompt mean active fraction | 0.2156017260 / 0.2258916324 | both at most 0.25 |
+| Complete modeled cold bytes | 30,153,074,432 | independently recomputed |
+| Global metadata bytes | 194,304 | included above |
+| Global / maximum-prompt mean traffic fraction | 0.4116115605 / 0.4129835480 | both at most 0.45 |
+| Runtime invariants | all pass | all pass |
+
+The run used 12 CPU threads and took 395.3581 seconds across first runs, reset
+replays, and per-process package authentication. Semantic and attention
+counters/timings describe the first generation; replay structural counters
+are compared with that snapshot. No latency threshold was applied, and the
+traffic counter is a deterministic cache-line model rather than measured
+DRAM.
+
+Exact match means greedy token IDs, not hidden-state or logit parity. Reset
+similarly proves token/counter structure, not hidden-state identity. The
+longest processed context is 14 positions, below W=16, so this suite does not
+test eviction or older-context retrieval. The small 8×4 suite proves
+package/runtime integration, not broad model quality.
+The full report and reproduction commands are in the
+[packaged token-runtime summary](../reports/native_bitnet_dip_token_runtime_2026-07-26/summary.md).
+
 See [Project status](status.md) and the
 [machine-readable snapshot](../reports/semantic_gate_status_2026-07-23/summary.json).
 Exact budget-edge screen results are in the
@@ -556,11 +628,17 @@ not an Engram inference benchmark.
 
 The original energy-prefix Gate 1 study includes a fitted background ablation, which failed to
 improve held-out error. The intervention gate above supersedes proxy error as the progression
-decision. Gates 3–4 still have only random/synthetic pipeline reports. `engram evaluate-e2e` measures
-student NLL/perplexity, teacher KL, top-1/top-5 agreement, category accuracy, repetition, and
-fixed examples against a cached Hugging Face teacher. Model IDs are downloaded automatically,
-while local model directories remain offline-capable. Trained SmolLM2 semantic interventions have
-run, but no trained compiled-package Gate 5 evaluation has, so no Gate 5 quality target is claimed.
+decision. The original generic Gates 3–4 retain random/synthetic fixture
+reports, but the separate native-BitNet track now has trained-model bounded
+attention, exact-residual controller, compiled-operator, incremental
+generation, C++ orchestration, and DIP package/token evidence. These
+source-specific results do not retroactively qualify the generic fixture
+pipeline. `engram evaluate-e2e` measures student NLL/perplexity, teacher KL,
+top-1/top-5 agreement, category accuracy, repetition, and fixed examples
+against a cached Hugging Face teacher. Model IDs are downloaded automatically,
+while local model directories remain offline-capable. Trained SmolLM2 semantic
+interventions have run, but no trained generic compiled-package Gate 5
+evaluation has, so no generic Gate 5 quality target is claimed.
 
 The system-level Cognitive Executive has separate goal, confidence-calibration, action-utility,
 attention, memory, monitoring, and safety gates defined in

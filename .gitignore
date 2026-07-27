@@ -5,6 +5,7 @@ __pycache__/
 .cache/
 .coverage
 build/
+build-*/
 dist/
 .venv/
 .venv-conversion/

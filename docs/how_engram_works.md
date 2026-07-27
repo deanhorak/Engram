@@ -9,9 +9,12 @@ Engram is a research prototype. Where the implemented baseline differs from the 
 system, this document says so explicitly.
 
 For the shortest current account, start with [Project status](status.md). The
-key result is that the extraction, packaging, and runtime mechanisms work, but
-no representation yet combines teacher-like behavior with the required
-physical memory-traffic reduction.
+key result is that the separate native-BitNet path now combines teacher-like
+behavior with the required modeled memory-traffic reduction through practical
+DIP semantic memory. Its final semantic gate passed by postmortem
+adjudication, and the authenticated DIP package now runs inside the complete
+CPU-only C++ token-step runtime. The original dense-Llama conversion path
+still has no qualifying representation.
 
 ## 1. What a language model does
 
@@ -99,9 +102,10 @@ Llama SwiGLU records.
 Because the BitNet basis was trained natively with ternary weights, Engram can
 repack its coefficients losslessly instead of approximating dense weights.
 Each record stores the channel's gate row, up row, down column, and
-normalization gain. This is a promising CPU storage format, but sparse
-selection will require an additional treatment of the shared normalization
-denominator.
+normalization gain. The practical DIP path now handles the shared denominator
+with a frozen, per-layer proxy-energy policy: most layers calibrate unseen
+energy from exact-versus-proxy candidate energy, while layer 9 uses a
+corrected proxy plus an eight-record audit.
 
 ## 3. What Engram is trying to build
 
@@ -158,7 +162,7 @@ RMS-normalized residual update. The large factors are shared across all depth
 cycles. Only the small adapters, embeddings, and one update scale vary by
 stage.
 
-Distillation proceeds in explicit stages. First, the packaged CPU BitNet
+The original distillation experiment proceeded in explicit stages. First, the packaged CPU BitNet
 teacher records each layer state plus its exact attention and MLP outputs.
 CUDA trains the recurrent controller against intermediate state, transition
 delta, cosine-geometry, and terminal-state losses. Teacher forcing is reduced
@@ -166,11 +170,14 @@ until the student rolls through all 30 stages on its own state. The result is
 exported as ordinary FP32 NumPy tensors and reloaded by a PyTorch-free CPU
 runtime.
 
-This first stage answers whether one shared controller can learn the depth
-trajectory when given exact operator outputs. It does not yet prove the full
-architecture. The next stage must feed the controller outputs produced by the
-compiled semantic and episodic operators, then add vocabulary/logit
-distillation and generation evaluation.
+That learned transition missed its protected gate. The promoted schema-v3
+controller instead preserves the known operator additions exactly and keeps
+the factorized recurrence only as a zero-scaled optional correction. Compiled
+semantic and bounded-attention outputs now run through that controller in
+incremental generation, and the complete DIP-only C++ token runtime performs
+the same residual/RMS sequence. This passes the current controller and
+integration gates, but it does not establish the longer-term goal of
+distilling away the original transformer operators.
 
 ### Vocabulary index
 
@@ -458,6 +465,40 @@ DRAM. The final sparse pass is 1.1449x dense, and latency was not a frozen
 gate. This is therefore neither a speedup nor a blanket declaration that all
 Milestone 2 packaging and replication work is complete.
 
+The qualifying semantic memory is now part of an executable derived package.
+The frozen source package remains unchanged. A promotion step authenticates
+the frozen policy, passing adjudication, base record artifact, and v2
+coordinate index, copies the source package, and records the DIP operator as
+the only allowed semantic backend. The v2 index itself contains the runtime
+policy in authenticated per-layer headers; inference does not consult an
+editable side configuration.
+
+The pure C++ token runtime is correspondingly direct and fail-closed. For each
+layer, it updates bounded attention, extracts the normalized MLP input,
+executes DIP, and accepts the sparse semantic output into the residual state.
+It never creates the full-record semantic kernel and has no dense fallback.
+After all 30 layers it normalizes the state and performs the exact
+tied-vocabulary argmax. A non-holdout eight-prompt test generated 32/32
+greedy reference tokens and all eight four-token sequences. Global and
+maximum-prompt mean activity are 21.5602% and 22.5892%. Complete modeled cold
+traffic is 30,153,074,432 bytes, including 194,304 global-metadata bytes;
+global and maximum-prompt mean traffic fractions are 41.1612% and 41.2984%.
+
+Before mapping the model, the standalone binary authenticates its exact
+manifest and symlink-free inventory against deployment trust roots. It derives
+dimensions, head layout, context/vocabulary bounds, paths, attention settings,
+RoPE/RMS values, and EOS IDs (including `128009`) from the authenticated
+package. The executable links its kernel objects directly rather than loading
+an Engram shared library.
+
+The reset replay proves identical greedy tokens, zeroed position/metric
+counters, and structural metric parity; it does not compare hidden states.
+Likewise, matching greedy tokens is not hidden-state or logit parity. The
+longest processed context is 14 positions, so the W=16 test does not exercise
+eviction or older retrieval. This proves that semantic memory survives package
+and token-loop integration; it is still a small correctness test and not a
+speed or broad language-quality result.
+
 The source-family-specific package and generation boundary are now complete.
 Compilation writes a 1,108,116,808-byte checksummed package containing 332
 non-MLP tensors, tokenizer/configuration assets, and the packed MLP artifact;
@@ -621,8 +662,9 @@ The current loop is real and executable, but several inputs to it are not learne
   the required level;
 - no dense-Llama learned rank-16 or overlapping-posting router is serialized
   because that source track fails its semantic gate;
-- native-BitNet DIP passes development but is not promoted until its sealed
-  final completes.
+- native-BitNet DIP has passed its final semantic decision by postmortem
+  adjudication and is promoted into a derived DIP-only native token package;
+  the older Python chat shell does not yet call that backend.
 
 Consequently, successful package generation or Python/C++ parity proves that
 the systems pipeline works. It does not prove that this original dense-Llama

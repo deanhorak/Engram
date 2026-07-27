@@ -1,10 +1,8 @@
 #include "engram/native_bitnet_token_runtime.h"
 
 #include "engram/native_attention_stage_c.h"
-#include "engram/native_bitnet_c.h"
 #include "engram/native_shell_c.h"
 #include "engram/native_stage_c.h"
-#include "engram/native_stage_runner_c.h"
 
 #include <algorithm>
 #include <cmath>
@@ -48,7 +46,8 @@ NativeBitNetTokenRuntime::NativeBitNetTokenRuntime(
                config_.hidden_size, config_.query_heads,
                config_.key_value_heads, config_.head_dimension,
                config_.threads),
-      semantic_(config_.mlp_artifact, config_.threads),
+      semantic_(config_.mlp_artifact, config_.dip_coordinate_index,
+                config_.threads),
       operator_scales_(load_npy(config_.controller_directory /
                                 "operator_residual_scale.npy")),
       correction_scales_(
@@ -121,41 +120,43 @@ std::int64_t NativeBitNetTokenRuntime::forward(
   for (std::size_t token = 0; token < length; ++token) {
     positions[token] = static_cast<std::int64_t>(position_ + token);
   }
-  std::vector<void*> cache_handles(config_.layers);
-  std::vector<engram_native_stage_descriptor> descriptors(config_.layers);
   const auto scales = operator_scales_.float32();
   const auto& layers = weights_.layers();
-  for (std::size_t layer = 0; layer < config_.layers; ++layer) {
-    cache_handles[layer] = attention_[layer].get();
-    const auto& weights = layers[layer];
-    descriptors[layer] = engram_native_stage_descriptor{
-        .projection_handle = &weights_.projections(),
-        .query_projection = weights.query_projection,
-        .key_projection = weights.key_projection,
-        .value_projection = weights.value_projection,
-        .output_projection = weights.output_projection,
-        .attention_handles = &cache_handles[layer],
-        .input_norm_weight = weights.input_norm.data(),
-        .input_norm_epsilon = config_.rms_norm_epsilon,
-        .attention_norm_weight = weights.attention_sub_norm.data(),
-        .attention_norm_epsilon = config_.rms_norm_epsilon,
-        .semantic_norm_weight = weights.post_attention_norm.data(),
-        .semantic_norm_epsilon = config_.rms_norm_epsilon,
-        .semantic_scale = scales[layer * 2],
-        .episodic_scale = scales[layer * 2 + 1],
-        .semantic_layer = layer,
-    };
-  }
   std::vector<engram_native_attention_stage_metrics> attention_metrics(
       config_.layers);
-  std::vector<engram_bitnet_metrics> semantic_metrics(config_.layers);
-  if (engram_native_run_stages_bf16(
-          stage.get(), &semantic_, descriptors.data(), descriptors.size(), 1,
-          length, config_.hidden_size, config_.query_heads,
-          config_.key_value_heads, config_.head_dimension, positions.data(), 1,
-          config_.rope_theta, attention_metrics.data(),
-          semantic_metrics.data(), error, sizeof(error)) != 0) {
-    throw std::runtime_error(error);
+  std::vector<NativeBitNetDIPMetrics> semantic_metrics(config_.layers);
+  std::vector<std::uint16_t> semantic_input(length * config_.hidden_size);
+  std::vector<std::uint16_t> semantic_output(length * config_.hidden_size);
+  std::vector<std::uint32_t> selected_counts(length);
+  for (std::size_t layer = 0; layer < config_.layers; ++layer) {
+    const auto& weights = layers[layer];
+    void* cache_handle = attention_[layer].get();
+    if (engram_native_stage_attention_bf16(
+            stage.get(), &weights_.projections(), weights.query_projection,
+            weights.key_projection, weights.value_projection,
+            weights.output_projection, &cache_handle, 1, length,
+            config_.hidden_size, config_.query_heads,
+            config_.key_value_heads, config_.head_dimension, positions.data(),
+            1, config_.rope_theta, weights.input_norm.data(),
+            config_.rms_norm_epsilon, weights.attention_sub_norm.data(),
+            config_.rms_norm_epsilon, &attention_metrics[layer], error,
+            sizeof(error)) != 0) {
+      throw std::runtime_error(error);
+    }
+    if (engram_native_stage_semantic_input_bf16(
+            stage.get(), weights.post_attention_norm.data(),
+            config_.rms_norm_epsilon, semantic_input.data(), error,
+            sizeof(error)) != 0) {
+      throw std::runtime_error(error);
+    }
+    semantic_.forward_bf16(
+        layer, semantic_input, length, semantic_output, selected_counts,
+        &semantic_metrics[layer]);
+    if (engram_native_stage_accept_semantic_bf16(
+            stage.get(), semantic_output.data(), scales[layer * 2],
+            scales[layer * 2 + 1], error, sizeof(error)) != 0) {
+      throw std::runtime_error(error);
+    }
   }
   std::vector<std::uint16_t> hidden(length * config_.hidden_size);
   if (engram_native_stage_final_norm_bf16(
@@ -173,15 +174,29 @@ std::int64_t NativeBitNetTokenRuntime::forward(
   }
   for (std::size_t layer = 0; layer < config_.layers; ++layer) {
     metrics_.semantic_elapsed_ns += semantic_metrics[layer].elapsed_ns;
+    metrics_.semantic_kernel_cache_line_bytes +=
+        semantic_metrics[layer].scheduled_cache_line_bytes;
+    metrics_.semantic_selected_records +=
+        semantic_metrics[layer].selected_count_total;
+    metrics_.semantic_rows += semantic_metrics[layer].rows;
     metrics_.attention_elapsed_ns +=
         attention_metrics[layer].qkv_projection_ns +
         attention_metrics[layer].rope_ns +
         attention_metrics[layer].native_attention_ns +
         attention_metrics[layer].output_projection_ns;
   }
+  const std::uint64_t global_metadata_bytes =
+      static_cast<std::uint64_t>(
+          semantic_.global_metadata_cache_line_bytes()) *
+      static_cast<std::uint64_t>(length);
+  metrics_.semantic_global_metadata_bytes += global_metadata_bytes;
+  metrics_.semantic_scheduled_cache_line_bytes =
+      metrics_.semantic_kernel_cache_line_bytes +
+      metrics_.semantic_global_metadata_bytes;
   position_ += length;
   metrics_.positions_processed += length;
   metrics_.stage_calls += config_.layers;
+  metrics_.semantic_calls += config_.layers;
   return next_token;
 }
 

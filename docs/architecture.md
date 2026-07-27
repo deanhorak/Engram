@@ -10,7 +10,9 @@ is recorded as passed by postmortem adjudication. The original final wrapper
 ended in error on a full-record/object-versus-33-token/list hash-contract
 defect after evaluation completed, so this is not a pristine runner pass.
 This remains a distinct low-bit-native source path, not a dense-model
-conversion result or proof that all Milestone 2 work is complete.
+conversion result or proof that all Milestone 2 work is complete. The
+adjudicated index is now installed into an authenticated derived package and
+the DIP-only C++ token runtime passes its fixed non-holdout integration suite.
 
 Engram's target runtime combines a shared recurrent controller, fixed sparse semantic
 memory derived from SwiGLU records, hybrid local/recurrent/retrieval episodic memory, an
@@ -86,6 +88,47 @@ or encoding mismatch. A debug path returns coordinate, candidate, and selected
 record identities outside timing; an evaluation-only dense teacher path
 computes fixed top-K membership for recall and is not called by sparse
 inference.
+
+Promotion into inference uses an immutable-source derivation rather than
+editing the package bound into the frozen policy. The semantic-memory
+installer verifies the complete source package inventory and the exact policy,
+adjudication, base-artifact, and index hashes, copies the source package to a
+new directory, installs the v2 index, rebuilds the file inventory, and writes
+an authenticated `semantic_memory` descriptor. It refuses an in-place target,
+a false adjudication, a policy/index mismatch, or a pre-existing derived
+package with different inputs.
+
+The native generation executable adds a second, independent trust boundary.
+It pins the promoted manifest digest/size and the source-package, record,
+index, policy, and adjudication hashes. It rejects a symlinked root, symlinked
+or non-regular entries, missing/extra files, and checksum or descriptor drift
+before mapping large weights or constructing worker threads. Architecture,
+paths, vocabulary/context bounds, attention policy, RoPE/RMS values, and EOS
+IDs—including `128009`—come from the authenticated package instead of C++ CLI
+constants. The executable statically incorporates the Engram kernels and does
+not depend on an Engram shared library at runtime.
+
+The native token runtime is correspondingly fail-closed. Its only semantic
+object is `NativeBitNetDIPKernel`; it cannot instantiate the former dense
+`NativeBitNetKernel`. Each layer follows the direct sequence:
+
+```text
+stage state
+  -> native Q/K/V/O attention and bounded cache update
+  -> post-attention normalization and semantic input
+  -> DIP candidate/selection/down-record execution
+  -> scaled semantic acceptance into the stage state
+```
+
+After all 30 layers it applies final normalization and the tied-vocabulary
+argmax, advances absolute positions, and retains the bounded attention caches
+for the next token. Reset clears the position and every cache. The packaged
+8-prompt/32-token integration run matches every greedy reference token and all
+stage/semantic row and call counts without dense fallback. Reset replay also
+matches tokens and structural counters after proving that counters zeroed.
+Neither check compares hidden states or logits. All processed contexts are at
+most 14 positions, so the W=16 integration suite does not exercise eviction
+or older-context retrieval.
 
 ## Semantic-memory prototype
 
@@ -312,10 +355,17 @@ Attention state is fixed at 7,477,440 bytes across the complete 30-layer
 runtime, and modeled attention reads fall to 2.14% of dense at 2,048 tokens.
 These are logical interface bytes, not measured hardware DRAM traffic.
 
-Interactive chat is an orchestration layer over that runtime. It retains
+Interactive chat is currently an orchestration layer over the Python package
+runtime. It retains
 structured messages, renders the packaged tokenizer's chat template, resets
 the native caches, and re-prefills the complete rendered history for each
 turn. Greedy decoding then advances the normal incremental position path, and
 the decoded assistant text is appended to history. This validates multi-turn
 conditioning without introducing a second inference mechanism. Persistent
 cross-turn cache reuse, streaming output, and context truncation remain open.
+
+That paragraph currently describes `chat-native-bitnet` over the older Python
+Transformers-shell runtime, not the newly packaged DIP token runtime. The
+Python loader deliberately rejects a DIP package to prevent an accidental
+dense fallback. The next boundary is a C/Python token-runtime handle so the
+same tokenizer/history frontend can call the DIP-only native core.

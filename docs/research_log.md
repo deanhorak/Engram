@@ -1,5 +1,52 @@
 # Research log
 
+## 2026-07-26 — Adjudicated DIP enters the native token runtime
+
+- Added an immutable-source semantic-memory promotion step. It verifies the
+  frozen policy (`c572754e…3768e`), passing adjudication
+  (`ebb5ca95…a5cc`), base records (`4fcf598a…ab55`), and v2 coordinate index
+  (`b98ce4e4…0e15`), then atomically creates
+  `work/native_bitnet/model.engram-bitnet-dip`. It never modifies the package
+  bound into the frozen policy.
+- The derived manifest records
+  `native_bitnet_dynamic_input_pruning_v2` as its MLP mode, authenticates the
+  semantic source/policy/adjudication chain, declares all 30 MLPs substituted,
+  and forbids a dense fallback. The v2 index's authenticated layer headers are
+  the runtime policy.
+- Replaced the complete C++ token runtime's dense semantic object with the DIP
+  kernel. Each layer now directly executes native attention, semantic-input
+  normalization, DIP, and semantic-output acceptance. It reports semantic
+  calls, rows, selected records, separate kernel/global-metadata modeled
+  traffic, and timing.
+- Hardened the standalone binary around a compiled deployment trust root. It
+  authenticates exact manifest SHA
+  `707bbe069ef6892ce9bfe98258f3289e28af15a400922e950c4386f56dd26926`,
+  rejects symlinks and inventory drift, checks all semantic provenance hashes,
+  and derives architecture, attention, bounds, RoPE/RMS, paths, and EOS IDs
+  (`128001`, `128009`) from authenticated package files. The executable SHA is
+  `0f6cf41c9c14dc3e05a8cad7a01f4f9909bd355f4e27f9296d6c1e15ba91dea4`;
+  it directly links the kernels and has no Engram shared-library dependency.
+- Ran a fixed non-holdout eight-prompt/four-token integration confirmation.
+  All 32 greedy tokens and all 8 complete continuations match the frozen native
+  controller-stage reference. Global/maximum-prompt mean activity is
+  0.2156017260/0.2258916324. Complete traffic is 30,153,074,432 modeled bytes,
+  including 194,304 global-metadata bytes; global/maximum-prompt fractions are
+  0.4116115605/0.4129835480. Every backend, position, traffic-recomputation,
+  stage/semantic-call, row, token-budget, and reset-replay check passes.
+- The 12-thread suite took 395.3581 seconds across first generations, reset
+  replays, and per-process package authentication. This is a correctness pass,
+  not a speed claim; traffic remains modeled rather than measured DRAM.
+  Reported native counters and phase timings are first-generation snapshots.
+  Reset proves repeated tokens, zeroed counters, and structural metric parity,
+  not hidden-state identity. Token agreement likewise is not hidden/logit
+  parity.
+- The longest processed context is 14 positions, below W=16. Eviction and
+  older-context retrieval are not exercised by this integration suite.
+- The current Python `chat-native-bitnet` shell does not implement DIP and now
+  rejects the derived package rather than silently falling back. The next
+  boundary is a native-runtime C/Python handle for packaged tokenization/chat
+  orchestration.
+
 ## 2026-07-26 — Native BitNet semantic gate passes by postmortem adjudication
 
 - Consumed the one authorized independent 8-sequence/256-position holdout with

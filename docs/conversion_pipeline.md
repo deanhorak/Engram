@@ -217,6 +217,68 @@ replication is still required. This decision does not make the native route a
 generic dense-Llama compiler input or prove every Milestone 2 deliverable
 complete.
 
+### Promote the frozen native-BitNet semantic memory
+
+The passing decision authorizes a derived package; it does not authorize
+modifying the source package bound into the frozen policy. Install the
+authenticated DIP v2 index with:
+
+```bash
+PYTHONPATH=src python -m engram.cli install-native-bitnet-semantic-memory \
+  --model work/native_bitnet/model.engram-bitnet \
+  --index work/native_bitnet/model.provisional.bitnet-dip-index.bin \
+  --policy reports/native_bitnet_m2_2026-07-26/frozen_dip_policy.json \
+  --adjudication reports/native_bitnet_m2_final_audit/49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2/0fdce5a3eb2eaaec5e3b47587d7693bfdc0fed6fde53e3a40a74b8d2a76d4aa3.adjudication.json \
+  --out work/native_bitnet/model.engram-bitnet-dip \
+  --index-sha256 b98ce4e46c8ae67d9d92d4d13f5de3d4fe45ef2c76400bd9d50be08b2bd60e15 \
+  --policy-sha256 c572754e597a760bc5ea6ba337bdaaf092e4ae1d5b5e90b6a2a14cbfbea3768e \
+  --adjudication-sha256 ebb5ca9568387ffd3c5b187f8e17f3ce706aaee86f4bbe9e314bf1760a7da5cc
+```
+
+The installer first verifies the source package's exact manifest inventory.
+It then checks that the policy binds that package, the base record artifact
+`4fcf598a…ab55`, and index `b98ce4e4…0e15`, and that adjudication
+`ebb5ca95…a5cc` is a passing Milestone-2 decision over the same inputs. A new
+directory is staged atomically; its manifest declares the v2 DIP operator,
+all-layer substitution, CPU-only execution, and no dense fallback. Repeating
+the command with identical inputs validates and reuses the derived package.
+Conflicting inputs or an attempt to target the frozen source directory fail.
+
+Build and confirm the native token runtime:
+
+```bash
+cmake -S . -B build-runtime -DCMAKE_BUILD_TYPE=Release
+cmake --build build-runtime --target engram-bitnet-token-generate -j
+
+PYTHONPATH=src python -m engram.cli \
+  evaluate-native-bitnet-dip-token-generation \
+  --model work/native_bitnet/model.engram-bitnet-dip \
+  --executable build-runtime/engram-bitnet-token-generate \
+  --prompts tests/fixtures/inference_prompts.jsonl \
+  --reference reports/controller_cpp_stage_runner_2026-07-26/frozen_8x4.json \
+  --package-manifest-sha256 707bbe069ef6892ce9bfe98258f3289e28af15a400922e950c4386f56dd26926 \
+  --executable-sha256 0f6cf41c9c14dc3e05a8cad7a01f4f9909bd355f4e27f9296d6c1e15ba91dea4 \
+  --out reports/native_bitnet_dip_token_runtime_2026-07-26/integrated_8x4.json \
+  --max-tokens 4 --threads 12 --timeout 300
+```
+
+The C++ runtime maps the package weights, base records, v2 policy/index,
+controller, and attention state itself. Its layer loop directly dispatches
+attention → semantic input → DIP → semantic acceptance and never constructs a
+dense semantic backend. Before mapping, the standalone executable
+authenticates the exact manifest and symlink-free inventory against compiled
+source/package/artifact/policy/adjudication trust roots. It derives runtime
+architecture, paths, bounds, attention policy, and EOS IDs from the package
+and has no Engram shared-library dependency.
+
+The checked non-holdout 8×4 run has 32/32 greedy token matches and 8/8 exact
+prompts. Global/maximum-prompt activity is 21.56017%/22.58916%, while
+global/maximum-prompt complete modeled traffic is 41.16116%/41.29835%.
+Complete modeled cold traffic is 30,153,074,432 bytes, including 194,304 bytes
+of global metadata. Reset repeats token IDs, zeroes counters, and reproduces
+structural metrics; it is not hidden-state parity. All contexts are at most 14
+positions, so W=16 eviction and older retrieval are not tested.
+
 The later compact-Q4 and output-memory branches do not change that compiler
 decision. The compact artifact is physically valid at 44.9334% of dense ideal
 Q4 but fails every causal metric at its frozen 3M-position stop. The exact
@@ -307,3 +369,11 @@ turn lifecycle is:
 A two-turn 32-token example took 166.43 and 153.15 seconds. The second answer
 acknowledged the first turn before starting another poem, while both turns
 reported the same 7,477,440-byte attention state.
+
+These Python generation/chat commands currently target the original
+`model.engram-bitnet` package. They deliberately reject
+`model.engram-bitnet-dip`, because that shell does not implement the
+authenticated DIP backend and must not substitute dense MLPs implicitly. The
+derived package is currently driven by
+`build-runtime/engram-bitnet-token-generate`; a native-runtime C/Python
+binding is the next step toward DIP-backed chat.

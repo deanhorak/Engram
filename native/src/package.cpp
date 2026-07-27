@@ -331,6 +331,14 @@ const JsonObject& object(const Json& value, const std::string_view context) {
   return *result;
 }
 
+const JsonArray& array(const Json& value, const std::string_view context) {
+  const auto* result = std::get_if<JsonArray>(&value.value);
+  if (result == nullptr) {
+    throw PackageError(std::string(context) + " must be an array");
+  }
+  return *result;
+}
+
 const Json& field(const JsonObject& value, const std::string_view name,
                   const std::string_view context) {
   const auto found = value.find(std::string(name));
@@ -386,6 +394,19 @@ std::size_t size_field(const JsonObject& value, const std::string_view name,
                        " integer");
   }
   return static_cast<std::size_t>(number);
+}
+
+std::int64_t int64_value(const Json& value, const std::string_view context,
+                         const bool allow_negative = false) {
+  const auto* number = std::get_if<double>(&value.value);
+  if (number == nullptr || std::floor(*number) != *number ||
+      *number < -9223372036854775808.0 ||
+      *number >= 9223372036854775808.0 ||
+      (!allow_negative && *number < 0.0)) {
+    throw PackageError(std::string(context) +
+                       " must be a representable non-negative integer");
+  }
+  return static_cast<std::int64_t>(*number);
 }
 
 Json read_json(const std::filesystem::path& path) {
@@ -569,6 +590,194 @@ void require_file(const std::set<std::string>& files,
     throw PackageError("required package file is absent from manifest: " +
                        required);
   }
+}
+
+const PackageFile& package_file(
+    const std::map<std::string, PackageFile>& files,
+    const std::string& relative, const std::string_view context) {
+  const auto found = files.find(relative);
+  if (found == files.end()) {
+    throw PackageError(std::string(context) +
+                       " names a file absent from the package inventory: " +
+                       relative);
+  }
+  return found->second;
+}
+
+std::filesystem::path safe_package_path(
+    const std::filesystem::path& root, const std::string& relative,
+    const std::string_view context) {
+  if (!safe_relative_path(relative)) {
+    throw PackageError(std::string(context) +
+                       " contains an unsafe package path: " + relative);
+  }
+  return root / std::filesystem::path(relative);
+}
+
+std::map<std::string, PackageFile> load_exact_inventory(
+    const std::filesystem::path& root, const JsonObject& manifest) {
+  const JsonObject& file_object =
+      object(field(manifest, "files", "manifest"), "manifest.files");
+  if (file_object.empty()) {
+    throw PackageError("native BitNet package inventory must not be empty");
+  }
+
+  std::map<std::string, PackageFile> listed;
+  for (const auto& [relative, descriptor_json] : file_object) {
+    if (!safe_relative_path(relative) || relative == "manifest.json") {
+      throw PackageError("unsafe native BitNet package path: " + relative);
+    }
+    const JsonObject& descriptor =
+        object(descriptor_json, "manifest.files." + relative);
+    PackageFile package_file_descriptor{
+        relative,
+        size_field(descriptor, "bytes", "manifest.files." + relative, true),
+        string_field(descriptor, "sha256", "manifest.files." + relative)};
+    if (!valid_digest(package_file_descriptor.sha256) ||
+        !listed.emplace(relative, package_file_descriptor).second) {
+      throw PackageError("invalid native BitNet file descriptor: " +
+                         relative);
+    }
+
+    const std::filesystem::path path = root / relative;
+    std::error_code status_error;
+    const std::filesystem::file_status status =
+        std::filesystem::symlink_status(path, status_error);
+    if (status_error || status.type() != std::filesystem::file_type::regular) {
+      throw PackageError(
+          "listed native BitNet package file is missing or not regular: " +
+          relative);
+    }
+    std::error_code size_error;
+    const std::uintmax_t actual_bytes =
+        std::filesystem::file_size(path, size_error);
+    if (size_error || actual_bytes != package_file_descriptor.bytes) {
+      throw PackageError("native BitNet package file size mismatch: " +
+                         relative);
+    }
+    if (sha256_file(path) != package_file_descriptor.sha256) {
+      throw PackageError("native BitNet package file checksum mismatch: " +
+                         relative);
+    }
+  }
+
+  std::set<std::string> actual;
+  try {
+    for (const auto& entry :
+         std::filesystem::recursive_directory_iterator(root)) {
+      const std::filesystem::file_status status = entry.symlink_status();
+      const std::string relative =
+          entry.path().lexically_relative(root).generic_string();
+      if (status.type() == std::filesystem::file_type::symlink) {
+        throw PackageError(
+            "native BitNet package contains a symlink: " + relative);
+      }
+      if (status.type() == std::filesystem::file_type::directory) {
+        continue;
+      }
+      if (status.type() != std::filesystem::file_type::regular) {
+        throw PackageError(
+            "native BitNet package contains a non-regular entry: " +
+            relative);
+      }
+      if (relative != "manifest.json") {
+        actual.insert(relative);
+      }
+    }
+  } catch (const std::filesystem::filesystem_error& error) {
+    throw PackageError("cannot enumerate native BitNet package: " +
+                       std::string(error.what()));
+  }
+  std::set<std::string> expected;
+  for (const auto& [relative, unused] : listed) {
+    static_cast<void>(unused);
+    expected.insert(relative);
+  }
+  if (actual != expected) {
+    throw PackageError("native BitNet package inventory is not exact");
+  }
+  return listed;
+}
+
+std::string authenticated_file_path(
+    const std::filesystem::path& root,
+    const std::map<std::string, PackageFile>& files,
+    const JsonObject& descriptor, const std::string_view path_name,
+    const std::string_view context) {
+  const std::string relative = string_field(descriptor, path_name, context);
+  static_cast<void>(safe_package_path(root, relative, context));
+  static_cast<void>(package_file(files, relative, context));
+  return relative;
+}
+
+void require_file_binding(const std::map<std::string, PackageFile>& files,
+                          const std::string& relative,
+                          const JsonObject& descriptor,
+                          const std::string_view context) {
+  const PackageFile& inventory = package_file(files, relative, context);
+  if (size_field(descriptor, "serialized_bytes", context, true) !=
+          inventory.bytes ||
+      string_field(descriptor, "sha256", context) != inventory.sha256) {
+    throw PackageError(std::string(context) +
+                       " disagrees with the package inventory");
+  }
+}
+
+float positive_float_field(const JsonObject& object_value,
+                           const std::string_view name,
+                           const std::string_view context) {
+  const double value = number_field(object_value, name, context);
+  if (!(value > 0.0) ||
+      value > static_cast<double>(std::numeric_limits<float>::max())) {
+    throw PackageError(std::string(context) + "." + std::string(name) +
+                       " must be a positive finite float");
+  }
+  return static_cast<float>(value);
+}
+
+std::vector<std::string> string_array_field(
+    const JsonObject& object_value, const std::string_view name,
+    const std::string_view context) {
+  const JsonArray& values =
+      array(field(object_value, name, context),
+            std::string(context) + "." + std::string(name));
+  std::vector<std::string> result;
+  result.reserve(values.size());
+  for (std::size_t index = 0; index < values.size(); ++index) {
+    const auto* value = std::get_if<std::string>(&values[index].value);
+    if (value == nullptr) {
+      throw PackageError(std::string(context) + "." + std::string(name) +
+                         "[" + std::to_string(index) +
+                         "] must be a string");
+    }
+    result.push_back(*value);
+  }
+  return result;
+}
+
+std::vector<std::int64_t> eos_token_ids(
+    const JsonObject& generation_config) {
+  const Json& eos =
+      field(generation_config, "eos_token_id", "generation config");
+  std::vector<std::int64_t> result;
+  if (const auto* values = std::get_if<JsonArray>(&eos.value)) {
+    result.reserve(values->size());
+    for (std::size_t index = 0; index < values->size(); ++index) {
+      result.push_back(int64_value(
+          (*values)[index],
+          "generation config.eos_token_id[" + std::to_string(index) + "]"));
+    }
+  } else {
+    result.push_back(
+        int64_value(eos, "generation config.eos_token_id"));
+  }
+  std::set<std::int64_t> unique(result.begin(), result.end());
+  if (result.empty() || unique.size() != result.size() ||
+      !unique.contains(128001) || !unique.contains(128009)) {
+    throw PackageError(
+        "generation config EOS ids must uniquely include 128001 and 128009");
+  }
+  return result;
 }
 
 }  // namespace
@@ -794,6 +1003,394 @@ PackageMetadata load_package(const std::filesystem::path& root,
     throw PackageError("correction fallback must not be empty");
   }
   return result;
+}
+
+NativeBitNetDIPPackageMetadata load_native_bitnet_dip_package(
+    const std::filesystem::path& root,
+    const NativeBitNetDIPTrustRoot& trust_root) {
+  for (const auto* digest :
+       {&trust_root.package_manifest_sha256,
+        &trust_root.source_package_manifest_sha256,
+        &trust_root.source_artifact_sha256,
+        &trust_root.coordinate_index_sha256,
+        &trust_root.policy_manifest_sha256,
+        &trust_root.adjudication_sha256}) {
+    if (!valid_digest(*digest)) {
+      throw PackageError("native BitNet DIP trust root is malformed");
+    }
+  }
+
+  std::error_code root_error;
+  const std::filesystem::file_status root_status =
+      std::filesystem::symlink_status(root, root_error);
+  if (root_error ||
+      root_status.type() != std::filesystem::file_type::directory) {
+    throw PackageError(
+        "native BitNet package root is missing, a symlink, or not a directory: " +
+        root.string());
+  }
+  const std::filesystem::path manifest_path = root / "manifest.json";
+  std::error_code manifest_error;
+  const std::filesystem::file_status manifest_status =
+      std::filesystem::symlink_status(manifest_path, manifest_error);
+  if (manifest_error ||
+      manifest_status.type() != std::filesystem::file_type::regular) {
+    throw PackageError(
+        "native BitNet package manifest is missing, a symlink, or not regular");
+  }
+  std::error_code manifest_size_error;
+  if (trust_root.package_manifest_bytes == 0 ||
+      std::filesystem::file_size(manifest_path, manifest_size_error) !=
+          trust_root.package_manifest_bytes ||
+      manifest_size_error ||
+      sha256_file(manifest_path) != trust_root.package_manifest_sha256) {
+    throw PackageError(
+        "native BitNet package manifest does not match the deployment trust "
+        "root");
+  }
+
+  const Json manifest_json = read_json(manifest_path);
+  const JsonObject& manifest = object(manifest_json, "manifest");
+  if (string_field(manifest, "format", "manifest") !=
+          "engram-native-bitnet" ||
+      size_field(manifest, "version", "manifest") != 1 ||
+      !bool_field(manifest, "does_not_require_source_transformer",
+                  "manifest")) {
+    throw PackageError(
+        "unsupported or source-dependent native BitNet package");
+  }
+  if (string_field(manifest, "engram_version", "manifest").empty()) {
+    throw PackageError("native BitNet package has no Engram version");
+  }
+  const std::map<std::string, PackageFile> files =
+      load_exact_inventory(root, manifest);
+
+  const JsonObject& runtime =
+      object(field(manifest, "runtime", "manifest"), "manifest.runtime");
+  const JsonObject& attention_policy =
+      object(field(runtime, "attention_policy", "manifest.runtime"),
+             "manifest.runtime.attention_policy");
+  constexpr std::size_t kLocalWindow = 16;
+  constexpr std::size_t kOlderCandidates = 8;
+  constexpr std::size_t kOlderTopK = 4;
+  constexpr std::size_t kSinkTokens = 2;
+  if (string_field(runtime, "device", "manifest.runtime") != "cpu" ||
+      string_field(runtime, "dtype", "manifest.runtime") != "bfloat16" ||
+      string_field(runtime, "mlp_mode", "manifest.runtime") !=
+          "native_bitnet_dynamic_input_pruning_v2" ||
+      string_field(runtime, "attention_mode", "manifest.runtime") !=
+          "native_streaming_w16_c8_k4_sinks2" ||
+      size_field(attention_policy, "local_window",
+                 "manifest.runtime.attention_policy") != kLocalWindow ||
+      size_field(attention_policy, "older_candidates",
+                 "manifest.runtime.attention_policy") != kOlderCandidates ||
+      size_field(attention_policy, "older_top_k",
+                 "manifest.runtime.attention_policy") != kOlderTopK ||
+      size_field(attention_policy, "sink_tokens",
+                 "manifest.runtime.attention_policy", true) != kSinkTokens) {
+    throw PackageError(
+        "native BitNet runtime or bounded-attention policy is unsupported");
+  }
+
+  const JsonObject& mlp =
+      object(field(manifest, "mlp", "manifest"), "manifest.mlp");
+  const std::string mlp_relative =
+      authenticated_file_path(root, files, mlp, "path", "manifest.mlp");
+  require_file_binding(files, mlp_relative, mlp, "manifest.mlp");
+  if (string_field(mlp, "encoding", "manifest.mlp") !=
+          "native_bitnet_phase_base3_v1" ||
+      size_field(mlp, "dense_weight_materialization_bytes", "manifest.mlp",
+                 true) != 0) {
+    throw PackageError("unsupported native BitNet MLP artifact");
+  }
+
+  const JsonObject& semantic_memory =
+      object(field(manifest, "semantic_memory", "manifest"),
+             "manifest.semantic_memory");
+  const std::string index_relative = authenticated_file_path(
+      root, files, semantic_memory, "path", "manifest.semantic_memory");
+  require_file_binding(files, index_relative, semantic_memory,
+                       "manifest.semantic_memory");
+  const std::string index_sha =
+      string_field(semantic_memory, "sha256", "manifest.semantic_memory");
+  const std::string source_artifact_sha = string_field(
+      semantic_memory, "source_artifact_sha256", "manifest.semantic_memory");
+  const std::string source_package_manifest_sha =
+      string_field(semantic_memory, "source_package_manifest_sha256",
+                   "manifest.semantic_memory");
+  const std::string policy_manifest_sha =
+      string_field(semantic_memory, "policy_manifest_sha256",
+                   "manifest.semantic_memory");
+  const std::string adjudication_sha =
+      string_field(semantic_memory, "adjudication_sha256",
+                   "manifest.semantic_memory");
+  if (string_field(semantic_memory, "operator",
+                   "manifest.semantic_memory") !=
+          "native_bitnet_dynamic_input_pruning_v2" ||
+      string_field(semantic_memory, "runtime_scope",
+                   "manifest.semantic_memory") != "native_token_runtime" ||
+      string_field(semantic_memory, "format", "manifest.semantic_memory") !=
+          "engram-native-bitnet-dip-index" ||
+      size_field(semantic_memory, "version", "manifest.semantic_memory") != 2 ||
+      string_field(semantic_memory, "runtime_policy",
+                   "manifest.semantic_memory") !=
+          "embedded_authenticated_layer_headers" ||
+      string_field(semantic_memory, "traffic_accounting",
+                   "manifest.semantic_memory") !=
+          "modelled_cache_line_v2" ||
+      string_field(semantic_memory, "adjudication_decision",
+                   "manifest.semantic_memory") !=
+          "milestone_2_semantic_gate_passed_by_postmortem_adjudication" ||
+      !bool_field(semantic_memory, "all_mlp_layers_substituted",
+                  "manifest.semantic_memory") ||
+      bool_field(semantic_memory, "dense_fallback",
+                 "manifest.semantic_memory") ||
+      !bool_field(semantic_memory, "cpu_only", "manifest.semantic_memory") ||
+      source_artifact_sha !=
+          string_field(mlp, "sha256", "manifest.mlp") ||
+      source_package_manifest_sha !=
+          trust_root.source_package_manifest_sha256 ||
+      source_artifact_sha != trust_root.source_artifact_sha256 ||
+      index_sha != trust_root.coordinate_index_sha256 ||
+      policy_manifest_sha != trust_root.policy_manifest_sha256 ||
+      adjudication_sha != trust_root.adjudication_sha256) {
+    throw PackageError(
+        "native BitNet semantic-memory promotion binding is unsupported");
+  }
+
+  const JsonObject& transformer =
+      object(field(manifest, "transformer", "manifest"),
+             "manifest.transformer");
+  const std::string non_mlp_relative = authenticated_file_path(
+      root, files, transformer, "non_mlp_path", "manifest.transformer");
+  if (size_field(transformer, "packaged_bytes", "manifest.transformer",
+                 true) !=
+      package_file(files, non_mlp_relative, "manifest.transformer").bytes) {
+    throw PackageError(
+        "native BitNet non-MLP descriptor disagrees with inventory");
+  }
+
+  const JsonObject& controller =
+      object(field(manifest, "controller", "manifest"),
+             "manifest.controller");
+  const std::string controller_relative =
+      string_field(controller, "path", "manifest.controller");
+  const std::filesystem::path controller_path = safe_package_path(
+      root, controller_relative, "manifest.controller");
+  std::error_code controller_error;
+  if (std::filesystem::symlink_status(controller_path, controller_error)
+          .type() != std::filesystem::file_type::directory ||
+      controller_error ||
+      string_field(controller, "format", "manifest.controller") !=
+          "engram.controller.factorized_residual" ||
+      size_field(controller, "schema_version", "manifest.controller") != 3 ||
+      string_field(controller, "operator", "manifest.controller") !=
+          "operator_residual_with_factorized_correction" ||
+      bool_field(controller, "correction_enabled", "manifest.controller")) {
+    throw PackageError("unsupported native BitNet controller descriptor");
+  }
+  const std::string controller_metadata_relative =
+      (std::filesystem::path(controller_relative) / "metadata.json")
+          .generic_string();
+  const PackageFile& controller_metadata_file =
+      package_file(files, controller_metadata_relative,
+                   "manifest.controller");
+  if (string_field(controller, "metadata_sha256", "manifest.controller") !=
+      controller_metadata_file.sha256) {
+    throw PackageError(
+        "native BitNet controller metadata binding disagrees with inventory");
+  }
+  const Json controller_json = read_json(root / controller_metadata_relative);
+  const JsonObject& controller_metadata =
+      object(controller_json, "controller metadata");
+  if (string_field(controller_metadata, "format", "controller metadata") !=
+          "engram.controller.factorized_residual" ||
+      size_field(controller_metadata, "schema_version",
+                 "controller metadata") != 3 ||
+      string_field(controller_metadata, "operator", "controller metadata") !=
+          "operator_residual_with_factorized_correction" ||
+      size_field(controller_metadata, "serialized_bytes",
+                 "controller metadata", true) !=
+          size_field(controller, "serialized_bytes", "manifest.controller",
+                     true)) {
+    throw PackageError("controller metadata and package descriptor disagree");
+  }
+
+  const JsonObject& model =
+      object(field(manifest, "model", "manifest"), "manifest.model");
+  const std::size_t hidden_size =
+      size_field(model, "hidden_size", "manifest.model");
+  const std::size_t intermediate_size =
+      size_field(model, "intermediate_size", "manifest.model");
+  const std::size_t layers =
+      size_field(model, "num_hidden_layers", "manifest.model");
+  const float manifest_rms =
+      positive_float_field(model, "rms_norm_eps", "manifest.model");
+  if (hidden_size > std::numeric_limits<std::size_t>::max() / 3 ||
+      size_field(controller_metadata, "state_dim", "controller metadata") !=
+          hidden_size ||
+      size_field(controller_metadata, "input_dim", "controller metadata") !=
+          3 * hidden_size ||
+      size_field(controller_metadata, "num_stages",
+                 "controller metadata") != layers) {
+    throw PackageError("controller and model dimensions disagree");
+  }
+  const JsonObject& tensor_layout =
+      object(field(controller_metadata, "tensor_layout", "controller metadata"),
+             "controller metadata.tensor_layout");
+  for (const auto& [name, unused] : tensor_layout) {
+    static_cast<void>(unused);
+    const std::string relative =
+        (std::filesystem::path(controller_relative) / (name + ".npy"))
+            .generic_string();
+    static_cast<void>(
+        package_file(files, relative, "controller metadata.tensor_layout"));
+  }
+  static_cast<void>(field(tensor_layout, "operator_residual_scale",
+                          "controller metadata.tensor_layout"));
+  static_cast<void>(
+      field(tensor_layout, "step_scale", "controller metadata.tensor_layout"));
+
+  constexpr std::string_view kConfigRelative = "config/config.json";
+  static_cast<void>(
+      package_file(files, std::string(kConfigRelative), "model config"));
+  const Json config_json = read_json(root / kConfigRelative);
+  const JsonObject& config = object(config_json, "model config");
+  const std::size_t config_hidden =
+      size_field(config, "hidden_size", "model config");
+  const std::size_t config_intermediate =
+      size_field(config, "intermediate_size", "model config");
+  const std::size_t config_layers =
+      size_field(config, "num_hidden_layers", "model config");
+  const std::size_t vocabulary_size =
+      size_field(config, "vocab_size", "model config");
+  const std::size_t query_heads =
+      size_field(config, "num_attention_heads", "model config");
+  const std::size_t key_value_heads =
+      size_field(config, "num_key_value_heads", "model config");
+  const std::size_t max_position_embeddings =
+      size_field(config, "max_position_embeddings", "model config");
+  const float config_rms =
+      positive_float_field(config, "rms_norm_eps", "model config");
+  const float rope_theta =
+      positive_float_field(config, "rope_theta", "model config");
+  const std::vector<std::string> architectures =
+      string_array_field(config, "architectures", "model config");
+  const JsonObject& quantization = object(
+      field(config, "quantization_config", "model config"),
+      "model config.quantization_config");
+  if (config_hidden != hidden_size ||
+      config_intermediate != intermediate_size || config_layers != layers ||
+      config_rms != manifest_rms || query_heads == 0 ||
+      hidden_size % query_heads != 0 || key_value_heads == 0 ||
+      query_heads % key_value_heads != 0 ||
+      std::find(architectures.begin(), architectures.end(),
+                "BitNetForCausalLM") == architectures.end() ||
+      string_field(config, "model_type", "model config") != "bitnet" ||
+      string_field(config, "hidden_act", "model config") != "relu2" ||
+      string_field(config, "torch_dtype", "model config") != "bfloat16" ||
+      !bool_field(config, "tie_word_embeddings", "model config") ||
+      string_field(quantization, "quant_method",
+                   "model config.quantization_config") != "bitnet" ||
+      string_field(quantization, "quantization_mode",
+                   "model config.quantization_config") != "offline") {
+    throw PackageError(
+        "authenticated BitNet model config is unsupported or disagrees with "
+        "the manifest");
+  }
+
+  const JsonObject& tokenizer =
+      object(field(manifest, "tokenizer", "manifest"),
+             "manifest.tokenizer");
+  const std::string tokenizer_relative =
+      string_field(tokenizer, "path", "manifest.tokenizer");
+  static_cast<void>(
+      safe_package_path(root, tokenizer_relative, "manifest.tokenizer"));
+  const std::vector<std::string> tokenizer_files =
+      string_array_field(tokenizer, "files", "manifest.tokenizer");
+  bool generation_config_listed = false;
+  for (const std::string& name : tokenizer_files) {
+    const std::string relative =
+        (std::filesystem::path(tokenizer_relative) / name).generic_string();
+    static_cast<void>(
+        safe_package_path(root, relative, "manifest.tokenizer.files"));
+    static_cast<void>(
+        package_file(files, relative, "manifest.tokenizer.files"));
+    generation_config_listed =
+        generation_config_listed || name == "generation_config.json";
+  }
+  if (!generation_config_listed) {
+    throw PackageError(
+        "authenticated tokenizer does not list generation_config.json");
+  }
+  const std::string generation_config_relative =
+      (std::filesystem::path(tokenizer_relative) / "generation_config.json")
+          .generic_string();
+  const Json generation_json =
+      read_json(root / generation_config_relative);
+  const JsonObject& generation_config =
+      object(generation_json, "generation config");
+  std::vector<std::int64_t> eos = eos_token_ids(generation_config);
+  const std::int64_t config_eos =
+      int64_value(field(config, "eos_token_id", "model config"),
+                  "model config.eos_token_id");
+  if (std::find(eos.begin(), eos.end(), config_eos) == eos.end() ||
+      std::any_of(eos.begin(), eos.end(), [vocabulary_size](const auto token) {
+        return static_cast<std::uint64_t>(token) >= vocabulary_size;
+      })) {
+    throw PackageError(
+        "authenticated EOS token ids disagree with model config or vocabulary");
+  }
+
+  NativeBitNetDIPPackageMetadata result{
+      .root = root,
+      .non_mlp_safetensors = root / non_mlp_relative,
+      .mlp_artifact = root / mlp_relative,
+      .dip_coordinate_index = root / index_relative,
+      .controller_directory = controller_path,
+      .layers = layers,
+      .hidden_size = hidden_size,
+      .intermediate_size = intermediate_size,
+      .vocabulary_size = vocabulary_size,
+      .query_heads = query_heads,
+      .key_value_heads = key_value_heads,
+      .head_dimension = hidden_size / query_heads,
+      .max_position_embeddings = max_position_embeddings,
+      .local_window = kLocalWindow,
+      .older_candidates = kOlderCandidates,
+      .older_top_k = kOlderTopK,
+      .sink_tokens = kSinkTokens,
+      .rms_norm_epsilon = config_rms,
+      .rope_theta = rope_theta,
+      .eos_token_ids = std::move(eos),
+      .files = {},
+  };
+  result.files.reserve(files.size());
+  for (const auto& [unused, descriptor] : files) {
+    static_cast<void>(unused);
+    result.files.push_back(descriptor);
+  }
+  return result;
+}
+
+NativeBitNetDIPPackageMetadata load_native_bitnet_dip_package(
+    const std::filesystem::path& root) {
+  static const NativeBitNetDIPTrustRoot trust_root{
+      .package_manifest_bytes = 5787,
+      .package_manifest_sha256 =
+          "707bbe069ef6892ce9bfe98258f3289e28af15a400922e950c4386f56dd26926",
+      .source_package_manifest_sha256 =
+          "cddd96a01ff03bd565c108ab58925e7463aad35ebd8b1cc315eb7b050030cd35",
+      .source_artifact_sha256 =
+          "4fcf598af4346d5391ba428e32ba1629daae2768b73ab6bf872d3f9fb300ab55",
+      .coordinate_index_sha256 =
+          "b98ce4e46c8ae67d9d92d4d13f5de3d4fe45ef2c76400bd9d50be08b2bd60e15",
+      .policy_manifest_sha256 =
+          "c572754e597a760bc5ea6ba337bdaaf092e4ae1d5b5e90b6a2a14cbfbea3768e",
+      .adjudication_sha256 =
+          "ebb5ca9568387ffd3c5b187f8e17f3ce706aaee86f4bbe9e314bf1760a7da5cc",
+  };
+  return load_native_bitnet_dip_package(root, trust_root);
 }
 
 }  // namespace engram

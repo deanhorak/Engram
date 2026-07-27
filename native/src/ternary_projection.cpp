@@ -22,6 +22,13 @@ std::uint16_t float_to_bf16(float value) noexcept {
 float bf16_round(float value) noexcept {
   return bf16_to_float(float_to_bf16(value));
 }
+std::size_t validated_thread_count(const std::size_t threads) {
+  if (threads == 0 || threads > 256) {
+    throw std::invalid_argument(
+        "ternary projection thread count is invalid");
+  }
+  return threads;
+}
 struct Matrix {
   std::vector<std::uint8_t> owned;
   std::span<const std::uint8_t> mapped;
@@ -38,10 +45,8 @@ struct Matrix {
 
 class TernaryProjectionKernel::Impl {
  public:
-  explicit Impl(std::size_t threads) : pool_(threads) {
-    if (threads == 0 || threads > 256)
-      throw std::invalid_argument("ternary projection thread count is invalid");
-  }
+  explicit Impl(std::size_t threads)
+      : pool_(validated_thread_count(threads)) {}
 
   void validate(std::span<const std::uint8_t> packed, std::size_t input,
                 std::size_t output, float scale) const {

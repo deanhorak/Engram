@@ -9,8 +9,11 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Sequence
 
 from engram.compiler.native_bitnet import (
+    NATIVE_BITNET_DIP_OPERATOR,
     NATIVE_BITNET_PACKAGE_FORMAT,
     NATIVE_BITNET_PACKAGE_VERSION,
+    _validate_semantic_memory_descriptor,
+    _verified_package_manifest,
 )
 from engram.evaluation.native_bitnet_kernel import (
     NativeBitNetCPUKernel,
@@ -111,6 +114,27 @@ class NativeBitNetRuntime:
         ):
             raise ValueError("not a supported native BitNet package")
         self._verify_package_files(verify_checksums)
+        runtime = self.manifest.get("runtime")
+        semantic_memory = self.manifest.get("semantic_memory")
+        mlp_mode = (
+            runtime.get("mlp_mode") if isinstance(runtime, dict) else None
+        )
+        if semantic_memory is not None or mlp_mode is not None:
+            if (
+                isinstance(semantic_memory, dict)
+                and semantic_memory.get("operator")
+                == NATIVE_BITNET_DIP_OPERATOR
+                and mlp_mode == NATIVE_BITNET_DIP_OPERATOR
+            ):
+                raise ValueError(
+                    "DIP semantic-memory packages require the native token "
+                    "runtime; the Python Transformers shell does not provide "
+                    "a dense fallback"
+                )
+            raise ValueError(
+                "native BitNet package declares an unsupported or incomplete "
+                "semantic MLP mode; refusing a dense fallback"
+            )
         self.artifact_path = _safe_package_path(
             self.path,
             self.manifest["mlp"]["path"],
@@ -728,29 +752,20 @@ def validate_native_bitnet_package(
     root = Path(package).resolve()
     errors = []
     try:
-        manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
-        if (
-            manifest.get("format") != NATIVE_BITNET_PACKAGE_FORMAT
-            or manifest.get("version") != NATIVE_BITNET_PACKAGE_VERSION
-        ):
-            raise ValueError("unsupported native BitNet package manifest")
-        files = manifest.get("files")
-        if not isinstance(files, dict) or not files:
-            raise ValueError("native BitNet package has no file inventory")
-        for relative, descriptor in files.items():
-            path = _safe_package_path(root, relative)
-            if (
-                not isinstance(descriptor, dict)
-                or not path.is_file()
-                or path.stat().st_size != descriptor.get("bytes")
-            ):
-                raise ValueError(f"invalid package file: {relative}")
-            if verify_checksums and sha256_file(path) != descriptor.get("sha256"):
-                raise ValueError(f"package checksum mismatch: {relative}")
+        if not verify_checksums:
+            raise ValueError(
+                "native BitNet package validation cannot disable checksums"
+            )
+        manifest = _verified_package_manifest(root)
         artifact_path = _safe_package_path(root, manifest["mlp"]["path"])
         artifact = load_native_bitnet_artifact(artifact_path)
         if artifact.payload_sha256 != manifest["mlp"]["sha256"]:
             raise ValueError("package MLP artifact hash differs from manifest")
+        mlp_mode = manifest.get("runtime", {}).get("mlp_mode")
+        if manifest.get("semantic_memory") is not None or mlp_mode is not None:
+            if mlp_mode != NATIVE_BITNET_DIP_OPERATOR:
+                raise ValueError("unsupported native BitNet semantic-memory mode")
+            _validate_semantic_memory_descriptor(root, manifest)
         weights_path = _safe_package_path(
             root,
             manifest["transformer"]["non_mlp_path"],

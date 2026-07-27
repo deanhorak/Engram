@@ -53,6 +53,9 @@ from engram.evaluation.native_bitnet_generation import (
 from engram.evaluation.native_bitnet_controller_generation import (
     evaluate_native_bitnet_controller_generation,
 )
+from engram.evaluation.native_bitnet_dip_token_generation import (
+    evaluate_native_bitnet_dip_token_generation,
+)
 from engram.evaluation.router_sweep import evaluate_rank_router_regularization_sweep
 from engram.evaluation.dip_sweep import evaluate_dip_exact_completion_sweep
 from engram.evaluation.intrinsic_sparsity import (
@@ -83,6 +86,7 @@ from engram.compiler import (
     compile_model,
     compile_native_bitnet_package,
     install_native_bitnet_controller,
+    install_native_bitnet_semantic_memory,
 )
 from engram.runtime import (
     EngramRuntime,
@@ -726,6 +730,35 @@ def _parser() -> argparse.ArgumentParser:
     generation_evaluation.add_argument("--attention-library", type=Path)
     generation_evaluation.add_argument("--threads", type=int)
 
+    dip_token_generation = commands.add_parser(
+        "evaluate-native-bitnet-dip-token-generation",
+        help="confirm packaged DIP generation through the pure C++ token runtime",
+    )
+    dip_token_generation.add_argument("--model", required=True, type=Path)
+    dip_token_generation.add_argument(
+        "--executable", required=True, type=Path
+    )
+    dip_token_generation.add_argument("--prompts", required=True, type=Path)
+    dip_token_generation.add_argument("--reference", required=True, type=Path)
+    dip_token_generation.add_argument(
+        "--package-manifest-sha256",
+        required=True,
+        help="expected SHA-256 of the complete derived package manifest",
+    )
+    dip_token_generation.add_argument(
+        "--executable-sha256",
+        required=True,
+        help="expected SHA-256 of the statically bound native executable",
+    )
+    dip_token_generation.add_argument("--out", required=True, type=Path)
+    dip_token_generation.add_argument("--max-tokens", type=int, default=4)
+    dip_token_generation.add_argument("--threads", type=int, default=12)
+    dip_token_generation.add_argument(
+        "--no-verify-reset",
+        action="store_true",
+    )
+    dip_token_generation.add_argument("--timeout", type=float, default=300.0)
+
     controller_generation = commands.add_parser(
         "evaluate-native-bitnet-controller-generation",
         help=(
@@ -782,6 +815,27 @@ def _parser() -> argparse.ArgumentParser:
     install_bitnet_controller.add_argument("--model", required=True, type=Path)
     install_bitnet_controller.add_argument(
         "--controller", required=True, type=Path
+    )
+
+    install_bitnet_semantic = commands.add_parser(
+        "install-native-bitnet-semantic-memory",
+        help="derive a BitNet package with the adjudicated DIP v2 index",
+    )
+    install_bitnet_semantic.add_argument("--model", required=True, type=Path)
+    install_bitnet_semantic.add_argument("--index", required=True, type=Path)
+    install_bitnet_semantic.add_argument("--policy", required=True, type=Path)
+    install_bitnet_semantic.add_argument(
+        "--adjudication", required=True, type=Path
+    )
+    install_bitnet_semantic.add_argument("--out", required=True, type=Path)
+    install_bitnet_semantic.add_argument(
+        "--index-sha256", required=True
+    )
+    install_bitnet_semantic.add_argument(
+        "--policy-sha256", required=True
+    )
+    install_bitnet_semantic.add_argument(
+        "--adjudication-sha256", required=True
     )
 
     generate = commands.add_parser(
@@ -2061,6 +2115,21 @@ def main(argv: Sequence[str] | None = None) -> int:
             threads=args.threads,
         )
         print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "evaluate-native-bitnet-dip-token-generation":
+        result = evaluate_native_bitnet_dip_token_generation(
+            package=args.model,
+            executable=args.executable,
+            prompts=args.prompts,
+            reference_report=args.reference,
+            out=args.out,
+            package_manifest_sha256=args.package_manifest_sha256,
+            executable_sha256=args.executable_sha256,
+            max_new_tokens=args.max_tokens,
+            threads=args.threads,
+            verify_reset=not args.no_verify_reset,
+            timeout_seconds=args.timeout,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
     elif args.command == "evaluate-native-bitnet-controller-generation":
         result = evaluate_native_bitnet_controller_generation(
             package=args.model,
@@ -2124,6 +2193,19 @@ def main(argv: Sequence[str] | None = None) -> int:
             install_native_bitnet_controller(
                 args.model,
                 args.controller,
+            )
+        )
+    elif args.command == "install-native-bitnet-semantic-memory":
+        print(
+            install_native_bitnet_semantic_memory(
+                args.model,
+                args.index,
+                args.policy,
+                args.adjudication,
+                args.out,
+                coordinate_index_sha256=args.index_sha256,
+                policy_manifest_sha256=args.policy_sha256,
+                adjudication_sha256=args.adjudication_sha256,
             )
         )
     elif args.command == "generate":

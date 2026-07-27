@@ -1,8 +1,14 @@
+#include "engram/native_bitnet.h"
+#include "engram/native_bitnet_dip.h"
+#include "engram/ternary_projection.h"
 #include "engram/thread_pool.h"
 
 #include <atomic>
 #include <cstddef>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -27,6 +33,62 @@ int fail(const char* message) {
 }  // namespace
 
 int main() {
+  bool rejected_bitnet_threads_before_pool = false;
+  try {
+    const engram::NativeBitNetKernel invalid(
+        "unused-invalid-thread-count-artifact.bin",
+        std::numeric_limits<std::size_t>::max());
+  } catch (const std::invalid_argument& error) {
+    rejected_bitnet_threads_before_pool =
+        std::string(error.what()) ==
+        "native BitNet thread count is invalid";
+  }
+  if (!rejected_bitnet_threads_before_pool) {
+    return fail(
+        "native BitNet did not reject an excessive thread count "
+        "before pool construction");
+  }
+
+  bool rejected_projection_threads_before_pool = false;
+  try {
+    const engram::TernaryProjectionKernel invalid(
+        std::numeric_limits<std::size_t>::max());
+  } catch (const std::invalid_argument& error) {
+    rejected_projection_threads_before_pool =
+        std::string(error.what()) ==
+        "ternary projection thread count is invalid";
+  }
+  if (!rejected_projection_threads_before_pool) {
+    return fail(
+        "ternary projection did not reject an excessive thread count "
+        "before pool construction");
+  }
+
+  const auto invalid_dip_artifact =
+      std::filesystem::temp_directory_path() /
+      "engram-native-dip-thread-limit-test.bin";
+  {
+    std::ofstream output(
+        invalid_dip_artifact, std::ios::binary | std::ios::trunc);
+    output.put('\0');
+  }
+  bool rejected_dip_threads_before_pool = false;
+  try {
+    const engram::NativeBitNetDIPKernel invalid(
+        invalid_dip_artifact, invalid_dip_artifact,
+        std::numeric_limits<std::size_t>::max());
+  } catch (const std::invalid_argument& error) {
+    rejected_dip_threads_before_pool =
+        std::string(error.what()) ==
+        "native BitNet DIP thread count is invalid";
+  }
+  std::filesystem::remove(invalid_dip_artifact);
+  if (!rejected_dip_threads_before_pool) {
+    return fail(
+        "native BitNet DIP did not reject an excessive thread count "
+        "before pool construction");
+  }
+
   bool rejected_zero = false;
   try {
     const engram::ThreadPool invalid(0);

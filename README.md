@@ -92,6 +92,34 @@ CUDA is permitted for training and distillation only. Packaged inference,
 including the passing BitNet MLP and attention kernels, remains CPU-only and
 does not call llama.cpp.
 
+The adjudicated DIP memory is now promoted into a real derived package and the
+complete C++ token-step runtime. The installer authenticates the frozen policy,
+adjudication, base record artifact, and v2 coordinate index, copies the
+policy-bound package rather than modifying it, and records the DIP operator as
+the package's only MLP mode. The runtime then executes each layer as native
+attention → normalized semantic input → DIP → residual acceptance. It does not
+construct a dense MLP backend and cannot fall back to one.
+
+On the fixed non-holdout eight-prompt/32-token integration suite, the packaged
+DIP runtime reproduced **32/32 greedy token IDs** and all **8/8** exact
+four-token continuations. Global mean activity was **0.2156017260**, with a
+maximum prompt mean of **0.2258916324**. Complete modeled cold traffic was
+**30,153,074,432 bytes**, including **194,304 bytes** of global metadata;
+the global mean fraction was **0.4116115605** of dense ideal Q4 and the
+maximum prompt mean was **0.4129835480**. Position, stage/semantic-call,
+semantic-row, backend, traffic-recomputation, and reset-replay checks passed
+on CPU.
+
+This is exact greedy token agreement, not hidden-state or logit parity. Reset
+proves repeated tokens, zeroed counters, and structural metric parity—not
+hidden-state identity. The longest processed context was 14 positions, below
+the exact W=16 local window, so eviction and older-context retrieval were not
+exercised. The **395.3581-second** wall time includes first runs, reset replays,
+and per-process package authentication, while reported native counters and
+phase timings are first-run snapshots. It is not a speed claim, and traffic is
+modeled rather than measured DRAM. See the
+[packaged DIP token-runtime report](reports/native_bitnet_dip_token_runtime_2026-07-26/summary.md).
+
 The shared-controller path now passes its fixed transition gate. The decisive
 change was architectural, not another corpus scale-up: a BitNet layer already
 defines its next residual as the current state plus its attention and MLP
@@ -148,25 +176,64 @@ controller command invokes no decoder-layer forwards. A frozen eight-prompt,
 87.5% exact prompts, and exact cache positions. One BF16 near-tie differs from
 PyTorch/oneDNN because scalar native and library GEMM accumulation orders are
 not identical. Python/Torch still orchestrates stage dispatch and tensor
-views; replacing that shell with one C++ package-runtime handle is the next
-systems boundary.
+views in that older path. The DIP-only token runtime described below has now
+crossed the C++ package-runtime boundary.
 
 The model core can also generate greedily without constructing a Python,
-Torch, or Transformers model shell. The version-1 native BitNet token CLI
-accepts already-tokenized IDs, maps the package weights, owns all 30 attention
-caches, executes the complete C++ stage runner, and prints generated IDs:
+Torch, or Transformers model shell. The native BitNet token CLI is now
+fail-closed on the DIP package: it accepts already-tokenized IDs, maps the
+authenticated base artifact and v2 coordinate index, owns all 30 attention
+caches, executes the DIP-only C++ token runtime, and prints generated IDs:
 
 ```bash
-./build/engram-bitnet-token-generate \
-  work/native_bitnet/model.engram-bitnet 4 12 \
+./build-runtime/engram-bitnet-token-generate \
+  work/native_bitnet/model.engram-bitnet-dip 4 12 \
   128000 791 6864 315 9822 374
 ```
 
-This emits `12366 13 12366 374` (` Paris. Paris is`). Add
-`--verify-reset` before the prompt IDs to repeat generation after clearing all
-native caches and require identical output. Text tokenization and chat-template
-handling remain in the Python CLI for now; the native command proves the
-package-to-token model path independently.
+Add `--verify-reset` before the prompt IDs to repeat generation after clearing
+all native caches and require identical output plus zeroed-counter and
+structural-metric replay. Before any model mapping, the executable authenticates
+the exact manifest and symlink-free file inventory against compiled deployment
+trust roots. It derives architecture, paths, attention policy, context and
+vocabulary bounds, RoPE/RMS settings, and EOS IDs—including `128009`—from the
+authenticated package. The executable links the kernels directly and does not
+load an Engram shared library. It reports semantic calls, rows, selected
+records, kernel and global-metadata traffic, and semantic/attention time. Text
+tokenization and chat-template handling remain outside this C++ command.
+
+Derive, build, and evaluate the DIP package with:
+
+```bash
+PYTHONPATH=src python -m engram.cli install-native-bitnet-semantic-memory \
+  --model work/native_bitnet/model.engram-bitnet \
+  --index work/native_bitnet/model.provisional.bitnet-dip-index.bin \
+  --policy reports/native_bitnet_m2_2026-07-26/frozen_dip_policy.json \
+  --adjudication reports/native_bitnet_m2_final_audit/49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2/0fdce5a3eb2eaaec5e3b47587d7693bfdc0fed6fde53e3a40a74b8d2a76d4aa3.adjudication.json \
+  --out work/native_bitnet/model.engram-bitnet-dip \
+  --index-sha256 b98ce4e46c8ae67d9d92d4d13f5de3d4fe45ef2c76400bd9d50be08b2bd60e15 \
+  --policy-sha256 c572754e597a760bc5ea6ba337bdaaf092e4ae1d5b5e90b6a2a14cbfbea3768e \
+  --adjudication-sha256 ebb5ca9568387ffd3c5b187f8e17f3ce706aaee86f4bbe9e314bf1760a7da5cc
+
+cmake -S . -B build-runtime -DCMAKE_BUILD_TYPE=Release
+cmake --build build-runtime --target engram-bitnet-token-generate -j
+
+PYTHONPATH=src python -m engram.cli \
+  evaluate-native-bitnet-dip-token-generation \
+  --model work/native_bitnet/model.engram-bitnet-dip \
+  --executable build-runtime/engram-bitnet-token-generate \
+  --prompts tests/fixtures/inference_prompts.jsonl \
+  --reference reports/controller_cpp_stage_runner_2026-07-26/frozen_8x4.json \
+  --package-manifest-sha256 707bbe069ef6892ce9bfe98258f3289e28af15a400922e950c4386f56dd26926 \
+  --executable-sha256 0f6cf41c9c14dc3e05a8cad7a01f4f9909bd355f4e27f9296d6c1e15ba91dea4 \
+  --out reports/native_bitnet_dip_token_runtime_2026-07-26/integrated_8x4.json \
+  --max-tokens 4 --threads 12 --timeout 300
+```
+
+The existing `chat-native-bitnet` command has not crossed this boundary: it
+uses the Python Transformers shell and rejects the derived DIP package. A
+C/Python binding that exposes this native token runtime to the packaged chat
+template is the next integration step.
 
 The latest dense-source campaign implements whole-model exact Q-Sparse
 co-adaptation rather than another router guess. A causally fitted per-layer
@@ -552,17 +619,20 @@ The first trained-model experiments used `HuggingFaceTB/SmolLM2-135M`:
 - The fitted rank-4 background operator worsened mean held-out error, so it is not currently a
   viable correction.
 
-The generic compiler still installs its controller initializer, while a
-standalone factorized controller now has a first protected micro-distillation
-result. It is not yet integrated because the project has not demonstrated
-acceptable end-to-end controller language quality. Learned rank-16,
+The generic dense-Llama compiler still installs its controller initializer.
+The separate native-BitNet package now embeds the schema-v3 exact residual
+controller, whose learned correction is disabled; this integration preserves
+known operator additions rather than claiming a learned recurrent replacement
+for them. Learned rank-16,
 posting-group, residual-capsule, and first sparse-teacher artifacts
 remain blocked. The older dense-SmolLM DIP arm was the first realizable
 selector to clear its semantic quality prerequisite, but it failed systems
 traffic and latency. The newer native-BitNet DIP implementation passes the
-complete development quality/recall/activity/modeled-traffic gate and is
-frozen for its one-shot final; it is not yet a default `.engram` package and
-its development timing is still slower than dense. The original sparse-teacher
+complete final quality/recall/activity/modeled-traffic gate by postmortem
+adjudication. Its frozen index has now been installed into a derived,
+authenticated `model.engram-bitnet-dip` package and exercised through the
+DIP-only native token runtime. It is not the generic dense-Llama `.engram`
+format and its timing is still not a speedup. The original sparse-teacher
 pilot's disconnected routing gradient is fixed in the hardware-aware trainer, but the complete
 low-budget evaluation, corrected LoRA/residual run, locality bound, and layer-adaptive confirmation
 all fail. These artifacts remain blocked; structured sparsity must be learned jointly with the MLP
@@ -904,13 +974,17 @@ to claim the semantic-memory hypothesis works.
 
 The [Gate 3 synthetic report](reports/milestone3_fixture/attention_replacement.md) covers
 bounded local, recurrent, and older-context retrieval memory. It is not teacher-attention
-distillation evidence.
+distillation evidence. It is superseded for the native-BitNet track by the
+trained-model W16/C8/K4/S2 attention confirmation and its incremental package
+integration.
 
 [Gate 4](reports/milestone4_fixture/controller_gate.json) is also synthetic; adaptive
 execution averaged 7.98 of 8 allowed cycles, so it found essentially no compute saving.
 The [runtime benchmark](reports/runtime_fixture/benchmark.md) is a tiny-fixture systems
-measurement. Gate 5 becomes meaningful only after `evaluate-e2e` is run against a trained,
-held-out local checkpoint.
+measurement. Native-BitNet now has separate trained-model controller,
+compiled-operator, incremental-generation, C++ orchestration, and packaged
+DIP token-runtime evidence; those results do not turn the original synthetic
+fixture into trained evidence or qualify the generic dense-Llama compiler.
 
 The checked [Gate 5 random-fixture report](reports/milestone5_fixture/end_to_end_quality.md)
 validates that evaluator and records a negative result: zero category target accuracy and 93.75%

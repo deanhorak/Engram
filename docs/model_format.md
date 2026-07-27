@@ -27,8 +27,8 @@ source-transformer independence, and every file's byte count and SHA-256. Every 
 also records dtype, shape, byte order, format version, Fortran-order flag, payload offset, and
 actual alignment. Semantic submanifests repeat array-level metadata for independent inspection.
 
-The standalone trained-controller artifact currently uses
-`engram.controller.factorized_residual` schema version 1:
+The installed controller artifact uses
+`engram.controller.factorized_residual` schema version 3:
 
 ```text
 controller/
@@ -47,10 +47,11 @@ All tensors are little-endian-compatible FP32 NumPy arrays. Metadata records
 the input/state dimensions, shared bottleneck rank, stage count, adapter rank,
 parameter count, serialized bytes, per-tensor shapes, and the required
 per-token RMS state normalization. The loader rejects missing/extra tensors or
-metadata-derived shape disagreement. This artifact is independently runnable
-on CPU without Torch or CUDA. It is not yet embedded in
-`model.engram-bitnet`; package integration waits for corpus-scale trajectory
-quality and compiled semantic/episodic substitution.
+metadata-derived shape disagreement. Schema 3 preserves known
+attention/semantic operator additions exactly and applies the factorized
+controller only as an optional correction. The authenticated controller is
+embedded in `model.engram-bitnet` and copied into the derived DIP package; it
+is independently runnable on CPU without Torch or CUDA.
 
 An `.engram` package is a model worker, not a system-agent snapshot. It does not contain executive
 goal graphs, durable user memory, tool credentials, worker registries, or Cognitive Executive
@@ -113,11 +114,14 @@ SwiGLU semantic memory:
 ```text
 model.engram-bitnet/
   manifest.json
+  config/config.json
   transformer/non_mlp.safetensors
   mlp/model.bitnet-records.bin
-  tokenizer/{tokenizer.json,tokenizer_config.json,...}
-  config.json
-  generation_config.json
+  controller/{metadata.json,*.npy}
+  tokenizer/tokenizer.json
+  tokenizer/tokenizer_config.json
+  tokenizer/special_tokens_map.json
+  tokenizer/generation_config.json
 ```
 
 The `engram-native-bitnet` version-1 manifest pins the source revision and
@@ -168,6 +172,69 @@ by postmortem adjudication because the original wrapper's
 full-record/object-versus-33-token/list hash check failed after evaluation.
 This evidence is host-bound and does not promote the layout into the generic
 dense-Llama package format.
+
+## Derived native-BitNet DIP package
+
+The frozen source package is immutable evidence. Semantic promotion creates a
+new directory:
+
+```text
+model.engram-bitnet-dip/
+  manifest.json
+  config/config.json
+  transformer/non_mlp.safetensors
+  mlp/model.bitnet-records.bin
+  mlp/model.bitnet-dip-index.bin
+  controller/{metadata.json,*.npy}
+  tokenizer/tokenizer.json
+  tokenizer/tokenizer_config.json
+  tokenizer/special_tokens_map.json
+  tokenizer/generation_config.json
+```
+
+The installer verifies the source package's exact file inventory, frozen
+policy SHA-256
+`c572754e597a760bc5ea6ba337bdaaf092e4ae1d5b5e90b6a2a14cbfbea3768e`,
+passing adjudication SHA-256
+`ebb5ca9568387ffd3c5b187f8e17f3ce706aaee86f4bbe9e314bf1760a7da5cc`,
+base artifact SHA-256
+`4fcf598af4346d5391ba428e32ba1629daae2768b73ab6bf872d3f9fb300ab55`,
+and index SHA-256
+`b98ce4e46c8ae67d9d92d4d13f5de3d4fe45ef2c76400bd9d50be08b2bd60e15`.
+It refuses to use the frozen source directory as its output.
+
+The promoted derived manifest is 5,787 bytes with SHA-256
+`707bbe069ef6892ce9bfe98258f3289e28af15a400922e950c4386f56dd26926`.
+The standalone native token executable has SHA-256
+`0f6cf41c9c14dc3e05a8cad7a01f4f9909bd355f4e27f9296d6c1e15ba91dea4`.
+The manifest byte count/SHA and source-package/semantic provenance hashes are
+compiled into the promoted native loader. The Python confirmation harness
+separately pins the reviewed executable SHA. Before model mapping the loader
+requires the exact symlink-free manifest inventory, hashes every file, and
+cross-checks every descriptor. It then derives dimensions, head layout,
+context and vocabulary bounds, attention policy, RoPE/RMS values, file paths,
+and EOS IDs from `config/config.json`, the manifest, controller metadata, and
+`tokenizer/generation_config.json`. The EOS set must uniquely include
+`128001` and `128009`. The executable directly links its kernel objects and
+does not require an Engram shared library.
+
+The derived manifest adds a `semantic_memory` descriptor containing:
+
+- operator `native_bitnet_dynamic_input_pruning_v2`;
+- runtime scope `native_token_runtime`;
+- index path, format, version, size, and SHA-256;
+- source artifact and source package-manifest hashes;
+- frozen policy and adjudication hashes;
+- all-layer substitution, CPU-only, and `dense_fallback: false` declarations;
+  and
+- `modelled_cache_line_v2` traffic accounting.
+
+The root `runtime.mlp_mode` repeats the operator. Validation requires exact
+agreement among the descriptor, root inventory, index's internal payload hash,
+base-artifact binding, dimensions, and layer count. A DIP package is therefore
+not accepted by the older Python Transformers-shell runtime; only the native
+token runtime currently implements that operator, and rejection prevents a
+silent dense fallback.
 
 Each compiled semantic layer contains `quantized/ivf/centroids.npy` (`float32` joint gate/up
 centroids), `posting_offsets.npy` (`uint32` CSR offsets), and `posting_indices.npy` (`uint32`

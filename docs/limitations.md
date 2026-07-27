@@ -16,10 +16,12 @@
   converting an already-trained dense Llama checkpoint. Official-layer output
   is numerically, not bitwise, equal to PyTorch BF16 because reduction order differs (maximum
   checked relative L2 0.00982). No hardware DRAM counter was available, and
-  package/generation integration is now implemented, but it retains the
-  original attention, normalization, embedding, and output tensors and drives
-  them through a Python Transformers shell. Only the MLP is a native C++
-  kernel; this is not yet a complete native transformer runtime.
+  the original Python package/generation path still retains the source
+  attention, normalization, embedding, and output tensors inside a
+  Transformers shell. The newer DIP package has a complete C++ token runtime,
+  but this remains a source-family-specific runtime rather than the intended
+  controller-only architecture distilled free of original transformer
+  operators.
 - The native-BitNet DIP semantic gate passes **by postmortem adjudication**,
   not by a pristine final-runner result. On the consumed 8-sequence,
   256-position holdout, the raw evaluator reports KL 0.00404129, top-1
@@ -52,15 +54,44 @@
   Six rows per layer establish implementation parity, not broad numerical or
   workload coverage. Independent-host replication, hardware counters,
   SIMD/cache tuning, and broader language-quality evaluation remain open.
+- The DIP package/token integration result is deliberately small: eight
+  non-holdout prompts and 32 generated tokens. It has 32/32 greedy token-ID
+  agreement and 8/8 exact prompts, but this is not hidden-state/logit parity or
+  an independent language benchmark. Global/maximum-prompt activity is
+  21.5602%/22.5892%; global/maximum-prompt complete modeled traffic is
+  41.1612%/41.2984%. Complete traffic is 30,153,074,432 bytes, including
+  194,304 global-metadata bytes. The traffic remains modeled.
+- The integration wall time is 395.3581 seconds across first generations,
+  reset replays, and per-process package authentication. This is disclosure,
+  not a speed claim. Reported native counters and phase timings are first-run
+  snapshots. Reset proves repeated tokens, zeroed counters, and structural
+  metric parity, not hidden-state identity.
+- The longest integrated context is 14 positions, below the exact W=16 local
+  window. The run therefore does not validate eviction, sink/heavy-hitter
+  updates, or older-context retrieval inside the DIP-only runtime.
+- The derived DIP package is supported only by the native token runtime.
+  `chat-native-bitnet` still uses the older Python Transformers shell and
+  explicitly rejects a DIP package rather than falling back to dense MLP
+  execution. Tokenizer/chat-template binding, streaming, and persistent
+  cross-turn native state are not yet connected to the DIP backend.
+- `engram-bitnet-token-generate` now authenticates an exact, symlink-free
+  package inventory and derives architecture, paths, bounds, attention policy,
+  RoPE/RMS settings, and EOS IDs from it. This is deliberately pinned to the
+  currently promoted manifest and semantic trust roots; accepting a different
+  separately adjudicated model still requires a new reviewed native trust
+  root and binary. The executable directly links Engram kernels and has no
+  Engram shared-library dependency.
 - Bounded attention is integrated into complete package generation and avoids
   the dense Hugging Face KV cache, but Q/K/V and output projections still run
-  in PyTorch and every token crosses the Python/ctypes boundary at every
-  layer. At a 256-token prompt, attention state is fixed at 7,477,440 bytes
-  and modeled reads are 16.35% of dense, yet complete processing is only about
-  one position per second. Logical byte counts are algorithmic float32
-  interface counts, not hardware DRAM events. The long-context prompt is a
-  deterministic repeated benchmark string and is not additional quality
-  evidence.
+  in PyTorch in the older Python shell and every token crosses the
+  Python/ctypes boundary at every layer. The DIP-only C++ token runtime avoids
+  that shell and executes native packed projections, but its current evidence
+  is the much smaller 8×4 suite. At a 256-token prompt, the older path's
+  attention state is fixed at 7,477,440 bytes and modeled reads are 16.35% of
+  dense, yet complete processing is only about one position per second.
+  Logical byte counts are algorithmic interface counts, not hardware DRAM
+  events. The long-context prompt is a deterministic repeated benchmark
+  string and is not additional quality evidence.
 - Native packed Q/K/V/O execution passes the frozen
   8-sequence/256-position confirmation and substantially improves latency, but
   its packed decode loops are threaded without explicit AVX2 intrinsics. The

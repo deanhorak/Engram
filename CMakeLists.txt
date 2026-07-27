@@ -103,9 +103,12 @@ target_compile_features(engram-bitnet-weights-info PRIVATE cxx_std_20)
 
 add_executable(engram-bitnet-token-generate
   native/src/bitnet_token_generate.cpp
+  native/src/native_attention_stage_c.cpp
+  native/src/streaming_attention_c.cpp
+  native/src/ternary_projection_c.cpp
 )
 target_link_libraries(engram-bitnet-token-generate
-  PRIVATE engram_kernels engram_bitnet
+  PRIVATE engram_kernels
 )
 target_compile_features(engram-bitnet-token-generate PRIVATE cxx_std_20)
 
@@ -123,7 +126,7 @@ if(ENGRAM_BUILD_TESTS)
   target_link_libraries(engram_native_tests PRIVATE engram_kernels)
   add_test(NAME engram_native_tests COMMAND engram_native_tests)
 
-  foreach(test_name IN ITEMS controller dip episodic native_stage npy package safetensors semantic semantic_ivf semantic_quantized streaming_attention thread_pool transition_cache vector_kernels vocabulary vocabulary_ivf)
+  foreach(test_name IN ITEMS controller dip episodic native_stage native_bitnet_package npy package safetensors semantic semantic_ivf semantic_quantized streaming_attention thread_pool transition_cache vector_kernels vocabulary vocabulary_ivf)
     add_executable(engram_native_${test_name}_tests native/tests/test_${test_name}.cpp)
     target_link_libraries(engram_native_${test_name}_tests PRIVATE engram_kernels)
     add_test(NAME engram_native_${test_name}_tests COMMAND engram_native_${test_name}_tests)

@@ -68,6 +68,7 @@ class NativeBitNetDIPKernel {
   [[nodiscard]] std::size_t thread_count() const noexcept;
   [[nodiscard]] std::size_t record_artifact_bytes() const noexcept;
   [[nodiscard]] std::size_t coordinate_index_bytes() const noexcept;
+  [[nodiscard]] std::size_t global_metadata_cache_line_bytes() const noexcept;
   [[nodiscard]] const NativeBitNetDIPPolicy& policy(
       std::size_t layer) const;
 

@@ -1,14 +1,23 @@
 import json
+import shutil
 from pathlib import Path
 
 import numpy as np
 import pytest
 
+import engram.compiler.native_bitnet as native_bitnet_compiler
+from engram.compiler.native_bitnet import (
+    NATIVE_BITNET_DIP_OPERATOR,
+    _validate_semantic_memory_descriptor,
+    _verified_package_manifest,
+    install_native_bitnet_semantic_memory,
+)
 from engram.evaluation.native_bitnet_dip_traffic import (
     native_bitnet_dip_physical_accounting,
 )
 from engram.models.native_bitnet import (
     NativeBitNetLayerWeights,
+    NativeBitNetValidationError,
     load_native_bitnet_artifact,
     save_native_bitnet_artifact,
 )
@@ -38,7 +47,12 @@ def _descriptor(path: Path):
 
 
 @pytest.fixture()
-def freeze_fixture(tmp_path):
+def freeze_fixture(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        native_bitnet_compiler,
+        "_APPROVED_NATIVE_BITNET_M2_ADJUDICATIONS",
+        {},
+    )
     hidden = 320
     intermediate = 320
     layer_count = 30
@@ -81,6 +95,12 @@ def freeze_fixture(tmp_path):
             "path": "mlp/model.bitnet-records.bin",
             "sha256": sha256_file(base),
             "serialized_bytes": base.stat().st_size,
+        },
+        "runtime": {
+            "device": "cpu",
+            "dtype": "bfloat16",
+            "kernel_threads": 2,
+            "attention_mode": "dense_reference",
         },
         "files": {
             "mlp/model.bitnet-records.bin": {
@@ -439,6 +459,278 @@ def _build(fixture, out):
         dip_library=fixture["dip_library"],
         out=out,
     )
+
+
+def _passing_adjudication(fixture, policy, out):
+    checks = {}
+    for group, name in (
+        native_bitnet_compiler._REQUIRED_M2_ADJUDICATION_CHECKS
+    ):
+        checks.setdefault(group, {})[name] = True
+    payload = {
+        "format": "engram-native-bitnet-m2-final-adjudication",
+        "version": 1,
+        "status": "pass",
+        "milestone_2_passed": True,
+        "decision": (
+            "milestone_2_semantic_gate_passed_by_postmortem_adjudication"
+        ),
+        "adjudication": {
+            "model_or_evaluator_executed": False,
+            "original_result_rewritten": False,
+            "holdout_reused_for_configuration": False,
+        },
+        "checks": checks,
+        "input_sha256": {
+            "package_manifest": sha256_file(
+                fixture["package"] / "manifest.json"
+            ),
+            "base_artifact": sha256_file(fixture["base"]),
+            "coordinate_index": sha256_file(fixture["index"]),
+            "policy_manifest": sha256_file(policy),
+        },
+    }
+    _write_json(out, payload)
+    _authorize_adjudication(fixture, policy, out)
+    return out
+
+
+def _authorize_adjudication(fixture, policy, adjudication):
+    native_bitnet_compiler._APPROVED_NATIVE_BITNET_M2_ADJUDICATIONS[
+        sha256_file(adjudication)
+    ] = {
+        "package_manifest": sha256_file(
+            fixture["package"] / "manifest.json"
+        ),
+        "base_artifact": sha256_file(fixture["base"]),
+        "coordinate_index": sha256_file(fixture["index"]),
+        "policy_manifest": sha256_file(policy),
+    }
+
+
+def test_semantic_memory_installer_derives_fail_closed_dip_package(
+    freeze_fixture,
+    tmp_path,
+):
+    policy = _build(freeze_fixture, tmp_path / "frozen-policy.json")
+    adjudication = _passing_adjudication(
+        freeze_fixture,
+        policy,
+        tmp_path / "adjudication.json",
+    )
+    source_manifest_hash = sha256_file(
+        freeze_fixture["package"] / "manifest.json"
+    )
+    out = tmp_path / "derived.engram-bitnet"
+
+    installed = install_native_bitnet_semantic_memory(
+        freeze_fixture["package"],
+        freeze_fixture["index"],
+        policy,
+        adjudication,
+        out,
+        coordinate_index_sha256=sha256_file(freeze_fixture["index"]),
+        policy_manifest_sha256=sha256_file(policy),
+        adjudication_sha256=sha256_file(adjudication),
+    )
+
+    assert installed == out.resolve()
+    assert sha256_file(freeze_fixture["package"] / "manifest.json") == (
+        source_manifest_hash
+    )
+    assert not (
+        freeze_fixture["package"] / "mlp/model.bitnet-dip-index.bin"
+    ).exists()
+    manifest = _verified_package_manifest(installed)
+    semantic = manifest["semantic_memory"]
+    assert semantic["operator"] == NATIVE_BITNET_DIP_OPERATOR
+    assert semantic["runtime_scope"] == "native_token_runtime"
+    assert semantic["dense_fallback"] is False
+    assert semantic["all_mlp_layers_substituted"] is True
+    assert semantic["source_package_manifest_sha256"] == source_manifest_hash
+    assert manifest["runtime"]["mlp_mode"] == NATIVE_BITNET_DIP_OPERATOR
+    assert manifest["runtime"]["attention_mode"] == (
+        "native_streaming_w16_c8_k4_sinks2"
+    )
+    _validate_semantic_memory_descriptor(installed, manifest)
+    from engram.runtime.native_bitnet import NativeBitNetRuntime
+
+    with pytest.raises(ValueError, match="require the native token runtime"):
+        NativeBitNetRuntime(installed)
+
+    assert (
+        install_native_bitnet_semantic_memory(
+            freeze_fixture["package"],
+            freeze_fixture["index"],
+            policy,
+            adjudication,
+            out,
+            coordinate_index_sha256=sha256_file(freeze_fixture["index"]),
+            policy_manifest_sha256=sha256_file(policy),
+            adjudication_sha256=sha256_file(adjudication),
+        )
+        == installed
+    )
+
+    # An attacker cannot bless a corrupt internal index by merely updating
+    # the package-level file hash and semantic descriptor.
+    packaged_index = installed / "mlp/model.bitnet-dip-index.bin"
+    with packaged_index.open("r+b") as handle:
+        handle.seek(-65, 2)
+        original = handle.read(1)
+        handle.seek(-1, 1)
+        handle.write(bytes([original[0] ^ 1]))
+    manifest = json.loads((installed / "manifest.json").read_text())
+    corrupted_sha256 = sha256_file(packaged_index)
+    manifest["semantic_memory"]["sha256"] = corrupted_sha256
+    manifest["files"]["mlp/model.bitnet-dip-index.bin"] = {
+        "bytes": packaged_index.stat().st_size,
+        "sha256": corrupted_sha256,
+    }
+    _write_json(installed / "manifest.json", manifest)
+    outer_verified = _verified_package_manifest(installed)
+    with pytest.raises(
+        NativeBitNetValidationError,
+        match="checksum mismatch",
+    ):
+        _validate_semantic_memory_descriptor(installed, outer_verified)
+
+
+def test_semantic_memory_installer_rejects_non_index_target_tampering(
+    freeze_fixture,
+    tmp_path,
+):
+    policy = _build(freeze_fixture, tmp_path / "frozen-policy.json")
+    adjudication = _passing_adjudication(
+        freeze_fixture,
+        policy,
+        tmp_path / "adjudication.json",
+    )
+    installed = install_native_bitnet_semantic_memory(
+        freeze_fixture["package"],
+        freeze_fixture["index"],
+        policy,
+        adjudication,
+        tmp_path / "derived.engram-bitnet",
+        coordinate_index_sha256=sha256_file(freeze_fixture["index"]),
+        policy_manifest_sha256=sha256_file(policy),
+        adjudication_sha256=sha256_file(adjudication),
+    )
+    tampered = tmp_path / "tampered.engram-bitnet"
+    shutil.copytree(installed, tampered)
+    tokenizer = tampered / "tokenizer/tokenizer.json"
+    tokenizer.write_text('{"version":"attacker"}\n', encoding="utf-8")
+    manifest_path = tampered / "manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["files"]["tokenizer/tokenizer.json"] = {
+        "bytes": tokenizer.stat().st_size,
+        "sha256": sha256_file(tokenizer),
+    }
+    _write_json(manifest_path, manifest)
+
+    with pytest.raises(
+        NativeBitNetValidationError,
+        match="not the exact authenticated source derivation",
+    ):
+        install_native_bitnet_semantic_memory(
+            freeze_fixture["package"],
+            freeze_fixture["index"],
+            policy,
+            adjudication,
+            tampered,
+            coordinate_index_sha256=sha256_file(freeze_fixture["index"]),
+            policy_manifest_sha256=sha256_file(policy),
+            adjudication_sha256=sha256_file(adjudication),
+        )
+
+
+def test_python_runtime_rejects_incomplete_or_unknown_dip_modes(
+    freeze_fixture,
+    tmp_path,
+):
+    from engram.runtime.native_bitnet import NativeBitNetRuntime
+
+    policy = _build(freeze_fixture, tmp_path / "frozen-policy.json")
+    adjudication = _passing_adjudication(
+        freeze_fixture,
+        policy,
+        tmp_path / "adjudication.json",
+    )
+    installed = install_native_bitnet_semantic_memory(
+        freeze_fixture["package"],
+        freeze_fixture["index"],
+        policy,
+        adjudication,
+        tmp_path / "derived.engram-bitnet",
+        coordinate_index_sha256=sha256_file(freeze_fixture["index"]),
+        policy_manifest_sha256=sha256_file(policy),
+        adjudication_sha256=sha256_file(adjudication),
+    )
+    manifest_path = installed / "manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    del manifest["runtime"]["mlp_mode"]
+    _write_json(manifest_path, manifest)
+    with pytest.raises(ValueError, match="unsupported or incomplete"):
+        NativeBitNetRuntime(installed)
+
+    manifest["runtime"]["mlp_mode"] = "native_bitnet_dynamic_input_prunin_v2"
+    _write_json(manifest_path, manifest)
+    with pytest.raises(ValueError, match="unsupported or incomplete"):
+        NativeBitNetRuntime(installed)
+
+
+def test_semantic_memory_installer_rejects_mutation_and_false_approval(
+    freeze_fixture,
+    tmp_path,
+):
+    policy = _build(freeze_fixture, tmp_path / "frozen-policy.json")
+    adjudication = _passing_adjudication(
+        freeze_fixture,
+        policy,
+        tmp_path / "adjudication.json",
+    )
+    arguments = (
+        freeze_fixture["package"],
+        freeze_fixture["index"],
+        policy,
+        adjudication,
+    )
+    keywords = {
+        "coordinate_index_sha256": sha256_file(freeze_fixture["index"]),
+        "policy_manifest_sha256": sha256_file(policy),
+        "adjudication_sha256": sha256_file(adjudication),
+    }
+    with pytest.raises(NativeBitNetValidationError, match="outside"):
+        install_native_bitnet_semantic_memory(
+            *arguments,
+            freeze_fixture["package"],
+            **keywords,
+        )
+    descendant = freeze_fixture["package"] / "derived.engram-bitnet"
+    with pytest.raises(NativeBitNetValidationError, match="outside"):
+        install_native_bitnet_semantic_memory(
+            *arguments,
+            descendant,
+            **keywords,
+        )
+    assert not descendant.exists()
+
+    payload = json.loads(adjudication.read_text())
+    payload["checks"]["quality"]["top1_agreement"] = False
+    _write_json(adjudication, payload)
+    _authorize_adjudication(freeze_fixture, policy, adjudication)
+    with pytest.raises(
+        NativeBitNetValidationError,
+        match="missing a required passing check",
+    ):
+        install_native_bitnet_semantic_memory(
+            *arguments,
+            tmp_path / "rejected.engram-bitnet",
+            **{
+                **keywords,
+                "adjudication_sha256": sha256_file(adjudication),
+            },
+        )
 
 
 def test_frozen_policy_manifest_roundtrip_reconciles_and_rebuilds_index(

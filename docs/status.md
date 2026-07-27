@@ -35,6 +35,39 @@ minutes after the error, rather than being contemporaneously hash-bound by
 the original result. See the
 [final evidence summary](../reports/native_bitnet_m2_final_audit/49df50cc01c96844ab3e7015d66c8899025dad4e1f7f01a450f97677751b36f2/summary.md).
 
+That decision is now integrated into a derived native package and the complete
+C++ token-step path. The installer authenticates the frozen policy
+(`c572754e…3768e`), adjudication (`ebb5ca95…a5cc`), base artifact
+(`4fcf598a…ab55`), and v2 index (`b98ce4e4…0e15`), and never mutates the
+policy-bound source package. `NativeBitNetTokenRuntime` is DIP-only and
+fail-closed: every layer directly executes attention, normalized semantic
+input extraction, DIP, and semantic-output acceptance, with no dense semantic
+backend or fallback.
+
+The promoted manifest SHA is `707bbe06…26926`; the standalone executable SHA
+is `0f6cf41c…1dea4`. The binary authenticates the exact, symlink-free inventory
+and all semantic trust roots before model mapping, derives architecture and
+EOS (including `128009`) from packaged files, and has no Engram shared-library
+dependency.
+
+The fixed non-holdout eight-prompt/32-token integration confirmation has now
+passed with 32/32 greedy token-ID agreement and 8/8 exact prompts. Global mean
+activity is 21.56017%, with a 22.58916% maximum prompt mean. Complete modeled
+cold traffic is 30,153,074,432 bytes, including 194,304 global-metadata bytes;
+its global mean is 41.16116% of dense ideal Q4 and its maximum prompt mean is
+41.29835%. All absolute-position, stage/semantic-call, semantic-row, backend,
+traffic-recomputation, generated-budget, and reset-replay checks passed on
+CPU.
+
+The 395.3581-second wall time includes first runs, reset replays, and
+per-process package authentication; native counters/timings are first-run
+snapshots. Exact means greedy tokens, not hidden or logit parity. Reset proves
+token replay, zeroed counters, and structural metric parity, not hidden-state
+identity. The maximum processed context is 14
+positions, so the W=16 suite does not exercise eviction or older retrieval.
+This is integration correctness, not speed evidence. See
+the [packaged runtime report](../reports/native_bitnet_dip_token_runtime_2026-07-26/summary.md).
+
 The frozen practical-routing policy is
 [machine-readable](../reports/native_bitnet_m2_2026-07-26/frozen_dip_policy.json).
 The strongest earlier full-record systems evidence is the
@@ -377,11 +410,11 @@ scientific exit criterion has passed.
 | Milestone | Implementation status | Evidence status |
 |---|---|---|
 | 1. Inspection, tracing, exact MLP decomposition, oracle experiment | Complete | Complete for the fixture and exercised on SmolLM2 |
-| 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP index, CPU-only native selected-record kernel, substitution evaluator, physical accounting, parity checks, and frozen policy exist | **Semantic gate passed by postmortem adjudication** on the consumed final holdout; original runner errored on its token-hash schema check. Generic dense-Llama conversion and broader replication remain incomplete |
+| 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP index, CPU-only selected-record kernel, authenticated derived package, substitution evaluator, physical accounting, parity checks, and DIP-only C++ token runtime exist | **Semantic gate passed by postmortem adjudication** on the consumed final holdout; packaged non-holdout token generation also passes at 32/32 greedy token-ID agreement with no dense fallback. Generic dense-Llama conversion and broader replication remain incomplete |
 | 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, and incremental package integration implemented | **Frozen trained-model confirmation passes**; randomized parity, bounded-state scaling, cache-position advancement, and incremental generation pass; hardware counters remain |
 | 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, authenticated package installation, persistent native stage state, and a one-call 30-stage C++ attention/semantic runner implemented | **Controller, compiled-substitution, incremental-generation, and C++ orchestration gates pass**; frozen generation reaches 96.875% token agreement, 87.5% exact prompts, correct cache positions, and zero decoder-layer calls |
 | 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, native vocabulary argmax, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and passes source/package parity; generic vocabulary/cache/correction paths are not all active in the promoted native-BitNet runtime |
-| 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime, memory-mapped BitNet MLP/projection kernels, streaming attention, native shell operators, and one-call C++ depth orchestration implemented | **Partial**: stage execution is native and frozen-confirmed, but package loading, per-token generation control, and tokenizer/CLI still use Python/Transformers; hardware-counter traffic remains |
+| 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime, memory-mapped BitNet DIP/projection kernels, streaming attention, native shell operators, authenticated C++ package mapping, manifest-derived model configuration/EOS, token-step control, greedy argmax, reset, and a standalone generation executable implemented | **Partial**: the DIP-only native token path passes an 8×4 local-window integration suite; tokenizer/chat orchestration is still Python-side, older-context attention is not covered there, and AVX2 tuning and hardware-counter traffic remain |
 | 7. Evaluation, ablations, tuning, documentation, final report | In progress | Many negative ablations exist; no successful reproducible final report |
 
 The optional Oracle cognitive executive is a separate request-level subsystem.
@@ -401,6 +434,10 @@ independent of the model-worker semantic-gate evidence.
   postmortem adjudication, not by a pristine final-runner result. This is not a
   blanket claim that all generic Milestone 2 packaging and conversion work is
   complete.
+- The new derived DIP package and native token runtime pass their small
+  integration suite, but `chat-native-bitnet` does not use that backend. The
+  Python Transformers-shell runtime rejects DIP packages rather than silently
+  using dense MLPs.
 - The final holdout is plaintext in the repository. Its separation is
   procedural and honor-system-based, with a fail-closed runner; it is not
   cryptographically hidden from developers.
@@ -553,23 +590,26 @@ caches/stage descriptors plus the MLP/controller handles and expose one native
 token-step runtime.
 
 That token-step runtime now exists. `NativeBitNetTokenRuntime` owns the mapped
-weights, memory-mapped packed MLP artifact, validated zero-correction
-controller scales, 30 persistent streaming-attention caches, position counter,
-final norm, and tied-vocabulary argmax. The standalone
+weights, memory-mapped packed MLP artifact and DIP index, validated
+zero-correction controller scales, 30 persistent streaming-attention caches,
+position counter, final norm, and tied-vocabulary argmax. The standalone
 `engram-bitnet-token-generate` executable accepts raw token IDs and performs
-greedy generation without Python, Torch, safetensors, or Transformers. On the
-fixed prompt IDs for `The capital of France is`, it returns
-`12366 13 12366 374`, exactly matching ` Paris. Paris is`, across 9 processed
-positions and 120 stage executions. Native tokenizer/chat-template support and
-manifest-derived architecture parameters remain; the model execution path is
-now native from packaged token IDs to generated token IDs.
+greedy generation without Python, Torch, the Python `safetensors` package,
+Transformers, or an Engram shared library. It reads the packaged
+`transformer/non_mlp.safetensors` file through Engram's C++ parser. Its package
+preflight authenticates the promoted manifest, exact inventory, semantic trust
+roots, controller, model/tokenizer configuration, attention policy, and EOS
+IDs before deriving every runtime architecture parameter. Native
+tokenizer/chat-template support remains outside the binary; model execution
+is native from packaged token IDs to generated token IDs.
 
 The low-bit-native hypothesis has passed source validation, exact
 reconstruction, the unchanged MLP byte limit, direct CPU execution, frozen
 causal confirmation, source-independent package compilation, and exact
 generation parity. Its package contains a checksummed 780,054,616-byte
-non-MLP tensor file plus the 318,924,544-byte packed MLP artifact and tokenizer
-assets.
+non-MLP tensor file plus the 318,924,544-byte packed MLP artifact, installed
+controller, config, and tokenizer assets. The derived semantic package adds
+the authenticated 216,688,448-byte DIP index and its promotion descriptor.
 
 Milestone 3 development rejected local-only and recurrent-only replacements.
 An exact W=16/K=4 hybrid passed semantics but scanned all older keys. Random
@@ -669,6 +709,21 @@ handling. A real two-turn session generated a 32-token poem, then interpreted
 state. This establishes chat-template history and multi-turn behavior, not
 interactive performance: output is returned only after the turn finishes,
 and cross-turn native cache reuse is not implemented.
+
+The separate C++ token-step runtime has now moved the adjudicated semantic
+operator through the final model-core boundary. Package derivation
+authenticates the policy, adjudication, base records, and coordinate index;
+the runtime maps both semantic artifacts and has no dense MLP object or
+fallback. Its non-holdout 8×4 confirmation matches all reference tokens and
+passes traffic, position, row, stage, and reset-structure checks. The binary
+authenticates the exact manifest and inventory before mapping the model,
+derives architecture and EOS from the package, and has no Engram shared-library
+dependency. The suite stays within the 16-position local window, so it does
+not cover older retrieval. The next systems
+boundary is a narrow C/Python binding that lets the existing packaged
+tokenizer and chat-template frontend drive this DIP-only runtime. Persistent
+chat caching, streaming, support for separately adjudicated model trust roots,
+measured DRAM traffic, and performance optimization remain later work.
 
 CUDA remains an optional training accelerator only; the serialized format and
 inference mechanism are CPU-native. Repeating IVF, candidate-count,
