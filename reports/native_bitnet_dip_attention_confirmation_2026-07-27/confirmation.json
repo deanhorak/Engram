@@ -1,0 +1,283 @@
+{
+  "artifacts": {
+    "native_token_library_sha256": "4b732bebd049506e649007ce2b4fd4cd52d498a5cc121d39b2610637938ce72a",
+    "package_manifest_sha256": "707bbe069ef6892ce9bfe98258f3289e28af15a400922e950c4386f56dd26926"
+  },
+  "configuration": {
+    "cpu_only": true,
+    "layers": 30,
+    "lengths": [
+      16,
+      17,
+      18,
+      24,
+      32
+    ],
+    "local_window": 16,
+    "max_new_tokens": 1,
+    "older_candidates": 8,
+    "older_top_k": 4,
+    "query_heads": 20,
+    "sink_tokens": 2,
+    "threads": 12
+  },
+  "exercise_checks": {
+    "heavy_hitter_update": true,
+    "local_window_eviction": true,
+    "older_candidate_scoring": true,
+    "older_value_selection": true,
+    "sink_insertion": true
+  },
+  "experiment": "native_bitnet_dip_bounded_attention_confirmation",
+  "limitations": [
+    "This confirms native cache mechanics and deterministic replay, not attention quality against a dense teacher.",
+    "Logical counters are algorithmic events, not hardware DRAM measurements.",
+    "The fixed prompt is a boundary workload, not a language-quality benchmark."
+  ],
+  "longest_reset_replay": {
+    "generated_token_ids": [
+      21813
+    ],
+    "passed": true,
+    "structural_metrics": {
+      "attention_eviction_events": 480,
+      "attention_heavy_hitter_updates": 5654,
+      "attention_logical_read_bytes": 289382400,
+      "attention_older_candidate_entries_scored": 60000,
+      "attention_older_selected_entries": 34800,
+      "attention_scratch_bytes": 19668000,
+      "attention_sink_insertions": 1200,
+      "attention_state_bytes": 7477440,
+      "positions_processed": 32,
+      "semantic_cache_line_bytes": 10553496576,
+      "semantic_calls": 30,
+      "semantic_global_metadata_bytes": 67584,
+      "semantic_kernel_cache_line_bytes": 10553428992,
+      "semantic_maximum_scratch_bytes": 10379392,
+      "semantic_rows": 960,
+      "semantic_selected_records": 1558502,
+      "stage_calls": 30,
+      "stopped_on_eos": 0
+    }
+  },
+  "passed": true,
+  "results": [
+    {
+      "checks": {
+        "attention_state_bytes_constant": true,
+        "exact_eviction_candidate_selection_and_sink_counts": true,
+        "heavy_hitter_updates_within_policy_bounds": true,
+        "positions_and_layer_calls": true
+      },
+      "elapsed_seconds": 5.046474305,
+      "expected_attention_counters": {
+        "attention_eviction_events": 0,
+        "attention_heavy_hitter_updates_maximum": 0,
+        "attention_heavy_hitter_updates_minimum": 0,
+        "attention_older_candidate_entries_scored": 0,
+        "attention_older_selected_entries": 0,
+        "attention_sink_insertions": 0
+      },
+      "generated_text": " earlier",
+      "generated_token_ids": [
+        6931
+      ],
+      "passed": true,
+      "prompt_tokens": 16,
+      "structural_metrics": {
+        "attention_eviction_events": 0,
+        "attention_heavy_hitter_updates": 0,
+        "attention_logical_read_bytes": 83558400,
+        "attention_older_candidate_entries_scored": 0,
+        "attention_older_selected_entries": 0,
+        "attention_scratch_bytes": 9837600,
+        "attention_sink_insertions": 0,
+        "attention_state_bytes": 7477440,
+        "positions_processed": 16,
+        "semantic_cache_line_bytes": 5291188224,
+        "semantic_calls": 30,
+        "semantic_global_metadata_bytes": 33792,
+        "semantic_kernel_cache_line_bytes": 5291154432,
+        "semantic_maximum_scratch_bytes": 5189696,
+        "semantic_rows": 480,
+        "semantic_selected_records": 807454,
+        "stage_calls": 30,
+        "stopped_on_eos": 0
+      }
+    },
+    {
+      "checks": {
+        "attention_state_bytes_constant": true,
+        "exact_eviction_candidate_selection_and_sink_counts": true,
+        "heavy_hitter_updates_within_policy_bounds": true,
+        "positions_and_layer_calls": true
+      },
+      "elapsed_seconds": 5.135751506,
+      "expected_attention_counters": {
+        "attention_eviction_events": 30,
+        "attention_heavy_hitter_updates_maximum": 0,
+        "attention_heavy_hitter_updates_minimum": 0,
+        "attention_older_candidate_entries_scored": 600,
+        "attention_older_selected_entries": 600,
+        "attention_sink_insertions": 600
+      },
+      "generated_text": " context",
+      "generated_token_ids": [
+        2317
+      ],
+      "passed": true,
+      "prompt_tokens": 17,
+      "structural_metrics": {
+        "attention_eviction_events": 30,
+        "attention_heavy_hitter_updates": 0,
+        "attention_logical_read_bytes": 94003200,
+        "attention_older_candidate_entries_scored": 600,
+        "attention_older_selected_entries": 600,
+        "attention_scratch_bytes": 10452000,
+        "attention_sink_insertions": 600,
+        "attention_state_bytes": 7477440,
+        "positions_processed": 17,
+        "semantic_cache_line_bytes": 5622004800,
+        "semantic_calls": 30,
+        "semantic_global_metadata_bytes": 35904,
+        "semantic_kernel_cache_line_bytes": 5621968896,
+        "semantic_maximum_scratch_bytes": 10275712,
+        "semantic_rows": 510,
+        "semantic_selected_records": 858149,
+        "stage_calls": 30,
+        "stopped_on_eos": 0
+      }
+    },
+    {
+      "checks": {
+        "attention_state_bytes_constant": true,
+        "exact_eviction_candidate_selection_and_sink_counts": true,
+        "heavy_hitter_updates_within_policy_bounds": true,
+        "positions_and_layer_calls": true
+      },
+      "elapsed_seconds": 5.235695434,
+      "expected_attention_counters": {
+        "attention_eviction_events": 60,
+        "attention_heavy_hitter_updates_maximum": 0,
+        "attention_heavy_hitter_updates_minimum": 0,
+        "attention_older_candidate_entries_scored": 1800,
+        "attention_older_selected_entries": 1800,
+        "attention_sink_insertions": 1200
+      },
+      "generated_text": ".",
+      "generated_token_ids": [
+        13
+      ],
+      "passed": true,
+      "prompt_tokens": 18,
+      "structural_metrics": {
+        "attention_eviction_events": 60,
+        "attention_heavy_hitter_updates": 0,
+        "attention_logical_read_bytes": 105062400,
+        "attention_older_candidate_entries_scored": 1800,
+        "attention_older_selected_entries": 1800,
+        "attention_scratch_bytes": 11066400,
+        "attention_sink_insertions": 1200,
+        "attention_state_bytes": 7477440,
+        "positions_processed": 18,
+        "semantic_cache_line_bytes": 5950271616,
+        "semantic_calls": 30,
+        "semantic_global_metadata_bytes": 38016,
+        "semantic_kernel_cache_line_bytes": 5950233600,
+        "semantic_maximum_scratch_bytes": 10282624,
+        "semantic_rows": 540,
+        "semantic_selected_records": 903864,
+        "stage_calls": 30,
+        "stopped_on_eos": 0
+      }
+    },
+    {
+      "checks": {
+        "attention_state_bytes_constant": true,
+        "exact_eviction_candidate_selection_and_sink_counts": true,
+        "heavy_hitter_updates_within_policy_bounds": true,
+        "positions_and_layer_calls": true
+      },
+      "elapsed_seconds": 6.334728212,
+      "expected_attention_counters": {
+        "attention_eviction_events": 240,
+        "attention_heavy_hitter_updates_maximum": 3600,
+        "attention_heavy_hitter_updates_minimum": 3600,
+        "attention_older_candidate_entries_scored": 21600,
+        "attention_older_selected_entries": 15600,
+        "attention_sink_insertions": 1200
+      },
+      "generated_text": " relevant",
+      "generated_token_ids": [
+        9959
+      ],
+      "passed": true,
+      "prompt_tokens": 24,
+      "structural_metrics": {
+        "attention_eviction_events": 240,
+        "attention_heavy_hitter_updates": 3600,
+        "attention_logical_read_bytes": 181248000,
+        "attention_older_candidate_entries_scored": 21600,
+        "attention_older_selected_entries": 15600,
+        "attention_scratch_bytes": 14752800,
+        "attention_sink_insertions": 1200,
+        "attention_state_bytes": 7477440,
+        "positions_processed": 24,
+        "semantic_cache_line_bytes": 7927584256,
+        "semantic_calls": 30,
+        "semantic_global_metadata_bytes": 50688,
+        "semantic_kernel_cache_line_bytes": 7927533568,
+        "semantic_maximum_scratch_bytes": 10324096,
+        "semantic_rows": 720,
+        "semantic_selected_records": 1193216,
+        "stage_calls": 30,
+        "stopped_on_eos": 0
+      }
+    },
+    {
+      "checks": {
+        "attention_state_bytes_constant": true,
+        "exact_eviction_candidate_selection_and_sink_counts": true,
+        "heavy_hitter_updates_within_policy_bounds": true,
+        "positions_and_layer_calls": true
+      },
+      "elapsed_seconds": 7.907022428,
+      "expected_attention_counters": {
+        "attention_eviction_events": 480,
+        "attention_heavy_hitter_updates_maximum": 8400,
+        "attention_heavy_hitter_updates_minimum": 3600,
+        "attention_older_candidate_entries_scored": 60000,
+        "attention_older_selected_entries": 34800,
+        "attention_sink_insertions": 1200
+      },
+      "generated_text": " preserve",
+      "generated_token_ids": [
+        21813
+      ],
+      "passed": true,
+      "prompt_tokens": 32,
+      "structural_metrics": {
+        "attention_eviction_events": 480,
+        "attention_heavy_hitter_updates": 5654,
+        "attention_logical_read_bytes": 289382400,
+        "attention_older_candidate_entries_scored": 60000,
+        "attention_older_selected_entries": 34800,
+        "attention_scratch_bytes": 19668000,
+        "attention_sink_insertions": 1200,
+        "attention_state_bytes": 7477440,
+        "positions_processed": 32,
+        "semantic_cache_line_bytes": 10553496576,
+        "semantic_calls": 30,
+        "semantic_global_metadata_bytes": 67584,
+        "semantic_kernel_cache_line_bytes": 10553428992,
+        "semantic_maximum_scratch_bytes": 10379392,
+        "semantic_rows": 960,
+        "semantic_selected_records": 1558502,
+        "stage_calls": 30,
+        "stopped_on_eos": 0
+      }
+    }
+  ],
+  "schema_version": 1,
+  "status": "passed"
+}

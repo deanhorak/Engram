@@ -1,5 +1,31 @@
 # Research log
 
+## 2026-07-27 — Sustained native bounded-attention mechanics pass
+
+- Extended the streaming-attention, complete token runtime, versioned C ABI,
+  and Python owner with cumulative local eviction, older-candidate scoring,
+  older-value selection, sink insertion, and accepted heavy-hitter update
+  counters. Existing ABI size and layout remain stable by assigning the v1
+  metrics extension slots.
+- Added a reproducible CPU-only confirmation at exact prompt lengths
+  16/17/18/24/32. Every analytical count/bound passes, attention state stays
+  at 7,477,440 bytes, and the 32-position token plus all structural counters
+  replay after reset.
+- The 32-position run records 480 layer evictions, 60,000 older-key scores,
+  34,800 older-value selections, 1,200 sink insertions, and 5,654 accepted
+  heavy-hitter updates. This exercises initial admission, full older-cache
+  occupancy, replacement/rejection decisions, and bounded top-K reads.
+- Rebuilt the standalone executable
+  (`c6c5b05b6d8be72edd7f9e12e5e66c615859b74268143a5b2023b8dae423a15b`)
+  and shared runtime
+  (`4b732bebd049506e649007ce2b4fd4cd52d498a5cc121d39b2610637938ce72a`).
+  The fixed 8×4 semantic-core regression still passes 32/32 tokens, 8/8
+  prompts, 21.56017% activity, 41.16116% modeled traffic, and reset replay in
+  390.4183 seconds.
+- This closes sustained attention mechanics, not long-context semantic
+  quality. The next Milestone 3 experiment needs natural tasks whose answers
+  require context older than W=16 and a dense-attention comparison.
+
 ## 2026-07-27 — Authenticated native DIP chat binding
 
 - Added a dedicated versioned C ABI around the production-pinned native DIP

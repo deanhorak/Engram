@@ -32,6 +32,12 @@ void copy_metrics(const engram::StreamingAttentionMetrics& source,
   target->candidate_key_bytes = source.candidate_key_bytes;
   target->selected_value_bytes = source.selected_value_bytes;
   target->local_kv_bytes = source.local_kv_bytes;
+  target->eviction_events = source.eviction_events;
+  target->older_candidate_entries_scored =
+      source.older_candidate_entries_scored;
+  target->older_selected_entries = source.older_selected_entries;
+  target->sink_insertions = source.sink_insertions;
+  target->heavy_hitter_updates = source.heavy_hitter_updates;
   target->state_bytes = source.state_bytes;
   target->scratch_bytes = source.scratch_bytes;
 }
@@ -144,6 +150,12 @@ int engram_streaming_attention_stream_f32(
       aggregate.candidate_key_bytes += result.candidate_key_bytes;
       aggregate.selected_value_bytes += result.selected_value_bytes;
       aggregate.local_kv_bytes += result.local_kv_bytes;
+      aggregate.eviction_events += result.eviction_events;
+      aggregate.older_candidate_entries_scored +=
+          result.older_candidate_entries_scored;
+      aggregate.older_selected_entries += result.older_selected_entries;
+      aggregate.sink_insertions += result.sink_insertions;
+      aggregate.heavy_hitter_updates += result.heavy_hitter_updates;
       aggregate.state_bytes = result.state_bytes;
       aggregate.scratch_bytes = result.scratch_bytes;
     }

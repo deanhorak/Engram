@@ -100,15 +100,18 @@ class _MetricsV1(ctypes.Structure):
         ("prefill_elapsed_ns", ctypes.c_uint64),
         ("decode_elapsed_ns", ctypes.c_uint64),
         ("stopped_on_eos", ctypes.c_uint32),
-        ("reserved32", ctypes.c_uint32),
-        ("reserved", ctypes.c_uint64 * 4),
+        ("attention_sink_insertions", ctypes.c_uint32),
+        ("attention_eviction_events", ctypes.c_uint64),
+        ("attention_older_candidate_entries_scored", ctypes.c_uint64),
+        ("attention_older_selected_entries", ctypes.c_uint64),
+        ("attention_heavy_hitter_updates", ctypes.c_uint64),
     ]
 
     def to_dict(self) -> dict[str, int]:
         return {
             name: int(getattr(self, name))
             for name, _ctype in self._fields_
-            if name != "reserved"
+            if not name.startswith("reserved")
         }
 
 
@@ -445,8 +448,14 @@ class NativeBitNetDIPTokenRuntime:
             )
         self.semantic_backend = _decode_c_string(info.semantic_backend)
         self.thread_count = int(info.thread_count)
+        self.layer_count = int(info.layers)
+        self.query_heads = int(info.query_heads)
         self.vocabulary_size = int(info.vocabulary_size)
         self.max_position_embeddings = int(info.max_position_embeddings)
+        self.local_window = int(info.local_window)
+        self.older_candidates = int(info.older_candidates)
+        self.older_top_k = int(info.older_top_k)
+        self.sink_tokens = int(info.sink_tokens)
         self.eos_token_ids = tuple(
             int(info.eos_token_ids[index])
             for index in range(int(info.eos_token_count))

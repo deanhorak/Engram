@@ -52,6 +52,11 @@ bool zero_metrics(const engram::NativeBitNetTokenMetrics& metrics) {
          metrics.semantic_global_metadata_bytes == 0 &&
          metrics.semantic_scheduled_cache_line_bytes == 0 &&
          metrics.semantic_selected_records == 0 &&
+         metrics.attention_eviction_events == 0 &&
+         metrics.attention_older_candidate_entries_scored == 0 &&
+         metrics.attention_older_selected_entries == 0 &&
+         metrics.attention_sink_insertions == 0 &&
+         metrics.attention_heavy_hitter_updates == 0 &&
          metrics.attention_elapsed_ns == 0;
 }
 
@@ -68,7 +73,17 @@ bool matching_structural_metrics(
              right.semantic_global_metadata_bytes &&
          left.semantic_scheduled_cache_line_bytes ==
              right.semantic_scheduled_cache_line_bytes &&
-         left.semantic_selected_records == right.semantic_selected_records;
+         left.semantic_selected_records == right.semantic_selected_records &&
+         left.attention_eviction_events ==
+             right.attention_eviction_events &&
+         left.attention_older_candidate_entries_scored ==
+             right.attention_older_candidate_entries_scored &&
+         left.attention_older_selected_entries ==
+             right.attention_older_selected_entries &&
+         left.attention_sink_insertions ==
+             right.attention_sink_insertions &&
+         left.attention_heavy_hitter_updates ==
+             right.attention_heavy_hitter_updates;
 }
 
 }  // namespace
@@ -178,6 +193,16 @@ int main(int argc, char** argv) {
               << static_cast<double>(metrics.semantic_elapsed_ns) / 1.0e9
               << " attention_seconds="
               << static_cast<double>(metrics.attention_elapsed_ns) / 1.0e9
+              << " attention_evictions="
+              << metrics.attention_eviction_events
+              << " attention_older_candidates_scored="
+              << metrics.attention_older_candidate_entries_scored
+              << " attention_older_entries_selected="
+              << metrics.attention_older_selected_entries
+              << " attention_sink_insertions="
+              << metrics.attention_sink_insertions
+              << " attention_heavy_hitter_updates="
+              << metrics.attention_heavy_hitter_updates
               << " reset_verified=" << static_cast<int>(reset_verified)
               << " reset_counters_zeroed="
               << static_cast<int>(reset_counters_zeroed)

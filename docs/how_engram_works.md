@@ -503,9 +503,13 @@ The reset replay proves identical greedy tokens, zeroed position/metric
 counters, and structural metric parity; it does not compare hidden states.
 Likewise, matching greedy tokens is not hidden-state or logit parity. The
 longest processed context is 14 positions, so the W=16 test does not exercise
-eviction or older retrieval. This proves that semantic memory survives package
-and token-loop integration; it is still a small correctness test and not a
-speed or broad language-quality result.
+eviction or older retrieval. A separate boundary protocol at
+16/17/18/24/32 positions now proves local eviction, sink preservation,
+older-key scoring, bounded older-value selection, accepted heavy-hitter
+updates, fixed attention-state bytes, and reset replay in the same packaged
+runtime. This proves that semantic memory and bounded-attention mechanics
+survive package and token-loop integration; it is still not a dense-teacher
+long-context quality comparison, speed result, or broad language benchmark.
 
 The source-family-specific package and generation boundary are now complete.
 Compilation writes a 1,108,116,808-byte checksummed package containing 332

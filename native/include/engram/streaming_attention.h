@@ -25,6 +25,11 @@ struct StreamingAttentionMetrics {
   std::uint64_t candidate_key_bytes{};
   std::uint64_t selected_value_bytes{};
   std::uint64_t local_kv_bytes{};
+  std::uint64_t eviction_events{};
+  std::uint64_t older_candidate_entries_scored{};
+  std::uint64_t older_selected_entries{};
+  std::uint64_t sink_insertions{};
+  std::uint64_t heavy_hitter_updates{};
   std::uint64_t state_bytes{};
   std::uint64_t scratch_bytes{};
 };
@@ -52,7 +57,8 @@ class StreamingAttention {
                                           std::size_t kv_head) const noexcept;
   [[nodiscard]] std::size_t older_offset(std::size_t head,
                                          std::size_t slot) const noexcept;
-  void evict_recent(std::size_t slot);
+  void evict_recent(std::size_t slot, std::uint64_t& sink_insertions,
+                    std::uint64_t& heavy_hitter_updates);
   void validate_inputs(std::span<const float> query,
                        std::span<const float> key,
                        std::span<const float> value,

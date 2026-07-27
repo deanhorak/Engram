@@ -128,7 +128,11 @@ stage/semantic row and call counts without dense fallback. Reset replay also
 matches tokens and structural counters after proving that counters zeroed.
 Neither check compares hidden states or logits. All processed contexts are at
 most 14 positions, so the W=16 integration suite does not exercise eviction
-or older-context retrieval.
+or older-context retrieval. A separate complete-runtime protocol at
+16/17/18/24/32 positions now confirms the expected eviction, sink,
+older-candidate, bounded-selection, and heavy-hitter counters with constant
+state and reset replay. That closes the mechanical coverage gap but does not
+compare long-context attention quality with a dense teacher.
 
 ## Semantic-memory prototype
 

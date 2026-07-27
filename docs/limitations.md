@@ -61,15 +61,17 @@
   21.5602%/22.5892%; global/maximum-prompt complete modeled traffic is
   41.1612%/41.2984%. Complete traffic is 30,153,074,432 bytes, including
   194,304 global-metadata bytes. The traffic remains modeled.
-- The rebuilt-core integration wall time is 397.3352 seconds across first generations,
+- The rebuilt-core integration wall time is 390.4183 seconds across first generations,
   reset replays, and per-process package authentication. This is disclosure,
   not a speed claim. Reported native counters and phase timings are first-run
   snapshots. Reset proves repeated tokens, zeroed counters, and structural
   metric parity, not hidden-state identity.
-- The frozen 8×4 context is at most 14 positions, below W=16. The real chat
-  smoke reaches 17 prompt tokens and crosses the eviction boundary, but one
-  output is not enough to validate sink/heavy-hitter updates or sustained
-  older-context retrieval quality.
+- The frozen 8×4 context is at most 14 positions, below W=16. A separate
+  16/17/18/24/32 protocol now validates exact eviction, older-candidate,
+  older-selection, sink, heavy-hitter, fixed-state, and reset mechanics.
+  Its deterministic boundary prompt and one generated token per length do not
+  validate attention quality against a dense teacher or natural tasks that
+  depend on older context.
 - The derived DIP package is supported only by the native token runtime.
   `chat-native-bitnet` now uses that runtime through a versioned C ABI. Python
   still owns the packaged tokenizer, template, and history, but it does not

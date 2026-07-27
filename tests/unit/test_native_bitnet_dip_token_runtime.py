@@ -150,6 +150,11 @@ class _FakeLibrary:
         metrics.attention_logical_read_bytes = 400
         metrics.attention_state_bytes = 500
         metrics.attention_scratch_bytes = 600
+        metrics.attention_eviction_events = 7
+        metrics.attention_older_candidate_entries_scored = 80
+        metrics.attention_older_selected_entries = 40
+        metrics.attention_sink_insertions = 20
+        metrics.attention_heavy_hitter_updates = 60
         metrics.qkv_projection_ns = 100
         metrics.rope_ns = 200
         metrics.native_attention_ns = 300
@@ -226,6 +231,13 @@ def test_native_dip_token_runtime_maps_generation_and_metrics(
     assert result.mlp_calls == 60
     assert result.scheduled_mlp_bytes == 1012
     assert result.attention_state_bytes == 500
+    assert runtime.last_metrics["attention_eviction_events"] == 7
+    assert (
+        runtime.last_metrics["attention_older_candidate_entries_scored"] == 80
+    )
+    assert runtime.last_metrics["attention_older_selected_entries"] == 40
+    assert runtime.last_metrics["attention_sink_insertions"] == 20
+    assert runtime.last_metrics["attention_heavy_hitter_updates"] == 60
     assert result.stopped_on_eos
     assert result.controller_mode == "native_exact_operator_residual"
     assert result.decoder_layer_forward_calls == 0

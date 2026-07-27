@@ -113,6 +113,31 @@ int main() {
         metrics.scratch_bytes != scratch_bytes) {
       return fail("streaming attention metrics are inconsistent");
     }
+    if (position < config.local_window) {
+      if (metrics.eviction_events != 0 ||
+          metrics.older_candidate_entries_scored != 0 ||
+          metrics.older_selected_entries != 0 ||
+          metrics.sink_insertions != 0 ||
+          metrics.heavy_hitter_updates != 0) {
+        return fail("older-memory counters advanced before eviction");
+      }
+    } else {
+      const std::uint64_t active_per_head = position - 1;
+      if (metrics.eviction_events != 1 ||
+          metrics.older_candidate_entries_scored !=
+              kHeads * active_per_head ||
+          metrics.older_selected_entries != kHeads * active_per_head ||
+          metrics.sink_insertions !=
+              (position < config.local_window + config.sink_tokens
+                   ? kHeads
+                   : 0) ||
+          metrics.heavy_hitter_updates !=
+              (position >= config.local_window + config.sink_tokens
+                   ? kHeads
+                   : 0)) {
+        return fail("older-memory counters are inconsistent");
+      }
+    }
   }
 
   for (std::size_t position = 0; position < 32; ++position) {

@@ -195,6 +195,14 @@ extern "C" int engram_native_stage_attention_bf16(
       aggregate.attention.selected_value_bytes +=
           current.selected_value_bytes;
       aggregate.attention.local_kv_bytes += current.local_kv_bytes;
+      aggregate.attention.eviction_events += current.eviction_events;
+      aggregate.attention.older_candidate_entries_scored +=
+          current.older_candidate_entries_scored;
+      aggregate.attention.older_selected_entries +=
+          current.older_selected_entries;
+      aggregate.attention.sink_insertions += current.sink_insertions;
+      aggregate.attention.heavy_hitter_updates +=
+          current.heavy_hitter_updates;
       aggregate.attention.state_bytes += current.state_bytes;
       aggregate.attention.scratch_bytes += current.scratch_bytes;
     }

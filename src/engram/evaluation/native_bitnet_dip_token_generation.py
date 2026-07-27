@@ -36,7 +36,7 @@ _CANONICAL_DENSE_REFERENCE_SHA256 = (
     "3078cd2c36d54fa55380e2550f0176a37027390699ef248257785bc203665e02"
 )
 _TRUSTED_NATIVE_EXECUTABLE_SHA256 = (
-    "29526c9838ea484d8a21887dafeaba99a57348e7377e0de4138e0631dde10fad"
+    "c6c5b05b6d8be72edd7f9e12e5e66c615859b74268143a5b2023b8dae423a15b"
 )
 _REFERENCE_THRESHOLDS = {
     "minimum_prompts": 8,
@@ -91,6 +91,11 @@ def _parse_native_metrics(stderr: str) -> dict[str, int | float | str]:
         "semantic_kernel_cache_line_bytes",
         "semantic_global_metadata_bytes",
         "semantic_cache_line_bytes",
+        "attention_evictions",
+        "attention_older_candidates_scored",
+        "attention_older_entries_selected",
+        "attention_sink_insertions",
+        "attention_heavy_hitter_updates",
         "reset_verified",
         "reset_counters_zeroed",
         "replay_metrics_match",

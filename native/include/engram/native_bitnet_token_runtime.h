@@ -48,6 +48,11 @@ struct NativeBitNetTokenMetrics {
   std::uint64_t attention_logical_read_bytes = 0;
   std::uint64_t attention_state_bytes = 0;
   std::uint64_t attention_scratch_bytes = 0;
+  std::uint64_t attention_eviction_events = 0;
+  std::uint64_t attention_older_candidate_entries_scored = 0;
+  std::uint64_t attention_older_selected_entries = 0;
+  std::uint64_t attention_sink_insertions = 0;
+  std::uint64_t attention_heavy_hitter_updates = 0;
   std::uint64_t qkv_projection_ns = 0;
   std::uint64_t rope_ns = 0;
   std::uint64_t native_attention_ns = 0;

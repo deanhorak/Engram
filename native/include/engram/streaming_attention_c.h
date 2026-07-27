@@ -25,6 +25,11 @@ typedef struct engram_streaming_attention_metrics {
   uint64_t candidate_key_bytes;
   uint64_t selected_value_bytes;
   uint64_t local_kv_bytes;
+  uint64_t eviction_events;
+  uint64_t older_candidate_entries_scored;
+  uint64_t older_selected_entries;
+  uint64_t sink_insertions;
+  uint64_t heavy_hitter_updates;
   uint64_t state_bytes;
   uint64_t scratch_bytes;
 } engram_streaming_attention_metrics;

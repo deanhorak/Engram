@@ -28,6 +28,9 @@ def _metrics(reset=1):
         "semantic_global_metadata_bytes=20 "
         "semantic_cache_line_bytes=120 "
         "semantic_seconds=1.25 attention_seconds=0.5 "
+        "attention_evictions=2 attention_older_candidates_scored=40 "
+        "attention_older_entries_selected=20 attention_sink_insertions=8 "
+        "attention_heavy_hitter_updates=12 "
         f"reset_verified={reset} reset_counters_zeroed={reset} "
         f"replay_metrics_match={reset}"
     )
@@ -48,6 +51,11 @@ def test_native_dip_token_metrics_require_backend_traffic_and_reset_evidence():
         "semantic_cache_line_bytes": 120,
         "semantic_seconds": 1.25,
         "attention_seconds": 0.5,
+        "attention_evictions": 2,
+        "attention_older_candidates_scored": 40,
+        "attention_older_entries_selected": 20,
+        "attention_sink_insertions": 8,
+        "attention_heavy_hitter_updates": 12,
         "reset_verified": 1,
         "reset_counters_zeroed": 1,
         "replay_metrics_match": 1,

@@ -56,6 +56,9 @@ from engram.evaluation.native_bitnet_controller_generation import (
 from engram.evaluation.native_bitnet_dip_token_generation import (
     evaluate_native_bitnet_dip_token_generation,
 )
+from engram.evaluation.native_bitnet_dip_attention_confirmation import (
+    evaluate_native_bitnet_dip_attention_confirmation,
+)
 from engram.evaluation.router_sweep import evaluate_rank_router_regularization_sweep
 from engram.evaluation.dip_sweep import evaluate_dip_exact_completion_sweep
 from engram.evaluation.intrinsic_sparsity import (
@@ -759,6 +762,25 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
     )
     dip_token_generation.add_argument("--timeout", type=float, default=300.0)
+
+    dip_attention = commands.add_parser(
+        "evaluate-native-bitnet-dip-attention",
+        help="confirm sustained native DIP attention eviction and retrieval",
+    )
+    dip_attention.add_argument("--model", required=True, type=Path)
+    dip_attention.add_argument("--library", required=True, type=Path)
+    dip_attention.add_argument("--out", required=True, type=Path)
+    dip_attention.add_argument(
+        "--lengths",
+        nargs="+",
+        type=int,
+        default=(16, 17, 18, 24, 32),
+    )
+    dip_attention.add_argument(
+        "--prompt",
+        default="The memory system should preserve relevant earlier context.",
+    )
+    dip_attention.add_argument("--threads", type=int)
 
     controller_generation = commands.add_parser(
         "evaluate-native-bitnet-controller-generation",
@@ -2134,6 +2156,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             threads=args.threads,
             verify_reset=not args.no_verify_reset,
             timeout_seconds=args.timeout,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "evaluate-native-bitnet-dip-attention":
+        result = evaluate_native_bitnet_dip_attention_confirmation(
+            package=args.model,
+            library=args.library,
+            out=args.out,
+            lengths=args.lengths,
+            prompt=args.prompt,
+            threads=args.threads,
         )
         print(json.dumps(result, indent=2, sort_keys=True))
     elif args.command == "evaluate-native-bitnet-controller-generation":

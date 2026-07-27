@@ -59,6 +59,16 @@ bool replay_metrics_match(
              right.attention_logical_read_bytes &&
          left.attention_state_bytes == right.attention_state_bytes &&
          left.attention_scratch_bytes == right.attention_scratch_bytes &&
+         left.attention_eviction_events ==
+             right.attention_eviction_events &&
+         left.attention_older_candidate_entries_scored ==
+             right.attention_older_candidate_entries_scored &&
+         left.attention_older_selected_entries ==
+             right.attention_older_selected_entries &&
+         left.attention_sink_insertions ==
+             right.attention_sink_insertions &&
+         left.attention_heavy_hitter_updates ==
+             right.attention_heavy_hitter_updates &&
          left.stopped_on_eos == right.stopped_on_eos;
 }
 
@@ -229,19 +239,22 @@ int main() {
     return fail("context-overflowing generation was accepted");
   }
 
+  const std::vector<std::int64_t> boundary_prompt(17, prompt);
   output = -7;
   output_count = 0;
   metrics = empty_metrics();
   if (engram_native_bitnet_token_generate_v1(
-          handle, &prompt, 1, 1, &output, 1, &output_count, &metrics, error,
-          sizeof(error)) != ENGRAM_NATIVE_BITNET_TOKEN_OK ||
+          handle, boundary_prompt.data(), boundary_prompt.size(), 1, &output,
+          1, &output_count, &metrics, error, sizeof(error)) !=
+          ENGRAM_NATIVE_BITNET_TOKEN_OK ||
       output_count != 1 || output < 0 ||
       static_cast<std::uint64_t>(output) >= info.vocabulary_size ||
-      metrics.prompt_tokens != 1 || metrics.generated_tokens != 1 ||
-      metrics.positions_processed != 1 ||
+      metrics.prompt_tokens != boundary_prompt.size() ||
+      metrics.generated_tokens != 1 ||
+      metrics.positions_processed != boundary_prompt.size() ||
       metrics.stage_calls != info.layers ||
       metrics.semantic_calls != info.layers ||
-      metrics.semantic_rows != info.layers ||
+      metrics.semantic_rows != info.layers * boundary_prompt.size() ||
       metrics.semantic_selected_records == 0 ||
       metrics.semantic_kernel_cache_line_bytes == 0 ||
       metrics.semantic_global_metadata_bytes == 0 ||
@@ -260,6 +273,13 @@ int main() {
               metrics.native_attention_ns + metrics.output_projection_ns ||
       metrics.call_elapsed_ns < metrics.prefill_elapsed_ns ||
       metrics.prefill_elapsed_ns == 0 || metrics.decode_elapsed_ns != 0 ||
+      metrics.attention_eviction_events != info.layers ||
+      metrics.attention_older_candidate_entries_scored !=
+          info.layers * info.query_heads ||
+      metrics.attention_older_selected_entries !=
+          info.layers * info.query_heads ||
+      metrics.attention_sink_insertions != info.layers * info.query_heads ||
+      metrics.attention_heavy_hitter_updates != 0 ||
       metrics.stopped_on_eos !=
           static_cast<std::uint32_t>(includes_eos(info, output))) {
     engram_native_bitnet_token_destroy_v1(handle);
@@ -290,8 +310,9 @@ int main() {
   output_count = 0;
   metrics = empty_metrics();
   if (engram_native_bitnet_token_generate_v1(
-          handle, &prompt, 1, 1, &output, 1, &output_count, &metrics, error,
-          sizeof(error)) != ENGRAM_NATIVE_BITNET_TOKEN_OK ||
+          handle, boundary_prompt.data(), boundary_prompt.size(), 1, &output,
+          1, &output_count, &metrics, error, sizeof(error)) !=
+          ENGRAM_NATIVE_BITNET_TOKEN_OK ||
       output_count != 1 || output != first_output ||
       !replay_metrics_match(first_metrics, metrics)) {
     engram_native_bitnet_token_destroy_v1(handle);
@@ -301,4 +322,3 @@ int main() {
   engram_native_bitnet_token_destroy_v1(handle);
   return 0;
 }
-

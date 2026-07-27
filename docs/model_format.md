@@ -206,9 +206,9 @@ It refuses to use the frozen source directory as its output.
 The promoted derived manifest is 5,787 bytes with SHA-256
 `707bbe069ef6892ce9bfe98258f3289e28af15a400922e950c4386f56dd26926`.
 The standalone native token executable has SHA-256
-`29526c9838ea484d8a21887dafeaba99a57348e7377e0de4138e0631dde10fad`.
+`c6c5b05b6d8be72edd7f9e12e5e66c615859b74268143a5b2023b8dae423a15b`.
 The versioned native chat/token-runtime DSO has SHA-256
-`df3a4f70952cddaebff2e5198d9ddf6b5e8a25487020c40b89ec99f2c7d33f96`.
+`4b732bebd049506e649007ce2b4fd4cd52d498a5cc121d39b2610637938ce72a`.
 The manifest byte count/SHA and source-package/semantic provenance hashes are
 compiled into the promoted native loader. The Python confirmation harness
 separately pins the reviewed standalone executable SHA. The chat DSO is a

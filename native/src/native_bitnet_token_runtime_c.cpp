@@ -409,6 +409,23 @@ engram_native_bitnet_token_status engram_native_bitnet_token_generate_v1(
           native.attention_logical_read_bytes;
       metrics->attention_state_bytes = native.attention_state_bytes;
       metrics->attention_scratch_bytes = native.attention_scratch_bytes;
+      if (native.attention_sink_insertions >
+          std::numeric_limits<std::uint32_t>::max()) {
+        handle->state = RuntimeState::poisoned;
+        return fail(ENGRAM_NATIVE_BITNET_TOKEN_RUNTIME_FAILED,
+                    "native token runtime sink counter overflow", error,
+                    error_capacity);
+      }
+      metrics->attention_sink_insertions =
+          static_cast<std::uint32_t>(native.attention_sink_insertions);
+      metrics->attention_eviction_events =
+          native.attention_eviction_events;
+      metrics->attention_older_candidate_entries_scored =
+          native.attention_older_candidate_entries_scored;
+      metrics->attention_older_selected_entries =
+          native.attention_older_selected_entries;
+      metrics->attention_heavy_hitter_updates =
+          native.attention_heavy_hitter_updates;
       metrics->qkv_projection_ns = native.qkv_projection_ns;
       metrics->rope_ns = native.rope_ns;
       metrics->native_attention_ns = native.native_attention_ns;

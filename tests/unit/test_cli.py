@@ -787,3 +787,48 @@ def test_native_bitnet_controller_generation_cli_forwards_suite(
     assert captured["controller"] == tmp_path / "controller"
     assert captured["max_new_tokens"] == 4
     assert captured["threads"] == 12
+
+
+def test_native_bitnet_dip_attention_cli_forwards_boundaries(
+    tmp_path,
+    monkeypatch,
+):
+    captured = {}
+
+    def fake_evaluate(**kwargs):
+        captured.update(kwargs)
+        return {"passed": True}
+
+    monkeypatch.setattr(
+        "engram.cli.evaluate_native_bitnet_dip_attention_confirmation",
+        fake_evaluate,
+    )
+    result = main(
+        [
+            "evaluate-native-bitnet-dip-attention",
+            "--model",
+            str(tmp_path / "package"),
+            "--library",
+            str(tmp_path / "runtime.so"),
+            "--out",
+            str(tmp_path / "report.json"),
+            "--lengths",
+            "16",
+            "24",
+            "32",
+            "--prompt",
+            "fixture prompt",
+            "--threads",
+            "6",
+        ]
+    )
+
+    assert result == 0
+    assert captured == {
+        "package": tmp_path / "package",
+        "library": tmp_path / "runtime.so",
+        "out": tmp_path / "report.json",
+        "lengths": [16, 24, 32],
+        "prompt": "fixture prompt",
+        "threads": 6,
+    }

@@ -150,7 +150,7 @@ The recorded result passes:
 | Global / maximum-prompt mean traffic fraction | 0.4116115605 / 0.4129835480 | both at most 0.45 |
 | Runtime invariants | all pass | all pass |
 
-The rebuilt-core run used 12 CPU threads and took 397.3352 seconds across first runs, reset
+The rebuilt-core run used 12 CPU threads and took 390.4183 seconds across first runs, reset
 replays, and per-process package authentication. Semantic and attention
 counters/timings describe the first generation; replay structural counters
 are compared with that snapshot. No latency threshold was applied, and the
@@ -171,9 +171,17 @@ comparison generated the same token and identical structural semantic metrics
 as the standalone executable, and reset replay on the persistent mapped
 handle also matched. The actual `chat-native-bitnet` CLI then processed a
 17-token rendered conversation and generated `Hello`, crossing W=16 without a
-Transformers model shell or dense semantic fallback. That single-token smoke
-tests the integration boundary; it does not yet establish sustained eviction
-or older-context retrieval quality.
+Transformers model shell or dense semantic fallback.
+
+The subsequent bounded-attention protocol tests exact lengths
+16/17/18/24/32. At length 32 the complete runtime reports 480 evictions,
+60,000 older candidates scored, 34,800 older entries selected, 1,200 sink
+insertions, and 5,654 accepted heavy-hitter updates, with constant
+7,477,440-byte state and exact reset replay. All analytical counter bounds
+pass. See the
+[native attention summary](../reports/native_bitnet_dip_attention_confirmation_2026-07-27/summary.md).
+This establishes cache mechanics, not long-context quality relative to dense
+attention.
 
 See [Project status](status.md) and the
 [machine-readable snapshot](../reports/semantic_gate_status_2026-07-23/summary.json).

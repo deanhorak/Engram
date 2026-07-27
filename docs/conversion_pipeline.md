@@ -258,8 +258,8 @@ PYTHONPATH=src python -m engram.cli \
   --prompts tests/fixtures/inference_prompts.jsonl \
   --reference reports/controller_cpp_stage_runner_2026-07-26/frozen_8x4.json \
   --package-manifest-sha256 707bbe069ef6892ce9bfe98258f3289e28af15a400922e950c4386f56dd26926 \
-  --executable-sha256 29526c9838ea484d8a21887dafeaba99a57348e7377e0de4138e0631dde10fad \
-  --out reports/native_bitnet_dip_chat_runtime_2026-07-27/frozen_8x4.json \
+  --executable-sha256 c6c5b05b6d8be72edd7f9e12e5e66c615859b74268143a5b2023b8dae423a15b \
+  --out reports/native_bitnet_dip_attention_confirmation_2026-07-27/frozen_8x4.json \
   --max-tokens 4 --threads 12 --timeout 300
 ```
 

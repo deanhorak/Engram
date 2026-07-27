@@ -111,8 +111,11 @@ typedef struct engram_native_bitnet_token_metrics_v1 {
   uint64_t prefill_elapsed_ns;
   uint64_t decode_elapsed_ns;
   uint32_t stopped_on_eos;
-  uint32_t reserved32;
-  uint64_t reserved[4];
+  uint32_t attention_sink_insertions;
+  uint64_t attention_eviction_events;
+  uint64_t attention_older_candidate_entries_scored;
+  uint64_t attention_older_selected_entries;
+  uint64_t attention_heavy_hitter_updates;
 } engram_native_bitnet_token_metrics_v1;
 
 ENGRAM_NATIVE_BITNET_TOKEN_API uint32_t
@@ -159,4 +162,3 @@ engram_native_bitnet_token_generate_v1(
 #ifdef __cplusplus
 }
 #endif
-

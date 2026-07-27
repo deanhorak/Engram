@@ -203,6 +203,16 @@ std::int64_t NativeBitNetTokenRuntime::forward(
         current_attention.attention.candidate_key_bytes +
         current_attention.attention.selected_value_bytes +
         current_attention.attention.local_kv_bytes;
+    metrics_.attention_eviction_events +=
+        current_attention.attention.eviction_events;
+    metrics_.attention_older_candidate_entries_scored +=
+        current_attention.attention.older_candidate_entries_scored;
+    metrics_.attention_older_selected_entries +=
+        current_attention.attention.older_selected_entries;
+    metrics_.attention_sink_insertions +=
+        current_attention.attention.sink_insertions;
+    metrics_.attention_heavy_hitter_updates +=
+        current_attention.attention.heavy_hitter_updates;
     attention_state_bytes += current_attention.attention.state_bytes;
     attention_scratch_bytes +=
         current_attention.attention.scratch_bytes +

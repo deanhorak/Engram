@@ -130,12 +130,18 @@ on CPU.
 This is exact greedy token agreement, not hidden-state or logit parity. Reset
 proves repeated tokens, zeroed counters, and structural metric parity—not
 hidden-state identity. After adding the chat ABI, the rebuilt native core
-repeated the same 32/32 and 8/8 result in **397.3352 seconds** including reset
+repeated the same 32/32 and 8/8 result in **390.4183 seconds** including reset
 replays and per-process authentication. The frozen suite still stops at 14
-positions, below W=16. A separate interactive chat smoke processed 17 prompt
-tokens and crossed the eviction boundary, but it is not a sustained
-older-memory quality test. Traffic is modeled rather than measured DRAM. See
-the [native DIP chat-binding report](reports/native_bitnet_dip_chat_runtime_2026-07-27/summary.md).
+positions, below W=16.
+
+A separate reproducible boundary protocol now runs the same authenticated
+handle at 16, 17, 18, 24, and 32 prompt positions. At 32 it records 480 layer
+evictions, 60,000 older-key scores, 34,800 older-value selections, 1,200 sink
+insertions, and 5,654 accepted heavy-hitter updates while attention state stays
+fixed at 7,477,440 bytes. Reset reproduces the token and all structural
+counters. This passes bounded-attention mechanics, not long-context quality
+against a dense teacher. Traffic is modeled rather than measured DRAM. See the
+[native DIP attention report](reports/native_bitnet_dip_attention_confirmation_2026-07-27/summary.md).
 
 The shared-controller path now passes its fixed transition gate. The decisive
 change was architectural, not another corpus scale-up: a BitNet layer already
@@ -243,9 +249,16 @@ PYTHONPATH=src python -m engram.cli \
   --prompts tests/fixtures/inference_prompts.jsonl \
   --reference reports/controller_cpp_stage_runner_2026-07-26/frozen_8x4.json \
   --package-manifest-sha256 707bbe069ef6892ce9bfe98258f3289e28af15a400922e950c4386f56dd26926 \
-  --executable-sha256 29526c9838ea484d8a21887dafeaba99a57348e7377e0de4138e0631dde10fad \
-  --out reports/native_bitnet_dip_chat_runtime_2026-07-27/frozen_8x4.json \
+  --executable-sha256 c6c5b05b6d8be72edd7f9e12e5e66c615859b74268143a5b2023b8dae423a15b \
+  --out reports/native_bitnet_dip_attention_confirmation_2026-07-27/frozen_8x4.json \
   --max-tokens 4 --threads 12 --timeout 300
+
+PYTHONPATH=src python -m engram.cli \
+  evaluate-native-bitnet-dip-attention \
+  --model work/native_bitnet/model.engram-bitnet-dip \
+  --library build-runtime/libengram_bitnet_token_runtime.so \
+  --out reports/native_bitnet_dip_attention_confirmation_2026-07-27/confirmation.json \
+  --threads 12
 ```
 
 `chat-native-bitnet` now crosses this boundary through

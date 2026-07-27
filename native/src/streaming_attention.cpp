@@ -106,7 +106,9 @@ std::size_t StreamingAttention::older_offset(
   return (head * config_.older_candidates + slot) * config_.head_dimension;
 }
 
-void StreamingAttention::evict_recent(const std::size_t slot) {
+void StreamingAttention::evict_recent(
+    const std::size_t slot, std::uint64_t& sink_insertions,
+    std::uint64_t& heavy_hitter_updates) {
   const std::uint64_t position = recent_positions_[slot];
   for (std::size_t head = 0; head < config_.query_heads; ++head) {
     const std::size_t base = head * config_.older_candidates;
@@ -151,6 +153,11 @@ void StreamingAttention::evict_recent(const std::size_t slot) {
     older_scores_[index] = incoming_score;
     older_positions_[index] = position;
     older_active_[index] = 1;
+    if (position < config_.sink_tokens) {
+      ++sink_insertions;
+    } else {
+      ++heavy_hitter_updates;
+    }
   }
 }
 
@@ -177,10 +184,14 @@ StreamingAttentionMetrics StreamingAttention::step(
     const std::span<const float> query, const std::span<const float> key,
     const std::span<const float> value, const std::span<float> output) {
   validate_inputs(query, key, value, output);
+  std::uint64_t eviction_events{};
+  std::uint64_t sink_insertions{};
+  std::uint64_t heavy_hitter_updates{};
   std::size_t write_slot{};
   if (recent_size_ == config_.local_window) {
     write_slot = recent_start_;
-    evict_recent(write_slot);
+    evict_recent(write_slot, sink_insertions, heavy_hitter_updates);
+    eviction_events = 1;
     recent_start_ = (recent_start_ + 1) % config_.local_window;
   } else {
     write_slot = (recent_start_ + recent_size_) % config_.local_window;
@@ -204,6 +215,8 @@ StreamingAttentionMetrics StreamingAttention::step(
   std::uint64_t candidate_bytes{};
   std::uint64_t selected_value_bytes{};
   std::uint64_t local_bytes{};
+  std::uint64_t older_candidate_entries_scored{};
+  std::uint64_t older_selected_entries{};
   for (std::size_t head = 0; head < config_.query_heads; ++head) {
     const float* query_row =
         query.data() + head * config_.head_dimension;
@@ -220,9 +233,11 @@ StreamingAttentionMetrics StreamingAttention::step(
           config_.scale;
     }
     active_older += candidates.size();
+    older_candidate_entries_scored += candidates.size();
     candidate_bytes += candidates.size() * config_.head_dimension * sizeof(float);
     const std::size_t selected_count =
         std::min(config_.older_top_k, candidates.size());
+    older_selected_entries += selected_count;
     std::partial_sort(
         candidates.begin(), candidates.begin() + selected_count,
         candidates.end(), [&](const std::size_t left, const std::size_t right) {
@@ -297,6 +312,11 @@ StreamingAttentionMetrics StreamingAttention::step(
       .candidate_key_bytes = candidate_bytes,
       .selected_value_bytes = selected_value_bytes,
       .local_kv_bytes = local_bytes,
+      .eviction_events = eviction_events,
+      .older_candidate_entries_scored = older_candidate_entries_scored,
+      .older_selected_entries = older_selected_entries,
+      .sink_insertions = sink_insertions,
+      .heavy_hitter_updates = heavy_hitter_updates,
       .state_bytes = allocated_state_bytes(),
       .scratch_bytes = scratch_bytes(),
   };

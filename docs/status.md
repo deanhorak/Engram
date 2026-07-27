@@ -45,8 +45,8 @@ input extraction, DIP, and semantic-output acceptance, with no dense semantic
 backend or fallback.
 
 The promoted manifest SHA is `707bbe06…26926`; the rebuilt standalone
-executable SHA is `29526c98…0fad`; and the versioned chat-runtime DSO SHA is
-`df3a4f70…3f96`. The executable and shared ABI both authenticate the exact,
+executable SHA is `c6c5b05b…a15b`; and the versioned chat-runtime DSO SHA is
+`4b732beb…72a`. The executable and shared ABI both authenticate the exact,
 symlink-free inventory and all semantic trust roots before model mapping and
 derive architecture and EOS (including `128009`) from packaged files. The
 standalone executable has no Engram shared-library dependency. The chat DSO
@@ -61,15 +61,20 @@ its global mean is 41.16116% of dense ideal Q4 and its maximum prompt mean is
 traffic-recomputation, generated-budget, and reset-replay checks passed on
 CPU.
 
-The rebuilt-core confirmation took 397.3352 seconds across first runs, reset
+The rebuilt-core confirmation took 390.4183 seconds across first runs, reset
 replays, and per-process package authentication; native counters/timings are
 first-run snapshots. Exact means greedy tokens, not hidden or logit parity.
 Reset proves token replay, zeroed counters, and structural metric parity, not
 hidden-state identity. The frozen suite still stops at 14 positions. A real
 interactive chat smoke processed 17 prompt tokens and crossed W=16, but it
-does not establish sustained older-memory quality. This is integration
-correctness, not speed evidence. See the
-[native chat-binding report](../reports/native_bitnet_dip_chat_runtime_2026-07-27/summary.md).
+does not establish sustained older-memory quality. A separate 16/17/18/24/32
+position protocol now proves exact eviction, older-candidate, older-selection,
+sink, heavy-hitter, fixed-state, and reset mechanics. At 32 positions it
+records 480 evictions, 60,000 older keys scored, 34,800 older values selected,
+1,200 sink insertions, and 5,654 accepted heavy-hitter updates while state
+remains 7,477,440 bytes. This is integration correctness, not speed or dense-
+teacher long-context quality evidence. See the
+[native attention report](../reports/native_bitnet_dip_attention_confirmation_2026-07-27/summary.md).
 
 The frozen practical-routing policy is
 [machine-readable](../reports/native_bitnet_m2_2026-07-26/frozen_dip_policy.json).
