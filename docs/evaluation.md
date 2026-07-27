@@ -150,7 +150,7 @@ The recorded result passes:
 | Global / maximum-prompt mean traffic fraction | 0.4116115605 / 0.4129835480 | both at most 0.45 |
 | Runtime invariants | all pass | all pass |
 
-The run used 12 CPU threads and took 395.3581 seconds across first runs, reset
+The rebuilt-core run used 12 CPU threads and took 397.3352 seconds across first runs, reset
 replays, and per-process package authentication. Semantic and attention
 counters/timings describe the first generation; replay structural counters
 are compared with that snapshot. No latency threshold was applied, and the
@@ -163,7 +163,17 @@ longest processed context is 14 positions, below W=16, so this suite does not
 test eviction or older-context retrieval. The small 8×4 suite proves
 package/runtime integration, not broad model quality.
 The full report and reproduction commands are in the
-[packaged token-runtime summary](../reports/native_bitnet_dip_token_runtime_2026-07-26/summary.md).
+[native chat-binding summary](../reports/native_bitnet_dip_chat_runtime_2026-07-27/summary.md).
+
+The same production runtime is now exposed through a versioned native C ABI
+and the `NativeBitNetDIPTokenRuntime` Python owner. A direct raw-token
+comparison generated the same token and identical structural semantic metrics
+as the standalone executable, and reset replay on the persistent mapped
+handle also matched. The actual `chat-native-bitnet` CLI then processed a
+17-token rendered conversation and generated `Hello`, crossing W=16 without a
+Transformers model shell or dense semantic fallback. That single-token smoke
+tests the integration boundary; it does not yet establish sustained eviction
+or older-context retrieval quality.
 
 See [Project status](status.md) and the
 [machine-readable snapshot](../reports/semantic_gate_status_2026-07-23/summary.json).

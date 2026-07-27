@@ -81,6 +81,37 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   )
 endif()
 
+add_library(engram_bitnet_token_runtime SHARED
+  native/src/native_bitnet_token_runtime_c.cpp
+  native/src/native_attention_stage_c.cpp
+  native/src/streaming_attention_c.cpp
+  native/src/ternary_projection_c.cpp
+)
+target_include_directories(engram_bitnet_token_runtime
+  PUBLIC native/include
+)
+target_link_libraries(engram_bitnet_token_runtime PRIVATE engram_kernels)
+target_compile_features(engram_bitnet_token_runtime PRIVATE cxx_std_20)
+target_compile_options(engram_bitnet_token_runtime
+  PRIVATE -Wall -Wextra -Wpedantic
+)
+target_compile_definitions(engram_bitnet_token_runtime
+  PRIVATE ENGRAM_NATIVE_BITNET_TOKEN_BUILDING=1
+)
+set_target_properties(engram_bitnet_token_runtime PROPERTIES
+  OUTPUT_NAME engram_bitnet_token_runtime
+  VERSION 1.0.0
+  SOVERSION 1
+  CXX_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN YES
+)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_link_options(engram_bitnet_token_runtime PRIVATE
+    -Wl,--exclude-libs,ALL
+    -static-libstdc++ -static-libgcc
+  )
+endif()
+
 add_executable(engram-native-info native/src/info.cpp)
 target_link_libraries(engram-native-info PRIVATE engram_kernels)
 target_compile_features(engram-native-info PRIVATE cxx_std_20)
@@ -131,4 +162,19 @@ if(ENGRAM_BUILD_TESTS)
     target_link_libraries(engram_native_${test_name}_tests PRIVATE engram_kernels)
     add_test(NAME engram_native_${test_name}_tests COMMAND engram_native_${test_name}_tests)
   endforeach()
+
+  add_executable(engram_native_bitnet_token_runtime_c_tests
+    native/tests/test_native_bitnet_token_runtime_c.cpp
+  )
+  target_link_libraries(engram_native_bitnet_token_runtime_c_tests
+    PRIVATE engram_bitnet_token_runtime
+  )
+  target_compile_definitions(engram_native_bitnet_token_runtime_c_tests
+    PRIVATE
+      ENGRAM_NATIVE_BITNET_TOKEN_TEST_PACKAGE="${CMAKE_SOURCE_DIR}/work/native_bitnet/model.engram-bitnet-dip"
+  )
+  add_test(
+    NAME engram_native_bitnet_token_runtime_c_tests
+    COMMAND engram_native_bitnet_token_runtime_c_tests
+  )
 endif()

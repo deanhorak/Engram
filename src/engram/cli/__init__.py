@@ -90,6 +90,7 @@ from engram.compiler import (
 )
 from engram.runtime import (
     EngramRuntime,
+    NativeBitNetDIPTokenRuntime,
     NativeBitNetRuntime,
     run_native_bitnet_chat,
     validate_native_bitnet_package,
@@ -876,7 +877,10 @@ def _parser() -> argparse.ArgumentParser:
 
     chat_bitnet = commands.add_parser(
         "chat-native-bitnet",
-        help="chat interactively with a compiled native BitNet package",
+        help=(
+            "chat through the authenticated CPU-only native BitNet DIP "
+            "token runtime"
+        ),
     )
     chat_bitnet.add_argument("--model", required=True, type=Path)
     chat_bitnet.add_argument("--max-tokens", type=int, default=32)
@@ -885,13 +889,15 @@ def _parser() -> argparse.ArgumentParser:
         default="You are a helpful assistant.",
         help="system message rendered by the packaged tokenizer chat template",
     )
-    chat_bitnet.add_argument("--library", type=Path)
-    chat_bitnet.add_argument("--attention-library", type=Path)
+    chat_bitnet.add_argument(
+        "--library",
+        type=Path,
+        help=(
+            "libengram_bitnet_token_runtime shared library; defaults to "
+            "build/libengram_bitnet_token_runtime.so"
+        ),
+    )
     chat_bitnet.add_argument("--threads", type=int)
-    chat_bitnet.add_argument("--local-window", type=int, default=16)
-    chat_bitnet.add_argument("--candidates", type=int, default=8)
-    chat_bitnet.add_argument("--top-k", type=int, default=4)
-    chat_bitnet.add_argument("--sink-tokens", type=int, default=2)
 
     validate = commands.add_parser(
         "validate", help="verify package checksums and deterministic generation"
@@ -2323,22 +2329,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         )
     elif args.command == "chat-native-bitnet":
-        with NativeBitNetRuntime(
+        with NativeBitNetDIPTokenRuntime(
             args.model,
             library=args.library,
             threads=args.threads,
-            native_projections=True,
         ) as runtime:
             try:
                 run_native_bitnet_chat(
                     runtime,
                     max_new_tokens=args.max_tokens,
                     system_prompt=args.system,
-                    attention_library=args.attention_library,
-                    local_window=args.local_window,
-                    older_candidates=args.candidates,
-                    older_top_k=args.top_k,
-                    sink_tokens=args.sink_tokens,
                 )
             except KeyboardInterrupt:
                 print("\nChat interrupted.")

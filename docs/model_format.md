@@ -206,10 +206,16 @@ It refuses to use the frozen source directory as its output.
 The promoted derived manifest is 5,787 bytes with SHA-256
 `707bbe069ef6892ce9bfe98258f3289e28af15a400922e950c4386f56dd26926`.
 The standalone native token executable has SHA-256
-`0f6cf41c9c14dc3e05a8cad7a01f4f9909bd355f4e27f9296d6c1e15ba91dea4`.
+`29526c9838ea484d8a21887dafeaba99a57348e7377e0de4138e0631dde10fad`.
+The versioned native chat/token-runtime DSO has SHA-256
+`df3a4f70952cddaebff2e5198d9ddf6b5e8a25487020c40b89ec99f2c7d33f96`.
 The manifest byte count/SHA and source-package/semantic provenance hashes are
 compiled into the promoted native loader. The Python confirmation harness
-separately pins the reviewed executable SHA. Before model mapping the loader
+separately pins the reviewed standalone executable SHA. The chat DSO is a
+narrow deployment interface: it has SONAME
+`libengram_bitnet_token_runtime.so.1`, exports six versioned C symbols, and
+depends only on the system C and math libraries and ELF loader. Before model
+mapping the loader
 requires the exact symlink-free manifest inventory, hashes every file, and
 cross-checks every descriptor. It then derives dimensions, head layout,
 context and vocabulary bounds, attention policy, RoPE/RMS values, file paths,
@@ -232,9 +238,11 @@ The derived manifest adds a `semantic_memory` descriptor containing:
 The root `runtime.mlp_mode` repeats the operator. Validation requires exact
 agreement among the descriptor, root inventory, index's internal payload hash,
 base-artifact binding, dimensions, and layer count. A DIP package is therefore
-not accepted by the older Python Transformers-shell runtime; only the native
-token runtime currently implements that operator, and rejection prevents a
-silent dense fallback.
+not accepted by the older `NativeBitNetRuntime` Transformers-shell class.
+`NativeBitNetDIPTokenRuntime` instead owns a persistent handle to the native
+token DSO while Python performs only authenticated tokenization, chat-template
+rendering, and history bookkeeping. This separation prevents a silent dense
+fallback.
 
 Each compiled semantic layer contains `quantized/ivf/centroids.npy` (`float32` joint gate/up
 centroids), `posting_offsets.npy` (`uint32` CSR offsets), and `posting_indices.npy` (`uint32`

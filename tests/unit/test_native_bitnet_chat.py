@@ -25,7 +25,7 @@ class _Runtime:
         self.tokenizer = _Tokenizer()
         self.prompts = []
 
-    def generate_bounded(self, prompt, **kwargs):
+    def generate(self, prompt, **kwargs):
         self.prompts.append((prompt, kwargs))
         turn = len(self.prompts)
         return SimpleNamespace(
@@ -43,7 +43,6 @@ def test_chat_uses_template_and_represents_complete_history_each_turn():
         runtime,
         max_new_tokens=7,
         system_prompt="system text",
-        attention_library="attention.so",
         input_stream=StringIO("hello\nfollow up\n/quit\n"),
         output_stream=output,
     )
@@ -58,7 +57,6 @@ def test_chat_uses_template_and_represents_complete_history_each_turn():
         {"role": "user", "content": "follow up"},
     ]
     assert runtime.prompts[0][1]["max_new_tokens"] == 7
-    assert runtime.prompts[0][1]["attention_library"] == "attention.so"
     assert "Engram> answer 1" in output.getvalue()
 
 
@@ -91,3 +89,29 @@ def test_chat_rejects_tokenizer_without_template():
             input_stream=StringIO("/quit\n"),
             output_stream=StringIO(),
         )
+
+
+def test_chat_rolls_back_user_message_when_native_generation_fails():
+    runtime = _Runtime()
+
+    def fail(_prompt, **_kwargs):
+        raise RuntimeError("native failure")
+
+    runtime.generate = fail
+    observed = []
+    original = runtime.tokenizer.apply_chat_template
+
+    def capture(messages, **kwargs):
+        observed.append(messages)
+        return original(messages, **kwargs)
+
+    runtime.tokenizer.apply_chat_template = capture
+    with pytest.raises(RuntimeError, match="native failure"):
+        run_native_bitnet_chat(
+            runtime,
+            system_prompt="system text",
+            input_stream=StringIO("failed turn\n"),
+            output_stream=StringIO(),
+        )
+
+    assert observed == [[{"role": "system", "content": "system text"}]]

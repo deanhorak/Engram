@@ -5,6 +5,7 @@
 #include "engram/native_stage_c.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <limits>
 #include <stdexcept>
@@ -12,6 +13,15 @@
 
 namespace engram {
 namespace {
+
+using Clock = std::chrono::steady_clock;
+
+std::uint64_t elapsed_ns(const Clock::time_point started) {
+  return static_cast<std::uint64_t>(
+      std::chrono::duration_cast<std::chrono::nanoseconds>(
+          Clock::now() - started)
+          .count());
+}
 
 class StageHandle {
  public:
@@ -172,6 +182,8 @@ std::int64_t NativeBitNetTokenRuntime::forward(
           config_.hidden_size, config_.threads, &next_token, &score) != 0) {
     throw std::runtime_error("native vocabulary argmax failed");
   }
+  std::uint64_t attention_state_bytes = 0;
+  std::uint64_t attention_scratch_bytes = 0;
   for (std::size_t layer = 0; layer < config_.layers; ++layer) {
     metrics_.semantic_elapsed_ns += semantic_metrics[layer].elapsed_ns;
     metrics_.semantic_kernel_cache_line_bytes +=
@@ -179,12 +191,30 @@ std::int64_t NativeBitNetTokenRuntime::forward(
     metrics_.semantic_selected_records +=
         semantic_metrics[layer].selected_count_total;
     metrics_.semantic_rows += semantic_metrics[layer].rows;
-    metrics_.attention_elapsed_ns +=
-        attention_metrics[layer].qkv_projection_ns +
-        attention_metrics[layer].rope_ns +
-        attention_metrics[layer].native_attention_ns +
-        attention_metrics[layer].output_projection_ns;
+    metrics_.semantic_maximum_scratch_bytes =
+        std::max(metrics_.semantic_maximum_scratch_bytes,
+                 semantic_metrics[layer].scratch_bytes);
+    const auto& current_attention = attention_metrics[layer];
+    metrics_.qkv_projection_ns += current_attention.qkv_projection_ns;
+    metrics_.rope_ns += current_attention.rope_ns;
+    metrics_.native_attention_ns += current_attention.native_attention_ns;
+    metrics_.output_projection_ns += current_attention.output_projection_ns;
+    metrics_.attention_logical_read_bytes +=
+        current_attention.attention.candidate_key_bytes +
+        current_attention.attention.selected_value_bytes +
+        current_attention.attention.local_kv_bytes;
+    attention_state_bytes += current_attention.attention.state_bytes;
+    attention_scratch_bytes +=
+        current_attention.attention.scratch_bytes +
+        current_attention.projection_scratch_bytes;
   }
+  metrics_.attention_elapsed_ns =
+      metrics_.qkv_projection_ns + metrics_.rope_ns +
+      metrics_.native_attention_ns + metrics_.output_projection_ns;
+  metrics_.attention_state_bytes =
+      std::max(metrics_.attention_state_bytes, attention_state_bytes);
+  metrics_.attention_scratch_bytes =
+      std::max(metrics_.attention_scratch_bytes, attention_scratch_bytes);
   const std::uint64_t global_metadata_bytes =
       static_cast<std::uint64_t>(
           semantic_.global_metadata_cache_line_bytes()) *
@@ -209,11 +239,17 @@ std::vector<std::int64_t> NativeBitNetTokenRuntime::generate(
   }
   std::vector<std::int64_t> generated;
   generated.reserve(max_new_tokens);
+  const auto prefill_started = Clock::now();
   std::int64_t token = forward(prompt);
+  metrics_.prefill_elapsed_ns += elapsed_ns(prefill_started);
   generated.push_back(token);
-  while (generated.size() < max_new_tokens && !is_eos(token)) {
-    token = forward(std::span<const std::int64_t>(&token, 1));
-    generated.push_back(token);
+  if (generated.size() < max_new_tokens && !is_eos(token)) {
+    const auto decode_started = Clock::now();
+    while (generated.size() < max_new_tokens && !is_eos(token)) {
+      token = forward(std::span<const std::int64_t>(&token, 1));
+      generated.push_back(token);
+    }
+    metrics_.decode_elapsed_ns += elapsed_ns(decode_started);
   }
   return generated;
 }

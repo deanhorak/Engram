@@ -3,6 +3,10 @@ from .native_bitnet import (
     NativeBitNetRuntime,
     validate_native_bitnet_package,
 )
+from .native_bitnet_dip_token import (
+    NativeBitNetDIPTokenRuntime,
+    NativeBitNetDIPTokenRuntimeError,
+)
 from .native_attention import (
     NativeStreamingAttention,
     NativeStreamingAttentionMetrics,
@@ -16,6 +20,8 @@ __all__ = [
     "EngramRuntime",
     "GenerationToken",
     "NativeBitNetGeneration",
+    "NativeBitNetDIPTokenRuntime",
+    "NativeBitNetDIPTokenRuntimeError",
     "NativeBitNetRuntime",
     "NativeStreamingAttention",
     "NativeStreamingAttentionMetrics",

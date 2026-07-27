@@ -1,5 +1,39 @@
 # Research log
 
+## 2026-07-27 — Authenticated native DIP chat binding
+
+- Added a dedicated versioned C ABI around the production-pinned native DIP
+  token runtime. Its constructor accepts only a package root, invokes the same
+  authenticated loader as the standalone executable, and derives dimensions,
+  bounds, W/C/K/S policy, thread default, semantic artifacts, controller, and
+  EOS IDs from the package. Callers cannot substitute editable routing or
+  attention policy.
+- The DSO SHA-256 is
+  `df3a4f70952cddaebff2e5198d9ddf6b5e8a25487020c40b89ec99f2c7d33f96`.
+  It has SONAME `libengram_bitnet_token_runtime.so.1`, depends only on system
+  libraries, hides C++ symbols, and exports six versioned C symbols. The
+  rebuilt standalone executable SHA-256 is
+  `29526c9838ea484d8a21887dafeaba99a57348e7377e0de4138e0631dde10fad`.
+- Added `NativeBitNetDIPTokenRuntime`, a narrow Python `ctypes` owner for that
+  handle. `chat-native-bitnet` now uses it without constructing a Transformers
+  model shell, Torch model tensors, original decoder layers, or dense semantic
+  fallback. Python retains the authenticated tokenizer, packaged chat
+  template, and conversation history. Each turn resets the native handle and
+  re-prefills the full rendered history.
+- A raw-token comparison generated token `9906` (`Hello`) in both the
+  standalone executable and the Python/C ABI path, with identical 30 semantic
+  calls, 240 semantic rows, 361,598 selected records, and 2,624,024,064
+  modeled semantic bytes. Reset on the same mapped handle reproduced the token
+  and every non-timing structural counter.
+- The real interactive CLI generated `Hello` from a 17-token rendered prompt,
+  crossing W=16 and reporting 7,477,440 attention-state bytes. This is a
+  boundary smoke, not sustained older-memory validation.
+- Reconfirmed the rebuilt core on the fixed eight-prompt/four-token protocol:
+  32/32 greedy tokens, 8/8 exact prompts, 21.56017% global activity, 41.16116%
+  complete modeled traffic, and exact reset replay. The 12-thread run took
+  397.3352 seconds. The next boundary is a sustained long-context protocol
+  with explicit eviction, older-candidate, sink, and heavy-hitter evidence.
+
 ## 2026-07-26 — Adjudicated DIP enters the native token runtime
 
 - Added an immutable-source semantic-memory promotion step. It verifies the

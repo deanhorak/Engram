@@ -67,6 +67,7 @@ struct PackageMetadata {
 // all nested descriptors have been validated.
 struct NativeBitNetDIPPackageMetadata {
   std::filesystem::path root;
+  std::string manifest_sha256;
   std::filesystem::path non_mlp_safetensors;
   std::filesystem::path mlp_artifact;
   std::filesystem::path dip_coordinate_index;
@@ -79,6 +80,7 @@ struct NativeBitNetDIPPackageMetadata {
   std::size_t key_value_heads = 0;
   std::size_t head_dimension = 0;
   std::size_t max_position_embeddings = 0;
+  std::size_t kernel_threads = 0;
   std::size_t local_window = 0;
   std::size_t older_candidates = 0;
   std::size_t older_top_k = 0;

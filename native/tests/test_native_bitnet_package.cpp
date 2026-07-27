@@ -80,7 +80,7 @@ Fixture make_fixture(const std::filesystem::path& root,
   const std::string manifest =
       R"({"format":"engram-native-bitnet","version":1,"engram_version":"0.1.0","does_not_require_source_transformer":true,)"
       R"("model":{"hidden_size":8,"intermediate_size":12,"num_hidden_layers":2,"rms_norm_eps":1e-5},)"
-      R"("runtime":{"device":"cpu","dtype":"bfloat16","mlp_mode":)" +
+      R"("runtime":{"device":"cpu","dtype":"bfloat16","kernel_threads":4,"mlp_mode":)" +
       quote(mlp_mode) +
       R"(,"attention_mode":"native_streaming_w16_c8_k4_sinks2","attention_policy":{"local_window":)" +
       std::to_string(local_window) +
@@ -150,6 +150,7 @@ int main() {
         package.intermediate_size != 12 || package.vocabulary_size != 128256 ||
         package.query_heads != 2 || package.key_value_heads != 1 ||
         package.head_dimension != 4 || package.max_position_embeddings != 64 ||
+        package.kernel_threads != 4 ||
         package.local_window != 16 || package.older_candidates != 8 ||
         package.older_top_k != 4 || package.sink_tokens != 2 ||
         package.rope_theta != 500000.0F ||

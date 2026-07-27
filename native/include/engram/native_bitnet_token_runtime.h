@@ -44,7 +44,17 @@ struct NativeBitNetTokenMetrics {
   std::uint64_t semantic_global_metadata_bytes = 0;
   std::uint64_t semantic_scheduled_cache_line_bytes = 0;
   std::uint64_t semantic_selected_records = 0;
+  std::uint64_t semantic_maximum_scratch_bytes = 0;
+  std::uint64_t attention_logical_read_bytes = 0;
+  std::uint64_t attention_state_bytes = 0;
+  std::uint64_t attention_scratch_bytes = 0;
+  std::uint64_t qkv_projection_ns = 0;
+  std::uint64_t rope_ns = 0;
+  std::uint64_t native_attention_ns = 0;
+  std::uint64_t output_projection_ns = 0;
   std::uint64_t attention_elapsed_ns = 0;
+  std::uint64_t prefill_elapsed_ns = 0;
+  std::uint64_t decode_elapsed_ns = 0;
 };
 
 class NativeBitNetTokenRuntime {

@@ -1,24 +1,25 @@
-"""Interactive chat loop for the optimized native BitNet package runtime."""
+"""Interactive frontend for the authenticated native BitNet DIP runtime."""
 
 from __future__ import annotations
 
 import sys
 from collections.abc import Callable
-from typing import TextIO
+from typing import Any, Protocol, TextIO
 
-from engram.runtime.native_bitnet import NativeBitNetRuntime
+
+class NativeBitNetChatRuntime(Protocol):
+    """Minimal interface required by the chat/history frontend."""
+
+    tokenizer: Any
+
+    def generate(self, prompt: str, *, max_new_tokens: int): ...
 
 
 def run_native_bitnet_chat(
-    runtime: NativeBitNetRuntime,
+    runtime: NativeBitNetChatRuntime,
     *,
     max_new_tokens: int = 32,
     system_prompt: str | None = "You are a helpful assistant.",
-    attention_library=None,
-    local_window: int = 16,
-    older_candidates: int = 8,
-    older_top_k: int = 4,
-    sink_tokens: int = 2,
     input_stream: TextIO = sys.stdin,
     output_stream: TextIO = sys.stdout,
     on_turn: Callable[[dict], None] | None = None,
@@ -36,7 +37,7 @@ def run_native_bitnet_chat(
     initial_messages = list(messages)
     turns = 0
     output_stream.write(
-        "Engram native BitNet chat. Commands: /reset, /history, /quit\n"
+        "Engram native BitNet DIP chat. Commands: /reset, /history, /quit\n"
     )
     output_stream.flush()
 
@@ -73,20 +74,21 @@ def run_native_bitnet_chat(
             continue
 
         messages.append({"role": "user", "content": user_text})
-        rendered = runtime.tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-        )
-        result = runtime.generate_bounded(
-            rendered,
-            max_new_tokens=max_new_tokens,
-            attention_library=attention_library,
-            local_window=local_window,
-            older_candidates=older_candidates,
-            older_top_k=older_top_k,
-            sink_tokens=sink_tokens,
-        )
+        try:
+            rendered = runtime.tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+            )
+            result = runtime.generate(
+                rendered,
+                max_new_tokens=max_new_tokens,
+            )
+        except Exception:
+            # A failed native turn must not become part of the next rendered
+            # conversation. The runtime itself owns reset/poison recovery.
+            messages.pop()
+            raise
         assistant_text = result.text.strip()
         messages.append({"role": "assistant", "content": assistant_text})
         turns += 1
@@ -109,4 +111,4 @@ def run_native_bitnet_chat(
     return turns
 
 
-__all__ = ["run_native_bitnet_chat"]
+__all__ = ["NativeBitNetChatRuntime", "run_native_bitnet_chat"]

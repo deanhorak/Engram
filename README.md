@@ -88,6 +88,23 @@ project procedure, not by cryptographic secrecy. This adjudicated semantic
 result does not establish a quality-preserving dense-Llama conversion and does
 not, by itself, certify every broader Milestone 2 deliverable as complete.
 
+### Milestone 2 ledger
+
+Milestone 2 now has two different outcomes that should not be conflated:
+
+| Deliverable | Native-BitNet track | Generic dense-Llama track |
+|---|---|---|
+| Background/residual operators | Exact operator residual path is packaged; learned correction is intentionally zero | Implemented experimentally, but the fitted low-rank background worsened held-out error |
+| Semantic key/value package | Complete: ternary phase records plus authenticated DIP-v2 index | Quantized semantic package exists, but no gate-passing trained artifact |
+| Practical routing | **Passed**: all 30 MLPs, CPU-only, no dense fallback | **Blocked** by quality/traffic tradeoffs |
+| Product/additive quantization | Not used; BitNet uses its native packed ternary representation | Implemented in the research package/runtime |
+| Python semantic-memory runtime | Python owns tokenizer/chat orchestration over the native DIP handle | Implemented for research packages |
+| End-to-end substituted-MLP evaluation | Complete and extended through native token generation and chat | Implemented for evaluation, but no qualifying compiled candidate |
+
+Therefore the separately trained **native-BitNet Milestone 2 path is
+operational and may advance**. Engram still cannot claim that it converts an
+arbitrary dense Llama checkpoint into a gate-passing semantic-memory model.
+
 CUDA is permitted for training and distillation only. Packaged inference,
 including the passing BitNet MLP and attention kernels, remains CPU-only and
 does not call llama.cpp.
@@ -112,13 +129,13 @@ on CPU.
 
 This is exact greedy token agreement, not hidden-state or logit parity. Reset
 proves repeated tokens, zeroed counters, and structural metric parity—not
-hidden-state identity. The longest processed context was 14 positions, below
-the exact W=16 local window, so eviction and older-context retrieval were not
-exercised. The **395.3581-second** wall time includes first runs, reset replays,
-and per-process package authentication, while reported native counters and
-phase timings are first-run snapshots. It is not a speed claim, and traffic is
-modeled rather than measured DRAM. See the
-[packaged DIP token-runtime report](reports/native_bitnet_dip_token_runtime_2026-07-26/summary.md).
+hidden-state identity. After adding the chat ABI, the rebuilt native core
+repeated the same 32/32 and 8/8 result in **397.3352 seconds** including reset
+replays and per-process authentication. The frozen suite still stops at 14
+positions, below W=16. A separate interactive chat smoke processed 17 prompt
+tokens and crossed the eviction boundary, but it is not a sustained
+older-memory quality test. Traffic is modeled rather than measured DRAM. See
+the [native DIP chat-binding report](reports/native_bitnet_dip_chat_runtime_2026-07-27/summary.md).
 
 The shared-controller path now passes its fixed transition gate. The decisive
 change was architectural, not another corpus scale-up: a BitNet layer already
@@ -216,7 +233,8 @@ PYTHONPATH=src python -m engram.cli install-native-bitnet-semantic-memory \
   --adjudication-sha256 ebb5ca9568387ffd3c5b187f8e17f3ce706aaee86f4bbe9e314bf1760a7da5cc
 
 cmake -S . -B build-runtime -DCMAKE_BUILD_TYPE=Release
-cmake --build build-runtime --target engram-bitnet-token-generate -j
+cmake --build build-runtime \
+  --target engram-bitnet-token-generate engram_bitnet_token_runtime -j
 
 PYTHONPATH=src python -m engram.cli \
   evaluate-native-bitnet-dip-token-generation \
@@ -225,15 +243,16 @@ PYTHONPATH=src python -m engram.cli \
   --prompts tests/fixtures/inference_prompts.jsonl \
   --reference reports/controller_cpp_stage_runner_2026-07-26/frozen_8x4.json \
   --package-manifest-sha256 707bbe069ef6892ce9bfe98258f3289e28af15a400922e950c4386f56dd26926 \
-  --executable-sha256 0f6cf41c9c14dc3e05a8cad7a01f4f9909bd355f4e27f9296d6c1e15ba91dea4 \
-  --out reports/native_bitnet_dip_token_runtime_2026-07-26/integrated_8x4.json \
+  --executable-sha256 29526c9838ea484d8a21887dafeaba99a57348e7377e0de4138e0631dde10fad \
+  --out reports/native_bitnet_dip_chat_runtime_2026-07-27/frozen_8x4.json \
   --max-tokens 4 --threads 12 --timeout 300
 ```
 
-The existing `chat-native-bitnet` command has not crossed this boundary: it
-uses the Python Transformers shell and rejects the derived DIP package. A
-C/Python binding that exposes this native token runtime to the packaged chat
-template is the next integration step.
+`chat-native-bitnet` now crosses this boundary through
+`libengram_bitnet_token_runtime.so`. The versioned C ABI accepts only the
+authenticated package root, owns one mapped runtime, and requires a reset
+before each full-history re-prefill. Python uses the packaged tokenizer and
+chat template but does not construct a Transformers model or execute Torch.
 
 The latest dense-source campaign implements whole-model exact Q-Sparse
 co-adaptation rather than another router guess. A causally fitted per-layer
@@ -430,7 +449,33 @@ step. This is a working research inference engine, not an interactive runtime.
 
 ### Interactive native BitNet chat
 
-The package can be used through an interactive, chat-template-aware command:
+Build the versioned token-runtime DSO and start the authenticated DIP package:
+
+```console
+cmake --build build-runtime --target engram_bitnet_token_runtime -j
+
+PYTHONPATH=src python -m engram.cli chat-native-bitnet \
+  --model work/native_bitnet/model.engram-bitnet-dip \
+  --library build-runtime/libengram_bitnet_token_runtime.so \
+  --threads 12 \
+  --max-tokens 1
+Engram native BitNet DIP chat. Commands: /reset, /history, /quit
+You> Hello
+Engram> Hello
+[5.16s; 1 tokens; 7477440 attention-state bytes]
+You>
+```
+
+This real smoke rendered the default system message and `Hello` to 17 tokens,
+crossing the W=16 local-attention boundary. The native result matched the
+standalone executable, and a second generation on the same mapped handle
+after reset reproduced token `9906` and every non-timing structural metric.
+Python performs local packaged tokenization and template rendering only; all
+model execution is in the CPU-native DIP runtime.
+
+The earlier pre-DIP Transformers-shell transcript is retained below as
+historical behavioral evidence. Its command and timings do **not** describe
+the current backend:
 
 ```console
 PYTHONPATH=src python -m engram.cli chat-native-bitnet \
@@ -455,16 +500,13 @@ You>
 ```
 
 Each turn is appended to structured user/assistant history, rendered with the
-chat template stored in the packaged tokenizer, and re-prefilled through a
-fresh bounded native cache. `/history` displays the current conversation,
-`/reset` clears it while retaining the system message, and `/quit` exits.
-The second response above is conditioned on the earlier poem and follow-up,
-which validates multi-turn history rendering through the current re-prefill
-path. Both turns generated the configured 32-token limit while native
-attention state remained fixed at 7,477,440 bytes.
-This initial version does not stream tokens or preserve cache state between
-turns. The observed turns took 166.43 and 153.15 seconds, so the interface is
-usable for behavioral testing but is not yet real-time.
+chat template stored in the authenticated package, then re-prefilled through a
+fresh native cache. `/history` displays the current conversation, `/reset`
+clears it while retaining the system message, and `/quit` exits. The initial
+implementation does not stream tokens or preserve cache state between turns.
+The old two-turn transcript showed that complete-history rendering conditioned
+the second response, but this behavior still needs a new scripted multi-turn
+confirmation on the DIP binding.
 The detailed history below is retained so negative results remain auditable.
 
 The repository contains an end-to-end research prototype: Hugging Face model inspection and

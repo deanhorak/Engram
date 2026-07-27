@@ -13,8 +13,8 @@ key result is that the separate native-BitNet path now combines teacher-like
 behavior with the required modeled memory-traffic reduction through practical
 DIP semantic memory. Its final semantic gate passed by postmortem
 adjudication, and the authenticated DIP package now runs inside the complete
-CPU-only C++ token-step runtime. The original dense-Llama conversion path
-still has no qualifying representation.
+CPU-only C++ token-step runtime and the user-facing chat command. The original
+dense-Llama conversion path still has no qualifying representation.
 
 ## 1. What a language model does
 
@@ -491,6 +491,14 @@ RoPE/RMS values, and EOS IDs (including `128009`) from the authenticated
 package. The executable links its kernel objects directly rather than loading
 an Engram shared library.
 
+The chat frontend reaches the same implementation through a small versioned C
+ABI. Python supplies only authenticated tokenization, packaged chat-template
+rendering, and conversation bookkeeping. The native handle authenticates and
+maps the package once, executes every token step, and exposes structural
+metrics. It does not construct a Transformers model, Torch decoder shell, or
+dense MLP fallback. The current frontend resets the handle and re-prefills the
+complete rendered conversation on every turn.
+
 The reset replay proves identical greedy tokens, zeroed position/metric
 counters, and structural metric parity; it does not compare hidden states.
 Likewise, matching greedy tokens is not hidden-state or logit parity. The
@@ -664,7 +672,8 @@ The current loop is real and executable, but several inputs to it are not learne
   because that source track fails its semantic gate;
 - native-BitNet DIP has passed its final semantic decision by postmortem
   adjudication and is promoted into a derived DIP-only native token package;
-  the older Python chat shell does not yet call that backend.
+  the current Python chat frontend calls that backend through its versioned
+  native handle.
 
 Consequently, successful package generation or Python/C++ parity proves that
 the systems pipeline works. It does not prove that this original dense-Llama

@@ -1,6 +1,6 @@
 # Project status
 
-Snapshot date: **2026-07-26**
+Snapshot date: **2026-07-27**
 
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
@@ -44,11 +44,13 @@ fail-closed: every layer directly executes attention, normalized semantic
 input extraction, DIP, and semantic-output acceptance, with no dense semantic
 backend or fallback.
 
-The promoted manifest SHA is `707bbe06…26926`; the standalone executable SHA
-is `0f6cf41c…1dea4`. The binary authenticates the exact, symlink-free inventory
-and all semantic trust roots before model mapping, derives architecture and
-EOS (including `128009`) from packaged files, and has no Engram shared-library
-dependency.
+The promoted manifest SHA is `707bbe06…26926`; the rebuilt standalone
+executable SHA is `29526c98…0fad`; and the versioned chat-runtime DSO SHA is
+`df3a4f70…3f96`. The executable and shared ABI both authenticate the exact,
+symlink-free inventory and all semantic trust roots before model mapping and
+derive architecture and EOS (including `128009`) from packaged files. The
+standalone executable has no Engram shared-library dependency. The chat DSO
+depends only on system libraries and exports six versioned C symbols.
 
 The fixed non-holdout eight-prompt/32-token integration confirmation has now
 passed with 32/32 greedy token-ID agreement and 8/8 exact prompts. Global mean
@@ -59,14 +61,15 @@ its global mean is 41.16116% of dense ideal Q4 and its maximum prompt mean is
 traffic-recomputation, generated-budget, and reset-replay checks passed on
 CPU.
 
-The 395.3581-second wall time includes first runs, reset replays, and
-per-process package authentication; native counters/timings are first-run
-snapshots. Exact means greedy tokens, not hidden or logit parity. Reset proves
-token replay, zeroed counters, and structural metric parity, not hidden-state
-identity. The maximum processed context is 14
-positions, so the W=16 suite does not exercise eviction or older retrieval.
-This is integration correctness, not speed evidence. See
-the [packaged runtime report](../reports/native_bitnet_dip_token_runtime_2026-07-26/summary.md).
+The rebuilt-core confirmation took 397.3352 seconds across first runs, reset
+replays, and per-process package authentication; native counters/timings are
+first-run snapshots. Exact means greedy tokens, not hidden or logit parity.
+Reset proves token replay, zeroed counters, and structural metric parity, not
+hidden-state identity. The frozen suite still stops at 14 positions. A real
+interactive chat smoke processed 17 prompt tokens and crossed W=16, but it
+does not establish sustained older-memory quality. This is integration
+correctness, not speed evidence. See the
+[native chat-binding report](../reports/native_bitnet_dip_chat_runtime_2026-07-27/summary.md).
 
 The frozen practical-routing policy is
 [machine-readable](../reports/native_bitnet_m2_2026-07-26/frozen_dip_policy.json).
@@ -76,6 +79,24 @@ the prior cross-track snapshot remains the
 [2026-07-23 semantic-gate summary](../reports/semantic_gate_status_2026-07-23/summary.json).
 Large corpora, checkpoints, and scratch experiments remain under ignored
 `work/` paths and are not source-control artifacts.
+
+## Milestone 2 ledger
+
+The native-BitNet track can now proceed beyond Milestone 2, but the generic
+dense-Llama conversion track cannot:
+
+| Milestone 2 deliverable | Native-BitNet status | Generic dense-Llama status |
+|---|---|---|
+| Background operators | Exact operator residual is packaged; learned correction is zero | Implemented experimentally; current fitted background hurts held-out quality |
+| Semantic key/value package | Complete ternary records plus authenticated DIP-v2 index | Format/runtime exist; no qualifying trained artifact |
+| Practical routing | **Passed** on all 30 MLPs with no dense fallback | **Blocked** |
+| Product/additive quantization | Replaced by native packed ternary BitNet representation | Implemented in generic research packages |
+| Python semantic-memory runtime | Tokenizer/chat frontend drives a persistent native DIP handle | Implemented for research packages |
+| End-to-end substituted MLPs | Passed evaluation, package generation, native token generation, and chat smoke | Evaluation path exists; no gate-passing compilation candidate |
+
+This is a track-specific engineering and semantic result. It does not erase
+the original dense-source failures or turn the native-BitNet artifact into a
+converted dense Llama model.
 
 ## Semantic gate definition and outcome
 
@@ -410,11 +431,11 @@ scientific exit criterion has passed.
 | Milestone | Implementation status | Evidence status |
 |---|---|---|
 | 1. Inspection, tracing, exact MLP decomposition, oracle experiment | Complete | Complete for the fixture and exercised on SmolLM2 |
-| 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP index, CPU-only selected-record kernel, authenticated derived package, substitution evaluator, physical accounting, parity checks, and DIP-only C++ token runtime exist | **Semantic gate passed by postmortem adjudication** on the consumed final holdout; packaged non-holdout token generation also passes at 32/32 greedy token-ID agreement with no dense fallback. Generic dense-Llama conversion and broader replication remain incomplete |
+| 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP index, CPU-only selected-record kernel, authenticated derived package, substitution evaluator, physical accounting, parity checks, DIP-only C++ token runtime, and packaged-tokenizer chat binding exist | **Native-BitNet path passed** by postmortem adjudication; rebuilt non-holdout token generation remains 32/32 and the real chat command uses the same no-fallback backend. Generic dense-Llama conversion and broader replication remain incomplete |
 | 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, and incremental package integration implemented | **Frozen trained-model confirmation passes**; randomized parity, bounded-state scaling, cache-position advancement, and incremental generation pass; hardware counters remain |
 | 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, authenticated package installation, persistent native stage state, and a one-call 30-stage C++ attention/semantic runner implemented | **Controller, compiled-substitution, incremental-generation, and C++ orchestration gates pass**; frozen generation reaches 96.875% token agreement, 87.5% exact prompts, correct cache positions, and zero decoder-layer calls |
 | 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, native vocabulary argmax, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and passes source/package parity; generic vocabulary/cache/correction paths are not all active in the promoted native-BitNet runtime |
-| 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime, memory-mapped BitNet DIP/projection kernels, streaming attention, native shell operators, authenticated C++ package mapping, manifest-derived model configuration/EOS, token-step control, greedy argmax, reset, and a standalone generation executable implemented | **Partial**: the DIP-only native token path passes an 8×4 local-window integration suite; tokenizer/chat orchestration is still Python-side, older-context attention is not covered there, and AVX2 tuning and hardware-counter traffic remain |
+| 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime, memory-mapped BitNet DIP/projection kernels, streaming attention, native shell operators, authenticated C++ package mapping, manifest-derived model configuration/EOS, token-step control, greedy argmax, reset, standalone generation, and a versioned shared ABI implemented | **Partial**: model execution is native and chat uses the shared handle; tokenizer/template/history orchestration remains Python-side, sustained older-context quality is not covered, and AVX2 tuning and hardware-counter traffic remain |
 | 7. Evaluation, ablations, tuning, documentation, final report | In progress | Many negative ablations exist; no successful reproducible final report |
 
 The optional Oracle cognitive executive is a separate request-level subsystem.
@@ -434,10 +455,10 @@ independent of the model-worker semantic-gate evidence.
   postmortem adjudication, not by a pristine final-runner result. This is not a
   blanket claim that all generic Milestone 2 packaging and conversion work is
   complete.
-- The new derived DIP package and native token runtime pass their small
-  integration suite, but `chat-native-bitnet` does not use that backend. The
-  Python Transformers-shell runtime rejects DIP packages rather than silently
-  using dense MLPs.
+- The derived DIP package, standalone runtime, and shared chat handle pass
+  their integration checks. Python still owns tokenization, template
+  rendering, and history, but it no longer constructs or executes a
+  Transformers model shell.
 - The final holdout is plaintext in the repository. Its separation is
   procedural and honor-system-based, with a fail-closed runner; it is not
   cryptographically hidden from developers.
@@ -695,35 +716,35 @@ generation returns the same tokens and stable cache counters, and EOS
 termination is unit-tested. Complete prefill succeeds at 512 and 2,048 tokens
 in 24.10 and 81.77 seconds. Peak process RSS is 2.14 and 2.57 GB.
 
-The main blocker is decode speed. A 33-token prefill takes 4.65 seconds, then
-seven model steps take 38.26 seconds—about 5.47 seconds per decoded token.
-Quality testing can proceed, but interactive use requires a dedicated
-single-row AVX2 MLP/projection path and removal of the Transformers shell.
+The main performance blocker is still decode speed. The older shell measured
+about 5.47 seconds per decoded token; the current native-DIP chat smoke took
+5.16 seconds for one generated token after startup. Removing the Transformers
+model shell therefore closed an architectural dependency, not the
+single-token CPU optimization problem. A dedicated single-row
+MLP/projection/vocabulary path remains justified.
 
-An interactive `chat-native-bitnet` CLI now applies the packaged tokenizer's
-chat template to structured history and re-prefills that complete history on
-each turn. It supports history display, reset, clean exit, EOF, and interrupt
-handling. A real two-turn session generated a 32-token poem, then interpreted
-`awesome!` as a response to that poem and began another one. The turns took
-166.43 and 153.15 seconds and each reported the same 7,477,440-byte attention
-state. This establishes chat-template history and multi-turn behavior, not
-interactive performance: output is returned only after the turn finishes,
-and cross-turn native cache reuse is not implemented.
+An interactive `chat-native-bitnet` CLI now applies the authenticated
+packaged tokenizer's template to structured history and re-prefills that
+complete history through the DIP-only shared handle on every turn. It
+supports history display, reset, clean exit, EOF, and interrupt handling. A
+real default-system `Hello` smoke rendered 17 prompt tokens, generated token
+`9906` (`Hello`) in 5.16 seconds, and reported 7,477,440 attention-state
+bytes. The earlier two-turn poem session remains historical evidence from the
+retired Transformers model shell; it has not yet been repeated as a scripted
+multi-turn DIP confirmation.
 
-The separate C++ token-step runtime has now moved the adjudicated semantic
-operator through the final model-core boundary. Package derivation
-authenticates the policy, adjudication, base records, and coordinate index;
-the runtime maps both semantic artifacts and has no dense MLP object or
-fallback. Its non-holdout 8×4 confirmation matches all reference tokens and
-passes traffic, position, row, stage, and reset-structure checks. The binary
-authenticates the exact manifest and inventory before mapping the model,
-derives architecture and EOS from the package, and has no Engram shared-library
-dependency. The suite stays within the 16-position local window, so it does
-not cover older retrieval. The next systems
-boundary is a narrow C/Python binding that lets the existing packaged
-tokenizer and chat-template frontend drive this DIP-only runtime. Persistent
-chat caching, streaming, support for separately adjudicated model trust roots,
-measured DRAM traffic, and performance optimization remain later work.
+The C++ token-step runtime and its versioned shared ABI now move the
+adjudicated semantic operator through both the model-core and chat boundaries.
+Package derivation authenticates the policy, adjudication, base records, and
+coordinate index; the runtime maps both semantic artifacts and has no dense
+MLP object or fallback. The rebuilt non-holdout 8×4 confirmation matches all
+reference tokens and reset structure. The standalone binary remains
+self-contained; the chat DSO exports only the narrow C ABI and depends on no
+other Engram library. The frozen suite stays within W=16, while the 17-token
+chat smoke crosses the boundary without constituting a sustained
+older-retrieval test. Persistent chat caching, streaming, separately
+adjudicated trust roots, measured DRAM traffic, and performance optimization
+remain later work.
 
 CUDA remains an optional training accelerator only; the serialized format and
 inference mechanism are CPU-native. Repeating IVF, candidate-count,

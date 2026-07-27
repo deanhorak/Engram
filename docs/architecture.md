@@ -355,17 +355,19 @@ Attention state is fixed at 7,477,440 bytes across the complete 30-layer
 runtime, and modeled attention reads fall to 2.14% of dense at 2,048 tokens.
 These are logical interface bytes, not measured hardware DRAM traffic.
 
-Interactive chat is currently an orchestration layer over the Python package
-runtime. It retains
-structured messages, renders the packaged tokenizer's chat template, resets
-the native caches, and re-prefills the complete rendered history for each
-turn. Greedy decoding then advances the normal incremental position path, and
-the decoded assistant text is appended to history. This validates multi-turn
-conditioning without introducing a second inference mechanism. Persistent
-cross-turn cache reuse, streaming output, and context truncation remain open.
+Interactive chat is now a thin orchestration layer over the authenticated
+DIP token runtime. Python retains structured messages, renders the packaged
+tokenizer's chat template, and encodes/decodes token IDs. A versioned C ABI
+owns the mapped model, DIP index, controller scales, attention caches, and
+token generation. Each turn explicitly resets the handle and re-prefills the
+complete rendered history from position zero; the ABI rejects a second
+generation without reset so full history cannot accidentally be appended to a
+live cache.
 
-That paragraph currently describes `chat-native-bitnet` over the older Python
-Transformers-shell runtime, not the newly packaged DIP token runtime. The
-Python loader deliberately rejects a DIP package to prevent an accidental
-dense fallback. The next boundary is a C/Python token-runtime handle so the
-same tokenizer/history frontend can call the DIP-only native core.
+The C constructor accepts only the package root and invokes the same
+production-pinned loader as the standalone executable. Python cannot provide
+model dimensions, artifact paths, routing policy, W/C/K/S attention settings,
+or EOS overrides. There is no `AutoModelForCausalLM`, Torch execution, decoder
+layer, or dense semantic fallback in this chat path. Persistent cross-turn
+cache reuse, streaming output, context truncation, and a sustained
+long-context older-memory confirmation remain open.

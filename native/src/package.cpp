@@ -1074,6 +1074,8 @@ NativeBitNetDIPPackageMetadata load_native_bitnet_dip_package(
   constexpr std::size_t kOlderCandidates = 8;
   constexpr std::size_t kOlderTopK = 4;
   constexpr std::size_t kSinkTokens = 2;
+  const std::size_t kernel_threads =
+      size_field(runtime, "kernel_threads", "manifest.runtime");
   if (string_field(runtime, "device", "manifest.runtime") != "cpu" ||
       string_field(runtime, "dtype", "manifest.runtime") != "bfloat16" ||
       string_field(runtime, "mlp_mode", "manifest.runtime") !=
@@ -1087,7 +1089,8 @@ NativeBitNetDIPPackageMetadata load_native_bitnet_dip_package(
       size_field(attention_policy, "older_top_k",
                  "manifest.runtime.attention_policy") != kOlderTopK ||
       size_field(attention_policy, "sink_tokens",
-                 "manifest.runtime.attention_policy", true) != kSinkTokens) {
+                 "manifest.runtime.attention_policy", true) != kSinkTokens ||
+      kernel_threads > 256) {
     throw PackageError(
         "native BitNet runtime or bounded-attention policy is unsupported");
   }
@@ -1344,6 +1347,7 @@ NativeBitNetDIPPackageMetadata load_native_bitnet_dip_package(
 
   NativeBitNetDIPPackageMetadata result{
       .root = root,
+      .manifest_sha256 = trust_root.package_manifest_sha256,
       .non_mlp_safetensors = root / non_mlp_relative,
       .mlp_artifact = root / mlp_relative,
       .dip_coordinate_index = root / index_relative,
@@ -1356,6 +1360,7 @@ NativeBitNetDIPPackageMetadata load_native_bitnet_dip_package(
       .key_value_heads = key_value_heads,
       .head_dimension = hidden_size / query_heads,
       .max_position_embeddings = max_position_embeddings,
+      .kernel_threads = kernel_threads,
       .local_window = kLocalWindow,
       .older_candidates = kOlderCandidates,
       .older_top_k = kOlderTopK,

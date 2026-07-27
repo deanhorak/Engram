@@ -569,6 +569,80 @@ def test_native_bitnet_dip_token_generation_cli_forwards_runtime_inputs(
     }
 
 
+def test_native_bitnet_chat_cli_uses_authenticated_dip_runtime(
+    tmp_path,
+    monkeypatch,
+):
+    captured = {}
+
+    class FakeRuntime:
+        def __init__(self, package, **kwargs):
+            captured["package"] = package
+            captured.update(kwargs)
+
+        def __enter__(self):
+            captured["entered"] = True
+            return self
+
+        def __exit__(self, *_args):
+            captured["closed"] = True
+
+    def fail_legacy(*_args, **_kwargs):
+        pytest.fail("legacy Transformers runtime must not be constructed")
+
+    def fake_chat(runtime, **kwargs):
+        captured["chat_runtime"] = runtime
+        captured["chat_kwargs"] = kwargs
+        return 0
+
+    monkeypatch.setattr(
+        "engram.cli.NativeBitNetDIPTokenRuntime",
+        FakeRuntime,
+    )
+    monkeypatch.setattr("engram.cli.NativeBitNetRuntime", fail_legacy)
+    monkeypatch.setattr("engram.cli.run_native_bitnet_chat", fake_chat)
+    result = main(
+        [
+            "chat-native-bitnet",
+            "--model",
+            str(tmp_path / "model.engram-bitnet-dip"),
+            "--library",
+            str(tmp_path / "libengram_bitnet_token_runtime.so"),
+            "--threads",
+            "6",
+            "--max-tokens",
+            "4",
+            "--system",
+            "fixture system",
+        ]
+    )
+
+    assert result == 0
+    assert captured["package"] == tmp_path / "model.engram-bitnet-dip"
+    assert captured["library"] == (
+        tmp_path / "libengram_bitnet_token_runtime.so"
+    )
+    assert captured["threads"] == 6
+    assert captured["entered"] and captured["closed"]
+    assert captured["chat_kwargs"] == {
+        "max_new_tokens": 4,
+        "system_prompt": "fixture system",
+    }
+
+
+def test_native_bitnet_chat_cli_rejects_legacy_attention_overrides(tmp_path):
+    with pytest.raises(SystemExit):
+        _parser().parse_args(
+            [
+                "chat-native-bitnet",
+                "--model",
+                str(tmp_path / "model"),
+                "--attention-library",
+                str(tmp_path / "attention.so"),
+            ]
+        )
+
+
 def test_native_bitnet_attention_cli_forwards_confirmation_split(tmp_path, monkeypatch):
     captured = {}
 

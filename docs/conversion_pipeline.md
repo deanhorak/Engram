@@ -248,7 +248,8 @@ Build and confirm the native token runtime:
 
 ```bash
 cmake -S . -B build-runtime -DCMAKE_BUILD_TYPE=Release
-cmake --build build-runtime --target engram-bitnet-token-generate -j
+cmake --build build-runtime \
+  --target engram-bitnet-token-generate engram_bitnet_token_runtime -j
 
 PYTHONPATH=src python -m engram.cli \
   evaluate-native-bitnet-dip-token-generation \
@@ -257,8 +258,8 @@ PYTHONPATH=src python -m engram.cli \
   --prompts tests/fixtures/inference_prompts.jsonl \
   --reference reports/controller_cpp_stage_runner_2026-07-26/frozen_8x4.json \
   --package-manifest-sha256 707bbe069ef6892ce9bfe98258f3289e28af15a400922e950c4386f56dd26926 \
-  --executable-sha256 0f6cf41c9c14dc3e05a8cad7a01f4f9909bd355f4e27f9296d6c1e15ba91dea4 \
-  --out reports/native_bitnet_dip_token_runtime_2026-07-26/integrated_8x4.json \
+  --executable-sha256 29526c9838ea484d8a21887dafeaba99a57348e7377e0de4138e0631dde10fad \
+  --out reports/native_bitnet_dip_chat_runtime_2026-07-27/frozen_8x4.json \
   --max-tokens 4 --threads 12 --timeout 300
 ```
 
@@ -333,12 +334,12 @@ engram benchmark-native-bitnet-generation \
   --native-projections
 
 engram chat-native-bitnet \
-  --model work/native_bitnet/model.engram-bitnet \
-  --library build/libengram_bitnet.so \
-  --attention-library build/libengram_attention.so \
+  --model work/native_bitnet/model.engram-bitnet-dip \
+  --library build-runtime/libengram_bitnet_token_runtime.so \
   --threads 12 --max-tokens 32
 ```
 
+The legacy generation/evaluation commands use a Transformers model shell.
 The compiler copies only config/tokenizer assets and non-MLP tensors, embeds
 the packed phase-stream artifact, and seals the result with checksums. The
 runtime creates the transformer without initially allocating parameters,
@@ -351,29 +352,24 @@ does not consult the source checkpoint directory after compilation.
 `--native-projections` additionally executes the packaged official Q/K/V/O
 ternary tensors without expanding them to BF16 matrices.
 
-`chat-native-bitnet` always enables packed native projections and bounded
-attention. It uses the packaged tokenizer's chat template and re-prefills the
-complete structured conversation on every turn. The supported session
-commands are `/history`, `/reset`, `/quit`, and `/exit`. Persistent cross-turn
-cache reuse and token streaming are intentionally deferred until this
-re-prefill implementation has broader behavioral validation. The current
-turn lifecycle is:
+`chat-native-bitnet` no longer uses that model shell. It opens only the
+authenticated DIP package through `libengram_bitnet_token_runtime.so`, while
+Python loads the packaged tokenizer locally. The package fixes packed
+projections, semantic routing, and bounded attention; there are no CLI policy
+overrides. The supported session commands are `/history`, `/reset`, `/quit`,
+and `/exit`. The current turn lifecycle is:
 
 1. append the new user message to structured conversation history;
 2. render all system, user, and assistant messages with the packaged template;
-3. reset the bounded native attention states and prefill the rendered tokens
-   from absolute position zero;
+3. reset the versioned native handle and prefill the rendered tokens from
+   absolute position zero;
 4. decode greedily while advancing RoPE and cache positions;
 5. decode and append the assistant response to history.
 
-A two-turn 32-token example took 166.43 and 153.15 seconds. The second answer
-acknowledged the first turn before starting another poem, while both turns
-reported the same 7,477,440-byte attention state.
-
-These Python generation/chat commands currently target the original
-`model.engram-bitnet` package. They deliberately reject
-`model.engram-bitnet-dip`, because that shell does not implement the
-authenticated DIP backend and must not substitute dense MLPs implicitly. The
-derived package is currently driven by
-`build-runtime/engram-bitnet-token-generate`; a native-runtime C/Python
-binding is the next step toward DIP-backed chat.
+A real default-system `Hello` smoke rendered 17 prompt tokens, generated
+`Hello` in 5.16 seconds, and reported 7,477,440 attention-state bytes. A
+same-handle reset replay reproduced the raw token and structural metrics. The
+older two-turn 166.43/153.15-second transcript belongs to the retired
+Transformers shell and has not yet been repeated as a scripted multi-turn DIP
+confirmation. Persistent cross-turn cache reuse and token streaming remain
+deferred.

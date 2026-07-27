@@ -1,0 +1,104 @@
+{
+  "artifacts": {
+    "native_token_executable_sha256": "29526c9838ea484d8a21887dafeaba99a57348e7377e0de4138e0631dde10fad",
+    "native_token_library_sha256": "df3a4f70952cddaebff2e5198d9ddf6b5e8a25487020c40b89ec99f2c7d33f96",
+    "package_manifest_sha256": "707bbe069ef6892ce9bfe98258f3289e28af15a400922e950c4386f56dd26926"
+  },
+  "backend": {
+    "attention_operator": "native_streaming_w16_c8_k4_sinks2",
+    "cpu_only": true,
+    "dense_semantic_fallback": false,
+    "native_shared_library_dependencies": [
+      "libm.so.6",
+      "libc.so.6",
+      "ld-linux-x86-64.so.2"
+    ],
+    "python_model_shell_constructed": false,
+    "semantic_operator": "native_bitnet_dynamic_input_pruning_v2",
+    "torch_model_execution": false,
+    "transformers_use": "packaged_tokenizer_and_chat_template_only",
+    "versioned_exported_abi_symbols": 6
+  },
+  "experiment": "native_bitnet_dip_chat_binding_smoke",
+  "frozen_core_confirmation": {
+    "exact_prompts": 8,
+    "gate_passed": true,
+    "generated_tokens": 32,
+    "global_mean_active_fraction": 0.21560172604669886,
+    "global_mean_modelled_traffic_fraction_of_dense_q4": 0.41161156051507425,
+    "report": "frozen_8x4.json",
+    "total_wall_seconds_including_reset_replays": 397.3352071950503,
+    "weighted_token_agreement": 1.0
+  },
+  "interactive_smoke": {
+    "assistant_text": "Hello",
+    "generated_tokens": [
+      9906
+    ],
+    "max_new_tokens": 1,
+    "native_generation_seconds": 5.16,
+    "rendered_prompt": "System: You are a helpful assistant.<|eot_id|>User: Hello<|eot_id|>Assistant: ",
+    "rendered_prompt_token_count": 17,
+    "rendered_prompt_tokens": [
+      128000,
+      2374,
+      25,
+      1472,
+      527,
+      264,
+      11190,
+      18328,
+      13,
+      128009,
+      1502,
+      25,
+      22691,
+      128009,
+      72803,
+      25,
+      220
+    ],
+    "w16_boundary_crossed": true
+  },
+  "raw_token_binding_parity": {
+    "attention_logical_read_bytes": 22118400,
+    "attention_state_bytes": 7477440,
+    "generated_tokens": [
+      9906
+    ],
+    "prompt_tokens": [
+      128000,
+      1502,
+      25,
+      22691,
+      128009,
+      72803,
+      25,
+      220
+    ],
+    "selected_records": 361598,
+    "semantic_cache_line_bytes": 2624024064,
+    "semantic_calls": 30,
+    "semantic_rows": 240,
+    "shared_abi_matches_standalone_executable": true,
+    "stage_calls": 30
+  },
+  "reset_replay": {
+    "generated_tokens": [
+      9906
+    ],
+    "same_mapped_handle": true,
+    "structural_metrics_match": true
+  },
+  "schema_version": 1,
+  "status": "authenticated_native_dip_chat_binding_smoke_passed",
+  "unproven": [
+    "broad chat quality or safety",
+    "streaming output",
+    "persistent cross-turn cache reuse",
+    "context truncation policy",
+    "measured DRAM traffic",
+    "hidden-state or logit parity through the C ABI",
+    "sustained long-context older-memory quality"
+  ]
+}

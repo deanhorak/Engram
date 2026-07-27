@@ -16,9 +16,9 @@
   converting an already-trained dense Llama checkpoint. Official-layer output
   is numerically, not bitwise, equal to PyTorch BF16 because reduction order differs (maximum
   checked relative L2 0.00982). No hardware DRAM counter was available, and
-  the original Python package/generation path still retains the source
-  attention, normalization, embedding, and output tensors inside a
-  Transformers shell. The newer DIP package has a complete C++ token runtime,
+  the retired Python package/generation path retained the source attention,
+  normalization, embedding, and output tensors inside a Transformers shell.
+  The newer DIP package and chat command use the complete C++ token runtime,
   but this remains a source-family-specific runtime rather than the intended
   controller-only architecture distilled free of original transformer
   operators.
@@ -61,19 +61,20 @@
   21.5602%/22.5892%; global/maximum-prompt complete modeled traffic is
   41.1612%/41.2984%. Complete traffic is 30,153,074,432 bytes, including
   194,304 global-metadata bytes. The traffic remains modeled.
-- The integration wall time is 395.3581 seconds across first generations,
+- The rebuilt-core integration wall time is 397.3352 seconds across first generations,
   reset replays, and per-process package authentication. This is disclosure,
   not a speed claim. Reported native counters and phase timings are first-run
   snapshots. Reset proves repeated tokens, zeroed counters, and structural
   metric parity, not hidden-state identity.
-- The longest integrated context is 14 positions, below the exact W=16 local
-  window. The run therefore does not validate eviction, sink/heavy-hitter
-  updates, or older-context retrieval inside the DIP-only runtime.
+- The frozen 8×4 context is at most 14 positions, below W=16. The real chat
+  smoke reaches 17 prompt tokens and crosses the eviction boundary, but one
+  output is not enough to validate sink/heavy-hitter updates or sustained
+  older-context retrieval quality.
 - The derived DIP package is supported only by the native token runtime.
-  `chat-native-bitnet` still uses the older Python Transformers shell and
-  explicitly rejects a DIP package rather than falling back to dense MLP
-  execution. Tokenizer/chat-template binding, streaming, and persistent
-  cross-turn native state are not yet connected to the DIP backend.
+  `chat-native-bitnet` now uses that runtime through a versioned C ABI. Python
+  still owns the packaged tokenizer, template, and history, but it does not
+  construct a Transformers model or dense semantic fallback. Streaming and
+  persistent cross-turn native state remain unimplemented.
 - `engram-bitnet-token-generate` now authenticates an exact, symlink-free
   package inventory and derives architecture, paths, bounds, attention policy,
   RoPE/RMS settings, and EOS IDs from it. This is deliberately pinned to the
@@ -81,12 +82,17 @@
   separately adjudicated model still requires a new reviewed native trust
   root and binary. The executable directly links Engram kernels and has no
   Engram shared-library dependency.
+- Package authentication is currently pathname based: validation rejects
+  symlinks and rechecks the inventory, but files are not yet mapped through
+  already-open `O_NOFOLLOW` descriptors. An adversarial local process that can
+  replace package files concurrently could therefore create a validation/use
+  race. The current evidence assumes a trusted, quiescent local package
+  directory.
 - Bounded attention is integrated into complete package generation and avoids
-  the dense Hugging Face KV cache, but Q/K/V and output projections still run
-  in PyTorch in the older Python shell and every token crosses the
-  Python/ctypes boundary at every layer. The DIP-only C++ token runtime avoids
-  that shell and executes native packed projections, but its current evidence
-  is the much smaller 8×4 suite. At a 256-token prompt, the older path's
+  the dense Hugging Face KV cache. Q/K/V and output projections ran in PyTorch
+  in the retired shell; the current DIP C++ runtime executes packed
+  projections and crosses Python only once per generated request. Its frozen
+  evidence is still the small 8×4 suite. At a 256-token prompt, the older path's
   attention state is fixed at 7,477,440 bytes and modeled reads are 16.35% of
   dense, yet complete processing is only about one position per second.
   Logical byte counts are algorithmic interface counts, not hardware DRAM
@@ -104,17 +110,19 @@
   eight 16-token natural-prompt completions. It is not a broad benchmark of
   reasoning, coding, instruction following, multilingual quality, or safety.
   Mean sustained throughput is only 0.194 token/s.
-- Attention state is constant through 2,048 tokens, but total process memory
-  is not: peak RSS rises from 2.14 GB at 512 tokens to 2.57 GB at 2,048 because
-  PyTorch/Transformers and transient prompt tensors remain.
+- The retired shell kept attention state constant through 2,048 tokens, but
+  its peak RSS rose from 2.14 GB at 512 tokens to 2.57 GB because
+  PyTorch/Transformers and transient prompt tensors remained. Equivalent
+  long-context RSS has not yet been measured for the new shared handle.
 - `chat-native-bitnet` re-prefills the entire rendered conversation every
   turn and prints only after generation completes. It has no cross-turn cache
   reuse, token streaming, context truncation policy, sampling controls, or
   concurrent sessions. Long conversations therefore grow prefill cost until a
-  future context-management policy is added. In the documented two-turn
-  example, 32 generated tokens took 166.43 and 153.15 seconds despite fixed
-  7,477,440-byte attention state. Bounded attention memory therefore does not
-  imply low latency or bounded total prompt-processing work.
+  future context-management policy is added. The old shell's documented
+  two-turn example took 166.43 and 153.15 seconds for 32 tokens; the new DIP
+  binding has only a one-turn/one-token 5.16-second smoke. Bounded attention
+  memory therefore does not imply low latency or bounded total
+  prompt-processing work.
 - The grouped-ternary result uses an exact serialized/reloaded artifact and
   clears the evidence floor, but it is not eligible for more training under
   its frozen rule. It closes 63.37%/62.77% of the remaining KL/NLL gaps and
