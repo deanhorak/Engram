@@ -14,6 +14,16 @@ conversion result or proof that all Milestone 2 work is complete. The
 adjudicated index is now installed into an authenticated derived package and
 the DIP-only C++ token runtime passes its fixed non-holdout integration suite.
 
+A third, OLMoE-specific branch now passes the semantic causal/evidence screen.
+OLMoE supplies 64 independently stored SwiGLU experts per layer and a trained
+top-8 router, avoiding post-hoc recovery of sparse membership from one dense
+MLP. Signed Q7 weights in groups of 64 with BF16 scales pass an all-layer
+8-sequence/256-position intervention at 22.7865% modeled expert/router traffic.
+That intervention still executes decoded weights through Transformers. The
+architectural result is therefore a qualified semantic substrate, not yet a
+native Engram runtime: packed serialization and the direct CPU expert kernel
+remain required.
+
 Engram's target runtime combines a shared recurrent controller, fixed sparse semantic
 memory derived from SwiGLU records, hybrid local/recurrent/retrieval episodic memory, an
 indexed vocabulary projection, transition caching, and uncertainty-triggered corrections.
@@ -42,6 +52,23 @@ The Python implementation verifies this identity and the native scalar kernel pr
 independent implementation. The magnitude reference uses all activations to establish a
 full-information baseline before practical routing is attempted. It is not the optimal K-subset
 in general because vector contributions can cancel.
+
+## OLMoE expert decomposition
+
+For OLMoE, the semantic record is an entire trained expert rather than one
+neuron. The router computes a 64-way softmax and selects eight experts:
+
+```text
+p = softmax(W_router h)
+S = top8(p)
+MoE(h) = sum_{e in S} p_e W_down,e(
+           SiLU(W_gate,e h) * (W_up,e h))
+```
+
+Engram captures the source probabilities, selected IDs and weights, individual
+weighted expert contributions, and their exact sum. The passing Q7 simulation
+keeps this learned selection unchanged and quantizes only expert matrices.
+Router matrices remain BF16 and are included in the traffic numerator.
 
 ## Separate native-BitNet record track
 

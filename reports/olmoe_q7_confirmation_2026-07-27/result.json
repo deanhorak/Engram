@@ -1,0 +1,49 @@
+{
+  "bits": 7,
+  "dataset": "/home/dean/repos/engram/tests/fixtures/confirmation_expanded.jsonl",
+  "dataset_sha256": "ddca79850dbd3d97935d969f84d22983ce76517e785febd2911a53545d9bafd4",
+  "experiment": "olmoe_all_layer_groupwise_quantized_causal",
+  "group_size": 64,
+  "input_identity": "2d279e5007f1e76bf2e3870254cfda779b1cd8fecdf0ae2f500957e43a4ebe45",
+  "metrics": {
+    "final_hidden_relative_l2": 0.0460272915661335,
+    "maximum_position_kl": 0.5871493220329285,
+    "prediction_positions": 256,
+    "sequences": 8,
+    "target_nll_delta": 0.0039191218093037605,
+    "teacher_to_student_kl": 0.009007741697132587,
+    "teacher_top1_agreement": 0.9765625
+  },
+  "model": "/home/dean/repos/engram/work/huggingface/models--allenai--OLMoE-1B-7B-0125/snapshots/9b0c1aa87e34a20052389dce1f0cf01da783f654",
+  "quantization": {
+    "expert_matrices": 2048,
+    "expert_parameters": 6442450944,
+    "modelled_quantized_and_scale_bytes": 5838471168,
+    "scale_dtype": "bfloat16"
+  },
+  "schema_version": 1,
+  "screen": {
+    "evidence_floor_passed": true,
+    "passed": true,
+    "quality_passed": true,
+    "scope": "all-layer causal low-bit simulation; decoded weights execute in Transformers, so serialized CPU runtime traffic remains unproven",
+    "traffic_projection_passed": true
+  },
+  "source_revision": "9b0c1aa87e34a20052389dce1f0cf01da783f654",
+  "threads": 12,
+  "thresholds": {
+    "maximum_hidden_relative_l2": 0.1,
+    "maximum_kl": 0.05,
+    "maximum_nll_delta": 0.05,
+    "maximum_traffic_fraction": 0.45,
+    "minimum_top1_agreement": 0.9
+  },
+  "traffic": {
+    "all_expert_ideal_q4_bytes_per_token": 3221225472,
+    "complete_modelled_bytes_per_token": 734003200,
+    "fraction_of_all_expert_ideal_q4": 0.22786458333333334,
+    "measured_hardware_traffic": false,
+    "router_bf16_bytes_per_token": 4194304,
+    "selected_quantized_and_scale_bytes_per_token": 729808896
+  }
+}

@@ -49,6 +49,7 @@ from .product_quantization import (
     decode_product_additive,
     fit_product_additive,
 )
+from .olmoe import OLMoESparseMLPResult, olmoe_sparse_mlp
 
 __all__ = [
     "analyze_magnitude_oracle",
@@ -96,4 +97,6 @@ __all__ = [
     "ProductAdditiveQuantizationError",
     "decode_product_additive",
     "fit_product_additive",
+    "OLMoESparseMLPResult",
+    "olmoe_sparse_mlp",
 ]

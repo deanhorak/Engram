@@ -1,10 +1,19 @@
-from .fixture import create_tiny_fixture
+from .fixture import create_tiny_fixture, create_tiny_olmoe_fixture
 from .inspection import (
     ModelInspection,
     inspect_model,
     load_layer_mlp,
     load_named_tensors,
+    load_local_named_tensors,
+    local_tensor_inventory,
     resolve_model_path,
+)
+from .olmoe import (
+    OLMoESourceAudit,
+    OLMoEValidationError,
+    audit_olmoe_source,
+    olmoe_projected_expert_traffic,
+    required_olmoe_tensor_shapes,
 )
 from .native_bitnet import (
     LoadedNativeBitNetArtifact,
@@ -23,19 +32,27 @@ from .native_bitnet import (
 __all__ = [
     "LoadedNativeBitNetArtifact",
     "ModelInspection",
+    "OLMoESourceAudit",
+    "OLMoEValidationError",
     "NativeBitNetLayerWeights",
     "NativeBitNetSourceAudit",
     "NativeBitNetValidationError",
     "audit_native_bitnet_source",
+    "audit_olmoe_source",
     "create_tiny_fixture",
+    "create_tiny_olmoe_fixture",
     "decode_native_bitnet_layer",
     "inspect_model",
     "load_layer_mlp",
     "load_named_tensors",
+    "load_local_named_tensors",
+    "local_tensor_inventory",
     "load_native_bitnet_artifact",
     "native_bitnet_mlp_forward",
     "native_bitnet_repack_traffic",
+    "olmoe_projected_expert_traffic",
     "repack_native_bitnet_model",
     "resolve_model_path",
+    "required_olmoe_tensor_shapes",
     "save_native_bitnet_artifact",
 ]

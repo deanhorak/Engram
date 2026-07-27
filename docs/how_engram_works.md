@@ -14,7 +14,27 @@ behavior with the required modeled memory-traffic reduction through practical
 DIP semantic memory. Its final semantic gate passed by postmortem
 adjudication, and the authenticated DIP package now runs inside the complete
 CPU-only C++ token-step runtime and the user-facing chat command. The original
-dense-Llama conversion path still has no qualifying representation.
+dense-Llama conversion path still has no qualifying representation. A newer
+OLMoE branch now passes semantic quality/evidence using its native learned
+top-8 expert router and Q7 expert weights, but still lacks packed
+serialization and native CPU execution.
+
+### Why OLMoE changes the semantic problem
+
+A dense Llama MLP was trained to use every neuron together. Engram's earlier
+routers had to infer, after training, which small subset could reproduce that
+dense computation. OLMoE was trained with sparsity already present: every
+layer has 64 complete SwiGLU experts and a router that chooses eight for each
+token. Engram can therefore preserve the teacher's learned selection rather
+than guess a replacement.
+
+The current experiment leaves the router unchanged, rounds every expert
+matrix to signed Q7 in groups of 64, and uses BF16 group scales. On a separate
+8-sequence/256-position confirmation it preserves the teacher closely while
+projecting 22.7865% of the all-expert Q4 traffic baseline. This is evidence
+that the semantic representation can work. It is not yet evidence that the
+final inference engine works, because Transformers still performs the
+decoded expert computation.
 
 ## 1. What a language model does
 

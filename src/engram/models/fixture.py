@@ -85,3 +85,105 @@ def create_tiny_fixture(
         weights[f"{base}.mlp.down_proj.weight"] = _normal(rng, (hidden_size, intermediate_size))
     _write_deterministic_npz(target / "weights.npz", weights)
     return target
+
+
+def create_tiny_olmoe_fixture(
+    out: str | Path,
+    *,
+    seed: int = 17,
+    hidden_size: int = 16,
+    intermediate_size: int = 8,
+    num_layers: int = 2,
+    num_heads: int = 4,
+    num_experts: int = 4,
+    num_experts_per_token: int = 2,
+    vocab_size: int = 32,
+) -> Path:
+    """Create a deterministic, untrained OLMoE-shaped sparse-expert fixture."""
+
+    target = Path(out)
+    target.mkdir(parents=True, exist_ok=True)
+    if hidden_size % num_heads:
+        raise ValueError("hidden_size must be divisible by num_heads")
+    if not 0 < num_experts_per_token <= num_experts:
+        raise ValueError("num_experts_per_token must be in [1, num_experts]")
+    head_dim = hidden_size // num_heads
+    config = {
+        "architectures": ["OlmoeForCausalLM"],
+        "attention_bias": False,
+        "engram_fixture": True,
+        "fixture_seed": seed,
+        "head_dim": head_dim,
+        "hidden_act": "silu",
+        "hidden_size": hidden_size,
+        "intermediate_size": intermediate_size,
+        "max_position_embeddings": 256,
+        "model_type": "olmoe",
+        "norm_topk_prob": False,
+        "num_attention_heads": num_heads,
+        "num_experts": num_experts,
+        "num_experts_per_tok": num_experts_per_token,
+        "num_hidden_layers": num_layers,
+        "num_key_value_heads": num_heads,
+        "rms_norm_eps": 1e-6,
+        "rope_theta": 10000.0,
+        "tie_word_embeddings": False,
+        "vocab_size": vocab_size,
+    }
+    with (target / "config.json").open("w", encoding="utf-8") as handle:
+        json.dump(config, handle, indent=2, sort_keys=True)
+        handle.write("\n")
+
+    rng = np.random.default_rng(seed)
+    weights: dict[str, np.ndarray] = {
+        "model.embed_tokens.weight": _normal(rng, (vocab_size, hidden_size)),
+        "model.norm.weight": np.ones(hidden_size, dtype=np.float32),
+        "lm_head.weight": _normal(rng, (vocab_size, hidden_size)),
+    }
+    for layer in range(num_layers):
+        base = f"model.layers.{layer}"
+        weights[f"{base}.input_layernorm.weight"] = np.ones(
+            hidden_size, dtype=np.float32
+        )
+        weights[f"{base}.post_attention_layernorm.weight"] = np.ones(
+            hidden_size, dtype=np.float32
+        )
+        for projection in ("q_proj", "o_proj"):
+            weights[f"{base}.self_attn.{projection}.weight"] = _normal(
+                rng, (hidden_size, hidden_size)
+            )
+        for projection in ("k_proj", "v_proj"):
+            weights[f"{base}.self_attn.{projection}.weight"] = _normal(
+                rng, (num_heads * head_dim, hidden_size)
+            )
+        weights[f"{base}.self_attn.q_norm.weight"] = np.ones(
+            hidden_size, dtype=np.float32
+        )
+        weights[f"{base}.self_attn.k_norm.weight"] = np.ones(
+            num_heads * head_dim, dtype=np.float32
+        )
+        weights[f"{base}.mlp.gate.weight"] = _normal(
+            rng, (num_experts, hidden_size)
+        )
+        for expert in range(num_experts):
+            prefix = f"{base}.mlp.experts.{expert}"
+            weights[f"{prefix}.gate_proj.weight"] = _normal(
+                rng, (intermediate_size, hidden_size)
+            )
+            weights[f"{prefix}.up_proj.weight"] = _normal(
+                rng, (intermediate_size, hidden_size)
+            )
+            weights[f"{prefix}.down_proj.weight"] = _normal(
+                rng, (hidden_size, intermediate_size)
+            )
+    _write_deterministic_npz(target / "weights.npz", weights)
+    index = {
+        "metadata": {"format": "pt"},
+        "weight_map": {name: "weights.npz" for name in sorted(weights)},
+    }
+    with (target / "model.safetensors.index.json").open(
+        "w", encoding="utf-8"
+    ) as handle:
+        json.dump(index, handle, indent=2, sort_keys=True)
+        handle.write("\n")
+    return target

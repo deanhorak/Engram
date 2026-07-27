@@ -146,6 +146,20 @@ def _inventory(model_path: Path, files: list[Path]) -> list[TensorInfo]:
     return [unique[name] for name in sorted(unique)]
 
 
+def local_tensor_inventory(model_path: str | Path) -> tuple[TensorInfo, ...]:
+    """Return a local checkpoint's tensor inventory without accepting Hub IDs."""
+
+    path = Path(model_path).expanduser()
+    if not path.is_dir():
+        raise ModelValidationError(f"model path is not a directory: {path.resolve()}")
+    files = _weight_files(path)
+    if not files:
+        raise ModelValidationError(
+            "no .npz, .safetensors, or pytorch_model*.bin weights found"
+        )
+    return tuple(_inventory(path.resolve(), files))
+
+
 def _required_mlp_names(layer: int) -> tuple[str, str, str]:
     prefix = f"model.layers.{layer}.mlp"
     return (
@@ -285,4 +299,24 @@ def load_named_tensors(path: str | Path, names: list[str]) -> dict[str, np.ndarr
     arrays: dict[str, np.ndarray] = {}
     for shard, shard_names in groups.items():
         arrays.update(_load_from_shard(Path(inspection.model_path), shard, shard_names))
+    return {name: np.asarray(arrays[name], dtype=np.float32) for name in names}
+
+
+def load_local_named_tensors(
+    path: str | Path, names: list[str]
+) -> dict[str, np.ndarray]:
+    """Load selected tensors from any supported local layout, without model typing."""
+
+    model_path = Path(path).expanduser().resolve()
+    inventory = local_tensor_inventory(model_path)
+    by_name = {tensor.name: tensor for tensor in inventory}
+    missing = set(names) - set(by_name)
+    if missing:
+        raise KeyError(f"missing source tensors: {sorted(missing)}")
+    groups: dict[str, list[str]] = {}
+    for name in names:
+        groups.setdefault(by_name[name].shard, []).append(name)
+    arrays: dict[str, np.ndarray] = {}
+    for shard, shard_names in groups.items():
+        arrays.update(_load_from_shard(model_path, shard, shard_names))
     return {name: np.asarray(arrays[name], dtype=np.float32) for name in names}

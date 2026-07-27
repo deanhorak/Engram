@@ -24,6 +24,35 @@ elapsed time, so the kernel is 14.49% slower; latency was disclosed but was
 not part of the frozen semantic gate. The dense-Llama conversion track remains
 blocked.
 
+### New OLMoE feasibility branch
+
+The repository now has a separate `olmoe_sparse_expert_v1` source adapter. It
+does not route OLMoE through the dense-Llama inspector. The official
+`allenai/OLMoE-1B-7B-0125` revision
+`9b0c1aa87e34a20052389dce1f0cf01da783f654` passed config, complete-name, and
+exact remote-header shape validation: 3,219 required tensors, 3,219 present,
+no missing or unexpected names, and no shape errors. The bounded verifier read
+only safetensors header byte ranges and rejected unbounded responses; the
+27.68 GB checkpoint payload was not downloaded by this audit.
+
+The native topology is promising for Milestone 2: 64 addressable experts per
+layer and top-8 learned routing yield a 12.5% active-expert fraction. Selected
+Q4 expert weights plus BF16 router matrices initially projected to 12.6302% of
+the all-expert Q4 baseline. Trained traces then showed that post-training Q4
+errors compound causally and fail. A frozen Q7/group-64 candidate subsequently
+passed an all-layer 8-sequence/256-position confirmation: KL 0.00900774, top-1
+0.9765625, NLL delta +0.00391912, and final-hidden relative L2 0.0460273.
+Selected Q7 codes, BF16 scales, and BF16 routers project to 22.7865% of the
+all-expert ideal-Q4 baseline.
+
+This clears the OLMoE semantic quality/evidence screen, but not the final
+Milestone 2 systems gate. The intervention executed decoded Q7 weights inside
+Transformers; it did not read a serialized packed artifact through the
+CPU-only Engram runtime, and its traffic is modeled rather than measured or
+cache-line-accounted. The next implementation is the immutable packed Q7
+expert format and direct top-8 CPU kernel, followed by parity and the same
+frozen causal protocol.
+
 The qualification is not a pristine runner pass. After the evaluator
 completed, the original wrapper marked the consumed attempt `error`: the
 verifier compared the protocol's frozen full-record hashes, made with the
@@ -87,21 +116,22 @@ Large corpora, checkpoints, and scratch experiments remain under ignored
 
 ## Milestone 2 ledger
 
-The native-BitNet track can now proceed beyond Milestone 2, but the generic
-dense-Llama conversion track cannot:
+Native BitNet can proceed beyond Milestone 2. OLMoE now passes the semantic
+quality/evidence screen but remains at the serialized-runtime boundary, while
+generic dense-Llama conversion remains blocked:
 
-| Milestone 2 deliverable | Native-BitNet status | Generic dense-Llama status |
-|---|---|---|
-| Background operators | Exact operator residual is packaged; learned correction is zero | Implemented experimentally; current fitted background hurts held-out quality |
-| Semantic key/value package | Complete ternary records plus authenticated DIP-v2 index | Format/runtime exist; no qualifying trained artifact |
-| Practical routing | **Passed** on all 30 MLPs with no dense fallback | **Blocked** |
-| Product/additive quantization | Replaced by native packed ternary BitNet representation | Implemented in generic research packages |
-| Python semantic-memory runtime | Tokenizer/chat frontend drives a persistent native DIP handle | Implemented for research packages |
-| End-to-end substituted MLPs | Passed evaluation, package generation, native token generation, and chat smoke | Evaluation path exists; no gate-passing compilation candidate |
+| Milestone 2 deliverable | Native BitNet | OLMoE Q7 | Generic dense Llama |
+|---|---|---|---|
+| Background operators | Exact packaged residual; learned correction is zero | Native top-8 mixture requires no added residual in the passing simulation | Current fitted background hurts held-out quality |
+| Semantic key/value package | Complete ternary records plus authenticated DIP-v2 index | 64 source experts/layer are addressable; packed Q7 artifact remains | Format/runtime exist; no qualifying trained artifact |
+| Practical routing | **Passed**, all 30 MLPs, no fallback | **Causal screen passed** with learned top-8 routing | **Blocked** |
+| Quantization | Native packed ternary | Q7/group-64 with BF16 scales passes decoded-weight confirmation | Experimental product/additive codecs exist |
+| Python runtime | Persistent native DIP handle | Tracing and intervention exist; packed runtime missing | Research runtime exists |
+| End-to-end substituted MLPs | Native evaluation, generation, and chat passed | 8 sequences/256 positions pass in Transformers simulation | No gate-passing compilation candidate |
 
-This is a track-specific engineering and semantic result. It does not erase
-the original dense-source failures or turn the native-BitNet artifact into a
-converted dense Llama model.
+These are track-specific results. Neither successful source track erases the
+original dense-source failures. OLMoE is not complete until packed
+serialization and CPU-only native execution reproduce its passing simulation.
 
 ## Semantic gate definition and outcome
 

@@ -74,6 +74,48 @@ fix, and runs the frozen all-layer confirmation protocol. This qualifies the
 low-bit-native MLP path for package integration; it does not make BitNet
 compatible with the generic SwiGLU compiler.
 
+OLMoE also uses a distinct source adapter because its per-layer MLP is a
+learned router over separately stored SwiGLU experts, not one dense Llama MLP:
+
+```bash
+PYTHONPATH=src python -m engram.cli audit-olmoe \
+  --model allenai/OLMoE-1B-7B-0125 \
+  --revision 9b0c1aa87e34a20052389dce1f0cf01da783f654 \
+  --verify-remote-shapes \
+  --out reports/olmoe_source_audit_2026-07-27/audit.json
+```
+
+Without `--verify-remote-shapes`, the command downloads only `config.json` and
+`model.safetensors.index.json`. With the flag, it requests only bounded
+safetensors header ranges, rejects any response that would stream a full
+shard, and validates all tensor shapes. It still downloads no weight payload.
+A deterministic fixture can exercise the same router/expert contract:
+
+```bash
+PYTHONPATH=src python -m engram.cli create-olmoe-fixture \
+  --out work/fixtures/tiny-olmoe
+PYTHONPATH=src python -m engram.cli trace-olmoe-fixture \
+  --model work/fixtures/tiny-olmoe \
+  --out work/traces/tiny-olmoe-router
+```
+
+The fixture proves serialization and exact decomposition only. The official
+source now also passes a trained all-layer Q7/group-64 causal confirmation:
+
+```bash
+PYTHONPATH=src python -m engram.cli evaluate-olmoe-quantized-causal \
+  --model work/huggingface/models--allenai--OLMoE-1B-7B-0125/snapshots/9b0c1aa87e34a20052389dce1f0cf01da783f654 \
+  --dataset tests/fixtures/confirmation_expanded.jsonl \
+  --out reports/olmoe_q7_confirmation_2026-07-27/result.json \
+  --samples 8 --max-tokens 33 --bits 7 --group-size 64 --threads 12
+```
+
+The run passes the 8-sequence/256-position causal thresholds and projects
+22.7865% complete expert/router traffic relative to all-expert ideal Q4. It
+still executes decoded weights inside Transformers, so it does not qualify
+for `compile`. An immutable packed-Q7 artifact, direct CPU top-8 expert kernel,
+serialized parity, and physical traffic confirmation are still required.
+
 ## Milestone 1 artifacts
 
 Milestone 1 supports the following resumable artifacts:

@@ -27,6 +27,27 @@ source-transformer independence, and every file's byte count and SHA-256. Every 
 also records dtype, shape, byte order, format version, Fortran-order flag, payload offset, and
 actual alignment. Semantic submanifests repeat array-level metadata for independent inspection.
 
+## Proposed OLMoE Q7 expert artifact
+
+The passing OLMoE intervention defines, but does not yet implement, a separate
+packed format. Its immutable contract must store 16 layers × 64 experts, with
+three independently addressable matrices per expert, signed Q7 codes grouped
+along the input dimension in groups of 64, and one BF16 scale per group. A
+layer directory must also locate its BF16 64×2,048 router. Selected expert
+blocks must be directly seekable so one token reads only its top-eight blocks.
+
+The projected complete artifact contains 5,838,471,168 bytes of Q7 expert codes
+and BF16 scales. Per-token selected expert reads plus all routers total
+734,003,200 bytes, or 22.7865% of the 3,221,225,472-byte all-expert ideal-Q4
+baseline. These are logical bytes; the eventual writer must add and report
+headers, directory entries, alignment, and padding rather than silently
+substituting the projection.
+
+No `.engram` manifest may advertise this format yet. Eligibility requires
+canonical seven-bit packing, strict tail/padding validation, source and
+artifact hashes, decoded parity with the authoritative BF16-scale simulator,
+and direct CPU-kernel causal confirmation.
+
 The installed controller artifact uses
 `engram.controller.factorized_residual` schema version 3:
 

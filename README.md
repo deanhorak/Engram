@@ -90,20 +90,63 @@ not, by itself, certify every broader Milestone 2 deliverable as complete.
 
 ### Milestone 2 ledger
 
-Milestone 2 now has two different outcomes that should not be conflated:
+Milestone 2 now has three source-track outcomes that should not be conflated:
 
-| Deliverable | Native-BitNet track | Generic dense-Llama track |
-|---|---|---|
-| Background/residual operators | Exact operator residual path is packaged; learned correction is intentionally zero | Implemented experimentally, but the fitted low-rank background worsened held-out error |
-| Semantic key/value package | Complete: ternary phase records plus authenticated DIP-v2 index | Quantized semantic package exists, but no gate-passing trained artifact |
-| Practical routing | **Passed**: all 30 MLPs, CPU-only, no dense fallback | **Blocked** by quality/traffic tradeoffs |
-| Product/additive quantization | Not used; BitNet uses its native packed ternary representation | Implemented in the research package/runtime |
-| Python semantic-memory runtime | Python owns tokenizer/chat orchestration over the native DIP handle | Implemented for research packages |
-| End-to-end substituted-MLP evaluation | Complete and extended through native token generation and chat | Implemented for evaluation, but no qualifying compiled candidate |
+| Deliverable | Native-BitNet | OLMoE Q7 | Generic dense Llama |
+|---|---|---|---|
+| Background/residual operators | Exact packaged residual; learned correction is zero | Native top-8 mixture needs no fitted residual in the passing simulation | Experimental fitted background worsened held-out error |
+| Semantic key/value package | Complete ternary records plus authenticated DIP-v2 index | Source experts are independently addressable; packed Q7 artifact not yet implemented | Quantized research package exists; no qualifying artifact |
+| Practical routing | **Passed** in the native CPU kernel | **Causal screen passed** using the source model's learned top-8 router | **Blocked** by quality/traffic tradeoffs |
+| Quantization | Native packed ternary representation | Q7/group-64 with BF16 scales passes decoded-weight causal confirmation | Product/additive codecs implemented experimentally |
+| Python semantic-memory runtime | Tokenizer/chat drives a persistent native DIP handle | Trace and intervention runtime only; packed runtime missing | Implemented for research packages |
+| End-to-end substituted-MLP evaluation | Complete through native token generation and chat | 8-sequence/256-position Transformers intervention passes | Evaluation path exists; no qualifying compiled candidate |
 
 Therefore the separately trained **native-BitNet Milestone 2 path is
 operational and may advance**. Engram still cannot claim that it converts an
 arbitrary dense Llama checkpoint into a gate-passing semantic-memory model.
+
+### OLMoE source-track experiment
+
+The current controlled source-family experiment is
+[`allenai/OLMoE-1B-7B-0125`](https://huggingface.co/allenai/OLMoE-1B-7B-0125),
+pinned at revision `9b0c1aa87e34a20052389dce1f0cf01da783f654`.
+Unlike dense Llama or dense Qwen, each OLMoE layer already contains a learned
+64-way router and 64 separately stored SwiGLU experts, of which eight are
+selected per token. This does not solve Milestone 2, but it gives Engram a
+trained, natively addressable semantic substrate instead of asking a router to
+recover useful records from one monolithic dense MLP after training.
+
+The new fail-closed audit reads the config and weight index, then optionally
+uses bounded HTTP range requests to read only the six safetensors headers. It
+never accepts a full-shard response during that shape audit. On the pinned
+checkpoint, all **3,219/3,219** names and shapes match the Engram OLMoE
+contract. Selected expert Q4 plus BF16 router matrices project to **12.6302%**
+of an all-expert dense-Q4 MLP baseline. That is a structural screen only; it
+excludes attention, cache-line amplification, runtime overhead, and causal
+quality.
+
+```bash
+PYTHONPATH=src python -m engram.cli audit-olmoe \
+  --model allenai/OLMoE-1B-7B-0125 \
+  --revision 9b0c1aa87e34a20052389dce1f0cf01da783f654 \
+  --verify-remote-shapes \
+  --out reports/olmoe_source_audit_2026-07-27/audit.json
+```
+
+Engram now also has an exact NumPy decomposition of OLMoE routing and weighted
+expert contributions, trained router traces, and an all-layer quantization
+intervention. The frozen Q7/group-64 confirmation on 8 sequences and 256
+positions passed the semantic thresholds: KL **0.00900774**, top-1 agreement
+**0.9765625**, NLL delta **+0.00391912**, and final-hidden relative L2
+**0.0460273**. Selected packed Q7 experts, BF16 group scales, and BF16 routers
+project to **22.7865%** of the all-expert ideal-Q4 baseline.
+
+This is the first successful causal/evidence screen for the OLMoE branch, but
+it is still a Transformers simulation over decoded weights. Milestone 2
+therefore remains open at the systems boundary: serialize the 5.84 GB Q7
+expert artifact, implement a CPU-only packed top-8 expert kernel, and prove
+parity plus complete physical cold traffic. OLMoE is not yet a compiled Engram
+runtime.
 
 CUDA is permitted for training and distillation only. Packaged inference,
 including the passing BitNet MLP and attention kernels, remains CPU-only and

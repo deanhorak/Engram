@@ -1,5 +1,53 @@
 # Research log
 
+## 2026-07-27 — OLMoE Q7 passes the full causal evidence screen
+
+- Downloaded and payload-audited pinned OLMoE revision
+  `9b0c1aa87e34a20052389dce1f0cf01da783f654`; all 3,219 local tensor shapes
+  match the source contract.
+- Captured the trained model's own router probabilities, top-8 expert IDs and
+  weights, and exact MLP boundaries on CPU. An expanded 8×16 calibration trace
+  contains 128 states for layers 0, 7, and 15.
+- Group-8 Q4 passed those local layers but failed all-layer causally: KL
+  0.22099, top-1 0.83333, NLL +0.16632, and hidden L2 0.19944. Q6/group-32
+  improved KL/NLL/hidden but still missed top-1.
+- Froze Q7/group-64 after its calibration smoke passed all quality thresholds.
+  The separate 8-sequence/256-position confirmation then passed with KL
+  0.00900774, top-1 0.9765625, NLL +0.00391912, and final-hidden L2 0.0460273.
+- A serialization preflight found that some FP16 scales underflowed. The final
+  confirmation therefore executes genuinely BF16-rounded scales, which use
+  the same two-byte traffic but preserve the required exponent range.
+- The complete modeled numerator is 734,003,200 bytes/token: selected packed
+  Q7 codes, BF16 group scales, and all BF16 routers. This is 22.7865% of the
+  3,221,225,472-byte all-expert ideal-Q4 baseline.
+- Decision: the OLMoE branch clears semantic quality, traffic projection, and
+  evidence count. It does not complete Milestone 2 until a serialized Q7
+  artifact and direct CPU top-8 kernel reproduce the result with complete
+  physical traffic accounting and no Transformers execution.
+
+## 2026-07-27 — OLMoE source and exact expert contract pass
+
+- Added a separate fail-closed OLMoE adapter rather than weakening the
+  dense-Llama inspector. It validates the learned router and every independently
+  stored expert gate/up/down tensor.
+- Audited official revision
+  `9b0c1aa87e34a20052389dce1f0cf01da783f654`. All 3,219 indexed names and
+  shapes match. The verifier used bounded ranges for six safetensors headers
+  and refused unbounded shard responses, avoiding a 27.68 GB weight download.
+- The audit caught and corrected a real modeling error before weight download:
+  OLMoE normalizes flattened Q/K projections, so its Q/K normalization vectors
+  are width 2,048 rather than per-head width 128.
+- The structural expert/router model projects 406,847,488 bytes per token
+  across all layers versus 3,221,225,472 all-expert dense-Q4 bytes, or
+  12.6302%. This excludes attention and physical/runtime amplification and is
+  not a causal-quality pass.
+- Added an exact NumPy top-k router/SwiGLU expert decomposition and deterministic
+  trace schema containing router probabilities, selected IDs/weights, weighted
+  expert contributions, and their exact summed output.
+- Decision: advance OLMoE to trained router-trace and all-layer causal
+  evaluation. Do not claim Milestone 2 or download/compile the full checkpoint
+  solely from this structural result.
+
 ## 2026-07-27 — Sustained native bounded-attention mechanics pass
 
 - Extended the streaming-attention, complete token runtime, versioned C ABI,

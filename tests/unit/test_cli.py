@@ -257,6 +257,47 @@ def test_native_bitnet_audit_cli_is_metadata_only(tmp_path, monkeypatch):
     assert output.is_file()
 
 
+def test_olmoe_audit_cli_is_metadata_only(tmp_path, monkeypatch):
+    captured = {}
+
+    class Result:
+        def to_dict(self):
+            return {
+                "decision": "proceed_to_exact_weight_shape_audit",
+                "combined_gate_status": "not_evaluated_source_audit_only",
+            }
+
+    def fake_audit(model, **kwargs):
+        captured["model"] = model
+        captured.update(kwargs)
+        return Result()
+
+    monkeypatch.setattr("engram.cli.audit_olmoe_source", fake_audit)
+    output = tmp_path / "audit.json"
+
+    result = main(
+        [
+            "audit-olmoe",
+            "--model",
+            "allenai/OLMoE-1B-7B-0125",
+            "--revision",
+            "abc123",
+            "--cache-dir",
+            str(tmp_path / "cache"),
+            "--out",
+            str(output),
+            "--verify-remote-shapes",
+        ]
+    )
+
+    assert result == 0
+    assert captured["model"] == "allenai/OLMoE-1B-7B-0125"
+    assert captured["revision"] == "abc123"
+    assert captured["cache_dir"] == tmp_path / "cache"
+    assert captured["verify_remote_shapes"]
+    assert output.is_file()
+
+
 def test_native_bitnet_repack_cli_forwards_pinned_verification(
     tmp_path,
     monkeypatch,

@@ -10,6 +10,17 @@
   43.1353% traffic with KL 2.284, top-1 0.320, NLL +2.277, and hidden L2
   0.604 after 1,014,225 positions.
   See [Project status](status.md).
+- OLMoE Q7/group-64 is the first SwiGLU-family branch here to pass the
+  all-layer semantic thresholds and 8-sequence/256-position evidence floor,
+  but it is not yet a complete Milestone 2 system. The confirmation rewrites
+  6,442,450,944 expert parameters to decoded Q7 values and executes them
+  inside Transformers. No packed Q7 artifact, mmap loader, native top-8 CPU
+  kernel, cache-line accounting, or native latency result exists yet.
+- OLMoE's 22.7865% traffic result is a deterministic format projection, not a
+  hardware DRAM measurement. It includes selected Q7 codes, BF16 group scales,
+  and BF16 router matrices, but excludes cache-line padding, activations,
+  attention, and runtime overhead. One confirmation position has KL 0.587149
+  despite the passing mean of 0.00900774.
 - The separate native-BitNet artifact reconstructs exactly and its direct
   full-record memory-mapped CPU kernel passes its frozen causal gate at
   40.0527% scheduled cold traffic. This does not say anything about losslessly

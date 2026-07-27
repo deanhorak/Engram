@@ -2,7 +2,7 @@
 
 ## Current combined-gate decision
 
-As of 2026-07-26, no dense-Llama conversion passes the causal quality
+As of 2026-07-27, no generic dense-Llama conversion passes the causal quality
 thresholds and the complete physical cold-traffic threshold together. The
 older dense-SmolLM predictor-free DIP experiment passed quality but reached
 83.33% cache-line traffic and was slower than dense. The
@@ -15,6 +15,27 @@ point reaches 0.308254. The subsequent all-layer budget-native
 grouped-ternary artifact reaches 43.1353% traffic, but after 1,014,225 training
 positions still has KL 2.2844, top-1 0.3198, NLL delta +2.2770, and
 final-hidden relative L2 0.6036. It fails its frozen pre-3M progression rule.
+
+The separate OLMoE branch now passes the same semantic thresholds and evidence
+floor using the source model's trained top-8 router. The authoritative
+Q7/group-64 confirmation executes BF16-rounded group scales and scores exactly
+8 unique sequences and 256 positions:
+
+| Measure | Result | Requirement |
+|---|---:|---:|
+| Mean KL | 0.00900774 | <= 0.05 |
+| Top-1 agreement | 0.9765625 | >= 0.90 |
+| Target NLL delta | +0.00391912 | <= +0.05 |
+| Final-hidden relative L2 | 0.0460273 | <= 0.10 |
+| Modeled expert/router traffic | 22.7865% | <= 45% |
+
+The maximum single-position KL is 0.587149 and remains disclosed. This is an
+all-layer causal quantization intervention, not a native-runtime pass: decoded
+Q7 values execute inside Transformers and the byte result is modeled from Q7
+codes, BF16 scales, and BF16 routers. The next evaluation must reload one
+serialized packed artifact through a CPU-only kernel and repeat parity,
+physical traffic accounting, and the frozen causal protocol. See the
+[OLMoE confirmation](../reports/olmoe_q7_confirmation_2026-07-27/summary.md).
 
 A separate low-bit-native source track first passed the causal quality and
 cold-byte checks while executing every record. Its direct CPU kernel

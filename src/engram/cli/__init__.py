@@ -15,6 +15,8 @@ from engram.evaluation.report import (
     write_semantic_routing_report,
 )
 from engram.evaluation.mlp_intervention import evaluate_mlp_interventions
+from engram.evaluation.olmoe_q4 import evaluate_olmoe_q4_local
+from engram.evaluation.olmoe_q4_causal import evaluate_olmoe_q4_causal
 from engram.evaluation.native_bitnet_parity import (
     evaluate_native_bitnet_parity,
 )
@@ -71,12 +73,13 @@ from engram.evaluation.gates import (
     combine_mlp_intervention_reports,
 )
 from engram.episodic.evaluate import evaluate_attention_replacement
-from engram.models.fixture import create_tiny_fixture
+from engram.models.fixture import create_tiny_fixture, create_tiny_olmoe_fixture
 from engram.models.inspection import inspect_model
 from engram.models.native_bitnet import (
     audit_native_bitnet_source,
     repack_native_bitnet_model,
 )
+from engram.models.olmoe import audit_olmoe_source
 from engram.semantic.oracle import analyze_magnitude_oracle
 from engram.semantic.evaluate import evaluate_practical_routing
 from engram.semantic.memory import build_semantic_package
@@ -84,6 +87,10 @@ from engram.semantic.dip_package import build_serialized_dip_package
 from engram.tracing.teacher import (
     capture_teacher_traces,
     plan_teacher_trace_capture,
+)
+from engram.tracing.olmoe import (
+    capture_olmoe_fixture_router_traces,
+    capture_olmoe_router_traces,
 )
 from engram.compiler import (
     compile_model,
@@ -152,6 +159,22 @@ def _parser() -> argparse.ArgumentParser:
     bitnet_audit.add_argument("--revision")
     bitnet_audit.add_argument("--cache-dir", type=Path)
     bitnet_audit.add_argument("--out", type=Path)
+
+    olmoe_audit = commands.add_parser(
+        "audit-olmoe",
+        help="metadata-first audit of OLMoE router and sparse-expert tensors",
+    )
+    olmoe_audit.add_argument("--model", required=True)
+    olmoe_audit.add_argument("--revision")
+    olmoe_audit.add_argument("--cache-dir", type=Path)
+    olmoe_audit.add_argument("--out", type=Path)
+    olmoe_audit.add_argument(
+        "--verify-remote-shapes",
+        action="store_true",
+        help=(
+            "read only bounded safetensors header ranges and validate tensor shapes"
+        ),
+    )
 
     bitnet_repack = commands.add_parser(
         "repack-native-bitnet",
@@ -458,6 +481,60 @@ def _parser() -> argparse.ArgumentParser:
     )
     fixture.add_argument("--out", required=True, type=Path)
     fixture.add_argument("--seed", type=int, default=7)
+
+    olmoe_fixture = commands.add_parser(
+        "create-olmoe-fixture",
+        help="create deterministic random OLMoE router/expert weights",
+    )
+    olmoe_fixture.add_argument("--out", required=True, type=Path)
+    olmoe_fixture.add_argument("--seed", type=int, default=17)
+
+    olmoe_trace = commands.add_parser(
+        "trace-olmoe-fixture",
+        help="capture exact router selection and expert contributions on a fixture",
+    )
+    olmoe_trace.add_argument("--model", required=True, type=Path)
+    olmoe_trace.add_argument("--out", required=True, type=Path)
+    olmoe_trace.add_argument("--samples", type=int, default=16)
+    olmoe_trace.add_argument("--layers", nargs="+", type=int)
+    olmoe_trace.add_argument("--seed", type=int, default=23)
+
+    trained_olmoe_trace = commands.add_parser(
+        "trace-olmoe-router",
+        help="capture trained OLMoE router selections and exact MLP boundaries",
+    )
+    trained_olmoe_trace.add_argument("--model", required=True, type=Path)
+    trained_olmoe_trace.add_argument("--dataset", required=True, type=Path)
+    trained_olmoe_trace.add_argument("--out", required=True, type=Path)
+    trained_olmoe_trace.add_argument("--samples", type=int, default=8)
+    trained_olmoe_trace.add_argument("--layers", nargs="+", type=int)
+    trained_olmoe_trace.add_argument("--tokens-per-sequence", type=int)
+    trained_olmoe_trace.add_argument("--seed", type=int, default=37)
+
+    olmoe_q4 = commands.add_parser(
+        "evaluate-olmoe-q4-local",
+        help="screen groupwise-Q4 OLMoE experts on captured trained states",
+    )
+    olmoe_q4.add_argument("--model", required=True, type=Path)
+    olmoe_q4.add_argument("--trace", required=True, type=Path)
+    olmoe_q4.add_argument("--out", required=True, type=Path)
+    olmoe_q4.add_argument("--layer", required=True, type=int)
+    olmoe_q4.add_argument("--group-size", type=int, default=64)
+    olmoe_q4.add_argument("--maximum-mean-relative-l2", type=float, default=0.10)
+
+    olmoe_q4_causal = commands.add_parser(
+        "evaluate-olmoe-quantized-causal",
+        aliases=["evaluate-olmoe-q4-causal"],
+        help="compare BF16 OLMoE against all-layer in-place groupwise low-bit experts",
+    )
+    olmoe_q4_causal.add_argument("--model", required=True, type=Path)
+    olmoe_q4_causal.add_argument("--dataset", required=True, type=Path)
+    olmoe_q4_causal.add_argument("--out", required=True, type=Path)
+    olmoe_q4_causal.add_argument("--samples", type=int, default=2)
+    olmoe_q4_causal.add_argument("--max-tokens", type=int, default=16)
+    olmoe_q4_causal.add_argument("--bits", type=int, default=4)
+    olmoe_q4_causal.add_argument("--group-size", type=int, default=8)
+    olmoe_q4_causal.add_argument("--threads", type=int, default=12)
 
     trace = commands.add_parser(
         "trace", help="capture exact MLP-boundary teacher traces"
@@ -1769,6 +1846,26 @@ def main(argv: Sequence[str] | None = None) -> int:
             atomic_json(args.out, result)
         print(payload, end="")
         return 0 if result.get("decision") == "proceed_to_exact_weight_repack" else 2
+    elif args.command == "audit-olmoe":
+        result = audit_olmoe_source(
+            args.model,
+            revision=args.revision,
+            cache_dir=args.cache_dir,
+            verify_remote_shapes=args.verify_remote_shapes,
+        ).to_dict()
+        payload = json.dumps(result, indent=2, sort_keys=True) + "\n"
+        if args.out:
+            atomic_json(args.out, result)
+        print(payload, end="")
+        return (
+            0
+            if result.get("decision")
+            in {
+                "proceed_to_exact_weight_shape_audit",
+                "proceed_to_router_trace",
+            }
+            else 2
+        )
     elif args.command == "repack-native-bitnet":
         result = repack_native_bitnet_model(
             args.model,
@@ -1936,6 +2033,55 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0 if result["progression_screen"]["passed"] else 2
     elif args.command == "create-fixture":
         print(create_tiny_fixture(args.out, seed=args.seed))
+    elif args.command == "create-olmoe-fixture":
+        print(create_tiny_olmoe_fixture(args.out, seed=args.seed))
+    elif args.command == "trace-olmoe-fixture":
+        capture_olmoe_fixture_router_traces(
+            args.model,
+            args.out,
+            samples=args.samples,
+            layers=args.layers,
+            seed=args.seed,
+        )
+        print(args.out)
+    elif args.command == "trace-olmoe-router":
+        capture_olmoe_router_traces(
+            args.model,
+            args.dataset,
+            args.out,
+            samples=args.samples,
+            layers=args.layers,
+            tokens_per_sequence=args.tokens_per_sequence,
+            seed=args.seed,
+        )
+        print(args.out)
+    elif args.command == "evaluate-olmoe-q4-local":
+        result = evaluate_olmoe_q4_local(
+            args.model,
+            args.trace,
+            args.out,
+            layer=args.layer,
+            group_size=args.group_size,
+            maximum_mean_relative_l2=args.maximum_mean_relative_l2,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["screen"]["passed"] else 2
+    elif args.command in {
+        "evaluate-olmoe-quantized-causal",
+        "evaluate-olmoe-q4-causal",
+    }:
+        result = evaluate_olmoe_q4_causal(
+            args.model,
+            args.dataset,
+            args.out,
+            samples=args.samples,
+            max_tokens=args.max_tokens,
+            bits=args.bits,
+            group_size=args.group_size,
+            threads=args.threads,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["screen"]["quality_passed"] else 2
     elif args.command == "trace":
         if args.dry_run:
             if args.dataset is None:
