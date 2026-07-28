@@ -216,12 +216,41 @@ promoted and no fresh package confirmation was attempted.
 
 This closes the frozen greedy three-layer W128 path, while its disclosed
 search limitation leaves interacting whole-layer combinations untested. The
-next prospectively frozen experiment is teacher-guided fixed head-wise
-allocation: the traffic cap permits exactly **51 of 256 layer-head pairs** to
-use full-context rescue, at **973,384,704 bytes per sequence**
-(**44.9753872184%**). A 52-pair mask would consume **45.2437999637%** and is
-therefore inadmissible. Milestone 2 remains passed; Milestone 3 remains
-blocked.
+prospectively frozen teacher-attention-mass experiment is now complete. It
+captured dense BF16 attention maps from only the deterministic two-record
+selection split, measured for each layer-head pair the older-context mass not
+covered by the four largest older attention weights, and froze the first
+**51 of 256 pairs** before examining the six internal-screen outputs. Those
+51 heads use W128/C8/K4/S2; the rest retain W16/C8/K4/S2.
+
+The resulting policy reads **973,384,704 logical attention bytes per
+sequence**, or exactly **44.975387218386625%** of dense. A 52-pair mask would
+consume **45.2437999637%** and is inadmissible. Q7 remains unchanged at
+**93,952,409,600 scheduled bytes per sequence**. Exact all-base headwise ABI
+parity passed, as did every resource, reset-replay, evidence, and
+authentication check.
+
+The six reused 128-position development records contributed 768 prediction
+positions. They were an internal screen, not an untouched holdout or fresh
+confirmation:
+
+| Fixed 51-head screen | Result | Required | Outcome |
+|---|---:|---:|---|
+| Mean KL | 0.07371992968429097 | ≤ 0.05 | **Fail** |
+| Teacher top-1 agreement | 0.8671875 | ≥ 0.90 | **Fail** |
+| Target NLL delta | +0.05345554334600896 | ≤ 0.05 | **Fail** |
+| Final-hidden relative L2 | 0.1675178178168911 | ≤ 0.10 | **Fail** |
+
+The 0–15 and 16–31 bands passed, with degradation returning after position
+32. Relative to the three-layer rescue at 44.170% reads (KL 0.10232095,
+top-1 0.845052, NLL +0.11677565, hidden L2 0.20603687), the head-wise mask
+improves every overall metric, but not enough to pass. No fresh confirmation
+was run and no package policy was promoted.
+
+This closes the tested fixed **teacher-attention-mass ranking**, not all
+head-wise allocation. The recorded decision is to investigate value- or
+sensitivity-guided selection or dynamic allocation. Milestone 2 remains
+passed; the Milestone 3 attention gate remains blocked.
 
 ### Native-BitNet package integration and evidence caveat
 
@@ -643,7 +672,7 @@ scientific exit criterion has passed.
 |---|---|---|
 | 1. Inspection, tracing, exact MLP decomposition, oracle experiment | Complete | Complete for the fixture and exercised on SmolLM2 |
 | 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP and OLMoE learned-expert routes, authenticated packages, CPU kernels, native token runtimes, and causal evaluators exist | **Native-BitNet passed** by postmortem adjudication and **OLMoE Q7 formally passed** an authenticated frozen complete-native 8×32 protocol. The matched W128 8×128 control passes every band and attributes the later sustained failure to attention, preserving the Q7/M2 decision. Generic dense-Llama conversion and broader replication remain incomplete |
-| 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, incremental package integration, and exact per-layer native policy ABI implemented | Native-BitNet has a source-specific bounded trained-model pass. **OLMoE W16/C8/K4/S2 fails the authenticated 8×128 gate beginning at offsets 32–63**; W128 full attention passes but is nondeployable at 100% reads and 35.8 MB state. The exact-traffic-matched 44.7614% sweep produced zero quality-passing arms, and the 44.1701% greedy three-layer W128 path failed all four overall metrics on its six-sequence internal screen. The tested global family and greedy three-layer path are closed; a prospective 51/256-pair teacher-guided head mask is next |
+| 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, incremental package integration, and exact per-layer and per-head native policy ABIs implemented | Native-BitNet has a source-specific bounded trained-model pass. **OLMoE W16/C8/K4/S2 fails the authenticated 8×128 gate beginning at offsets 32–63**; W128 full attention passes but is nondeployable at 100% reads and 35.8 MB state. The exact-traffic-matched 44.7614% sweep produced zero quality-passing arms, the 44.1701% greedy three-layer path failed, and the fixed 51/256 teacher-attention-mass mask improved quality at 44.9754% reads but still failed every overall metric. The tested fixed attention-mass ranking is closed; value/sensitivity-guided or dynamic allocation is next |
 | 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, authenticated package installation, persistent native stage state, and a one-call 30-stage C++ attention/semantic runner implemented | **Controller, compiled-substitution, incremental-generation, and C++ orchestration gates pass**; frozen generation reaches 96.875% token agreement, 87.5% exact prompts, correct cache positions, and zero decoder-layer calls |
 | 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, native vocabulary argmax, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and passes source/package parity; generic vocabulary/cache/correction paths are not all active in the promoted native-BitNet runtime |
 | 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime, memory-mapped BitNet DIP/projection kernels, streaming attention, native shell operators, authenticated C++ package mapping, manifest-derived model configuration/EOS, token-step control, greedy argmax, reset, standalone generation, and a versioned shared ABI implemented | **Partial**: model execution is native and chat uses the shared handle; tokenizer/template/history orchestration remains Python-side, OLMoE sustained older-context quality fails under the current bounded policy, and AVX2 tuning and hardware-counter traffic remain |
@@ -674,6 +703,11 @@ independent of the model-worker semantic-gate evidence.
   sequences came from an already consumed development corpus. Its valid
   negative result closes this whole-layer schedule, not every possible
   layer/head-adaptive design.
+- The fixed 51-head OLMoE screen is also not a Milestone 3 confirmation. Its
+  attention maps came from two development records and its causal metrics from
+  six reused records. Its valid negative result closes only the frozen
+  teacher-attention-mass ranking, not value-aware, sensitivity-aware, or
+  dynamic head allocation.
 - The derived DIP package, standalone runtime, and shared chat handle pass
   their integration checks. Python still owns tokenization, template
   rendering, and history, but it no longer constructs or executes a
@@ -691,12 +725,13 @@ independent of the model-worker semantic-gate evidence.
 
 For the active OLMoE boundary, Milestone 2 remains passed and Milestone 3
 remains blocked. The tested static global family and frozen greedy three-layer
-W128 path have both failed valid development screens under the 45%
-logical-read cap; interacting layer combinations remain untested.
-The next prospective experiment will freeze dense-teacher traces and a fixed
-51-of-256 layer-head rescue mask before causal evaluation; no package or
-model-format promotion is justified unless that mask first passes development
-and then a fresh eight-sequence confirmation.
+W128 path have failed valid development screens under the 45% logical-read
+cap. The completed fixed 51-of-256 teacher-attention-mass mask improved on the
+layer rescue but also failed all four overall gates at 44.975387218386625%
+reads. No fresh confirmation or package promotion is justified. The next
+defensible experiment is value- or sensitivity-guided head selection, or
+dynamic allocation; interacting layer combinations and those broader
+head-wise families remain untested.
 
 The shared-controller stage has started with a deployable low-rank design
 rather than the original dense FP64 GRU fixture. At width 2,560, the original

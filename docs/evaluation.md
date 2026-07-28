@@ -288,11 +288,50 @@ roots are:
 This closes the tested frozen greedy three-layer `W128` path under the 45%
 attention-read cap; the search can miss interacting layer combinations. It
 does not change the passed Milestone 2 Q7 result; Milestone 3 remains blocked
-on bounded attention. The next prospective boundary is a
-teacher-guided fixed head mask that rescues exactly 51 of the 256 layer-head
-pairs. That schedule uses 973,384,704 logical bytes per sequence, or
-44.9754% of dense attention; 52 rescued pairs would use 979,193,856 bytes, or
-45.2438%, and exceed the cap.
+on bounded attention.
+
+### Prospective teacher-attention-mass 51-head rescue
+
+The next experiment moved the allocation unit from a whole layer to one
+layer-head pair. OLMoE has 16 layers and 16 query heads per layer, for 256
+pairs. A prospectively fixed dense-teacher attention-mass heuristic selected
+exactly 51 pairs for `W128/C8/K4/S2`; the remaining 205 pairs retained
+`W16/C8/K4/S2`. The additive experimental head-wise runtime passed exact
+all-base output parity, deterministic accounting, cache-position, reset-replay,
+resource, and authentication checks. Version 1 requires equal query and
+key/value head counts so each selected pair owns an independent K/V cache.
+
+The 51-head schedule is the largest admissible fixed mask under the declared
+attention criterion. It reads 973,384,704 logical attention bytes per
+128-position sequence, or 44.975387218386625% of the dense reference. A
+52-head mask would read 979,193,856 bytes, or 45.2437999637%, and is therefore
+inadmissible. Q7 expert scheduling is unchanged at 93,952,409,600 bytes per
+sequence and 22.7864583333% of the all-expert ideal-Q4 reference. Here W128
+means exact full causal context only for the tested 128-position horizon; it
+is not a general unbounded-attention claim.
+
+The fixed mask was then scored on the six reused internal development records
+that were not used to derive the teacher-mass ranking: 768 predictions in
+total. All execution and provenance evidence passed, but semantic quality did
+not:
+
+| Population | Mean KL | Top-1 | NLL delta | Hidden relative L2 | Result |
+|---|---:|---:|---:|---:|---|
+| Overall, 768 positions | 0.07371992968429097 | 0.8671875 | +0.05345554334600896 | 0.1675178178168911 | **fail** |
+| Positions 0–15, 96 positions | pass | pass | pass | pass | pass |
+| Positions 16–31, 96 positions | pass | pass | pass | pass | pass |
+| Positions 32–63, 192 positions | pass | **fail** | pass | **fail** | **fail** |
+| Positions 64–95, 192 positions | **fail** | **fail** | **fail** | **fail** | **fail** |
+| Positions 96–127, 192 positions | **fail** | **fail** | **fail** | **fail** | **fail** |
+| Frozen threshold | <= 0.05 | >= 0.90 | <= +0.05 | <= 0.10 | every row required |
+
+This materially improves all four overall metrics over the prior greedy
+three-layer rescue, but it still misses every overall threshold. No fresh
+confirmation or package promotion was justified. The negative conclusion is
+narrow: this closes the fixed 51-head attention-mass heuristic, not all
+head-wise allocation. The next useful boundary is a causal/value-sensitivity
+selector or a dynamic teacher-distilled allocation policy. Milestone 2
+remains passed for Q7; Milestone 3 remains blocked on bounded attention.
 
 A separate low-bit-native source track first passed the causal quality and
 cold-byte checks while executing every record. Its direct CPU kernel

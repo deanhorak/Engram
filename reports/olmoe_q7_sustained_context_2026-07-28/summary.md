@@ -1,4 +1,4 @@
-# OLMoE Q7 sustained-context gate, attribution, sweep, and layer rescue
+# OLMoE Q7 sustained-context gate, attribution, sweep, layer, and head rescue
 
 Date: 2026-07-28
 
@@ -43,8 +43,19 @@ all four metrics also failed in every band from position 32 onward. No package
 policy was promoted and no fresh confirmation was run. The combined evidence
 preserves the Milestone 2 Q7 pass, closes the tested global policy family and
 this frozen greedy three-layer path under the current cap, leaves interacting
-layer combinations untested, keeps Milestone 3 blocked, and moves the next
-prospective experiment to a fixed teacher-guided 51-of-256 head mask.
+layer combinations untested, keeps Milestone 3 blocked, and motivated the
+fixed teacher-guided 51-of-256 head-mask experiment below.
+
+That head-wise experiment is now complete. A dense untouched teacher exposed
+attention maps for only the two development-selection records, and a frozen
+ranking selected 51 of 256 layer-head pairs for `W128/C8/K4/S2` rescue. The
+other 205 heads retained `W16/C8/K4/S2`. Exact all-base parity, the fixed-mask
+resource contract, six-sequence execution evidence, reset replay, and all
+post-run authentication checks passed. Semantic quality nevertheless failed:
+overall KL was 0.073719930, top-1 agreement 0.867187500, target-NLL delta
++0.053455543, and hidden relative L2 0.167517818. No fresh confirmation was
+run. The next justified direction is causal/value-sensitive or dynamic head
+allocation rather than another static attention-mass ranking.
 
 ## Frozen experimental contract
 
@@ -89,6 +100,15 @@ All hashes are SHA-256 and are written in full.
 | Layer-rescue source commit | `708782b` |
 | Layer-rescue evaluator source | `77dafe8fc1fb6ca317ad7b99d5d86122e26b94b477f5befcf6184ce14080dff0` |
 | Layered candidate native DSO | `fe4dfdcc7e87a3cd5e36074e07d297f838ba345c37e939eeb0d796cb39cce409` |
+| Frozen head-wise trace protocol | `47f2c6bd7d467130ac492e7a5dc35b05b95ac0da5e71567a508951bd9754ad05` |
+| Head-wise trace metadata | `0445220b967be99208ee703bfd12a421de1a0721ff51b1d6404bc3db5305e08a` |
+| Dense attention-map NPZ, retained in work tree | `06e72ff9e9a03b58afd2197f5f40cd4e673867ecd5c566e038ce7e3dc8e38a55` |
+| Teacher-guided head-mask file | `dbb220384bade6793950d92a88528de3039c8efdb3b1e65964d368abaac90f48` |
+| Head-mask identity | `18854c256af3fc68326a2e9fa9173d943db838c116523d5c4057e3f1efe9c278` |
+| Frozen head-wise screen protocol | `b863a6620f269bfe1dafec023c2e9742d9605510b113174b0eadbf64dc5cc850` |
+| Head-wise screen result | `16bc2f8c11751612023145a36ace32b44bd082b77179a3c5753cb081424daa06` |
+| Head-wise candidate native DSO | `cb72b31e7afbf9b9986f1ed107ca2b0d893947aac2c96b58b95298e2bfc12d36` |
+| Head-wise evaluator source | `303862d4f2151f6c554fd3605c46100603fb9d37de44537bf866d1e892a9fe00` |
 | Native package manifest | `861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db` |
 | Native runtime library | `4cd4de8f3e3cefad59d7b9e6e23a0d1d06a26abc10af2e0c4f9242a2b5876ca7` |
 | Sustained-context dataset | `0fb513ea29bdae760b91932d60cf942df047ec5ce578d1c21bbf9438a777abeb` |
@@ -108,7 +128,12 @@ the historical and layered DSOs, every prerequisite protocol and result, the
 complete 26-file current execution-source inventory, the six teacher shards,
 its own frozen protocol, and its evaluator source after all 45 candidates,
 the internal screen, and reset replay. Every recorded post-run authentication
-check passed.
+check passed. The head-wise trace additionally authenticated that exactly two
+selection records, and no internal-screen records, contributed dense attention
+maps. The head-wise screen bound the trace protocol, metadata, map array, mask,
+new DSO, complete source inventory, split, and all inherited roots before
+execution, then re-authenticated 27 post-run roots. Every head-wise evidence,
+parity, replay, resource, and authentication check passed.
 
 ## Semantic results
 
@@ -380,8 +405,114 @@ ceiling; as disclosed prospectively, greedy selection can miss interacting
 layer combinations. Milestone 2's authenticated Q7 conclusion remains passed
 and unchanged; Milestone 3 remains blocked on deployable bounded attention.
 
-The next prospective experiment is a teacher-guided fixed head mask. Exactly
-51 of the model's 256 layer-head pairs can be rescued while reading
-973,384,704 logical bytes per sequence, 44.9754% of dense attention. Rescuing
-52 pairs would require 979,193,856 bytes, 45.2438%, and therefore exceed the
-frozen cap.
+That result motivated a teacher-guided fixed head mask. Exactly 51 of the
+model's 256 layer-head pairs could be rescued while reading 973,384,704 logical
+bytes per sequence, 44.9754% of dense attention. Rescuing 52 pairs would
+require 979,193,856 bytes, 45.2438%, and therefore exceed the frozen cap.
+
+## Teacher-guided 51-head rescue
+
+The next prospective protocol was split into two independently frozen phases.
+First, the untouched dense BF16 teacher captured eager attention maps from only
+the two established development-selection records. The persisted float32
+tensor had shape `2 x 16 x 16 x 128 x 128`; every shape, finiteness,
+non-negativity, causal-triangle, row-normalization, source, and artifact check
+passed. Capture took 365.847 seconds.
+
+The 33.6 MB map array is intentionally not duplicated into this report
+directory. It remains at
+`work/olmoe_q7/sustained_2026-07-28/headwise_trace.npz`, with SHA-256
+`06e72ff9e9a03b58afd2197f5f40cd4e673867ecd5c566e038ce7e3dc8e38a55`.
+The much smaller trace protocol, trace metadata, deterministic mask, screen
+protocol, and screen result are archived alongside this summary.
+
+For each head and each query offset 16–127, the frozen ranking measured dense
+teacher attention mass on keys older than the 16-token local window that could
+not be retained by an ideal four-key older selection. Scores accumulated in
+float64. Heads were ranked by descending total deficit, then descending
+minimum record-by-band mean deficit, then ascending layer and head. This
+selected one immutable 51-head prefix without inspecting any attention map or
+candidate output from the six internal-screen records. Attention mass is a
+teacher attribution heuristic, not a causal or value-sensitive guarantee.
+
+### Head-wise parity and exact resources
+
+Before the fixed-mask candidate could run, the new per-head ABI had to prove
+that 256 independent all-base head engines were semantically identical to the
+authenticated layered all-base runtime over a complete 128-position sequence.
+Tokens, normalized hidden states, full logits, cache positions, deterministic
+logical/Q7 counters, and archived layered diagnostic and counter hashes all
+matched. Every parity check passed.
+
+The selected policy rescued 51 heads with `W128/C8/K4/S2` and retained 205
+heads at `W16/C8/K4/S2`. Its exact per-sequence contract was:
+
+| Resource or deterministic counter | Exact value |
+|---|---:|
+| Positions processed | 128 |
+| Persistent attention state | 12,284,864 bytes |
+| Attention scratch | 107,136 bytes |
+| Local/exact KV reads | 835,887,104 bytes |
+| Candidate-key reads | 91,105,280 bytes |
+| Selected-value reads | 46,392,320 bytes |
+| Total logical attention reads | 973,384,704 bytes |
+| Dense full-context logical-KV reference | 2,164,260,864 bytes |
+| Logical attention fraction | 44.9753872184% |
+| Eviction events | 22,960 |
+| Older candidate entries scored | 177,940 |
+| Older entries selected for exact values | 90,610 |
+| Sink insertions | 410 |
+| Permitted heavy-hitter updates | 1,230–22,550 |
+| Q7 scheduled bytes | 93,952,409,600 bytes |
+| Q7 traffic fraction | 22.7864583333% |
+
+The six observed heavy-hitter update counts were 3,490, 3,497, 3,576, 3,792,
+3,480, and 3,309, all within the analytical range. These are logical
+native-interface byte counts rather than measured hardware DRAM transactions.
+At this horizon, 52 rescued heads would read 45.2437999637% and violate the
+45% cap. `W128` is full-context only for this 128-position protocol; it remains
+bounded beyond that horizon.
+
+### Six-sequence internal screen
+
+The fixed mask was evaluated once on the six records not used to rank heads,
+covering 768 prediction positions. These records had already been consumed by
+earlier diagnostics, so this is an internal development screen rather than a
+fresh or independent holdout.
+
+| Population | Positions | Mean KL | Top-1 agreement | Target NLL delta | Hidden rel. L2 | Status |
+|---|---:|---:|---:|---:|---:|---|
+| Threshold | — | <=0.050000 | >=0.900000 | <=+0.050000 | <=0.100000 | — |
+| Overall | 768 | 0.073719930 | 0.867187500 | +0.053455543 | 0.167517818 | **fail** |
+| Offsets 0–15 | 96 | 0.012377540 | 0.947916667 | -0.006711043 | 0.057957455 | pass |
+| Offsets 16–31 | 96 | 0.003680607 | 0.979166667 | -0.000053456 | 0.056517532 | pass |
+| Offsets 32–63 | 192 | 0.046755770 | 0.880208333 | +0.038320826 | 0.160129544 | **fail** |
+| Offsets 64–95 | 192 | 0.116722707 | 0.817708333 | +0.095345491 | 0.211740463 | **fail** |
+| Offsets 96–127 | 192 | 0.123372168 | 0.807291667 | +0.083538106 | 0.240963771 | **fail** |
+
+The overall population failed all four thresholds. Offsets 0–31 passed all
+four; offsets 32–63 passed KL and NLL but failed top-1 and hidden state; both
+later bands failed all four. The overall maximum per-position KL was
+2.172196865 and p95 KL was 0.285592937.
+
+The complete authenticated screen took 478.542 seconds: 103.876 seconds for
+all-base parity, 325.300 seconds for the six primary sequence executions, and
+45.742 seconds for deterministic reset replay. The candidate passed every
+counter and population check, reproduced replay exactly, retained the mask
+identity
+`18854c256af3fc68326a2e9fa9173d943db838c116523d5c4057e3f1efe9c278`,
+and passed all 27 post-run authentication checks.
+
+### Decision
+
+This is another valid negative semantic result, not an infrastructure or
+resource failure. The mask was selected without the six screen records and
+could not adapt after freeze, but teacher attention mass alone did not identify
+a static 51-head allocation that met the causal quality gate. No package policy
+was promoted and no fresh eight-sequence confirmation was run. Milestone 2's
+Q7 result remains passed and unchanged; Milestone 3 remains blocked on
+deployable bounded attention.
+
+The next justified direction is a causal/value-sensitive allocation objective
+or a dynamic teacher-distilled head allocator. Another static ranking based
+only on dense attention mass is not justified by this result.

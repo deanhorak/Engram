@@ -196,12 +196,15 @@ or unblock Milestone 3.
 
 This was again a raw-runtime intervention. The version-1 package still binds
 one global `W16/C8/K4/S2` policy, and neither the selected layer schedule nor
-the layered ABI has been promoted into its manifest schema. The next
-prospectively frozen causal boundary is a fixed teacher-guided mask that
-rescues 51 of 256 layer-head pairs at 973,384,704 logical bytes per sequence
-(44.9754%). A 52-head mask would require 45.2438% and is therefore outside
-the budget. Only a passing head-wise result followed by fresh confirmation
-could justify a package-format change.
+the layered or head-wise ABIs have been promoted into its manifest schema. The
+subsequent prospectively frozen teacher-attention-mass mask rescued 51 of 256
+layer-head pairs at 973,384,704 logical bytes per sequence (44.9754%); a
+52-head mask would require 45.2438% and is outside the budget. All execution
+evidence passed, but the six-sequence internal semantic screen failed every
+overall threshold, so the mask was not promoted and no fresh confirmation was
+run. A causal/value-sensitive or dynamic head policy must first pass
+development and then fresh confirmation before a package-format change is
+justified.
 
 The first command below is the historical sealed-reference reproduction, so
 it explicitly retains the original serial sequence policy:

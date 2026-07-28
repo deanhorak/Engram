@@ -87,9 +87,12 @@ Package version 1 still records and enforces exactly one global
 layers 11, 6, and 10 with W128 failed semantic quality despite valid evidence
 and 44.1701% logical attention traffic. It was therefore not installed:
 there is no per-layer policy descriptor, head mask, new authentication root,
-or schema promotion. The next prospectively frozen 51-of-256 teacher-guided
-head-wise mask is likewise an experiment, not a serializable package
-contract.
+or schema promotion. The subsequent prospectively frozen 51-of-256
+teacher-attention-mass mask also failed semantic quality despite valid evidence
+and 44.9754% logical attention traffic. It likewise remains an experiment, not
+a serializable package contract. Value/sensitivity-guided or dynamic head
+allocation must pass development and fresh confirmation before a schema change
+is justified.
 
 The token boundary's companion `olmoe_native_non_mlp_bf16_v1` file is a
 standard, strictly contiguous safetensors mapping. It contains exactly 131

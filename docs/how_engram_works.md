@@ -31,9 +31,12 @@ layers full W128 context while leaving the other 13 at W16. It stays under
 the traffic cap but also fails all four overall quality metrics. Global
 W/C/K tuning in that tested family and the frozen greedy three-layer path are
 therefore closed; the latter can still miss interacting layer combinations.
-The next work is a teacher-guided fixed mask at head granularity rather than
-another aggregate budget guess. Broader language quality and performance
-remain.
+A following prospectively fixed head-level mask rescues 51 of 256 layer-head
+pairs using dense-teacher attention mass. It fits at 44.9754% logical reads
+and improves substantially on whole-layer rescue, but still fails the
+six-sequence internal semantic screen. That fixed heuristic is now closed;
+causal/value-sensitive or dynamic teacher-distilled head allocation is next.
+Broader language quality and performance remain.
 
 ### Why OLMoE changes the semantic problem
 
@@ -631,15 +634,36 @@ and
 The layered DSO is
 `fe4dfdcc7e87a3cd5e36074e07d297f838ba345c37e939eeb0d796cb39cce409`.
 
-The layer-only result motivates a smaller unit of allocation. OLMoE has 16
-layers and 16 query heads per layer, or 256 layer-head pairs. The next
-prospectively frozen selector will use teacher evidence to choose a fixed mask
-of exactly 51 pairs for full-context rescue. That is the largest admissible
-mask: 51 pairs read 973,384,704 bytes per sequence (44.9753872184%), while 52
-pairs read 45.2437999637% and exceed the 45% cap. This is fixed at inference,
-not an online teacher dependency. Native package promotion and a genuinely
-long-context hardware benchmark must wait for a semantic pass. Milestone 2
-remains passed; Milestone 3 remains blocked.
+The layer-only result motivated a smaller unit of allocation. OLMoE has 16
+layers and 16 query heads per layer, or 256 layer-head pairs. The native
+runtime now has an experimental additive head-wise policy path. Version 1 is
+restricted to equal query and key/value head counts, so every query head owns
+an independent bounded cache. Supplying the same base policy for every head
+is exactly equivalent to the layered runtime; its larger state, scratch, and
+eviction counts follow from keeping those structures independently per head.
+
+The prospectively fixed selector used dense-teacher attention mass to choose
+exactly 51 pairs for W128, with the other 205 at W16/C8/K4/S2. This is the
+largest admissible mask: it reads 973,384,704 bytes per sequence
+(44.975387218386625%), while 52 pairs would read 979,193,856 bytes
+(45.2437999637%) and exceed the 45% cap. Q7 traffic is unchanged. W128 is
+exact full context here only because every evaluated sequence has 128
+positions; it does not provide an unlimited cache.
+
+All implementation parity, resource, reset-replay, cache-position, and
+authentication evidence passed. On the six reused internal development
+records—768 predictions—the mask reached KL 0.07371992968, top-1 0.8671875,
+NLL delta +0.05345554335, and final-hidden relative L2 0.16751781782. The
+required limits are 0.05, 0.90, +0.05, and 0.10, so all four overall metrics
+fail. Positions 0–15 and 16–31 pass every check. Positions 32–63 fail top-1
+and hidden L2; both later bands fail every metric.
+
+This is materially better than the whole-layer rescue, but not a pass. It
+closes only the fixed attention-mass ranking, not all head-wise approaches.
+The next defensible selector should measure causal/value sensitivity directly
+or learn a dynamic allocation policy from the dense teacher. Native package
+promotion and a genuinely long-context hardware benchmark must wait for a
+semantic pass. Milestone 2 remains passed; Milestone 3 remains blocked.
 
 The generic dense-Llama compiler still writes initialized or heuristic
 fallbacks and records that fact in its conversion report. The native-BitNet

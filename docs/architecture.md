@@ -40,12 +40,18 @@ leaving the other 13 layers at W16/C8/K4/S2. Its evidence was valid and its
 44.1701% logical-read schedule stayed under budget, but quality again failed
 from position 32 onward. This frozen greedy three-layer W128 path under the
 45% budget is therefore closed; the result does not rule out every interacting
-whole-layer combination. The next prospectively frozen boundary is a fixed,
-teacher-guided head-wise mask that can rescue 51 of the 256 layer-head pairs at
-44.9754%; 52 rescues would exceed the cap. W128 itself reads 100% when
-applied globally and is not deployable. Measured whole-system traffic and
-optimization also remain. Milestone 2 remains passed for the qualified Q7
-semantic path, while Milestone 3 remains blocked on bounded attention.
+whole-layer combination. The subsequent prospective head-wise experiment
+used dense-teacher attention mass to rescue 51 of the 256 layer-head pairs.
+Its parity, replay, resource, and provenance evidence passed, and its
+44.9753872184% logical-read schedule remained under budget; 52 rescues would
+require 45.2438%. It materially improved the layer-rescue quality, but still
+failed overall at KL 0.073720, top-1 0.867188, NLL delta +0.053456, and hidden
+L2 0.167518. The fixed attention-mass heuristic is therefore closed, while
+causal/value-sensitive and dynamic head allocation remain open. W128 itself
+reads 100% when applied globally and is not deployable. Measured whole-system
+traffic and optimization also remain. Milestone 2 remains passed for the
+qualified Q7 semantic path, while Milestone 3 remains blocked on bounded
+attention.
 
 Engram's target runtime combines a shared recurrent controller, fixed sparse semantic
 memory derived from SwiGLU records, hybrid local/recurrent/retrieval episodic memory, an
@@ -294,11 +300,41 @@ every interacting whole-layer combination is ineffective.
 
 The experiment used the raw token runtime only. Package format version 1
 continues to bind one global `W16/C8/K4/S2` policy, so the failed schedule was
-not installed and no package schema was promoted. The next prospectively
-frozen experiment instead allocates exact-local rescue at head granularity:
-51 of 256 layer-head pairs fit at 973,384,704 logical bytes per sequence
-(44.9754%), whereas 52 would require 45.2438%. The mask is fixed from dense
-teacher evidence before causal evaluation.
+not installed and no package schema was promoted.
+
+The following prospective experiment allocated rescue at head granularity.
+Its additive experimental C ABI,
+`engram_olmoe_token_open_headwise_v1`, accepts a layer-major array containing
+one W/C/K/S policy for each layer-head pair. It preserves the older scalar and
+layered entry points. Version 1 deliberately supports only models with equal
+query and key/value head counts, allowing each query head to own one
+independent streaming K/V cache. The Python runtime exposes the corresponding
+mutually exclusive `attention_head_policies` path.
+
+An all-base head-wise configuration passed exact semantic parity with the
+layered runtime; state, scratch, and eviction accounting also passed their
+separately specified per-head contracts. Dense-teacher attention mass then
+fixed a mask of 51 pairs at `W128/C8/K4/S2`, leaving 205 pairs at
+`W16/C8/K4/S2`. The schedule reads 973,384,704 logical bytes per sequence,
+44.975387218386625% of dense attention. A 52-pair mask would read
+979,193,856 bytes, or 45.2437999637%, so 51 is the largest admissible count.
+The Q7 path and its scheduled traffic are unchanged.
+
+On the six reused internal 128-position records, all parity, structural,
+resource, reset-replay, and authentication evidence passed. The 768-prediction
+screen nevertheless reached only KL 0.073719930, top-1 0.8671875, NLL delta
++0.053455543, and final-hidden relative L2 0.167517818, against thresholds
+0.05, 0.90, +0.05, and 0.10. Both bands through position 31 passed. At
+positions 32–63, top-1 and hidden L2 failed; every metric failed in the
+64–95 and 96–127 bands. W128 is full causal context only for this
+128-position protocol, not an unbounded cache.
+
+The head-wise mask improves substantially over the whole-layer rescue but is
+still a development quality failure. It was not promoted into package format
+version 1. This closes the fixed teacher-attention-mass heuristic, not the
+head-wise runtime or all possible masks. A selector trained or calibrated
+against causal/value sensitivity, or a dynamic teacher-distilled allocator,
+is the next architectural boundary.
 
 ## Token-level controller and output path
 

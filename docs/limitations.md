@@ -85,10 +85,27 @@
   passed for Q7, but Milestone 3 remains blocked.
 - That layer schedule is not a promoted model feature. The experiment invoked
   the raw runtime; package version 1 still binds one global W16/C8/K4/S2
-  policy and has no per-layer or per-head descriptor. The next prospectively
-  frozen boundary is a teacher-guided mask rescuing 51 of 256 layer-head pairs
-  at 44.9754% logical traffic. Rescuing 52 would require 45.2438%, above the
-  declared cap, and no head-wise result or package schema exists yet.
+  policy and has no per-layer or per-head descriptor.
+- The prospectively fixed head-wise attention-mass result is also negative.
+  The experimental additive runtime accepts one policy for each of 256
+  layer-head pairs and passes exact all-base parity, resource accounting,
+  cache-position, reset-replay, and authentication checks. Its fixed mask
+  rescues 51 heads with W128 and reads 973,384,704 logical bytes per sequence,
+  or 44.9753872184% of dense attention. Rescuing 52 would require
+  979,193,856 bytes, or 45.2438%, above the cap. Q7 traffic is unchanged.
+  On six reused internal sequences and 768 predictions, however, it reaches
+  KL 0.073720, top-1 0.867188, NLL +0.053456, and hidden L2 0.167518, missing
+  all four overall limits. Both early bands pass; positions 32–63 fail top-1
+  and hidden L2, and both later bands fail every metric. This improves the
+  layer-level result but does not pass.
+- The head-wise ABI is experimental and version 1 requires equal query and
+  key/value head counts. Its W128 setting is full context only at the tested
+  128-position horizon. The failed mask was not promoted into package format
+  version 1, which still has no per-head descriptor. The result closes the
+  fixed teacher-attention-mass heuristic, not every head-wise schedule;
+  causal/value-sensitivity ranking and dynamic teacher-distilled allocation
+  remain open. Milestone 2 remains passed for Q7, while Milestone 3 remains
+  blocked.
 - Interpret the layer-rescue failure narrowly. The greedy search made 45
   adaptive comparisons on only two sequences, whose positions are correlated;
   its six-sequence screen reused an already-consumed corpus. Greedy choices

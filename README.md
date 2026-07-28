@@ -287,11 +287,39 @@ and the layered candidate DSO SHA-256 is
 Global W/C/K reallocation in the tested policy family and this frozen greedy
 three-layer W128 path are now closed. The negative greedy result does not rule
 out every interacting whole-layer combination.
-The next prospectively frozen boundary is a teacher-guided, fixed head-wise
-mask: exactly **51 of 256 layer-head pairs** can receive full-context rescue
-at **973,384,704 bytes per sequence** (**44.9753872184%**), whereas 52 pairs
-would require **45.2437999637%** and violate the cap. Milestone 2 remains
-passed; Milestone 3 remains blocked. See the
+
+The prospectively frozen teacher-attention-mass follow-up is now complete.
+Dense BF16 teacher attention maps from only the deterministic two-record
+selection split ranked all 256 layer-head pairs by older-context attention
+mass not covered by the largest four older weights. The frozen prefix gives
+W128/C8/K4/S2 rescue to exactly **51 of 256 heads** and leaves every other
+head at W16/C8/K4/S2. It reads **973,384,704 logical attention bytes per
+sequence** (**44.975387218386625%** of dense); a 52-head prefix would exceed
+the 45% cap. Q7 is unchanged at **93,952,409,600 scheduled bytes per
+sequence**.
+
+The new per-head native ABI passed exact all-base semantic parity, and every
+frozen evidence, resource, reset-replay, and authentication check passed.
+Quality still failed over the six reused internal-development records and
+768 prediction positions:
+
+| Head-wise screen | Result | Gate |
+|---|---:|---:|
+| Mean KL | 0.07371992968429097 | ≤ 0.05 |
+| Teacher top-1 agreement | 0.8671875 | ≥ 0.90 |
+| Target NLL delta | +0.05345554334600896 | ≤ 0.05 |
+| Final-hidden relative L2 | 0.1675178178168911 | ≤ 0.10 |
+
+The 0–15 and 16–31 bands passed; degradation resumed after position 32. This
+is materially better than the three-layer rescue at slightly higher traffic
+(KL 0.10232095, top-1 0.845052, NLL +0.11677565, hidden L2 0.20603687 at
+44.170% reads), but it remains outside all four overall gates. No fresh
+confirmation was run and no package policy was promoted.
+
+This result closes only the tested **fixed teacher-attention-mass ranking**,
+not all head-wise allocation. The next justified direction is value- or
+sensitivity-guided selection, or a dynamic allocation policy. Milestone 2
+remains passed; Milestone 3 attention remains blocked. See the
 [sustained-context evidence and attribution report](reports/olmoe_q7_sustained_context_2026-07-28/summary.md).
 
 Python owns packaged tokenization and prompt text handling. From token IDs
@@ -1278,10 +1306,14 @@ For the OLMoE track, the trained-model evidence is source-specific and
 negative at sustained context: W16 fails after offset 31, a 100%-read W128
 control passes, three matched global allocations fail, and the authenticated
 three-layer W128 rescue also fails its six-sequence internal screen at 44.17%
-logical reads. That screen is development evidence from an already consumed
-corpus, not a fresh Milestone 3 confirmation. It justifies the next fixed
-51-of-256 teacher-guided head-mask experiment; it does not qualify an OLMoE
-attention package.
+logical reads. A prospectively frozen fixed teacher-attention-mass mask then
+rescued 51 of 256 heads at 44.975387218386625% reads and improved every
+overall metric relative to that layer rescue, but still failed all four
+quality gates after position 31. Both six-record screens are development
+evidence from an already consumed corpus, not fresh Milestone 3
+confirmations. The fixed attention-mass result motivates value/sensitivity
+ranking or dynamic head allocation; it does not qualify an OLMoE attention
+package or close every head-wise design.
 
 [Gate 4](reports/milestone4_fixture/controller_gate.json) is also synthetic; adaptive
 execution averaged 7.98 of 8 allowed cycles, so it found essentially no compute saving.

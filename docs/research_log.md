@@ -1716,3 +1716,65 @@
   teacher-guided fixed mask rescuing exactly 51 of 256 layer-head pairs:
   973,384,704 logical bytes (44.9754%); 52 rescues would require 45.2438% and
   violate the cap.
+
+## 2026-07-28 — Teacher-guided 51-head rescue fails the semantic screen
+
+- Added an additive per-head native attention ABI, strict nested Python
+  binding, exact heterogeneous counter algebra, a two-phase dense-teacher
+  trace/mask protocol, and a fail-closed causal screen. Commit `d4580b0`
+  passed **694 Python tests** and **20 native tests** before the prospective
+  artifacts were frozen.
+- Froze the trace before exposing attention maps. The untouched dense BF16
+  teacher captured eager float32 attention maps for only the two established
+  development-selection records; no map from the six internal-screen records
+  was captured. Shape, dtype, finiteness, non-negativity, causal masking,
+  row normalization, source inventory, and all post-capture authentication
+  checks passed. The trace protocol and metadata SHA-256 values are
+  `47f2c6bd7d467130ac492e7a5dc35b05b95ac0da5e71567a508951bd9754ad05`
+  and
+  `0445220b967be99208ee703bfd12a421de1a0721ff51b1d6404bc3db5305e08a`.
+- The 33.6 MB map array remains at
+  `work/olmoe_q7/sustained_2026-07-28/headwise_trace.npz` rather than being
+  duplicated in the report directory. Its SHA-256 is
+  `06e72ff9e9a03b58afd2197f5f40cd4e673867ecd5c566e038ce7e3dc8e38a55`.
+  The protocol, metadata, deterministic mask, screen protocol, and screen
+  result JSON files are archived under
+  `reports/olmoe_q7_sustained_context_2026-07-28/`.
+- Ranked all 256 layer-head pairs by the dense teacher's old-key attention
+  mass that an ideal four-key older selection could not retain, using only
+  the two selection records and a deterministic float64/tie-break rule. The
+  fixed 51-head mask file SHA-256 is
+  `dbb220384bade6793950d92a88528de3039c8efdb3b1e65964d368abaac90f48`;
+  its policy identity is
+  `18854c256af3fc68326a2e9fa9173d943db838c116523d5c4057e3f1efe9c278`.
+- Froze the screen only after the mask and immutable candidate DSO existed.
+  The screen protocol SHA-256 is
+  `b863a6620f269bfe1dafec023c2e9742d9605510b113174b0eadbf64dc5cc850`.
+  A mandatory 128-position all-base parity run proved the old layered and new
+  per-head paths exactly equal in tokens, normalized hidden states, full
+  logits, cache positions, deterministic counters, and archived diagnostic
+  hashes before any internal-screen output was inspected.
+- Rescued exactly 51 heads with `W128/C8/K4/S2` and kept 205 at
+  `W16/C8/K4/S2`. The candidate read 973,384,704 logical attention bytes per
+  sequence, 44.9753872184% of the dense reference, with 12,284,864 state bytes
+  and 107,136 scratch bytes. A 52nd rescued head would raise the fraction to
+  45.2437999637% and violate the cap. Q7 remained unchanged at 22.7864583333%
+  of the all-expert ideal-Q4 reference.
+- Every execution check passed: exact resource and per-token counters,
+  six-sequence population and grid, mask identity, all-base parity,
+  deterministic reset replay, Q7 traffic, and all 27 post-run authentication
+  roots. The complete authenticated screen took 478.54 seconds, including
+  103.88 seconds for parity, 325.30 seconds for the six primary executions,
+  and 45.74 seconds for replay.
+- Semantic quality nevertheless failed. Overall
+  KL/top-1/NLL-delta/hidden-L2 were
+  `0.0737199/0.867188/+0.0534555/0.167518`. Bands 0–15 and 16–31 passed every
+  metric. At 32–63, KL and NLL passed but top-1 and hidden state failed; all
+  four metrics failed at 64–95 and 96–127. Result SHA-256:
+  `16bc2f8c11751612023145a36ace32b44bd082b77179a3c5753cb081424daa06`.
+- This is an authenticated development failure, not a systems failure or
+  fresh holdout. No package policy was promoted and no fresh eight-sequence
+  confirmation was run. Milestone 2's Q7 conclusion remains passed;
+  Milestone 3 remains blocked. Dense attention mass alone did not identify a
+  passing static mask, so the next justified direction is causal/value-
+  sensitive allocation or a dynamic teacher-distilled head allocator.

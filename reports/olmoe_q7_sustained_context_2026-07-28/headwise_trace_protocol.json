@@ -1,0 +1,329 @@
+{
+  "attention_array_contract": {
+    "causal_upper_triangle": "zero_within_1e-7",
+    "dtype": "float32",
+    "expected_uncompressed_bytes": 33554432,
+    "key": "attentions",
+    "layout": "selection_sequence_layer_head_query_key",
+    "shape": [
+      2,
+      16,
+      16,
+      128,
+      128
+    ]
+  },
+  "budget_contract": {
+    "attention_expectations_per_sequence": {
+      "attention_candidate_key_bytes": 91105280,
+      "attention_eviction_events": 22960,
+      "attention_heavy_hitter_updates_maximum": 22550,
+      "attention_heavy_hitter_updates_minimum": 1230,
+      "attention_local_kv_bytes": 835887104,
+      "attention_logical_read_bytes": 973384704,
+      "attention_logical_read_fraction": 0.44975387218386625,
+      "attention_older_candidate_entries_scored": 177940,
+      "attention_older_selected_entries": 90610,
+      "attention_scratch_bytes": 107136,
+      "attention_selected_value_bytes": 46392320,
+      "attention_sink_insertions": 410,
+      "attention_state_bytes": 12284864,
+      "dense_full_context_logical_kv_bytes": 2164260864,
+      "positions_processed": 128
+    },
+    "attention_logical_read_bytes_per_sequence": 973384704,
+    "attention_logical_read_fraction": 0.44975387218386625,
+    "base_heads": 205,
+    "base_policy": {
+      "local_window": 16,
+      "older_candidates": 8,
+      "older_top_k": 4,
+      "sink_tokens": 2
+    },
+    "dense_full_context_logical_kv_bytes_per_sequence": 2164260864,
+    "maximum_attention_logical_read_fraction": 0.45,
+    "next_head_boundary": {
+      "attention_logical_read_fraction": 0.4524379996366279,
+      "rescued_heads": 52,
+      "within_budget": false
+    },
+    "rescue_policy": {
+      "local_window": 128,
+      "older_candidates": 8,
+      "older_top_k": 4,
+      "sink_tokens": 2
+    },
+    "rescued_heads": 51,
+    "total_heads": 256
+  },
+  "control_protocol_sha256": "1619cd5f3cb607a7d0e2b5cde2e61a83dba3f1615884462a30570d62c7764dd9",
+  "control_result_sha256": "3d099ffd3121e47bdf61ed8772e5e9d08b01b8c6041e9a963b409a502808d345",
+  "control_source_sha256": "3dd8ca0be3c64fb8fb5f3971f5b073b30febc09e8be9f0ed277337522f39714d",
+  "corpus_manifest_sha256": "e59beabe4cf526c69e531a12eb61ce34cfa2cc8378c3c059ec6e61192d781ab4",
+  "dataset_sha256": "0fb513ea29bdae760b91932d60cf942df047ec5ce578d1c21bbf9438a777abeb",
+  "derivation": {
+    "head_primary_score": "float64 sum of per-query deficits over both selection records",
+    "head_secondary_score": "minimum of the per-record, per-band mean deficits",
+    "input_cast": "attention maps persisted as float32",
+    "maps_from_internal_screen_records": false,
+    "older_keys": "all causal key indices k <= p-16",
+    "per_query_deficit": "float64_sum(older_attention_mass) minus float64_sum(largest_four_older_attention_weights)",
+    "queries": "each selection sequence query p in [16,127]",
+    "selected_prefix": 51,
+    "sequence_bands": [
+      {
+        "name": "positions_16_31",
+        "start": 16,
+        "stop": 32
+      },
+      {
+        "name": "positions_32_63",
+        "start": 32,
+        "stop": 64
+      },
+      {
+        "name": "positions_64_95",
+        "start": 64,
+        "stop": 96
+      },
+      {
+        "name": "positions_96_127",
+        "start": 96,
+        "stop": 128
+      }
+    ],
+    "stable_ranking": [
+      "descending_total_deficit",
+      "descending_minimum_sequence_band_mean_deficit",
+      "ascending_layer",
+      "ascending_head"
+    ]
+  },
+  "experiment": "olmoe_native_q7_headwise_dense_attention_trace_protocol",
+  "headwise_source_inventory_sha256": {
+    "CMakeLists.txt": "e9d3e3b9ae3abfc2abc02359a08a7a556984b159c2c1c3895ce77d764dadb4d0",
+    "native/include/engram/olmoe_q7.h": "f9a49325b83da2b722a646180d739360ef6cef2feba5fb2eb78454b9398ef8d5",
+    "native/include/engram/olmoe_token_runtime.h": "be35ec0d626cf56bb1bd0ac62a7467e341e8ab592226365b17e99f352e5d8e52",
+    "native/include/engram/olmoe_token_runtime_c.h": "4e844d54fbf3f6f2989e06362fcfbc685bde2fa8e5a8eb3650259e620928471d",
+    "native/include/engram/olmoe_weights.h": "cf31ba9c9d2fc14e3b2c59e7bd8b663d80f12302044b8685ae945c9a676599f9",
+    "native/include/engram/safetensors.h": "0ee5905379bbbc6c48aafc944174f72843cc8152dfed182bfb6e1c50f32e9bb6",
+    "native/include/engram/streaming_attention.h": "49e9f3e12b6b1cb39250a224060f6d16e37aaae244180fa1d747def676b90eb3",
+    "native/include/engram/thread_pool.h": "7794d3ea0786abc5b122af67fd81546db142b257993a9bfb601c588a2e32fe2f",
+    "native/src/olmoe_q7.cpp": "055b6d2892756fa8275d381fad6a21b213e8208530db7134c7291a84a0ddbe9e",
+    "native/src/olmoe_token_runtime.cpp": "fa26a9be1b3026c265eff48746a2019cd2577f8aedb12bbf3cc341c0d39c57ff",
+    "native/src/olmoe_token_runtime_c.cpp": "ba5ff4ab2c78a9d8cffcc43238ac38307ac31763e571c24f6e16aa6b168c8ad3",
+    "native/src/olmoe_weights.cpp": "8f6e155da441869805340c204d5c595168ebe932ee3c5f9ccb35ea8a58e58615",
+    "native/src/safetensors.cpp": "99cabd4fa88bc835fd9e7f7d5d5da0f372c00bb738b38243da5148a8f5b558b8",
+    "native/src/streaming_attention.cpp": "c29ebf49bc0bfaf25e09ada83db74162ad95d638f1c1a7efb481abda7008f7ef",
+    "native/src/thread_pool.cpp": "0ad0a6f4d081e6432733db19e5cd9bb70bf8da3a3ec8c1fced4a2aa20a05bd69",
+    "src/engram/cli/__init__.py": "d3ad285e1498fa5638329cdd125a2e78dfc379eaeb5a0ef7843c8d331d89736c",
+    "src/engram/compiler/olmoe_native.py": "e1a1bf19ce836b2e7f362e3ba170be42cce7e9791ae711895e1fe5a1e38ecbb1",
+    "src/engram/evaluation/olmoe_native_attention_sweep.py": "cf2e4be0bc4d8e6da54aebcb11b94e7c4ecde2d56e12831fe8de835a342ffa60",
+    "src/engram/evaluation/olmoe_native_causal.py": "a7bd8f300d2149cab8375e8ea9703c099145bd620e7b509c636716be256eb961",
+    "src/engram/evaluation/olmoe_native_dense_control.py": "3dd8ca0be3c64fb8fb5f3971f5b073b30febc09e8be9f0ed277337522f39714d",
+    "src/engram/evaluation/olmoe_native_generation.py": "a370fa30ab2fa7f62470fc2bef4b05c34645803514665dade25dd8ba6d464a53",
+    "src/engram/evaluation/olmoe_native_headwise.py": "303862d4f2151f6c554fd3605c46100603fb9d37de44537bf866d1e892a9fe00",
+    "src/engram/evaluation/olmoe_native_layer_rescue.py": "77dafe8fc1fb6ca317ad7b99d5d86122e26b94b477f5befcf6184ce14080dff0",
+    "src/engram/evaluation/olmoe_native_sustained.py": "019c6cf4fd74a77b5ffe992908c4d885f8ca7efb386e20c906695454dfbee520",
+    "src/engram/models/olmoe.py": "4929401026ec7ed2c3f6b203eec94ce7044f2cc23644b61f271aee1cbb685b79",
+    "src/engram/models/olmoe_q7.py": "374385bd5291eb044b6bfe1149302a24f893de6fcdf86933753e811dcf67a3e6",
+    "src/engram/runtime/olmoe_native.py": "ce17a63f7521e3169bb9993a67df7492917a7f60c54f87c34de232ed064ad803",
+    "src/engram/tracing/olmoe.py": "1addc5f0b6192b305463aab9673ec934fa71cff68542edbc92f3deec12ea1313",
+    "src/engram/utils.py": "1ee77400fcefab77be71f1eb9090c7143710889c6e5c56a1f2de0476a59e8cdc"
+  },
+  "headwise_source_sha256": "303862d4f2151f6c554fd3605c46100603fb9d37de44537bf866d1e892a9fe00",
+  "internal_screen_sequences": 6,
+  "layer_rescue_protocol_sha256": "9514e90bd5d14ae01ea27185763e5a833d4f1963e6bffd0ec0c81848f35b0c3e",
+  "layer_rescue_result_sha256": "97ce800bd855c1f16248cada696936c7c56acd49c02d6f1c9ce9885dc44f7c49",
+  "layer_rescue_source_inventory_sha256": {
+    "CMakeLists.txt": "e9d3e3b9ae3abfc2abc02359a08a7a556984b159c2c1c3895ce77d764dadb4d0",
+    "native/include/engram/olmoe_q7.h": "f9a49325b83da2b722a646180d739360ef6cef2feba5fb2eb78454b9398ef8d5",
+    "native/include/engram/olmoe_token_runtime.h": "f0d7bbf835604b4a6eaad258bf12c6689b78ea53c30fa22f81e5c2eb1842f860",
+    "native/include/engram/olmoe_token_runtime_c.h": "f52f6b90f15cb0181df35bb9b9dbbd55ae46fa838ff26d56596637b28604b2ad",
+    "native/include/engram/olmoe_weights.h": "cf31ba9c9d2fc14e3b2c59e7bd8b663d80f12302044b8685ae945c9a676599f9",
+    "native/include/engram/safetensors.h": "0ee5905379bbbc6c48aafc944174f72843cc8152dfed182bfb6e1c50f32e9bb6",
+    "native/include/engram/streaming_attention.h": "49e9f3e12b6b1cb39250a224060f6d16e37aaae244180fa1d747def676b90eb3",
+    "native/include/engram/thread_pool.h": "7794d3ea0786abc5b122af67fd81546db142b257993a9bfb601c588a2e32fe2f",
+    "native/src/olmoe_q7.cpp": "055b6d2892756fa8275d381fad6a21b213e8208530db7134c7291a84a0ddbe9e",
+    "native/src/olmoe_token_runtime.cpp": "3bdc9faf8da043e75350f2032ba7a1be7bcc9ef2523ce52c2f9df7a2d9b6760e",
+    "native/src/olmoe_token_runtime_c.cpp": "761826c4635b01e227e813cc8f59aa364703626556de426ec67df80c289c74c4",
+    "native/src/olmoe_weights.cpp": "8f6e155da441869805340c204d5c595168ebe932ee3c5f9ccb35ea8a58e58615",
+    "native/src/safetensors.cpp": "99cabd4fa88bc835fd9e7f7d5d5da0f372c00bb738b38243da5148a8f5b558b8",
+    "native/src/streaming_attention.cpp": "c29ebf49bc0bfaf25e09ada83db74162ad95d638f1c1a7efb481abda7008f7ef",
+    "native/src/thread_pool.cpp": "0ad0a6f4d081e6432733db19e5cd9bb70bf8da3a3ec8c1fced4a2aa20a05bd69",
+    "src/engram/cli/__init__.py": "d3ad285e1498fa5638329cdd125a2e78dfc379eaeb5a0ef7843c8d331d89736c",
+    "src/engram/compiler/olmoe_native.py": "e1a1bf19ce836b2e7f362e3ba170be42cce7e9791ae711895e1fe5a1e38ecbb1",
+    "src/engram/evaluation/olmoe_native_attention_sweep.py": "cf2e4be0bc4d8e6da54aebcb11b94e7c4ecde2d56e12831fe8de835a342ffa60",
+    "src/engram/evaluation/olmoe_native_causal.py": "a7bd8f300d2149cab8375e8ea9703c099145bd620e7b509c636716be256eb961",
+    "src/engram/evaluation/olmoe_native_dense_control.py": "3dd8ca0be3c64fb8fb5f3971f5b073b30febc09e8be9f0ed277337522f39714d",
+    "src/engram/evaluation/olmoe_native_generation.py": "a370fa30ab2fa7f62470fc2bef4b05c34645803514665dade25dd8ba6d464a53",
+    "src/engram/evaluation/olmoe_native_layer_rescue.py": "77dafe8fc1fb6ca317ad7b99d5d86122e26b94b477f5befcf6184ce14080dff0",
+    "src/engram/evaluation/olmoe_native_sustained.py": "019c6cf4fd74a77b5ffe992908c4d885f8ca7efb386e20c906695454dfbee520",
+    "src/engram/models/olmoe_q7.py": "374385bd5291eb044b6bfe1149302a24f893de6fcdf86933753e811dcf67a3e6",
+    "src/engram/runtime/olmoe_native.py": "ffdafa06717d7cc1cb1f1393838a2587d6d5210eb2871673dde1e0d66027a352",
+    "src/engram/utils.py": "1ee77400fcefab77be71f1eb9090c7143710889c6e5c56a1f2de0476a59e8cdc"
+  },
+  "layer_rescue_source_sha256": "77dafe8fc1fb6ca317ad7b99d5d86122e26b94b477f5befcf6184ce14080dff0",
+  "layered_native_library_sha256": "fe4dfdcc7e87a3cd5e36074e07d297f838ba345c37e939eeb0d796cb39cce409",
+  "limitations": [
+    "The dense attention maps come from two development-selection records and can overfit those records.",
+    "Teacher attention weight is an attribution heuristic, not a causal guarantee that rescuing a head improves logits.",
+    "No attention map from any of the six internal-screen records may be captured or used to choose the mask.",
+    "The fixed head mask is development-only even if the later six-record causal screen passes.",
+    "W128 is full-context only over this 128-position protocol; beyond it, rescued heads remain bounded W128/C8/K4/S2 rather than dense."
+  ],
+  "native_library_sha256": "4cd4de8f3e3cefad59d7b9e6e23a0d1d06a26abc10af2e0c4f9242a2b5876ca7",
+  "package_manifest_sha256": "861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db",
+  "provenance": {
+    "fresh_eight_sequence_confirmation_required_after_screen_pass": true,
+    "internal_record_attention_maps_prohibited": true,
+    "layer_rescue_failure_known_before_protocol_freeze": true,
+    "mask_is_development_only": true,
+    "protocol_frozen_before_attention_map_capture": true,
+    "selection_split_reused_exactly": true
+  },
+  "record_split": {
+    "algorithm": "ascending sha256(utf8(record_id)), then record_id, then original sequence index; first 2 selection, remaining 6 internal holdout",
+    "internal_holdout": [
+      {
+        "record_id": "community-orchestra-rehearsal",
+        "record_id_sha256": "737cd24e6616fdb0cdfb7191ea5f761810544d611a08650f36957486f723a5b4",
+        "sequence_index": 3
+      },
+      {
+        "record_id": "lighthouse-winter-supply",
+        "record_id_sha256": "74fd1ae836f02179f0a06774160d2da2c34951aef00aa2d294d0373a7cfffb96",
+        "sequence_index": 4
+      },
+      {
+        "record_id": "museum-textile-conservation",
+        "record_id_sha256": "9ae1ce88941ec6eb7ea20931d57ddb7eb998c4ff384cc111d9d0e2f106dfb717",
+        "sequence_index": 7
+      },
+      {
+        "record_id": "archaeological-field-catalog",
+        "record_id_sha256": "a9de19914db100995f812988912a098cb056728291a1965842f6d5bfb229b49e",
+        "sequence_index": 2
+      },
+      {
+        "record_id": "bakery-fermentation-schedule",
+        "record_id_sha256": "c83ac3ccf063c26abd85ac755c72d4e05e062db1a767ac9c4b7415a8e403ec76",
+        "sequence_index": 5
+      },
+      {
+        "record_id": "alpine-water-observatory",
+        "record_id_sha256": "cb04bd4a9ff94d14af85d461ae93d242448ce82360b10acf39d71962557d8cdb",
+        "sequence_index": 6
+      }
+    ],
+    "ranked_records": [
+      {
+        "record_id": "clock-tower-restoration",
+        "record_id_sha256": "3365cb2a84251baf42decbf9f5afde27a91a77b37a55acfc766e40479b3f68fc",
+        "sequence_index": 0
+      },
+      {
+        "record_id": "overnight-rail-dispatch",
+        "record_id_sha256": "5e5ee1e08357fee60b4d0271361686c37b4ac13b0dc59a7c7c55c18c5dab9d6e",
+        "sequence_index": 1
+      },
+      {
+        "record_id": "community-orchestra-rehearsal",
+        "record_id_sha256": "737cd24e6616fdb0cdfb7191ea5f761810544d611a08650f36957486f723a5b4",
+        "sequence_index": 3
+      },
+      {
+        "record_id": "lighthouse-winter-supply",
+        "record_id_sha256": "74fd1ae836f02179f0a06774160d2da2c34951aef00aa2d294d0373a7cfffb96",
+        "sequence_index": 4
+      },
+      {
+        "record_id": "museum-textile-conservation",
+        "record_id_sha256": "9ae1ce88941ec6eb7ea20931d57ddb7eb998c4ff384cc111d9d0e2f106dfb717",
+        "sequence_index": 7
+      },
+      {
+        "record_id": "archaeological-field-catalog",
+        "record_id_sha256": "a9de19914db100995f812988912a098cb056728291a1965842f6d5bfb229b49e",
+        "sequence_index": 2
+      },
+      {
+        "record_id": "bakery-fermentation-schedule",
+        "record_id_sha256": "c83ac3ccf063c26abd85ac755c72d4e05e062db1a767ac9c4b7415a8e403ec76",
+        "sequence_index": 5
+      },
+      {
+        "record_id": "alpine-water-observatory",
+        "record_id_sha256": "cb04bd4a9ff94d14af85d461ae93d242448ce82360b10acf39d71962557d8cdb",
+        "sequence_index": 6
+      }
+    ],
+    "selection": [
+      {
+        "record_id": "clock-tower-restoration",
+        "record_id_sha256": "3365cb2a84251baf42decbf9f5afde27a91a77b37a55acfc766e40479b3f68fc",
+        "sequence_index": 0
+      },
+      {
+        "record_id": "overnight-rail-dispatch",
+        "record_id_sha256": "5e5ee1e08357fee60b4d0271361686c37b4ac13b0dc59a7c7c55c18c5dab9d6e",
+        "sequence_index": 1
+      }
+    ],
+    "split_identity": "c267dd96c121b5baf9d229b4e6a2a880f396361ae9565020813d7e2e279ed310"
+  },
+  "record_split_identity": "c267dd96c121b5baf9d229b4e6a2a880f396361ae9565020813d7e2e279ed310",
+  "schema_version": 1,
+  "selection_input_identity": "723f25d39221644baf08b99b6c7677428c5903233f451e4fb5e1a59ff6f7cb0f",
+  "selection_records": [
+    {
+      "record_id": "clock-tower-restoration",
+      "record_id_sha256": "3365cb2a84251baf42decbf9f5afde27a91a77b37a55acfc766e40479b3f68fc",
+      "sequence_index": 0
+    },
+    {
+      "record_id": "overnight-rail-dispatch",
+      "record_id_sha256": "5e5ee1e08357fee60b4d0271361686c37b4ac13b0dc59a7c7c55c18c5dab9d6e",
+      "sequence_index": 1
+    }
+  ],
+  "selection_sequence_indices": [
+    0,
+    1
+  ],
+  "selection_sequences": 2,
+  "source_config_sha256": "21dc57233d4664eccd9734f5d46563a3716ff88dea5be0d33483fc2df9ce1482",
+  "source_index_sha256": "0c1713a6cd423db918a95ec64e2145444d86b19b979075f8326129401ed1cb80",
+  "source_revision": "9b0c1aa87e34a20052389dce1f0cf01da783f654",
+  "source_shard_sha256": {
+    "model-00001-of-00006.safetensors": "df5a700fa91fd94e9d1a7ae523c5ae055f5879778a02ea19758edd37089da1ca",
+    "model-00002-of-00006.safetensors": "5f299f21e6de71f5334e937fd51a083bab8cffe55682488219e4082d9558fdba",
+    "model-00003-of-00006.safetensors": "4491eb552fd917a6777260f75c88e714f3174fbba7dd69d44b97c4124ddcd56b",
+    "model-00004-of-00006.safetensors": "7aeea413752cd17a8e7c343aa436594a8158d279817e4993aa5df4b7c7cfdf22",
+    "model-00005-of-00006.safetensors": "18c7f749af753359e10c33a9c5deec688b7155f7c01052937806cd351c52cc38",
+    "model-00006-of-00006.safetensors": "299009ba118f5e918de33573a316ad3d3b9236651986fb1a14dc894f55269e67"
+  },
+  "status": "frozen_before_dense_attention_map_capture",
+  "sustained_protocol_sha256": "82189276ed0e555c2737f4842b1d1ed625f54d9ceaa2c63fe41fe71c5c6eb599",
+  "sustained_result_sha256": "673523c29b12154f98916b8ce6f203b4967842e4bcae8f5c02ad4d197aab97eb",
+  "sweep_protocol_sha256": "2853de54119f4218c165ebebfe560162f76f99b552fdfe84c803a5ca8acfcef0",
+  "sweep_result_sha256": "813bac5b1d38af7653cf49d8c7b7ca278df8aac5402fdd28692e905bebfc7658",
+  "sweep_source_sha256": "cf2e4be0bc4d8e6da54aebcb11b94e7c4ecde2d56e12831fe8de835a342ffa60",
+  "teacher_arrays_sha256": "b5798f662148b1b338ad0ae04c7bf72a9b3c4e04fa86262edad0183de0133009",
+  "teacher_capture": {
+    "attention_implementation": "eager",
+    "batch_size": 1,
+    "device": "cpu",
+    "dtype": "bfloat16",
+    "eval": true,
+    "inference_mode": true,
+    "model_role": "untouched_dense_teacher",
+    "output_attentions": true,
+    "output_hidden_states": false,
+    "return_dict": true,
+    "threads": 12,
+    "use_cache": false
+  },
+  "teacher_reference_sha256": "6b9d103006cee6b4ab92c016a2e1c57c68d1cc01f3837b24c1972e38a5e5cc37",
+  "tokens_per_selection_sequence": 128
+}
