@@ -89,6 +89,90 @@ small for broad language-quality claims. See the
 [short generation report](../reports/olmoe_q7_native_generation_2026-07-28/summary.md)
 and [complete native causal report](../reports/olmoe_q7_native_causal_2026-07-28/summary.md).
 
+### Sustained-context W16 failure and matched W128 control
+
+The later prospectively frozen sustained protocol is the stronger
+bounded-attention result. It scores 8 distinct natural-text sequences at 128
+prediction positions each (1,024 positions total), with the native
+W16/C8/K4/S2 attention policy and the same Q7/group-64 MLP artifact used
+throughout. All structural, reset-replay, traffic, artifact, teacher, source,
+and post-run authentication checks pass, but semantic quality does not:
+
+| Population | Mean KL | Top-1 | NLL delta | Hidden relative L2 | Result |
+|---|---:|---:|---:|---:|---|
+| Overall, 1,024 positions | 0.143578 | 0.802734 | +0.159292 | 0.238260 | fail |
+| Positions 0–15 | 0.011374 | 0.945312 | +0.000667 | 0.055917 | pass |
+| Positions 16–31 | 0.008252 | 0.937500 | -0.003417 | 0.075655 | pass |
+| Positions 32–63 | 0.083857 | 0.828125 | +0.075577 | 0.218544 | fail |
+| Positions 64–95 | 0.223422 | 0.753906 | +0.238444 | 0.314587 | fail |
+| Positions 96–127 | 0.257219 | 0.687500 | +0.324524 | 0.354124 | fail |
+| Frozen threshold | <= 0.05 | >= 0.90 | <= +0.05 | <= 0.10 | every row required |
+
+Per sequence, the authenticated W16 run processes 128 positions with
+6,336,512 bytes of attention state and 3,840 scratch bytes. It records exactly
+1,792 evictions, 222,208 older-candidate entries scored, 113,152 older entries
+selected, and 512 sink insertions; accepted heavy-hitter updates range from
+3,901 to 4,352 across sequences. Its 677,117,952 logical attention-read bytes
+are 31.2863% of full-context logical KV reads. Q7 schedules
+93,952,409,600 bytes per sequence, or 751,619,276,800 bytes total, unchanged
+from the previously validated 22.7865% expert/router traffic ratio.
+
+Because the W16 result is an authenticated quality failure, a separate
+post-failure protocol froze a matched attribution control before executing
+it. The control changes only `local_window` from 16 to 128: it retains C8,
+K4, S2, the same package, DSO, Q7 artifact and policy, corpus, teacher arrays,
+12 CPU threads, and transformer-shell-free token runtime. W128 is exact full
+causal attention for this protocol's 128 positions. The control passes every
+frozen overall and per-band semantic threshold:
+
+| Population | Mean KL | Top-1 | NLL delta | Hidden relative L2 | Result |
+|---|---:|---:|---:|---:|---|
+| Overall, 1,024 positions | 0.003438 | 0.974609 | +0.001459 | 0.041389 | pass |
+| Positions 0–15 | 0.011374 | 0.945312 | +0.000667 | 0.055917 | pass |
+| Positions 16–31 | 0.001969 | 0.976562 | +0.003676 | 0.038718 | pass |
+| Positions 32–63 | 0.002102 | 0.992188 | +0.002263 | 0.039488 | pass |
+| Positions 64–95 | 0.002360 | 0.968750 | +0.006798 | 0.038476 | pass |
+| Positions 96–127 | 0.002620 | 0.976562 | -0.005398 | 0.040276 | pass |
+
+The 128 pre-intervention rows—positions 0–15 in each of eight sequences—match
+the bounded run exactly, including every recorded per-position metric. This
+localizes the behavioral change to the frozen intervention boundary instead
+of a package, execution, or metric mismatch. W128 has 35,825,664 bytes of
+state and 18,176 scratch bytes per sequence, with zero evictions, older
+candidates, selections, sink insertions, and heavy-hitter updates. It reads
+2,164,260,864 logical attention bytes per sequence, exactly 100% of the dense
+full-context logical-KV reference, while Q7 scheduling remains unchanged.
+
+The authenticated roots are:
+
+- sustained protocol `82189276ed0e555c2737f4842b1d1ed625f54d9ceaa2c63fe41fe71c5c6eb599`;
+- bounded W16 result `673523c29b12154f98916b8ce6f203b4967842e4bcae8f5c02ad4d197aab97eb`;
+- matched-control protocol `1619cd5f3cb607a7d0e2b5cde2e61a83dba3f1615884462a30570d62c7764dd9`;
+- matched W128 result `3d099ffd3121e47bdf61ed8772e5e9d08b01b8c6041e9a963b409a502808d345`;
+- package manifest `861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db`;
+- native DSO `4cd4de8f3e3cefad59d7b9e6e23a0d1d06a26abc10af2e0c4f9242a2b5876ca7`.
+
+This matched result attributes the sustained drift primarily to bounded
+attention on this corpus; it does not turn W128 into a deployable policy, prove
+task-sensitive long-context retrieval, or establish broad language quality.
+The byte counts above are deterministic logical interface counts, not measured
+DRAM traffic. W128 intentionally consumes 100% of full-context logical reads
+and is a diagnostic ceiling rather than a candidate for the <=45% attention
+traffic gate. See the
+[sustained-context and control evidence](../reports/olmoe_q7_sustained_context_2026-07-28/summary.md).
+
+The next attention experiment is a prospectively frozen, exactly
+traffic-matched development sweep under the 45% modeled logical-read cap:
+W16/C18/K16/S2, W24/C10/K8/S2, and W30/C4/K2/S2. Each arm reads exactly
+968,753,152 logical bytes per sequence (44.7613857% of dense) and exposes 32
+values per mature step; persistent state differs by less than 0.35%. The
+treatment is therefore how a fixed budget is divided between exact locality
+and older retrieval. W32 alone is already about 50.38%, and W64 is worse, so
+neither is a deployable sweep candidate; W128 remains the attribution control.
+The sweep must retain the same Q7/package/teacher/corpus roots and require
+overall plus every frozen position band to pass before any selected policy
+receives a fresh confirmation.
+
 A separate low-bit-native source track first passed the causal quality and
 cold-byte checks while executing every record. Its direct CPU kernel
 memory-maps the 318,924,544-byte base-3 phase artifact, materializes no dense

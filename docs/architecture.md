@@ -26,8 +26,12 @@ generation package. Its package-only frontend performs tokenization; the
 persistent C++ object owns mapped weights, Q7 dispatch, attention caches,
 residual state, full vocabulary logits, and vocabulary selection. The frozen
 complete-native 8×32 causal protocol passes overall and independently on the
-128 positions beyond W=16. Longer generation, measured whole-system traffic,
-and optimization remain.
+128 positions beyond W=16. A stronger authenticated 8×128 run then shows that
+W16/C8/K4/S2 drifts after offset 31, while a matched W128 full-attention
+control passes every band. That control preserves the Milestone 2 Q7 semantic
+conclusion and moves the unresolved OLMoE boundary to Milestone 3 attention:
+find a bounded policy below 45% logical reads. W128 itself reads 100% and is
+not deployable. Measured whole-system traffic and optimization also remain.
 
 Engram's target runtime combines a shared recurrent controller, fixed sparse semantic
 memory derived from SwiGLU records, hybrid local/recurrent/retrieval episodic memory, an

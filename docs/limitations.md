@@ -37,6 +37,28 @@
   and passes its frozen split-mean thresholds. It remains only eight fixed
   sequences: offset 31 alone misses all four quality thresholds, maximum KL is
   0.606769, and sustained older-context generation remains open.
+- The stronger frozen 8-sequence/1,024-position sustained test shows that the
+  production W16/C8/K4/S2 policy does not retain semantic quality through 128
+  positions. Its evidence checks pass, but overall KL 0.143578, top-1
+  0.802734, NLL delta +0.159292, and hidden L2 0.238260 fail; the 32–63,
+  64–95, and 96–127 bands also fail. A separately frozen post-failure W128
+  control, identical except for the local window, passes overall and every
+  band at KL 0.003438, top-1 0.974609, NLL +0.001459, and hidden L2 0.041389.
+  All 128 pre-intervention rows (eight sequences × positions 0–15) match
+  exactly. This is strong matched evidence that bounded attention is the
+  primary drift source on this corpus, not proof that it is the only possible
+  source of error or that the result generalizes to other text and lengths.
+- W128 is deliberately nondeployable. It uses 35,825,664 bytes of attention
+  state and reads 2,164,260,864 logical bytes per 128-position sequence—100%
+  of the full-context logical-KV reference—versus 6,336,512 state bytes and
+  677,117,952 logical bytes (31.2863%) for W16. These are algorithmic logical
+  interface bytes, not hardware-counter DRAM traffic; cache hits, prefetch,
+  writes, and allocator behavior are not measured. The next deployable-policy
+  search is limited to the exactly matched <=45% grid: W16/C18/K16/S2,
+  W24/C10/K8/S2, and W30/C4/K2/S2. Every arm reads 968,753,152 logical bytes
+  per sequence (44.7614%) and exposes 32 values per mature step, isolating
+  retrieval versus locality. W32 is already ~50.38%, W64 is worse, and W128
+  remains only the diagnostic ceiling.
 - Package authentication currently hashes about 6.8 GB and the Q7 loader
   performs strict full-artifact structural validation at startup. This is
   fail-closed but makes cold startup materially slower than steady-state token

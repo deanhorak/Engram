@@ -1580,3 +1580,47 @@
   92.14 seconds of candidate-plus-metric wall time, and 184.55 seconds for the
   complete authenticated command.
 - Final validation passes: **629 Python tests** and **19 native tests**.
+
+## 2026-07-28 — Sustained-context failure and exact-attention attribution
+
+- Froze a prospective sustained-context gate over eight newly authored,
+  distinct-domain 129-token development texts: 128 prediction positions per
+  sequence and 1,024 total. The CPU-only native candidate used 12 threads, the
+  authenticated OLMoE package and Q7 artifact, and bounded attention
+  `W16/C8/K4/S2`.
+- The run passed every authentication, replay, structural, Q7-traffic, and
+  attention-traffic check but failed semantic quality. Overall results were KL
+  0.143578, top-1 agreement 0.802734, target-NLL delta +0.159292, and
+  final-hidden relative L2 0.238260. Offsets 0–31 passed; every four-metric
+  population gate failed in bands 32–63, 64–95, and 96–127.
+- W16 used 677,117,952 logical attention-read bytes per sequence, 31.2863% of
+  dense attention, while Q7 remained at 22.7865% of the all-expert ideal-Q4
+  reference. Its frozen protocol and result hashes are
+  `82189276ed0e555c2737f4842b1d1ed625f54d9ceaa2c63fe41fe71c5c6eb599`
+  and
+  `673523c29b12154f98916b8ce6f203b4967842e4bcae8f5c02ad4d197aab97eb`.
+- After observing that failure, froze a matched attribution diagnostic that
+  changed only `W16` to `W128`, yielding exact full causal attention for the
+  128 evaluated positions. Its protocol and result hashes are
+  `1619cd5f3cb607a7d0e2b5cde2e61a83dba3f1615884462a30570d62c7764dd9`
+  and
+  `3d099ffd3121e47bdf61ed8772e5e9d08b01b8c6041e9a963b409a502808d345`.
+- The W128 control passed every overall and band threshold: KL 0.00343812,
+  top-1 0.974609, target-NLL delta +0.00145861, and hidden L2 0.0413892.
+  All 128 positions at offsets 0–15 matched the W16 position metrics exactly,
+  and all structural, deterministic replay, and post-run authentication checks
+  passed.
+- This attributes the frozen corpus-level drift primarily to bounded
+  attention, not Q7. It does not pass the deployable attention gate: W128 used
+  100% dense logical attention traffic and was explicitly a post-failure
+  diagnostic.
+- The next prospective boundary is an exact matched-traffic sweep under 45%:
+  `W16/C18/K16/S2`, `W24/C10/K8/S2`, and `W30/C4/K2/S2` each read
+  968,753,152 logical bytes per sequence (44.7614%) and expose 32 values per
+  mature step. These arms isolate older retrieval versus exact locality
+  without changing the corpus, Q7 path, thresholds, or other authenticated
+  artifacts.
+- Full protocol, metric-band, structural-counter, evidence, limitation, and
+  next-experiment details are recorded in
+  `reports/olmoe_q7_sustained_context_2026-07-28/summary.md`.
+- Full current validation passes: **637 Python tests** and **19 native tests**.

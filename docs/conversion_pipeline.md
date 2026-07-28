@@ -150,6 +150,12 @@ package-owned tokenizer, config, non-MLP mapping, and Q7 artifact.
 The complete package is qualified against an untouched BF16 teacher in two
 stages. The short generation integration remains inside W=16; the causal
 protocol scores 128 exact-local and 128 post-window positions independently.
+That formal 8×32 result qualifies the Q7 semantic package. A later authenticated
+8×128 test fails under W16/C8/K4/S2 after offset 31, while a matched control
+that changes only W16 to exact W128 attention passes every band. The conversion
+and Q7 route are therefore not the sustained failure source; the remaining
+OLMoE blocker is a deployable Milestone 3 attention policy below 45% logical
+reads. W128 is a 100%-read diagnostic, not a package default.
 The first command below is the historical sealed-reference reproduction, so
 it explicitly retains the original serial sequence policy:
 

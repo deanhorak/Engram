@@ -99,7 +99,7 @@ Milestone 2 now has three source-track outcomes that should not be conflated:
 | Practical routing | **Passed** in the native CPU kernel | **Passed** using the learned top-8 router in the direct packed CPU kernel | **Blocked** by quality/traffic tradeoffs |
 | Quantization | Native packed ternary representation | **Canonical Q7/group-64 plus executed BF16 scales** | Product/additive codecs implemented experimentally |
 | Python semantic-memory runtime | Tokenizer/chat drives a persistent native DIP handle | **Persistent complete native OLMoE token runtime implemented** | Implemented for research packages |
-| End-to-end substituted-MLP evaluation | Complete through native token generation and chat | **Frozen complete native 8×32 causal confirmation and package generation pass** | Evaluation path exists; no qualifying compiled candidate |
+| End-to-end substituted-MLP evaluation | Complete through native token generation and chat | **Formal frozen complete-native 8×32 causal confirmation and package generation pass** | Evaluation path exists; no qualifying compiled candidate |
 
 Therefore the separately trained **native-BitNet and OLMoE Q7 Milestone 2
 paths are operational and may advance**. Engram still cannot claim that it
@@ -198,18 +198,51 @@ sequences remain inside W=16, so this is an integration result rather than
 older-context evidence. See the
 [generation and performance report](reports/olmoe_q7_native_generation_2026-07-28/summary.md).
 
-The stronger frozen causal protocol crosses that boundary. The complete
-CPU-only package passes on eight sequences and 256 positions with overall KL
-**0.012981**, top-1 agreement **0.960938**, NLL delta **+0.016824**, and
-final-hidden relative L2 **0.062047**. Positions 16–31, after the exact W=16
-window begins evicting context, independently pass the same thresholds with
-KL **0.010642**, top-1 **0.960938**, NLL **+0.013690**, and hidden L2
-**0.075202**. Scheduled Q7 reads are **22.7865%** of the all-expert ideal-Q4
-reference. See the
+The formal frozen causal protocol crosses that boundary. The complete CPU-only
+package passes **8×32**—eight sequences and 256 prediction positions—with
+overall KL **0.012981**, top-1 agreement **0.960938**, NLL delta
+**+0.016824**, and final-hidden relative L2 **0.062047**. Positions 16–31,
+after the exact W=16 window begins evicting context, independently pass the
+same thresholds with KL **0.010642**, top-1 **0.960938**, NLL **+0.013690**,
+and hidden L2 **0.075202**. Scheduled Q7 reads are **22.7865%** of the
+all-expert ideal-Q4 reference. This remains the formal OLMoE Milestone 2
+qualification. See the
 [complete native causal report](reports/olmoe_q7_native_causal_2026-07-28/summary.md).
 A separately frozen, explicitly non-independent source-bound replay reproduces
 every metric and check exactly, authenticates all post-run roots, and measures
 **88.79 seconds** inside native execution, including **72.17 seconds** in Q7.
+
+A stronger prospectively frozen **8×128** follow-up used eight newly authored
+natural-prose records, 1,024 prediction positions, the same authenticated
+package and Q7 policy, and W16/C8/K4/S2 bounded attention. Every evidence,
+counter, reset, traffic, and post-run authentication check passed, but semantic
+quality did not: overall KL was **0.1435776225**, top-1 agreement
+**0.802734375**, NLL delta **+0.1592924107**, and hidden L2
+**0.2382604508**. The 0–15 and 16–31 bands still passed; failure first appeared
+at offsets 32–63 (KL **0.0838567379**, top-1 **0.828125**, NLL
+**+0.0755772478**, hidden L2 **0.2185442635**) and worsened thereafter.
+
+That failure did not reopen Milestone 2. A post-failure matched attribution
+control changed only the local attention window from 16 to 128 while retaining
+the exact package, Q7 artifact and policy, corpus, teacher arrays, native
+library, thread count, and evaluator identities. W128 full causal attention
+matched all 128 pre-intervention rows exactly and passed every position band
+and evidence check. Overall KL was **0.00343811931**, top-1 agreement
+**0.974609375**, NLL delta **+0.00145861260**, and hidden L2
+**0.04138915755**. The result attributes the sustained failure to bounded
+attention, vindicates the Q7 semantic substitution underlying the formal M2
+pass, and makes **Milestone 3 bounded attention** the remaining OLMoE blocker.
+
+W128 is a diagnostic, not a deployable solution: it reads **100%** of dense
+causal attention bytes (**2,164,260,864 bytes per sequence**) and holds
+**35,825,664 bytes** of attention state. The next matched sweep must remain at
+or below the 45% logical-read ceiling. The next exactly traffic-matched
+candidates are W16/C18/K16/S2, W24/C10/K8/S2, and W30/C4/K2/S2. Each reads
+**968,753,152 bytes per sequence** (**44.7614%**) and exposes 32 values per
+mature step; only the allocation between exact locality and older retrieval
+changes. No candidate is promoted until it passes the same 8×128 bands and a
+fresh authenticated confirmation. See the
+[sustained-context evidence and attribution report](reports/olmoe_q7_sustained_context_2026-07-28/summary.md).
 
 Python owns packaged tokenization and prompt text handling. From token IDs
 through recurrent state, Q7 routing/expert execution, final logits, and
@@ -218,9 +251,9 @@ model shell. This OLMoE Milestone 2 result substitutes the MLPs at a native
 token boundary but still executes the source model's embeddings, norms,
 Q/K/V/O attention projections, and `lm_head`; it is not the Milestone 4
 controller-only architecture with the original transformer operators removed.
-Remaining OLMoE work is broader and longer generation quality, chat UX,
-whole-system hardware-counter traffic, and lower authentication latency. The
-earlier
+Remaining OLMoE work is now bounded-attention repair at the Milestone 3
+boundary, followed by broader generation quality, chat UX, whole-system
+hardware-counter traffic, and lower authentication latency. The earlier
 [authenticated package report](reports/olmoe_q7_native_package_2026-07-27/summary.md)
 remains the package-integrity boundary.
 
@@ -537,7 +570,8 @@ Package-backed and source-backed direct-kernel models have bit-exact final
 hidden states and logits on the parity prompt; greedy generation produces
 ` Paris.` after `The capital of France is`.
 
-Milestone 3 attention substitution now has a bounded trained-model pass. The
+For the native-BitNet source track, Milestone 3 attention substitution has a
+bounded trained-model pass. The
 initial exact hybrid established semantic capacity but scanned all older keys.
 Random sign-LSH recalled only 58.8–65.6% of the exact older top-k, while exact
 box and sphere page bounds opened about 94% of pages; those index branches are

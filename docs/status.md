@@ -101,6 +101,63 @@ A source-bound hardened replay, explicitly labeled non-independent, reproduces
 every metric and check exactly while authenticating all seven post-run roots.
 It measures 88.79 seconds of native execution, of which 72.17 seconds is Q7.
 
+### OLMoE sustained-context attribution
+
+The formal OLMoE Milestone 2 result remains the authenticated complete-native
+**8×32** confirmation above. A subsequent prospectively frozen **8×128**
+development gate asked a different question: whether the combined Q7 semantic
+substitution and W16/C8/K4/S2 attention policy remain stable over 1,024
+positions of newly authored natural prose. All runtime/evidence checks passed,
+including exact counters, Q7 and attention traffic, reset replay, source and
+artifact authentication, teacher identity, and post-run rehashing. Quality
+failed overall and in every band beginning at offsets 32–63:
+
+| Policy and range | Mean KL | Top-1 | NLL delta | Hidden L2 | Quality |
+|---|---:|---:|---:|---:|---|
+| W16, overall | 0.14357762246730044 | 0.802734375 | +0.15929241067956923 | 0.23826045083114877 | Fail |
+| W16, 0–15 | 0.011373728091207624 | 0.9453125 | +0.0006674100286545581 | 0.05591745024139527 | Pass |
+| W16, 16–31 | 0.00825166942991018 | 0.9375 | −0.003416883628233336 | 0.07565470178087708 | Pass |
+| W16, 32–63 | 0.08385673793038251 | 0.828125 | +0.07557724783760023 | 0.2185442634508945 | Fail |
+| W16, 64–95 | 0.22342167909778254 | 0.75390625 | +0.23844351908473982 | 0.3145873202593066 | Fail |
+| W16, 96–127 | 0.2572193740804778 | 0.6875 | +0.32452361259572626 | 0.35412414360325783 | Fail |
+
+The sustained protocol SHA-256 is `82189276…eb599`; the authenticated failed
+result is `673523c2…97eb`. Because that result combined Q7 and bounded-attention
+drift, a matched control was frozen after the failure but before its own
+execution. It retained the exact package, Q7 artifact and execution policy,
+corpus, teacher reference/arrays, native library, 12-thread setting, and
+evaluator identities. Its only intervention was `local_window: 16 → 128`.
+
+The W128 control passed every semantic band and every evidence check. It also
+matched all **128** pre-intervention position rows—eight sequences times
+offsets 0–15—exactly, which verifies that the two candidates are identical
+before W16 begins eviction:
+
+| W128 range | Mean KL | Top-1 | NLL delta | Hidden L2 |
+|---|---:|---:|---:|---:|
+| Overall | 0.0034381193102017704 | 0.974609375 | +0.0014586126028746094 | 0.041389157548110234 |
+| 0–15 | 0.011373728091207624 | 0.9453125 | +0.0006674100286545581 | 0.05591745024139527 |
+| 16–31 | 0.001968802186894436 | 0.9765625 | +0.0036758615460712463 | 0.038717562216334045 |
+| 32–63 | 0.002101623871460845 | 0.9921875 | +0.002262885092477518 | 0.039487719419412315 |
+| 64–95 | 0.002359753387329633 | 0.96875 | +0.006798400573984509 | 0.038475771420053206 |
+| 96–127 | 0.002619834842965574 | 0.9765625 | −0.0053984710423264914 | 0.040275633124110755 |
+
+The control protocol SHA-256 is `1619cd5f…4dd9`; its authenticated result is
+`3d099ffd…d345`. This matched attribution vindicates Q7 semantic substitution
+and preserves the formal M2 pass. The remaining OLMoE blocker is **Milestone 3
+bounded attention**, not semantic routing or Q7.
+
+W128 is deliberately nondeployable. It reads 2,164,260,864 logical attention
+bytes per sequence—**100%** of dense full-context reads—and holds
+35,825,664 bytes (35.8 MB) of attention state, versus W16's 31.2863% read
+fraction and 6,336,512-byte state. The attribution protocol deliberately
+exempts deployability; W128 would violate the 45% attention-read requirement.
+The next matched 8×128 sweep is limited to W16/C18/K16/S2,
+W24/C10/K8/S2, and W30/C4/K2/S2. Each reads exactly 968,753,152 logical
+bytes per sequence (44.7614%) and exposes 32 values per mature step, while
+moving the fixed budget from older retrieval toward exact locality. These are
+development candidates, not promoted policies.
+
 ### Native-BitNet package integration and evidence caveat
 
 The qualification is not a pristine runner pass. After the evaluator
@@ -179,12 +236,13 @@ confirmation. Generic dense-Llama conversion remains blocked:
 | Practical routing | **Passed**, all 30 MLPs, no fallback | **Direct native top-8 CPU route passed** | **Blocked** |
 | Quantization | Native packed ternary | **Canonical Q7/group-64 and BF16 scales validated** | Experimental product/additive codecs exist |
 | Python runtime | Persistent native DIP handle | **Complete native token owner and persistent caches pass** | Research runtime exists |
-| End-to-end substituted MLPs | Native evaluation, generation, and chat passed | **Complete shell-free native 8×32 causal confirmation plus frozen generation integration pass** | No gate-passing compilation candidate |
+| End-to-end substituted MLPs | Native evaluation, generation, and chat passed | **Formal complete shell-free native 8×32 causal confirmation plus frozen generation integration pass; matched W128 attribution vindicates Q7 at 8×128** | No gate-passing compilation candidate |
 
 These are track-specific results. Neither successful source track erases the
-original dense-source failures. OLMoE's next boundary is longer and broader
-generation/chat evaluation, measured whole-system memory traffic, and
-performance work—not another semantic/Q7 selection experiment.
+original dense-source failures. OLMoE does not need another semantic/Q7
+selection experiment: its next boundary is a deployable Milestone 3
+bounded-attention policy that passes the authenticated 8×128 bands at no more
+than 45% logical attention reads.
 
 ## Semantic gate definition and outcome
 
@@ -519,11 +577,11 @@ scientific exit criterion has passed.
 | Milestone | Implementation status | Evidence status |
 |---|---|---|
 | 1. Inspection, tracing, exact MLP decomposition, oracle experiment | Complete | Complete for the fixture and exercised on SmolLM2 |
-| 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP and OLMoE learned-expert routes, authenticated packages, CPU kernels, native token runtimes, and causal evaluators exist | **Native-BitNet passed** by postmortem adjudication and **OLMoE Q7 passed** an authenticated frozen complete-native 8×32 protocol. Generic dense-Llama conversion and broader replication remain incomplete |
-| 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, and incremental package integration implemented | **Frozen trained-model confirmation passes**; randomized parity, bounded-state scaling, cache-position advancement, and incremental generation pass; hardware counters remain |
+| 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP and OLMoE learned-expert routes, authenticated packages, CPU kernels, native token runtimes, and causal evaluators exist | **Native-BitNet passed** by postmortem adjudication and **OLMoE Q7 formally passed** an authenticated frozen complete-native 8×32 protocol. The matched W128 8×128 control passes every band and attributes the later sustained failure to attention, preserving the Q7/M2 decision. Generic dense-Llama conversion and broader replication remain incomplete |
+| 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, and incremental package integration implemented | Native-BitNet has a source-specific bounded trained-model pass. **OLMoE W16/C8/K4/S2 fails the authenticated 8×128 gate beginning at offsets 32–63**; W128 full attention passes but is nondeployable at 100% reads and 35.8 MB state. A ≤45%-read bounded policy remains blocked |
 | 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, authenticated package installation, persistent native stage state, and a one-call 30-stage C++ attention/semantic runner implemented | **Controller, compiled-substitution, incremental-generation, and C++ orchestration gates pass**; frozen generation reaches 96.875% token agreement, 87.5% exact prompts, correct cache positions, and zero decoder-layer calls |
 | 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, native vocabulary argmax, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and passes source/package parity; generic vocabulary/cache/correction paths are not all active in the promoted native-BitNet runtime |
-| 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime, memory-mapped BitNet DIP/projection kernels, streaming attention, native shell operators, authenticated C++ package mapping, manifest-derived model configuration/EOS, token-step control, greedy argmax, reset, standalone generation, and a versioned shared ABI implemented | **Partial**: model execution is native and chat uses the shared handle; tokenizer/template/history orchestration remains Python-side, sustained older-context quality is not covered, and AVX2 tuning and hardware-counter traffic remain |
+| 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime, memory-mapped BitNet DIP/projection kernels, streaming attention, native shell operators, authenticated C++ package mapping, manifest-derived model configuration/EOS, token-step control, greedy argmax, reset, standalone generation, and a versioned shared ABI implemented | **Partial**: model execution is native and chat uses the shared handle; tokenizer/template/history orchestration remains Python-side, OLMoE sustained older-context quality fails under the current bounded policy, and AVX2 tuning and hardware-counter traffic remain |
 | 7. Evaluation, ablations, tuning, documentation, final report | In progress | Many negative ablations exist; no successful reproducible final report |
 
 The optional Oracle cognitive executive is a separate request-level subsystem.
@@ -543,6 +601,9 @@ independent of the model-worker semantic-gate evidence.
   postmortem adjudication, not by a pristine final-runner result. This is not a
   blanket claim that all generic Milestone 2 packaging and conversion work is
   complete.
+- The matched OLMoE W128 control is an attribution diagnostic, not a promoted
+  Milestone 3 policy. Its 100% logical attention reads and 35.8 MB state violate
+  the deployable bounded-attention objective.
 - The derived DIP package, standalone runtime, and shared chat handle pass
   their integration checks. Python still owns tokenization, template
   rendering, and history, but it no longer constructs or executes a

@@ -20,8 +20,11 @@ top-8 expert router and Q7 expert weights. Its packed serialization and direct
 CPU expert kernel now pass too. A mapped BF16 companion artifact and complete
 native token/generation path are installed in an authenticated package.
 The frozen complete-native 8×32 causal protocol now passes both its exact
-local and bounded older-context halves. Longer generation, broader language
-quality, and performance remain.
+local and bounded older-context halves. A stronger 8×128 follow-up finds that
+W16/C8/K4/S2 fails after offset 31; changing only W16 to full W128 attention
+restores every semantic band. This vindicates the Q7 semantic-memory path but
+blocks OLMoE Milestone 3 attention substitution until a bounded policy passes
+below 45% logical reads. Broader language quality and performance remain.
 
 ### Why OLMoE changes the semantic problem
 
@@ -552,7 +555,8 @@ wrong. Package-backed and source-backed kernel models produce bit-exact hidden
 states and logits on the parity prompt, and greedy generation completes
 without the source checkpoint.
 
-Milestone 3 substitutes attention while preserving the trained Q/K/V
+For the native-BitNet source track, Milestone 3 substitutes attention while
+preserving the trained Q/K/V
 projections, rotary positions, grouped-query mapping, residual path, and
 normalization. Local-only and recurrent-only candidates fail. An exact hybrid
 first proved that four older values were sufficient but required a full key
@@ -561,7 +565,11 @@ well enough. The passing streaming operator instead retains two initial
 attention sinks and six online heavy hitters beside the exact 16-token local
 window. It exact-reranks those eight old keys to four values and never reads an
 evicted key. The frozen 256-position result passes every causal threshold.
-Native integration and a genuinely long-context hardware benchmark remain.
+The OLMoE source track does not inherit that result: its W16/C8/K4/S2 policy
+fails the authenticated 8×128 semantic test, while exact W128 passes at
+nondeployable 100% reads. OLMoE therefore still needs a bounded attention
+policy. Native integration and a genuinely long-context hardware benchmark
+remain.
 
 The generic dense-Llama compiler still writes initialized or heuristic
 fallbacks and records that fact in its conversion report. The native-BitNet
