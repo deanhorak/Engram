@@ -23,6 +23,22 @@ std::uint64_t elapsed_ns(const Clock::time_point started) {
           .count());
 }
 
+bool valid_attention_policy(const OLMoEAttentionPolicy& policy) noexcept {
+  return policy.local_window > 0 && policy.older_candidates > 0 &&
+         policy.older_top_k > 0 &&
+         policy.older_top_k <= policy.older_candidates &&
+         policy.sink_tokens <= policy.older_candidates;
+}
+
+std::uint64_t checked_metric_sum(const std::uint64_t accumulated,
+                                 const std::size_t value) {
+  if (value > std::numeric_limits<std::uint64_t>::max() - accumulated) {
+    throw std::invalid_argument(
+        "native OLMoE attention metric capacity overflows");
+  }
+  return accumulated + static_cast<std::uint64_t>(value);
+}
+
 }  // namespace
 
 OLMoETokenRuntime::OLMoETokenRuntime(OLMoETokenConfig config)
@@ -39,27 +55,51 @@ OLMoETokenRuntime::OLMoETokenRuntime(OLMoETokenConfig config)
       config_.query_heads % config_.key_value_heads != 0 ||
       q7_.layer_count() != config_.layers ||
       q7_.hidden_size() != config_.hidden_size ||
-      config_.older_top_k > config_.older_candidates ||
-      config_.sink_tokens > config_.older_candidates ||
+      (!config_.attention_policies.empty() &&
+       config_.attention_policies.size() != config_.layers) ||
       !std::isfinite(config_.rms_norm_epsilon) ||
       config_.rms_norm_epsilon <= 0.0F || !std::isfinite(config_.rope_theta) ||
       config_.rope_theta <= 0.0F) {
     throw std::invalid_argument("native OLMoE token configuration is invalid");
   }
+  const OLMoEAttentionPolicy scalar_policy{
+      .local_window = config_.local_window,
+      .older_candidates = config_.older_candidates,
+      .older_top_k = config_.older_top_k,
+      .sink_tokens = config_.sink_tokens,
+  };
+  if ((config_.attention_policies.empty() &&
+       !valid_attention_policy(scalar_policy)) ||
+      (!config_.attention_policies.empty() &&
+       !std::all_of(config_.attention_policies.begin(),
+                    config_.attention_policies.end(),
+                    valid_attention_policy))) {
+    throw std::invalid_argument("native OLMoE attention policy is invalid");
+  }
   attention_.reserve(config_.layers);
   for (std::size_t layer = 0; layer < config_.layers; ++layer) {
+    const OLMoEAttentionPolicy& policy =
+        config_.attention_policies.empty()
+            ? scalar_policy
+            : config_.attention_policies[layer];
     attention_.push_back(std::make_unique<StreamingAttention>(
         StreamingAttentionConfig{
             .query_heads = config_.query_heads,
             .key_value_heads = config_.key_value_heads,
             .head_dimension = config_.head_dimension,
-            .local_window = config_.local_window,
-            .older_candidates = config_.older_candidates,
-            .older_top_k = config_.older_top_k,
-            .sink_tokens = config_.sink_tokens,
+            .local_window = policy.local_window,
+            .older_candidates = policy.older_candidates,
+            .older_top_k = policy.older_top_k,
+            .sink_tokens = policy.sink_tokens,
             .scale = 1.0F /
                      std::sqrt(static_cast<float>(config_.head_dimension)),
         }));
+    attention_state_capacity_bytes_ = checked_metric_sum(
+        attention_state_capacity_bytes_,
+        attention_.back()->allocated_state_bytes());
+    attention_scratch_capacity_bytes_ = checked_metric_sum(
+        attention_scratch_capacity_bytes_,
+        attention_.back()->scratch_bytes());
   }
 }
 
@@ -203,12 +243,10 @@ std::int64_t OLMoETokenRuntime::forward(
                   attention_output.data() + row * hidden_width, hidden_width));
       metrics_.attention_state_bytes =
           std::max(metrics_.attention_state_bytes,
-                   static_cast<std::uint64_t>(
-                       attention_metrics.state_bytes * config_.layers));
+                   attention_state_capacity_bytes_);
       metrics_.attention_scratch_bytes =
           std::max(metrics_.attention_scratch_bytes,
-                   static_cast<std::uint64_t>(
-                       attention_metrics.scratch_bytes * config_.layers));
+                   attention_scratch_capacity_bytes_);
       metrics_.attention_logical_read_bytes +=
           attention_metrics.candidate_key_bytes +
           attention_metrics.selected_value_bytes +

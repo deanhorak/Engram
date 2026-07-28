@@ -212,4 +212,18 @@ if(ENGRAM_BUILD_TESTS)
     NAME engram_native_bitnet_token_runtime_c_tests
     COMMAND engram_native_bitnet_token_runtime_c_tests
   )
+
+  add_executable(engram_native_olmoe_token_runtime_c_tests
+    native/tests/test_olmoe_token_runtime_c.cpp
+  )
+  target_include_directories(engram_native_olmoe_token_runtime_c_tests
+    PRIVATE native/include
+  )
+  target_link_libraries(engram_native_olmoe_token_runtime_c_tests
+    PRIVATE engram_olmoe_token_runtime
+  )
+  add_test(
+    NAME engram_native_olmoe_token_runtime_c_tests
+    COMMAND engram_native_olmoe_token_runtime_c_tests
+  )
 endif()

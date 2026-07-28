@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <span>
 #include <stdexcept>
+#include <vector>
 
 namespace {
 
@@ -19,6 +20,52 @@ void error_text(char* output, const std::size_t capacity,
   output[length] = '\0';
 }
 
+engram::OLMoETokenConfig native_config(
+    const engram_olmoe_token_config* config,
+    const std::span<const engram_olmoe_attention_policy_v1> policies) {
+  if (config == nullptr || config->non_mlp_safetensors == nullptr ||
+      config->q7_artifact == nullptr) {
+    throw std::invalid_argument("native OLMoE token config is null");
+  }
+  std::vector<engram::OLMoEAttentionPolicy> native_policies;
+  native_policies.reserve(policies.size());
+  for (const auto& policy : policies) {
+    native_policies.push_back(engram::OLMoEAttentionPolicy{
+        .local_window = policy.local_window,
+        .older_candidates = policy.older_candidates,
+        .older_top_k = policy.older_top_k,
+        .sink_tokens = policy.sink_tokens,
+    });
+  }
+  return engram::OLMoETokenConfig{
+      .non_mlp_safetensors =
+          std::filesystem::path(config->non_mlp_safetensors),
+      .q7_artifact = std::filesystem::path(config->q7_artifact),
+      .layers = config->layers,
+      .hidden_size = config->hidden_size,
+      .query_heads = config->query_heads,
+      .key_value_heads = config->key_value_heads,
+      .head_dimension = config->head_dimension,
+      .threads = config->threads,
+      .local_window = config->local_window,
+      .older_candidates = config->older_candidates,
+      .older_top_k = config->older_top_k,
+      .sink_tokens = config->sink_tokens,
+      .rms_norm_epsilon = config->rms_norm_epsilon,
+      .rope_theta = config->rope_theta,
+      .eos_token_ids = {},
+      .attention_policies = std::move(native_policies),
+  };
+}
+
+bool valid_policy(
+    const engram_olmoe_attention_policy_v1& policy) noexcept {
+  return policy.local_window > 0 && policy.older_candidates > 0 &&
+         policy.older_top_k > 0 &&
+         policy.older_top_k <= policy.older_candidates &&
+         policy.sink_tokens <= policy.older_candidates;
+}
+
 }  // namespace
 
 extern "C" {
@@ -27,33 +74,42 @@ void* engram_olmoe_token_open(const engram_olmoe_token_config* config,
                               char* error,
                               const std::size_t error_capacity) {
   try {
-    if (config == nullptr || config->non_mlp_safetensors == nullptr ||
-        config->q7_artifact == nullptr) {
-      throw std::invalid_argument("native OLMoE token config is null");
-    }
-    return new engram::OLMoETokenRuntime(engram::OLMoETokenConfig{
-        .non_mlp_safetensors =
-            std::filesystem::path(config->non_mlp_safetensors),
-        .q7_artifact = std::filesystem::path(config->q7_artifact),
-        .layers = config->layers,
-        .hidden_size = config->hidden_size,
-        .query_heads = config->query_heads,
-        .key_value_heads = config->key_value_heads,
-        .head_dimension = config->head_dimension,
-        .threads = config->threads,
-        .local_window = config->local_window,
-        .older_candidates = config->older_candidates,
-        .older_top_k = config->older_top_k,
-        .sink_tokens = config->sink_tokens,
-        .rms_norm_epsilon = config->rms_norm_epsilon,
-        .rope_theta = config->rope_theta,
-        .eos_token_ids = {},
-    });
+    return new engram::OLMoETokenRuntime(native_config(config, {}));
   } catch (const std::exception& exception) {
     error_text(error, error_capacity, exception.what());
     return nullptr;
   } catch (...) {
     error_text(error, error_capacity, "unknown native OLMoE token open failure");
+    return nullptr;
+  }
+}
+
+void* engram_olmoe_token_open_layered_v1(
+    const engram_olmoe_token_config* config,
+    const engram_olmoe_attention_policy_v1* policies,
+    const std::size_t policy_count, char* error,
+    const std::size_t error_capacity) {
+  try {
+    if (config == nullptr || policies == nullptr ||
+        policy_count != config->layers) {
+      throw std::invalid_argument(
+          "native OLMoE layered attention policy count is invalid");
+    }
+    const std::span<const engram_olmoe_attention_policy_v1> policy_span(
+        policies, policy_count);
+    if (!std::all_of(policy_span.begin(), policy_span.end(), valid_policy)) {
+      throw std::invalid_argument(
+          "native OLMoE layered attention policy is invalid");
+    }
+    return new engram::OLMoETokenRuntime(
+        native_config(config, policy_span));
+  } catch (const std::exception& exception) {
+    error_text(error, error_capacity, exception.what());
+    return nullptr;
+  } catch (...) {
+    error_text(
+        error, error_capacity,
+        "unknown native OLMoE layered token open failure");
     return nullptr;
   }
 }

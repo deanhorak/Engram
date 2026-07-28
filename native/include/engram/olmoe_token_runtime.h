@@ -14,6 +14,13 @@
 
 namespace engram {
 
+struct OLMoEAttentionPolicy {
+  std::size_t local_window{16};
+  std::size_t older_candidates{8};
+  std::size_t older_top_k{4};
+  std::size_t sink_tokens{2};
+};
+
 struct OLMoETokenConfig {
   std::filesystem::path non_mlp_safetensors;
   std::filesystem::path q7_artifact;
@@ -30,6 +37,9 @@ struct OLMoETokenConfig {
   float rms_norm_epsilon{1.0e-5F};
   float rope_theta{10000.0F};
   std::vector<std::int64_t> eos_token_ids;
+  // Empty selects the legacy scalar capacities above. Otherwise this must
+  // contain exactly one policy for every transformer layer.
+  std::vector<OLMoEAttentionPolicy> attention_policies;
 };
 
 struct OLMoETokenMetrics {
@@ -98,6 +108,8 @@ class OLMoETokenRuntime {
   std::vector<float> last_final_state_;
   std::vector<float> last_vocabulary_scores_;
   std::size_t position_{};
+  std::uint64_t attention_state_capacity_bytes_{};
+  std::uint64_t attention_scratch_capacity_bytes_{};
   OLMoETokenMetrics metrics_{};
 };
 

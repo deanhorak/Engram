@@ -22,6 +22,7 @@ from engram.runtime.olmoe_native import (
     OLMoENativePackageRuntime,
     OLMoENativeRuntimeError,
     OLMoENativeTokenRuntime,
+    _validate_attention_policies,
 )
 
 
@@ -49,6 +50,41 @@ def _rope(values, heads, position):
         result[:, index] = first * cosine - second * sine
         result[:, index + half] = second * cosine + first * sine
     return result
+
+
+def test_per_layer_attention_policy_validation_is_strict():
+    policy = {
+        "local_window": 16,
+        "older_candidates": 8,
+        "older_top_k": 4,
+        "sink_tokens": 2,
+    }
+    assert _validate_attention_policies([policy, policy], layers=2) == (
+        policy,
+        policy,
+    )
+    with pytest.raises(ValueError, match="count must equal"):
+        _validate_attention_policies([policy], layers=2)
+    with pytest.raises(ValueError, match="invalid fields"):
+        _validate_attention_policies(
+            [{**policy, "unexpected": 1}, policy],
+            layers=2,
+        )
+    with pytest.raises(ValueError, match="must contain integers"):
+        _validate_attention_policies(
+            [{**policy, "local_window": True}, policy],
+            layers=2,
+        )
+    with pytest.raises(ValueError, match="is inconsistent"):
+        _validate_attention_policies(
+            [{**policy, "older_top_k": 9}, policy],
+            layers=2,
+        )
+    with pytest.raises(ValueError, match="is inconsistent"):
+        _validate_attention_policies(
+            [{**policy, "sink_tokens": -1}, policy],
+            layers=2,
+        )
 
 
 def _prompt_reference(model, q7_path, tokens, *, diagnostics=False):
@@ -234,6 +270,105 @@ def test_native_olmoe_token_step_matches_single_position_reference(tmp_path):
 
     assert report["tensor_count"] == 19
     assert report["file_bytes"] == non_mlp.stat().st_size
+
+
+def test_native_olmoe_layered_attention_matches_scalar_and_sums_state(
+    tmp_path,
+):
+    library = Path("build/libengram_olmoe_token_runtime.so")
+    if not library.is_file():
+        pytest.skip("native OLMoE token runtime has not been built")
+    model = create_tiny_olmoe_fixture(tmp_path / "model")
+    q7 = repack_olmoe_q7_model(model, tmp_path / "model.q7", group_size=8)
+    non_mlp = tmp_path / "non_mlp.safetensors"
+    repack_olmoe_non_mlp_weights(model, non_mlp)
+    scalar_policy = {
+        "local_window": 3,
+        "older_candidates": 2,
+        "older_top_k": 1,
+        "sink_tokens": 1,
+    }
+    tokens = [1, 2, 3, 4]
+    with OLMoENativeTokenRuntime(
+        model / "config.json",
+        non_mlp,
+        q7,
+        library,
+        threads=2,
+        **scalar_policy,
+    ) as scalar:
+        scalar_result = scalar.forward(tokens)
+        scalar_hidden, scalar_logits = scalar.last_diagnostics()
+    with OLMoENativeTokenRuntime(
+        model / "config.json",
+        non_mlp,
+        q7,
+        library,
+        threads=2,
+        attention_policies=[scalar_policy, scalar_policy],
+    ) as layered:
+        layered_result = layered.forward(tokens)
+        layered_hidden, layered_logits = layered.last_diagnostics()
+    assert layered_result.next_token == scalar_result.next_token
+    assert {
+        name: value
+        for name, value in layered_result.metrics.items()
+        if name not in {"elapsed_ns", "q7_elapsed_ns"}
+    } == {
+        name: value
+        for name, value in scalar_result.metrics.items()
+        if name not in {"elapsed_ns", "q7_elapsed_ns"}
+    }
+    np.testing.assert_array_equal(layered_hidden, scalar_hidden)
+    np.testing.assert_array_equal(layered_logits, scalar_logits)
+
+    heterogeneous = [
+        {
+            "local_window": 1,
+            "older_candidates": 2,
+            "older_top_k": 1,
+            "sink_tokens": 1,
+        },
+        {
+            "local_window": 3,
+            "older_candidates": 1,
+            "older_top_k": 1,
+            "sink_tokens": 1,
+        },
+    ]
+    with OLMoENativeTokenRuntime(
+        model / "config.json",
+        non_mlp,
+        q7,
+        library,
+        threads=2,
+        attention_policies=heterogeneous,
+    ) as layered:
+        result = layered.forward(tokens)
+        assert layered.position == 4
+        assert layered.attention_policies == tuple(heterogeneous)
+        assert result.metrics["attention_state_bytes"] == 1_148
+        assert result.metrics["attention_scratch_bytes"] == 80
+        assert result.metrics["attention_eviction_events"] == 4
+        assert result.metrics[
+            "attention_older_candidate_entries_scored"
+        ] == 24
+        assert result.metrics["attention_older_selected_entries"] == 16
+        assert result.metrics["attention_sink_insertions"] == 8
+        layered.reset()
+        reset = layered.forward([1])
+        assert reset.metrics["attention_eviction_events"] == 0
+        assert reset.metrics["attention_older_candidate_entries_scored"] == 0
+
+    with pytest.raises(ValueError, match="cannot be combined"):
+        OLMoENativeTokenRuntime(
+            model / "config.json",
+            non_mlp,
+            q7,
+            library,
+            attention_policies=heterogeneous,
+            local_window=3,
+        )
 
 
 def test_authenticated_native_olmoe_package_generation_and_tamper_rejection(

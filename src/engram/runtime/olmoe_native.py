@@ -5,6 +5,7 @@ from __future__ import annotations
 import ctypes
 import json
 import os
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
@@ -55,6 +56,15 @@ class _Metrics(ctypes.Structure):
     ]
 
 
+class _AttentionPolicyV1(ctypes.Structure):
+    _fields_ = [
+        ("local_window", ctypes.c_size_t),
+        ("older_candidates", ctypes.c_size_t),
+        ("older_top_k", ctypes.c_size_t),
+        ("sink_tokens", ctypes.c_size_t),
+    ]
+
+
 class _AttentionMetricsV1(ctypes.Structure):
     _fields_ = [
         ("attention_logical_read_bytes", ctypes.c_uint64),
@@ -74,7 +84,7 @@ class OLMoENativeTokenResult:
     metrics: dict[str, int]
 
 
-def _configure(library: ctypes.CDLL) -> bool:
+def _configure(library: ctypes.CDLL) -> tuple[bool, bool]:
     library.engram_olmoe_token_open.argtypes = [
         ctypes.POINTER(_Config),
         ctypes.c_char_p,
@@ -118,7 +128,61 @@ def _configure(library: ctypes.CDLL) -> bool:
             ctypes.c_size_t,
         ]
         library.engram_olmoe_token_copy_attention_metrics_v1.restype = ctypes.c_int
-    return has_attention_metrics
+    has_layered_open = hasattr(library, "engram_olmoe_token_open_layered_v1")
+    if has_layered_open:
+        library.engram_olmoe_token_open_layered_v1.argtypes = [
+            ctypes.POINTER(_Config),
+            ctypes.POINTER(_AttentionPolicyV1),
+            ctypes.c_size_t,
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        library.engram_olmoe_token_open_layered_v1.restype = ctypes.c_void_p
+    return has_attention_metrics, has_layered_open
+
+
+def _validate_attention_policies(
+    policies: Sequence[Mapping[str, int]],
+    *,
+    layers: int,
+) -> tuple[dict[str, int], ...]:
+    names = {
+        "local_window",
+        "older_candidates",
+        "older_top_k",
+        "sink_tokens",
+    }
+    if isinstance(policies, (str, bytes)) or len(policies) != layers:
+        raise ValueError(
+            "per-layer attention policy count must equal model layers"
+        )
+    normalized: list[dict[str, int]] = []
+    for layer, policy in enumerate(policies):
+        if not isinstance(policy, Mapping) or set(policy) != names:
+            raise ValueError(
+                f"attention policy for layer {layer} has invalid fields"
+            )
+        if any(
+            isinstance(policy[name], bool) or not isinstance(policy[name], int)
+            for name in names
+        ):
+            raise ValueError(
+                f"attention policy for layer {layer} must contain integers"
+            )
+        value = {name: int(policy[name]) for name in names}
+        if (
+            value["local_window"] <= 0
+            or value["older_candidates"] <= 0
+            or value["older_top_k"] <= 0
+            or value["older_top_k"] > value["older_candidates"]
+            or value["sink_tokens"] < 0
+            or value["sink_tokens"] > value["older_candidates"]
+        ):
+            raise ValueError(
+                f"attention policy for layer {layer} is inconsistent"
+            )
+        normalized.append(value)
+    return tuple(normalized)
 
 
 class OLMoENativeTokenRuntime:
@@ -130,10 +194,11 @@ class OLMoENativeTokenRuntime:
         library: str | Path,
         *,
         threads: int = 1,
-        local_window: int = 16,
-        older_candidates: int = 8,
-        older_top_k: int = 4,
-        sink_tokens: int = 2,
+        local_window: int | None = None,
+        older_candidates: int | None = None,
+        older_top_k: int | None = None,
+        sink_tokens: int | None = None,
+        attention_policies: Sequence[Mapping[str, int]] | None = None,
     ):
         config_path = Path(model_config)
         config_value = json.loads(config_path.read_text(encoding="utf-8"))
@@ -142,30 +207,84 @@ class OLMoENativeTokenRuntime:
         kv_heads = int(config_value["num_key_value_heads"])
         if hidden % heads:
             raise ValueError("OLMoE hidden size is not divisible by heads")
+        layers = int(config_value["num_hidden_layers"])
         self._library = ctypes.CDLL(str(Path(library).resolve()))
-        self._has_attention_metrics = _configure(self._library)
+        self._has_attention_metrics, has_layered_open = _configure(self._library)
         non_mlp_bytes = str(Path(non_mlp_safetensors).resolve()).encode()
         q7_bytes = str(Path(q7_artifact).resolve()).encode()
+        scalar_values = (
+            local_window,
+            older_candidates,
+            older_top_k,
+            sink_tokens,
+        )
+        if attention_policies is not None and any(
+            value is not None for value in scalar_values
+        ):
+            raise ValueError(
+                "per-layer attention policies cannot be combined with "
+                "scalar attention overrides"
+            )
+        scalar_policy = {
+            "local_window": 16 if local_window is None else int(local_window),
+            "older_candidates": (
+                8 if older_candidates is None else int(older_candidates)
+            ),
+            "older_top_k": 4 if older_top_k is None else int(older_top_k),
+            "sink_tokens": 2 if sink_tokens is None else int(sink_tokens),
+        }
         native_config = _Config(
             non_mlp_bytes,
             q7_bytes,
-            int(config_value["num_hidden_layers"]),
+            layers,
             hidden,
             heads,
             kv_heads,
             hidden // heads,
             threads,
-            local_window,
-            older_candidates,
-            older_top_k,
-            sink_tokens,
+            scalar_policy["local_window"],
+            scalar_policy["older_candidates"],
+            scalar_policy["older_top_k"],
+            scalar_policy["sink_tokens"],
             float(config_value["rms_norm_eps"]),
             float(config_value["rope_theta"]),
         )
         error = ctypes.create_string_buffer(1024)
-        self._handle = self._library.engram_olmoe_token_open(
-            ctypes.byref(native_config), error, len(error)
-        )
+        if attention_policies is None:
+            self._handle = self._library.engram_olmoe_token_open(
+                ctypes.byref(native_config), error, len(error)
+            )
+            self.attention_policies = tuple(
+                dict(scalar_policy) for _layer in range(layers)
+            )
+        else:
+            policies = _validate_attention_policies(
+                attention_policies,
+                layers=layers,
+            )
+            if not has_layered_open:
+                raise OLMoENativeRuntimeError(
+                    "native OLMoE library has no layered-attention ABI"
+                )
+            native_policies = (_AttentionPolicyV1 * layers)(
+                *(
+                    _AttentionPolicyV1(
+                        policy["local_window"],
+                        policy["older_candidates"],
+                        policy["older_top_k"],
+                        policy["sink_tokens"],
+                    )
+                    for policy in policies
+                )
+            )
+            self._handle = self._library.engram_olmoe_token_open_layered_v1(
+                ctypes.byref(native_config),
+                native_policies,
+                layers,
+                error,
+                len(error),
+            )
+            self.attention_policies = policies
         if not self._handle:
             raise OLMoENativeRuntimeError(error.value.decode(errors="replace"))
         self.last_result: OLMoENativeTokenResult | None = None
