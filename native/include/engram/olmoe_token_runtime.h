@@ -40,6 +40,11 @@ struct OLMoETokenConfig {
   // Empty selects the legacy scalar capacities above. Otherwise this must
   // contain exactly one policy for every transformer layer.
   std::vector<OLMoEAttentionPolicy> attention_policies;
+  // Additive head-wise mode. When non-empty, this must contain exactly
+  // layers * query_heads policies in layer-major/head-minor order. Head-wise
+  // mode uses one independent streaming-attention cache per head and requires
+  // query_heads == key_value_heads.
+  std::vector<OLMoEAttentionPolicy> head_attention_policies;
 };
 
 struct OLMoETokenMetrics {

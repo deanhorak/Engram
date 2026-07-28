@@ -39,6 +39,16 @@ std::uint64_t checked_metric_sum(const std::uint64_t accumulated,
   return accumulated + static_cast<std::uint64_t>(value);
 }
 
+std::size_t checked_policy_count(const std::size_t layers,
+                                 const std::size_t heads) {
+  if (layers != 0 &&
+      heads > std::numeric_limits<std::size_t>::max() / layers) {
+    throw std::invalid_argument(
+        "native OLMoE head-wise attention policy count overflows");
+  }
+  return layers * heads;
+}
+
 }  // namespace
 
 OLMoETokenRuntime::OLMoETokenRuntime(OLMoETokenConfig config)
@@ -57,10 +67,19 @@ OLMoETokenRuntime::OLMoETokenRuntime(OLMoETokenConfig config)
       q7_.hidden_size() != config_.hidden_size ||
       (!config_.attention_policies.empty() &&
        config_.attention_policies.size() != config_.layers) ||
+      (!config_.attention_policies.empty() &&
+       !config_.head_attention_policies.empty()) ||
       !std::isfinite(config_.rms_norm_epsilon) ||
       config_.rms_norm_epsilon <= 0.0F || !std::isfinite(config_.rope_theta) ||
       config_.rope_theta <= 0.0F) {
     throw std::invalid_argument("native OLMoE token configuration is invalid");
+  }
+  if (!config_.head_attention_policies.empty() &&
+      (config_.query_heads != config_.key_value_heads ||
+       config_.head_attention_policies.size() !=
+           checked_policy_count(config_.layers, config_.query_heads))) {
+    throw std::invalid_argument(
+        "native OLMoE head-wise attention configuration is invalid");
   }
   const OLMoEAttentionPolicy scalar_policy{
       .local_window = config_.local_window,
@@ -69,15 +88,49 @@ OLMoETokenRuntime::OLMoETokenRuntime(OLMoETokenConfig config)
       .sink_tokens = config_.sink_tokens,
   };
   if ((config_.attention_policies.empty() &&
+       config_.head_attention_policies.empty() &&
        !valid_attention_policy(scalar_policy)) ||
       (!config_.attention_policies.empty() &&
        !std::all_of(config_.attention_policies.begin(),
                     config_.attention_policies.end(),
+                    valid_attention_policy)) ||
+      (!config_.head_attention_policies.empty() &&
+       !std::all_of(config_.head_attention_policies.begin(),
+                    config_.head_attention_policies.end(),
                     valid_attention_policy))) {
     throw std::invalid_argument("native OLMoE attention policy is invalid");
   }
-  attention_.reserve(config_.layers);
+  attention_.reserve(config_.head_attention_policies.empty()
+                         ? config_.layers
+                         : config_.head_attention_policies.size());
   for (std::size_t layer = 0; layer < config_.layers; ++layer) {
+    if (!config_.head_attention_policies.empty()) {
+      for (std::size_t head = 0; head < config_.query_heads; ++head) {
+        const OLMoEAttentionPolicy& policy =
+            config_.head_attention_policies[
+                layer * config_.query_heads + head];
+        attention_.push_back(std::make_unique<StreamingAttention>(
+            StreamingAttentionConfig{
+                .query_heads = 1,
+                .key_value_heads = 1,
+                .head_dimension = config_.head_dimension,
+                .local_window = policy.local_window,
+                .older_candidates = policy.older_candidates,
+                .older_top_k = policy.older_top_k,
+                .sink_tokens = policy.sink_tokens,
+                .scale =
+                    1.0F /
+                    std::sqrt(static_cast<float>(config_.head_dimension)),
+            }));
+        attention_state_capacity_bytes_ = checked_metric_sum(
+            attention_state_capacity_bytes_,
+            attention_.back()->allocated_state_bytes());
+        attention_scratch_capacity_bytes_ = checked_metric_sum(
+            attention_scratch_capacity_bytes_,
+            attention_.back()->scratch_bytes());
+      }
+      continue;
+    }
     const OLMoEAttentionPolicy& policy =
         config_.attention_policies.empty()
             ? scalar_policy
@@ -232,35 +285,57 @@ std::int64_t OLMoETokenRuntime::forward(
       apply_rope(
           std::span<float>(key_normalized.data() + row * kv_width, kv_width),
           config_.key_value_heads, position_ + row);
-      const StreamingAttentionMetrics attention_metrics =
-          attention_[layer]->step(
-              std::span<const float>(query.data() + row * hidden_width,
-                                     hidden_width),
-              std::span<const float>(
-                  key_normalized.data() + row * kv_width, kv_width),
-              std::span<const float>(value.data() + row * kv_width, kv_width),
-              std::span<float>(
-                  attention_output.data() + row * hidden_width, hidden_width));
       metrics_.attention_state_bytes =
           std::max(metrics_.attention_state_bytes,
                    attention_state_capacity_bytes_);
       metrics_.attention_scratch_bytes =
           std::max(metrics_.attention_scratch_bytes,
                    attention_scratch_capacity_bytes_);
-      metrics_.attention_logical_read_bytes +=
-          attention_metrics.candidate_key_bytes +
-          attention_metrics.selected_value_bytes +
-          attention_metrics.local_kv_bytes;
-      metrics_.attention_eviction_events +=
-          attention_metrics.eviction_events;
-      metrics_.attention_older_candidate_entries_scored +=
-          attention_metrics.older_candidate_entries_scored;
-      metrics_.attention_older_selected_entries +=
-          attention_metrics.older_selected_entries;
-      metrics_.attention_sink_insertions +=
-          attention_metrics.sink_insertions;
-      metrics_.attention_heavy_hitter_updates +=
-          attention_metrics.heavy_hitter_updates;
+      const auto accumulate_attention_metrics =
+          [this](const StreamingAttentionMetrics& attention_metrics) {
+            metrics_.attention_logical_read_bytes +=
+                attention_metrics.candidate_key_bytes +
+                attention_metrics.selected_value_bytes +
+                attention_metrics.local_kv_bytes;
+            metrics_.attention_eviction_events +=
+                attention_metrics.eviction_events;
+            metrics_.attention_older_candidate_entries_scored +=
+                attention_metrics.older_candidate_entries_scored;
+            metrics_.attention_older_selected_entries +=
+                attention_metrics.older_selected_entries;
+            metrics_.attention_sink_insertions +=
+                attention_metrics.sink_insertions;
+            metrics_.attention_heavy_hitter_updates +=
+                attention_metrics.heavy_hitter_updates;
+          };
+      if (config_.head_attention_policies.empty()) {
+        accumulate_attention_metrics(attention_[layer]->step(
+            std::span<const float>(query.data() + row * hidden_width,
+                                   hidden_width),
+            std::span<const float>(
+                key_normalized.data() + row * kv_width, kv_width),
+            std::span<const float>(value.data() + row * kv_width, kv_width),
+            std::span<float>(
+                attention_output.data() + row * hidden_width, hidden_width)));
+      } else {
+        for (std::size_t head = 0; head < config_.query_heads; ++head) {
+          const std::size_t offset = head * config_.head_dimension;
+          accumulate_attention_metrics(
+              attention_[layer * config_.query_heads + head]->step(
+                  std::span<const float>(
+                      query.data() + row * hidden_width + offset,
+                      config_.head_dimension),
+                  std::span<const float>(
+                      key_normalized.data() + row * kv_width + offset,
+                      config_.head_dimension),
+                  std::span<const float>(
+                      value.data() + row * kv_width + offset,
+                      config_.head_dimension),
+                  std::span<float>(
+                      attention_output.data() + row * hidden_width + offset,
+                      config_.head_dimension)));
+        }
+      }
     }
     project(attention_output, weights.output_projection, rows, hidden_width,
             hidden_width, projected);

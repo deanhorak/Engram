@@ -63,6 +63,13 @@ void* engram_olmoe_token_open_layered_v1(
     const engram_olmoe_token_config* config,
     const engram_olmoe_attention_policy_v1* policies, size_t policy_count,
     char* error, size_t error_capacity);
+// Opens a runtime with exactly layers * query_heads policies, flattened in
+// layer-major/head-minor order. This version requires query_heads to equal
+// key_value_heads so every policy owns one independent K/V cache.
+void* engram_olmoe_token_open_headwise_v1(
+    const engram_olmoe_token_config* config,
+    const engram_olmoe_attention_policy_v1* policies, size_t policy_count,
+    char* error, size_t error_capacity);
 void engram_olmoe_token_close(void* handle);
 void engram_olmoe_token_reset(void* handle);
 size_t engram_olmoe_token_vocabulary_size(const void* handle);
