@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "experiment": "olmoe_sustained_context_authored_holdout",
+  "status": "authored_and_fixed_before_candidate_execution",
+  "created_utc": "2026-07-28",
+  "dataset_sha256": "3e941c2a9dab999b774027c2d18efbee2d9c4ad9bcfed2e55cd1c171aa589b61",
+  "tokenizer_sha256": "ff3f2a2fc3b88f6f8504650e2ebb8e018bc4206a90eb41f1a9ff351e02e44ff9",
+  "input_identity": "25c8e193d5791379706e17a32d2429f8b4f517c7f2b386b2da5385a05bd80c41",
+  "sequences": 8,
+  "tokens_per_sequence": 129,
+  "selection": {
+    "source_kind": "engram_authored_holdout",
+    "rule": "eight distinct newly authored natural-prose records across eight domains; select and seal before any candidate or teacher execution on this corpus, tokenize with the pinned packaged OLMoE tokenizer, and take the first 129 IDs",
+    "candidate_or_teacher_outputs_inspected_during_selection": false,
+    "previous_engram_calibration_or_confirmation_text_reused": false
+  },
+  "records": [
+    {
+      "record_id": "prosthetic-gait-fitting",
+      "domain": "clinical-biomechanics",
+      "full_token_count": 217,
+      "window_identity": "8882b11eb66414505fe6519655c642a13bf472c0eaa3bf1542d6e3679e8c3cdc"
+    },
+    {
+      "record_id": "letterpress-typecasting-run",
+      "domain": "historical-printing",
+      "full_token_count": 228,
+      "window_identity": "38637592641edb94ff8737d392bb9de36944d14e678e4aa18a923a558c7d5bdc"
+    },
+    {
+      "record_id": "avalanche-dog-search-drill",
+      "domain": "mountain-rescue-training",
+      "full_token_count": 244,
+      "window_identity": "3f6297efcc88f30baaaa92bb387178b362dcedc9487d847695edd15813aece34"
+    },
+    {
+      "record_id": "photomask-defect-review",
+      "domain": "semiconductor-metrology",
+      "full_token_count": 238,
+      "window_identity": "4768690ec2e94a4f40e626d16f1dd596713ce90c6fc7c001d1900cceeeff0053"
+    },
+    {
+      "record_id": "kelp-farm-harvest-plan",
+      "domain": "marine-aquaculture",
+      "full_token_count": 251,
+      "window_identity": "9555572cb1f7aa889e5607b5173bea437d1ad20cc8606aed62bf105e93dec2a7"
+    },
+    {
+      "record_id": "courtroom-interpretation-session",
+      "domain": "legal-language-access",
+      "full_token_count": 241,
+      "window_identity": "cba96fcf667933404c1992ba6f543665e8fe49b99d873c1378f7790f38aa7c6b"
+    },
+    {
+      "record_id": "balloon-envelope-inspection",
+      "domain": "lighter-than-air-aviation",
+      "full_token_count": 251,
+      "window_identity": "50d90c0539ee65f634d4e540d7a56b3b6da901037aef7678370fe8b1c937f0bd"
+    },
+    {
+      "record_id": "elevator-commissioning-test",
+      "domain": "vertical-transportation-safety",
+      "full_token_count": 255,
+      "window_identity": "56035a3847f5517a8952ffdb875286d8fb3bceb2a1610cc4235e0ec68c72708b"
+    }
+  ],
+  "limitations": [
+    "The prose is prospectively authored for this confirmation rather than sampled from a broad natural-language distribution.",
+    "The corpus is selected and sealed before candidate or teacher execution, but eight records cannot establish broad language quality."
+  ]
+}
