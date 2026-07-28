@@ -23,8 +23,12 @@ The frozen complete-native 8×32 causal protocol now passes both its exact
 local and bounded older-context halves. A stronger 8×128 follow-up finds that
 W16/C8/K4/S2 fails after offset 31; changing only W16 to full W128 attention
 restores every semantic band. This vindicates the Q7 semantic-memory path but
-blocks OLMoE Milestone 3 attention substitution until a bounded policy passes
-below 45% logical reads. Broader language quality and performance remain.
+blocks OLMoE Milestone 3 attention substitution. A matched 44.7614%-read sweep
+then varies the split between recent and retrieved context three ways; every
+arm is mechanically valid and every arm fails semantic quality. There is no
+selected static policy. The next work is a layer/head-adaptive or
+learned/distilled older-context selector rather than more global W/C/K
+tuning. Broader language quality and performance remain.
 
 ### Why OLMoE changes the semantic problem
 
@@ -567,9 +571,30 @@ window. It exact-reranks those eight old keys to four values and never reads an
 evicted key. The frozen 256-position result passes every causal threshold.
 The OLMoE source track does not inherit that result: its W16/C8/K4/S2 policy
 fails the authenticated 8×128 semantic test, while exact W128 passes at
-nondeployable 100% reads. OLMoE therefore still needs a bounded attention
-policy. Native integration and a genuinely long-context hardware benchmark
-remain.
+nondeployable 100% reads. Three policies then spend the same 44.7614% logical
+read budget and expose the same 32 mature values, but distribute them
+differently:
+
+- W16/C18/K16 keeps 16 recent values and retrieves 16 older values;
+- W24/C10/K8 keeps 24 recent values and retrieves eight older values;
+- W30/C4/K2 keeps 30 recent values and retrieves two older values.
+
+The first two are close but still fail the gate: their overall
+KL/top-1/NLL-delta/hidden-L2 results are
+0.063887/0.867188/+0.051701/0.157717 and
+0.065912/0.877930/+0.058480/0.159755. The locality-heavy third arm is worse at
+0.095813/0.840820/+0.075728/0.188422. For comparison, W128 is
+0.003438/0.974609/+0.001459/0.041389. This tells us that old information is
+needed, but neither a uniformly larger recent window nor a uniformly larger
+retrieval allocation recovers it reliably at this budget.
+
+The sweep deliberately bypassed the package's immutable W16/C8/K4 setting and
+constructed a raw native runtime for each development arm. It did not modify
+the package or promote a model-format policy. OLMoE therefore still needs a
+bounded attention policy, now specifically one that allocates capacity by
+layer/head or learns older-context selection from the dense teacher. Native
+package promotion and a genuinely long-context hardware benchmark must wait
+for that semantic pass.
 
 The generic dense-Llama compiler still writes initialized or heuristic
 fallbacks and records that fact in its conversion report. The native-BitNet

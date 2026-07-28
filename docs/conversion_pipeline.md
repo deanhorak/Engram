@@ -156,6 +156,26 @@ that changes only W16 to exact W128 attention passes every band. The conversion
 and Q7 route are therefore not the sustained failure source; the remaining
 OLMoE blocker is a deployable Milestone 3 attention policy below 45% logical
 reads. W128 is a 100%-read diagnostic, not a package default.
+
+The first matched-budget follow-up is also complete. It evaluated
+`W16/C18/K16/S2`, `W24/C10/K8/S2`, and `W30/C4/K2/S2` in a fixed order at
+exactly 968,753,152 logical read bytes per sequence (44.7614%) and 32 mature
+visible values. Every arm passed its evidence contract, but their respective
+overall KL/top-1/NLL-delta/hidden-L2 results were
+0.063887/0.867188/+0.051701/0.157717,
+0.065912/0.877930/+0.058480/0.159755, and
+0.095813/0.840820/+0.075728/0.188422. None passed, so the frozen ranking rule
+selected no arm and the reserved confirmation corpus was not consumed.
+
+This was a development intervention, not a conversion-format change. The
+evaluator constructed the raw native token runtime with each candidate policy
+because the authenticated package intentionally remains immutable at
+`W16/C8/K4/S2`. No candidate was installed into the package, and no model
+format was promoted. The next conversion-relevant experiment is a
+layer/head-adaptive or learned/distilled older-context selector; it must pass
+development and fresh confirmation before its policy can enter the package
+schema.
+
 The first command below is the historical sealed-reference reproduction, so
 it explicitly retains the original serial sequence policy:
 

@@ -1,4 +1,4 @@
-# OLMoE Q7 sustained-context gate and attention attribution
+# OLMoE Q7 sustained-context gate, attribution, and matched-budget sweep
 
 Date: 2026-07-28
 
@@ -28,6 +28,14 @@ This does **not** pass the deployable attention gate. W128 consumed 100% of the
 dense logical attention reads and was specified after the W16 failure as an
 attribution diagnostic, not as a replacement gate. It also does not establish
 task-sensitive retrieval quality beyond this fixed corpus.
+
+The subsequently frozen exact-traffic-matched development sweep has now also
+completed. All three <=45%-read policies passed every evidence check, but zero
+arms passed semantic quality. The frozen rule therefore selected no policy:
+there is no defensible “best failure” to promote. The result preserves the
+Milestone 2 Q7 pass, leaves Milestone 3 bounded attention blocked, and moves
+the next experiment to layer/head-adaptive allocation or a learned/distilled
+older-context selector.
 
 ## Frozen experimental contract
 
@@ -63,6 +71,10 @@ All hashes are SHA-256 and are written in full.
 | Frozen W128 control protocol | `1619cd5f3cb607a7d0e2b5cde2e61a83dba3f1615884462a30570d62c7764dd9` |
 | W128 control result | `3d099ffd3121e47bdf61ed8772e5e9d08b01b8c6041e9a963b409a502808d345` |
 | W128 control evaluator source | `3dd8ca0be3c64fb8fb5f3971f5b073b30febc09e8be9f0ed277337522f39714d` |
+| Frozen matched-sweep protocol | `2853de54119f4218c165ebebfe560162f76f99b552fdfe84c803a5ca8acfcef0` |
+| Matched-sweep result | `813bac5b1d38af7653cf49d8c7b7ca278df8aac5402fdd28692e905bebfc7658` |
+| Matched-sweep source commit | `102bda2` |
+| Matched-sweep evaluator source | `cf2e4be0bc4d8e6da54aebcb11b94e7c4ecde2d56e12831fe8de835a342ffa60` |
 | Native package manifest | `861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db` |
 | Native runtime library | `4cd4de8f3e3cefad59d7b9e6e23a0d1d06a26abc10af2e0c4f9242a2b5876ca7` |
 | Sustained-context dataset | `0fb513ea29bdae760b91932d60cf942df047ec5ce578d1c21bbf9438a777abeb` |
@@ -74,7 +86,10 @@ Both runs re-authenticated the package, native library, dataset, corpus
 manifest, teacher JSON and arrays, teacher config/index/shards, and frozen
 evaluator sources after execution. The W16 run also re-authenticated its
 protocol; the control re-authenticated both protocols, the W16 result, and its
-own evaluator source. Every recorded post-run authentication check passed.
+own evaluator source. The sweep additionally re-authenticated both prerequisite
+protocols and results, its evaluator source (committed at `102bda2`), all
+package/DSO/corpus/teacher roots, per-arm counter streams, and its own protocol
+after executing all arms. Every recorded post-run authentication check passed.
 
 ## Semantic results
 
@@ -156,28 +171,76 @@ time, including 354.546 native seconds and 287.181 Q7 seconds. W128 took
 290.956 Q7 seconds. These runs establish correctness and attribution; their
 logical byte counts are not direct DRAM measurements.
 
-## Next prospective experiment: matched attention under 45%
+## Matched attention sweep under 45%
 
-The next experiment should freeze all non-attention identities above and
-compare three policies that allocate essentially the same permissible logical
-traffic differently:
+The prospectively frozen development sweep executed all three policies in its
+predeclared order. Each arm read exactly 968,753,152 logical attention bytes
+per sequence (44.7613856589% of the dense reference), exposed 32 values per
+mature step, and scheduled the unchanged Q7 path at 22.7864583333% of the
+all-expert ideal-Q4 reference:
 
-| Policy | Intended bias | Logical reads/sequence | Dense fraction | State bytes |
-|---|---|---:|---:|---:|
-| `W16/C18/K16/S2` | maximum older retrieval | 968,753,152 | 44.7613856589% | 8,991,232 |
-| `W24/C10/K8/S2` | balanced locality and retrieval | 968,753,152 | 44.7613856589% | 8,973,824 |
-| `W30/C4/K2/S2` | maximum exact locality under budget | 968,753,152 | 44.7613856589% | 8,960,768 |
+| Policy | State bytes | Mean KL | Top-1 | NLL delta | Hidden L2 | Evidence | Quality |
+|---|---:|---:|---:|---:|---:|---|---|
+| `W16/C18/K16/S2` | 8,991,232 | 0.06388655 | 0.8671875 | +0.05170082 | 0.15771664 | pass | **fail** |
+| `W24/C10/K8/S2` | 8,973,824 | 0.06591232 | 0.8779297 | +0.05847984 | 0.15975482 | pass | **fail** |
+| `W30/C4/K2/S2` | 8,960,768 | 0.09581344 | 0.8408203 | +0.07572840 | 0.18842230 | pass | **fail** |
 
-This is a controlled allocation experiment rather than another unstructured
-budget guess. All three arms are exactly matched in logical reads, expose 32
-values per mature attention step, and differ by less than 0.35% in persistent
-state. Freeze the policies and selection rule before executing any arm, reuse
-the identical 1,024-position population and thresholds, and require both
-overall and every-band quality to pass. This development sweep may rank
-passing arms by their worst normalized band margin, with state bytes as the
-predeclared tie-breaker, but promotion still requires a fresh confirmation.
+The frozen band results show where the shared failure begins:
 
-If none passes, ordinary window/candidate reallocation under the 45% ceiling is
-unlikely to close the gap. The next boundary should then be learned or
-distilled older-context selection trained against the exact-attention teacher,
-while retaining W128 only as the diagnostic ceiling.
+| Policy | Positions | Mean KL | Top-1 | NLL delta | Hidden L2 |
+|---|---:|---:|---:|---:|---:|
+| W16/C18/K16 | 0–15 | 0.011374 | 0.945312 | +0.000667 | 0.055917 |
+| W16/C18/K16 | 16–31 | 0.001969 | 0.976562 | +0.003676 | 0.038718 |
+| W16/C18/K16 | 32–63 | 0.026165 | 0.898438 | +0.015436 | 0.116066 |
+| W16/C18/K16 | 64–95 | 0.097770 | 0.828125 | +0.054984 | 0.213969 |
+| W16/C18/K16 | 96–127 | 0.124940 | 0.781250 | +0.134212 | 0.253515 |
+| W24/C10/K8 | 0–15 | 0.011374 | 0.945312 | +0.000667 | 0.055917 |
+| W24/C10/K8 | 16–31 | 0.001969 | 0.976562 | +0.003676 | 0.038718 |
+| W24/C10/K8 | 32–63 | 0.026789 | 0.925781 | +0.017731 | 0.123064 |
+| W24/C10/K8 | 64–95 | 0.098504 | 0.859375 | +0.085019 | 0.208041 |
+| W24/C10/K8 | 96–127 | 0.131684 | 0.765625 | +0.128998 | 0.260596 |
+| W30/C4/K2 | 0–15 | 0.011374 | 0.945312 | +0.000667 | 0.055917 |
+| W30/C4/K2 | 16–31 | 0.001969 | 0.976562 | +0.003676 | 0.038718 |
+| W30/C4/K2 | 32–63 | 0.039842 | 0.890625 | -0.008932 | 0.150861 |
+| W30/C4/K2 | 64–95 | 0.145345 | 0.796875 | +0.092438 | 0.251079 |
+| W30/C4/K2 | 96–127 | 0.191395 | 0.714844 | +0.217236 | 0.304432 |
+
+Every arm passed source/artifact authentication, exact structural and traffic
+counters, reset replay, post-run rehashing, and its exact pre-eviction identity
+check against W128. The identity populations were 128, 192, and 240 positions
+for W16, W24, and W30 respectively. All three arms passed every quality
+threshold in the 0–15 and 16–31 bands. Final-hidden drift failed at 32–63 for
+all three; failures were broad across KL, top-1, NLL, and hidden state in the
+64–95 and 96–127 bands.
+
+The systems counters also matched the frozen analytical table exactly:
+
+| Policy | State bytes | Scratch bytes | Evictions | Older keys scored | Older values selected | Sink insertions | Heavy-hitter updates |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| W16/C18/K16 | 8,991,232 | 7,424 | 1,792 | 476,928 | 428,032 | 512 | 4,096–28,160 |
+| W24/C10/K8 | 8,973,824 | 5,888 | 1,664 | 254,720 | 205,824 | 512 | 2,048–26,112 |
+| W30/C4/K2 | 8,960,768 | 4,736 | 1,568 | 98,816 | 49,920 | 512 | 512–24,576 |
+
+The three arms took 1,183.50 seconds together. Their eight-sequence wall
+times were 352.90, 352.73, and 345.54 seconds, with deterministic replay times
+of 41.60, 41.03, and 42.53 seconds. Summed native/Q7 times over the eight
+measured sequences were 345.13/277.55, 347.57/279.76, and 340.30/272.77
+seconds. These are controlled run timings, not a hardware-counter benchmark.
+
+The experiment used the raw native token runtime to override the attention
+policy because the authenticated package is immutably bound to W16/C8/K4/S2.
+That intervention was explicit in the protocol and did not mutate the package.
+The sweep consumed the already designated sustained-development corpus; since
+no arm passed, the separately sealed fresh-confirmation corpus remains unused.
+
+The predeclared ranking admitted only evidence-valid arms that passed overall
+and every frozen position band. Its eligible set was therefore empty,
+`selected_arm` is null, and the decision is
+`investigate_layer_adaptive_or_learned_selector`. Selecting the numerically
+least-bad failure after observing these results would violate the protocol.
+
+Ordinary global window/candidate reallocation under the 45% ceiling is now a
+closed development branch for this policy family. The next boundary is a
+layer/head-adaptive budget or a learned/distilled older-context selector
+trained against the exact-attention teacher. W128 remains the diagnostic
+ceiling, Milestone 2 remains passed, and Milestone 3 remains blocked.

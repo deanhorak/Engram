@@ -235,13 +235,29 @@ pass, and makes **Milestone 3 bounded attention** the remaining OLMoE blocker.
 
 W128 is a diagnostic, not a deployable solution: it reads **100%** of dense
 causal attention bytes (**2,164,260,864 bytes per sequence**) and holds
-**35,825,664 bytes** of attention state. The next matched sweep must remain at
-or below the 45% logical-read ceiling. The next exactly traffic-matched
-candidates are W16/C18/K16/S2, W24/C10/K8/S2, and W30/C4/K2/S2. Each reads
-**968,753,152 bytes per sequence** (**44.7614%**) and exposes 32 values per
-mature step; only the allocation between exact locality and older retrieval
-changes. No candidate is promoted until it passes the same 8×128 bands and a
-fresh authenticated confirmation. See the
+**35,825,664 bytes** of attention state. The prospectively frozen follow-up
+therefore compared W16/C18/K16/S2, W24/C10/K8/S2, and W30/C4/K2/S2 at an
+exactly matched **968,753,152 logical bytes per sequence** (**44.7614%**) and
+32 visible values per mature step. Every arm passed its evidence,
+authentication, exact-counter, reset-replay, and pre-eviction identity checks,
+but **none passed semantic quality**:
+
+| Policy | Mean KL | Top-1 | NLL delta | Hidden L2 | Decision |
+|---|---:|---:|---:|---:|---|
+| W16/C18/K16/S2 | 0.063887 | 0.867188 | +0.051701 | 0.157717 | No selection |
+| W24/C10/K8/S2 | 0.065912 | 0.877930 | +0.058480 | 0.159755 | No selection |
+| W30/C4/K2/S2 | 0.095813 | 0.840820 | +0.075728 | 0.188422 | No selection |
+
+All three passed the 0–15 and 16–31 bands. Hidden-state drift appeared in
+32–63, and the 64–95 and 96–127 bands failed broadly. The frozen rule forbids
+promoting a “best failure,” so there is no selected arm and the reserved fresh
+confirmation corpus remains unconsumed. The sweep used an explicit raw-runtime
+intervention because the immutable installed package remains bound to
+W16/C8/K4/S2; it consumed the designated sustained-development corpus but did
+not silently rewrite or promote the package policy. The next justified
+boundary is a layer/head-adaptive allocation or a
+learned/distilled older-context selector trained against exact attention, not
+another global W/C/K reallocation. See the
 [sustained-context evidence and attribution report](reports/olmoe_q7_sustained_context_2026-07-28/summary.md).
 
 Python owns packaged tokenization and prompt text handling. From token IDs

@@ -29,9 +29,14 @@ complete-native 8×32 causal protocol passes overall and independently on the
 128 positions beyond W=16. A stronger authenticated 8×128 run then shows that
 W16/C8/K4/S2 drifts after offset 31, while a matched W128 full-attention
 control passes every band. That control preserves the Milestone 2 Q7 semantic
-conclusion and moves the unresolved OLMoE boundary to Milestone 3 attention:
-find a bounded policy below 45% logical reads. W128 itself reads 100% and is
-not deployable. Measured whole-system traffic and optimization also remain.
+conclusion and moves the unresolved OLMoE boundary to Milestone 3 attention.
+The subsequent fixed-budget sweep tested three different allocations of the
+same 44.7614% logical-read budget. All evidence checks passed, but none of the
+three policies passed semantic quality, so no arm was selected. Static
+reallocation of one global W/C/K policy under this budget is now closed. The
+next justified architecture is a layer/head-adaptive or learned/distilled
+selector for older context. W128 itself reads 100% and is not deployable.
+Measured whole-system traffic and optimization also remain.
 
 Engram's target runtime combines a shared recurrent controller, fixed sparse semantic
 memory derived from SwiGLU records, hybrid local/recurrent/retrieval episodic memory, an
@@ -236,6 +241,26 @@ boundary, so rotating a decoded key never depends on a fabricated dense cache.
 `use_cache=False` prevents Transformers from allocating its `DynamicCache`.
 State is reset between independent generations and cannot silently survive a
 batch-size or position discontinuity.
+
+OLMoE uses the same cache mechanism but has not inherited native-BitNet's
+quality result. Its matched 8×128 development sweep held mature visible values
+and total logical reads fixed while exchanging recent locality for older
+retrieval:
+
+- `W16/C18/K16/S2`: KL 0.063887, top-1 0.867188, NLL delta
+  +0.051701, and hidden L2 0.157717;
+- `W24/C10/K8/S2`: KL 0.065912, top-1 0.877930, NLL delta
+  +0.058480, and hidden L2 0.159755;
+- `W30/C4/K2/S2`: KL 0.095813, top-1 0.840820, NLL delta
+  +0.075728, and hidden L2 0.188422.
+
+All three arms passed authentication, counter, traffic, replay, and
+pre-eviction identity checks, but all failed the frozen semantic gate. The
+W128 control remains the causal ceiling at KL 0.003438, top-1 0.974609, NLL
+delta +0.001459, and hidden L2 0.041389. This rules out choosing a “best
+failure” or merely tuning one global cache split. The next operator must
+allocate memory by layer/head or learn which older states to retain from dense
+teacher behavior.
 
 ## Token-level controller and output path
 

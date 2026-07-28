@@ -152,11 +152,35 @@ bytes per sequence—**100%** of dense full-context reads—and holds
 35,825,664 bytes (35.8 MB) of attention state, versus W16's 31.2863% read
 fraction and 6,336,512-byte state. The attribution protocol deliberately
 exempts deployability; W128 would violate the 45% attention-read requirement.
-The next matched 8×128 sweep is limited to W16/C18/K16/S2,
-W24/C10/K8/S2, and W30/C4/K2/S2. Each reads exactly 968,753,152 logical
-bytes per sequence (44.7614%) and exposes 32 values per mature step, while
-moving the fixed budget from older retrieval toward exact locality. These are
-development candidates, not promoted policies.
+
+The prospectively frozen matched **8×128** development sweep is now complete.
+It ran all three predeclared arms in fixed order against the consumed
+sustained-development corpus. Each arm read exactly 968,753,152 logical bytes
+per sequence (44.7613856589% of dense), exposed 32 values per mature step, and
+retained the same Q7 schedule at 22.7864583333% of the all-expert ideal-Q4
+reference:
+
+| Policy | Mean KL | Top-1 | NLL delta | Hidden L2 | Evidence | Quality |
+|---|---:|---:|---:|---:|---|---|
+| W16/C18/K16/S2 | 0.06388655 | 0.8671875 | +0.05170082 | 0.15771664 | Pass | **Fail** |
+| W24/C10/K8/S2 | 0.06591232 | 0.8779297 | +0.05847984 | 0.15975482 | Pass | **Fail** |
+| W30/C4/K2/S2 | 0.09581344 | 0.8408203 | +0.07572840 | 0.18842230 | Pass | **Fail** |
+
+All three exact 0–15 and 16–31 bands passed. Hidden-state drift failed the
+32–63 band, and quality failed broadly at 64–95 and 96–127. All artifact,
+source, counter, replay, post-run authentication, and pre-eviction identity
+checks passed. Because zero arms passed every frozen quality check, the
+predeclared rule selected **no arm** and did not consume the separately sealed
+fresh-confirmation corpus.
+
+The sweep protocol is `2853de54…cef0`, the result is `813bac5b…7658`, and
+the frozen evaluator is source commit `102bda2` with source SHA
+`cf2e4be0…fa60`. The intervention used the raw native runtime to override the
+immutable package's W16/C8/K4/S2 attention policy; it did not mutate or promote
+that installed package. Milestone 2 remains passed, while Milestone 3 remains
+blocked. Another global W/C/K trade is not justified: the next boundary is a
+layer/head-adaptive budget or a learned/distilled older-context selector
+trained against exact attention.
 
 ### Native-BitNet package integration and evidence caveat
 
@@ -578,7 +602,7 @@ scientific exit criterion has passed.
 |---|---|---|
 | 1. Inspection, tracing, exact MLP decomposition, oracle experiment | Complete | Complete for the fixture and exercised on SmolLM2 |
 | 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP and OLMoE learned-expert routes, authenticated packages, CPU kernels, native token runtimes, and causal evaluators exist | **Native-BitNet passed** by postmortem adjudication and **OLMoE Q7 formally passed** an authenticated frozen complete-native 8×32 protocol. The matched W128 8×128 control passes every band and attributes the later sustained failure to attention, preserving the Q7/M2 decision. Generic dense-Llama conversion and broader replication remain incomplete |
-| 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, and incremental package integration implemented | Native-BitNet has a source-specific bounded trained-model pass. **OLMoE W16/C8/K4/S2 fails the authenticated 8×128 gate beginning at offsets 32–63**; W128 full attention passes but is nondeployable at 100% reads and 35.8 MB state. A ≤45%-read bounded policy remains blocked |
+| 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, and incremental package integration implemented | Native-BitNet has a source-specific bounded trained-model pass. **OLMoE W16/C8/K4/S2 fails the authenticated 8×128 gate beginning at offsets 32–63**; W128 full attention passes but is nondeployable at 100% reads and 35.8 MB state. The exact-traffic-matched 44.7614% sweep also produced zero quality-passing arms, so global W/C/K reallocation is closed and layer/head-adaptive or learned older-context selection is next |
 | 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, authenticated package installation, persistent native stage state, and a one-call 30-stage C++ attention/semantic runner implemented | **Controller, compiled-substitution, incremental-generation, and C++ orchestration gates pass**; frozen generation reaches 96.875% token agreement, 87.5% exact prompts, correct cache positions, and zero decoder-layer calls |
 | 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, native vocabulary argmax, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and passes source/package parity; generic vocabulary/cache/correction paths are not all active in the promoted native-BitNet runtime |
 | 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime, memory-mapped BitNet DIP/projection kernels, streaming attention, native shell operators, authenticated C++ package mapping, manifest-derived model configuration/EOS, token-step control, greedy argmax, reset, standalone generation, and a versioned shared ABI implemented | **Partial**: model execution is native and chat uses the shared handle; tokenizer/template/history orchestration remains Python-side, OLMoE sustained older-context quality fails under the current bounded policy, and AVX2 tuning and hardware-counter traffic remain |

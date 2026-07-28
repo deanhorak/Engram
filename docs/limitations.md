@@ -53,11 +53,24 @@
   of the full-context logical-KV reference—versus 6,336,512 state bytes and
   677,117,952 logical bytes (31.2863%) for W16. These are algorithmic logical
   interface bytes, not hardware-counter DRAM traffic; cache hits, prefetch,
-  writes, and allocator behavior are not measured. The next deployable-policy
-  search is limited to the exactly matched <=45% grid: W16/C18/K16/S2,
-  W24/C10/K8/S2, and W30/C4/K2/S2. Every arm reads 968,753,152 logical bytes
-  per sequence (44.7614%) and exposes 32 values per mature step, isolating
-  retrieval versus locality. W32 is already ~50.38%, W64 is worse, and W128
+  writes, and allocator behavior are not measured.
+- The exactly matched <=45% static-policy sweep is complete and negative.
+  W16/C18/K16/S2, W24/C10/K8/S2, and W30/C4/K2/S2 each read 968,753,152
+  logical bytes per sequence (44.7614%) and expose 32 values per mature step.
+  Every authentication, source-binding, exact-counter, replay, pre-eviction
+  identity, and post-run check passed. Nevertheless, their respective overall
+  KL/top-1/NLL-delta/hidden-L2 results were
+  0.063887/0.867188/+0.051701/0.157717,
+  0.065912/0.877930/+0.058480/0.159755, and
+  0.095813/0.840820/+0.075728/0.188422. Zero arms passed, so none was selected
+  and the reserved confirmation corpus remains unused. This closes static
+  global W/C/K reallocation at this budget, not every possible bounded
+  attention architecture. Layer/head-adaptive budgets and learned or
+  distilled older-context selection remain open.
+- The sweep did not alter the authenticated package. Its raw token-runtime
+  intervention overrode the package's immutable W16/C8/K4 policy only inside
+  the evaluator. There is no promoted attention artifact, package descriptor,
+  or model-format revision. W32 is already ~50.38%, W64 is worse, and W128
   remains only the diagnostic ceiling.
 - Package authentication currently hashes about 6.8 GB and the Q7 loader
   performs strict full-artifact structural validation at startup. This is

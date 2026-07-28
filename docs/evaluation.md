@@ -161,17 +161,46 @@ and is a diagnostic ceiling rather than a candidate for the <=45% attention
 traffic gate. See the
 [sustained-context and control evidence](../reports/olmoe_q7_sustained_context_2026-07-28/summary.md).
 
-The next attention experiment is a prospectively frozen, exactly
-traffic-matched development sweep under the 45% modeled logical-read cap:
-W16/C18/K16/S2, W24/C10/K8/S2, and W30/C4/K2/S2. Each arm reads exactly
-968,753,152 logical bytes per sequence (44.7613857% of dense) and exposes 32
-values per mature step; persistent state differs by less than 0.35%. The
-treatment is therefore how a fixed budget is divided between exact locality
-and older retrieval. W32 alone is already about 50.38%, and W64 is worse, so
-neither is a deployable sweep candidate; W128 remains the attribution control.
-The sweep must retain the same Q7/package/teacher/corpus roots and require
-overall plus every frozen position band to pass before any selected policy
-receives a fresh confirmation.
+### Exactly traffic-matched attention sweep
+
+The prospectively frozen follow-up ran all three predeclared arms in fixed
+order under the 45% modeled logical-read cap. Each arm read exactly
+968,753,152 logical bytes per sequence (44.7613856589% of dense), exposed 32
+values per mature step, and retained the Q7 schedule at 22.7864583333% of the
+all-expert ideal-Q4 reference. Persistent state ranged only from 8,960,768 to
+8,991,232 bytes, so the controlled treatment was how the fixed attention
+budget was divided between exact locality and older retrieval:
+
+| Policy | Mean KL | Top-1 | NLL delta | Hidden relative L2 | Evidence | Quality |
+|---|---:|---:|---:|---:|---|---|
+| W16/C18/K16/S2 | 0.06388655 | 0.8671875 | +0.05170082 | 0.15771664 | pass | **fail** |
+| W24/C10/K8/S2 | 0.06591232 | 0.8779297 | +0.05847984 | 0.15975482 | pass | **fail** |
+| W30/C4/K2/S2 | 0.09581344 | 0.8408203 | +0.07572840 | 0.18842230 | pass | **fail** |
+
+All arms passed every exact evidence, source/artifact authentication,
+structural-counter, reset-replay, and pre-eviction identity check. All also
+passed every threshold in the 0–15 and 16–31 bands. Final-hidden drift exceeded
+the threshold at 32–63 for all arms, and the 64–95 and 96–127 bands failed
+broadly. Thus zero arms passed the required overall-plus-every-band rule. The
+predeclared selector returned no arm, deliberately avoiding a post hoc “best
+failure,” and the separately sealed fresh-confirmation corpus was not used.
+
+The frozen protocol SHA-256 is
+`2853de54119f4218c165ebebfe560162f76f99b552fdfe84c803a5ca8acfcef0`;
+the authenticated result is
+`813bac5b1d38af7653cf49d8c7b7ca278df8aac5402fdd28692e905bebfc7658`.
+The evaluator was frozen at source commit `102bda2` with source SHA-256
+`cf2e4be0bc4d8e6da54aebcb11b94e7c4ecde2d56e12831fe8de835a342ffa60`.
+Because the installed package immutably binds W16/C8/K4/S2, the experiment
+used an explicit raw-runtime policy override against the consumed
+sustained-development corpus; it neither modified nor promoted the package.
+
+This closes global W/C/K reallocation as the next useful search axis under the
+current budget. Milestone 2 remains passed because the matched exact-attention
+control isolates the Q7 path; Milestone 3 remains blocked. The next defensible
+experiment is layer/head-adaptive allocation or a learned/distilled
+older-context selector trained against the exact-attention teacher. W128
+remains only the diagnostic ceiling.
 
 A separate low-bit-native source track first passed the causal quality and
 cold-byte checks while executing every record. Its direct CPU kernel

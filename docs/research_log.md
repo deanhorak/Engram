@@ -1624,3 +1624,42 @@
   next-experiment details are recorded in
   `reports/olmoe_q7_sustained_context_2026-07-28/summary.md`.
 - Full current validation passes: **637 Python tests** and **19 native tests**.
+
+## 2026-07-28 — Matched-budget static attention sweep closes without selection
+
+- Froze before execution a fixed-order three-arm development sweep from source
+  commit `102bda2`. The protocol binds the prior sustained failure, the W128
+  diagnostic, package and source inventories, native DSO, teacher arrays,
+  corpus, evaluator source, thresholds, traffic algebra, exact expected
+  counters, per-position matching rules, and a no-adaptation ranking rule.
+  Protocol SHA-256:
+  `2853de54119f4218c165ebebfe560162f76f99b552fdfe84c803a5ca8acfcef0`.
+- Held mature visible values at 32 and logical attention reads at 968,753,152
+  bytes per 128-position sequence (44.7614%) while exchanging exact recent
+  locality for older retrieval. The arms ran in the frozen order
+  `W16/C18/K16/S2`, `W24/C10/K8/S2`, and `W30/C4/K2/S2`; all three ran even
+  after the first failures.
+- Every arm passed source authentication, exact pre-eviction row identity,
+  analytical and observed counters, Q7 traffic, deterministic reset replay,
+  and post-run authentication. Their overall
+  KL/top-1/NLL-delta/hidden-L2 results were:
+  `0.0638865/0.867188/+0.0517008/0.157717`,
+  `0.0659123/0.877930/+0.0584798/0.159755`, and
+  `0.0958134/0.840820/+0.0757284/0.188422`.
+- Zero arms passed the frozen semantic gate. The result therefore contains no
+  selected arm, no “best failure,” and no fresh-confirmation request. The
+  reserved confirmation corpus was not evaluated. Result SHA-256:
+  `813bac5b1d38af7653cf49d8c7b7ca278df8aac5402fdd28692e905bebfc7658`.
+- The matched W128 ceiling remains KL 0.00343812, top-1 0.974609, NLL delta
+  +0.00145861, and hidden L2 0.0413892. Together with the valid negative sweep,
+  this keeps Milestone 2's Q7 semantic conclusion passed and unchanged while
+  locating the active block in Milestone 3 attention.
+- This was a development-only raw-runtime intervention. It overrode the
+  immutable package W16/C8/K4 policy without modifying or promoting the
+  package/model format. Static global W/C/K reallocation under the <=45%
+  logical-read budget is closed. The next justified experiment is
+  layer/head-adaptive allocation or a learned/distilled selector trained to
+  retain the older context the dense teacher actually uses.
+- The committed sweep source passed **653 Python tests** and **19 native
+  tests**, including a real tiny-package freeze-to-three-arm native smoke test,
+  before the production protocol was frozen.
