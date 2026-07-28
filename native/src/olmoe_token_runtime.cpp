@@ -205,6 +205,24 @@ std::int64_t OLMoETokenRuntime::forward(
           std::max(metrics_.attention_state_bytes,
                    static_cast<std::uint64_t>(
                        attention_metrics.state_bytes * config_.layers));
+      metrics_.attention_scratch_bytes =
+          std::max(metrics_.attention_scratch_bytes,
+                   static_cast<std::uint64_t>(
+                       attention_metrics.scratch_bytes * config_.layers));
+      metrics_.attention_logical_read_bytes +=
+          attention_metrics.candidate_key_bytes +
+          attention_metrics.selected_value_bytes +
+          attention_metrics.local_kv_bytes;
+      metrics_.attention_eviction_events +=
+          attention_metrics.eviction_events;
+      metrics_.attention_older_candidate_entries_scored +=
+          attention_metrics.older_candidate_entries_scored;
+      metrics_.attention_older_selected_entries +=
+          attention_metrics.older_selected_entries;
+      metrics_.attention_sink_insertions +=
+          attention_metrics.sink_insertions;
+      metrics_.attention_heavy_hitter_updates +=
+          attention_metrics.heavy_hitter_updates;
     }
     project(attention_output, weights.output_projection, rows, hidden_width,
             hidden_width, projected);

@@ -215,6 +215,22 @@ def test_native_olmoe_token_step_matches_single_position_reference(tmp_path):
         assert len(generated) == 2
         assert generated[0] == expected
         assert runtime.position == 2
+        runtime.reset()
+        for _position in range(17):
+            sustained = runtime.forward([1])
+        assert runtime.position == 17
+        assert sustained.metrics["attention_eviction_events"] == 2
+        assert sustained.metrics["attention_older_candidate_entries_scored"] == 8
+        assert sustained.metrics["attention_older_selected_entries"] == 8
+        assert sustained.metrics["attention_sink_insertions"] == 8
+        assert sustained.metrics["attention_heavy_hitter_updates"] == 0
+        assert sustained.metrics["attention_logical_read_bytes"] > 0
+        assert sustained.metrics["attention_scratch_bytes"] > 0
+        runtime.reset()
+        reset = runtime.forward([1])
+        assert reset.metrics["attention_eviction_events"] == 0
+        assert reset.metrics["attention_older_candidate_entries_scored"] == 0
+        assert reset.metrics["attention_sink_insertions"] == 0
 
     assert report["tensor_count"] == 19
     assert report["file_bytes"] == non_mlp.stat().st_size

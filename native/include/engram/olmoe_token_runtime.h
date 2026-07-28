@@ -35,6 +35,13 @@ struct OLMoETokenConfig {
 struct OLMoETokenMetrics {
   std::uint64_t positions_processed{};
   std::uint64_t attention_weight_bytes{};
+  std::uint64_t attention_logical_read_bytes{};
+  std::uint64_t attention_scratch_bytes{};
+  std::uint64_t attention_eviction_events{};
+  std::uint64_t attention_older_candidate_entries_scored{};
+  std::uint64_t attention_older_selected_entries{};
+  std::uint64_t attention_sink_insertions{};
+  std::uint64_t attention_heavy_hitter_updates{};
   std::uint64_t q7_scheduled_bytes{};
   std::uint64_t q7_elapsed_ns{};
   std::uint64_t attention_state_bytes{};

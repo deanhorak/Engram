@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "experiment": "olmoe_sustained_context_authored_holdout",
+  "status": "authored_and_fixed_before_candidate_execution",
+  "created_utc": "2026-07-28",
+  "dataset_sha256": "0fb513ea29bdae760b91932d60cf942df047ec5ce578d1c21bbf9438a777abeb",
+  "tokenizer_sha256": "ff3f2a2fc3b88f6f8504650e2ebb8e018bc4206a90eb41f1a9ff351e02e44ff9",
+  "input_identity": "4f98c3bce219c1b4dc0252781b3737a1a4eb9c4cd1b79eada6ca2f8a4cf5b8ae",
+  "sequences": 8,
+  "tokens_per_sequence": 129,
+  "selection": {
+    "source_kind": "engram_authored_holdout",
+    "rule": "eight distinct newly authored natural-prose records across eight domains; tokenize with the pinned packaged OLMoE tokenizer and take the first 129 IDs",
+    "candidate_or_teacher_outputs_inspected_during_selection": false,
+    "previous_engram_calibration_or_confirmation_text_reused": false
+  },
+  "records": [
+    {
+      "record_id": "clock-tower-restoration",
+      "domain": "material-conservation",
+      "full_token_count": 267,
+      "window_identity": "196102e775fc19da9fe55aca2cf980673efc97fb5e337f1124ee68f45b71c546"
+    },
+    {
+      "record_id": "overnight-rail-dispatch",
+      "domain": "transport-operations",
+      "full_token_count": 267,
+      "window_identity": "69b2ff9f5440ebca985322b8d9cedea692f7a952a2f6a489e563fda232720be0"
+    },
+    {
+      "record_id": "archaeological-field-catalog",
+      "domain": "field-archaeology",
+      "full_token_count": 281,
+      "window_identity": "dfd0e74118c98257886c437f4a3bae7c844f8058f087e00cdc0ece4bb648ff95"
+    },
+    {
+      "record_id": "community-orchestra-rehearsal",
+      "domain": "music-production",
+      "full_token_count": 283,
+      "window_identity": "f490cc050c979a6b244f7baeb666650199c34609b6bc246bd802d0ad17e63bd2"
+    },
+    {
+      "record_id": "lighthouse-winter-supply",
+      "domain": "coastal-logistics",
+      "full_token_count": 296,
+      "window_identity": "f980aa3b30e5fc00420ed8c064ade7a4cb4782146cb2f96d0c1eea2bb70b6055"
+    },
+    {
+      "record_id": "bakery-fermentation-schedule",
+      "domain": "food-process-control",
+      "full_token_count": 287,
+      "window_identity": "0e00f024a6379e51990eb0becc819a6640d67f2087f541108b5235fa76b8f3f7"
+    },
+    {
+      "record_id": "alpine-water-observatory",
+      "domain": "environmental-instrumentation",
+      "full_token_count": 288,
+      "window_identity": "7f1d9c8cb8efeab8c2ab724a58cea616c83e238ee406fb1c708e885bfc2e38ce"
+    },
+    {
+      "record_id": "museum-textile-conservation",
+      "domain": "preventive-conservation",
+      "full_token_count": 280,
+      "window_identity": "b99b1aaa9a601872fd48997451a5efe59bd05a117657195c02edc45f1b0b56dd"
+    }
+  ],
+  "limitations": [
+    "The prose is prospectively authored for this gate rather than sampled from a broad natural-language distribution.",
+    "The corpus is fixed and independent of candidate outputs, but eight records cannot establish broad language quality."
+  ]
+}

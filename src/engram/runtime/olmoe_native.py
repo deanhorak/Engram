@@ -55,13 +55,26 @@ class _Metrics(ctypes.Structure):
     ]
 
 
+class _AttentionMetricsV1(ctypes.Structure):
+    _fields_ = [
+        ("attention_logical_read_bytes", ctypes.c_uint64),
+        ("attention_state_bytes", ctypes.c_uint64),
+        ("attention_scratch_bytes", ctypes.c_uint64),
+        ("attention_eviction_events", ctypes.c_uint64),
+        ("attention_older_candidate_entries_scored", ctypes.c_uint64),
+        ("attention_older_selected_entries", ctypes.c_uint64),
+        ("attention_sink_insertions", ctypes.c_uint64),
+        ("attention_heavy_hitter_updates", ctypes.c_uint64),
+    ]
+
+
 @dataclass(frozen=True)
 class OLMoENativeTokenResult:
     next_token: int
     metrics: dict[str, int]
 
 
-def _configure(library: ctypes.CDLL) -> None:
+def _configure(library: ctypes.CDLL) -> bool:
     library.engram_olmoe_token_open.argtypes = [
         ctypes.POINTER(_Config),
         ctypes.c_char_p,
@@ -94,6 +107,18 @@ def _configure(library: ctypes.CDLL) -> None:
         ctypes.c_size_t,
     ]
     library.engram_olmoe_token_copy_last_diagnostics.restype = ctypes.c_int
+    has_attention_metrics = hasattr(
+        library, "engram_olmoe_token_copy_attention_metrics_v1"
+    )
+    if has_attention_metrics:
+        library.engram_olmoe_token_copy_attention_metrics_v1.argtypes = [
+            ctypes.c_void_p,
+            ctypes.POINTER(_AttentionMetricsV1),
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        library.engram_olmoe_token_copy_attention_metrics_v1.restype = ctypes.c_int
+    return has_attention_metrics
 
 
 class OLMoENativeTokenRuntime:
@@ -118,7 +143,7 @@ class OLMoENativeTokenRuntime:
         if hidden % heads:
             raise ValueError("OLMoE hidden size is not divisible by heads")
         self._library = ctypes.CDLL(str(Path(library).resolve()))
-        _configure(self._library)
+        self._has_attention_metrics = _configure(self._library)
         non_mlp_bytes = str(Path(non_mlp_safetensors).resolve()).encode()
         q7_bytes = str(Path(q7_artifact).resolve()).encode()
         native_config = _Config(
@@ -153,6 +178,10 @@ class OLMoENativeTokenRuntime:
     def position(self) -> int:
         return int(self._library.engram_olmoe_token_position(self._handle))
 
+    @property
+    def attention_metrics_available(self) -> bool:
+        return self._has_attention_metrics
+
     def forward(self, token_ids: ArrayLike) -> OLMoENativeTokenResult:
         tokens = np.ascontiguousarray(token_ids, dtype=np.int64).reshape(-1)
         if not tokens.size:
@@ -171,11 +200,28 @@ class OLMoENativeTokenRuntime:
         )
         if status:
             raise OLMoENativeRuntimeError(error.value.decode(errors="replace"))
+        metric_values = {
+            name: int(getattr(metrics, name)) for name, _ctype in metrics._fields_
+        }
+        if self._has_attention_metrics:
+            attention = _AttentionMetricsV1()
+            status = self._library.engram_olmoe_token_copy_attention_metrics_v1(
+                self._handle,
+                ctypes.byref(attention),
+                error,
+                len(error),
+            )
+            if status:
+                raise OLMoENativeRuntimeError(error.value.decode(errors="replace"))
+            metric_values.update(
+                {
+                    name: int(getattr(attention, name))
+                    for name, _ctype in attention._fields_
+                }
+            )
         result = OLMoENativeTokenResult(
             next_token=int(next_token.value),
-            metrics={
-                name: int(getattr(metrics, name)) for name, _ctype in metrics._fields_
-            },
+            metrics=metric_values,
         )
         self.last_result = result
         return result

@@ -33,6 +33,19 @@ typedef struct engram_olmoe_token_metrics {
   uint64_t elapsed_ns;
 } engram_olmoe_token_metrics;
 
+// Additive, versioned attention diagnostics. Keeping this separate preserves
+// the original forward-metrics ABI for already-built runtime libraries.
+typedef struct engram_olmoe_attention_metrics_v1 {
+  uint64_t logical_read_bytes;
+  uint64_t state_bytes;
+  uint64_t scratch_bytes;
+  uint64_t eviction_events;
+  uint64_t older_candidate_entries_scored;
+  uint64_t older_selected_entries;
+  uint64_t sink_insertions;
+  uint64_t heavy_hitter_updates;
+} engram_olmoe_attention_metrics_v1;
+
 void* engram_olmoe_token_open(const engram_olmoe_token_config* config,
                               char* error, size_t error_capacity);
 void engram_olmoe_token_close(void* handle);
@@ -47,6 +60,9 @@ int engram_olmoe_token_copy_last_diagnostics(
     const void* handle, float* final_state, size_t final_state_count,
     float* vocabulary_scores, size_t vocabulary_score_count, char* error,
     size_t error_capacity);
+int engram_olmoe_token_copy_attention_metrics_v1(
+    const void* handle, engram_olmoe_attention_metrics_v1* metrics,
+    char* error, size_t error_capacity);
 
 #ifdef __cplusplus
 }

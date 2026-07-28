@@ -28,6 +28,10 @@ from engram.evaluation.olmoe_native_causal import (
     capture_olmoe_teacher_causal_reference,
     evaluate_native_olmoe_causal,
 )
+from engram.evaluation.olmoe_native_sustained import (
+    evaluate_native_olmoe_sustained_context,
+    freeze_olmoe_sustained_context_protocol,
+)
 from engram.evaluation.native_bitnet_parity import (
     evaluate_native_bitnet_parity,
 )
@@ -300,7 +304,7 @@ def _parser() -> argparse.ArgumentParser:
 
     olmoe_causal_teacher = commands.add_parser(
         "capture-olmoe-teacher-causal",
-        help="capture sealed BF16 OLMoE logits and hidden states for 8x32",
+        help="capture sealed BF16 OLMoE causal logits and hidden states",
     )
     olmoe_causal_teacher.add_argument("--model", required=True, type=Path)
     olmoe_causal_teacher.add_argument("--dataset", required=True, type=Path)
@@ -345,6 +349,36 @@ def _parser() -> argparse.ArgumentParser:
     olmoe_causal.add_argument("--protocol-sha256", required=True)
     olmoe_causal.add_argument("--out", required=True, type=Path)
     olmoe_causal.add_argument("--threads", type=int)
+
+    olmoe_sustained_freeze = commands.add_parser(
+        "freeze-olmoe-sustained-protocol",
+        help="prospectively freeze the authenticated OLMoE 8x128 gate",
+    )
+    olmoe_sustained_freeze.add_argument("--package", required=True, type=Path)
+    olmoe_sustained_freeze.add_argument("--manifest-sha256", required=True)
+    olmoe_sustained_freeze.add_argument("--library", required=True, type=Path)
+    olmoe_sustained_freeze.add_argument("--dataset", required=True, type=Path)
+    olmoe_sustained_freeze.add_argument("--corpus-manifest", required=True, type=Path)
+    olmoe_sustained_freeze.add_argument("--teacher-reference", required=True, type=Path)
+    olmoe_sustained_freeze.add_argument("--teacher-arrays", required=True, type=Path)
+    olmoe_sustained_freeze.add_argument("--out", required=True, type=Path)
+    olmoe_sustained_freeze.add_argument("--threads", type=int, default=12)
+
+    olmoe_sustained = commands.add_parser(
+        "evaluate-native-olmoe-sustained",
+        help="run the frozen 8-sequence/1,024-position sustained-context gate",
+    )
+    olmoe_sustained.add_argument("--package", required=True, type=Path)
+    olmoe_sustained.add_argument("--manifest-sha256", required=True)
+    olmoe_sustained.add_argument("--library", required=True, type=Path)
+    olmoe_sustained.add_argument("--dataset", required=True, type=Path)
+    olmoe_sustained.add_argument("--corpus-manifest", required=True, type=Path)
+    olmoe_sustained.add_argument("--teacher-reference", required=True, type=Path)
+    olmoe_sustained.add_argument("--teacher-arrays", required=True, type=Path)
+    olmoe_sustained.add_argument("--protocol", required=True, type=Path)
+    olmoe_sustained.add_argument("--protocol-sha256", required=True)
+    olmoe_sustained.add_argument("--out", required=True, type=Path)
+    olmoe_sustained.add_argument("--threads", type=int)
 
     bitnet_repack = commands.add_parser(
         "repack-native-bitnet",
@@ -2165,6 +2199,44 @@ def main(argv: Sequence[str] | None = None) -> int:
             manifest_sha256=args.manifest_sha256,
             library=args.library,
             dataset=args.dataset,
+            teacher_reference=args.teacher_reference,
+            teacher_arrays=args.teacher_arrays,
+            protocol=args.protocol,
+            protocol_sha256=args.protocol_sha256,
+            out=args.out,
+            threads=args.threads,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["gate_passed"] else 2
+    elif args.command == "freeze-olmoe-sustained-protocol":
+        result = freeze_olmoe_sustained_context_protocol(
+            package=args.package,
+            manifest_sha256=args.manifest_sha256,
+            library=args.library,
+            dataset=args.dataset,
+            corpus_manifest=args.corpus_manifest,
+            teacher_reference=args.teacher_reference,
+            teacher_arrays=args.teacher_arrays,
+            out=args.out,
+            threads=args.threads,
+        )
+        print(
+            json.dumps(
+                {
+                    "protocol": result,
+                    "protocol_sha256": sha256_file(args.out),
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+    elif args.command == "evaluate-native-olmoe-sustained":
+        result = evaluate_native_olmoe_sustained_context(
+            package=args.package,
+            manifest_sha256=args.manifest_sha256,
+            library=args.library,
+            dataset=args.dataset,
+            corpus_manifest=args.corpus_manifest,
             teacher_reference=args.teacher_reference,
             teacher_arrays=args.teacher_arrays,
             protocol=args.protocol,

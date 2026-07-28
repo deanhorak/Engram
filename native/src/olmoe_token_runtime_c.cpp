@@ -144,4 +144,37 @@ int engram_olmoe_token_copy_last_diagnostics(
   }
 }
 
+int engram_olmoe_token_copy_attention_metrics_v1(
+    const void* handle, engram_olmoe_attention_metrics_v1* metrics,
+    char* error, const std::size_t error_capacity) {
+  try {
+    const auto* runtime =
+        static_cast<const engram::OLMoETokenRuntime*>(handle);
+    if (runtime == nullptr || metrics == nullptr) {
+      throw std::invalid_argument(
+          "native OLMoE attention metric storage is invalid");
+    }
+    const auto& source = runtime->metrics();
+    metrics->logical_read_bytes = source.attention_logical_read_bytes;
+    metrics->state_bytes = source.attention_state_bytes;
+    metrics->scratch_bytes = source.attention_scratch_bytes;
+    metrics->eviction_events = source.attention_eviction_events;
+    metrics->older_candidate_entries_scored =
+        source.attention_older_candidate_entries_scored;
+    metrics->older_selected_entries =
+        source.attention_older_selected_entries;
+    metrics->sink_insertions = source.attention_sink_insertions;
+    metrics->heavy_hitter_updates =
+        source.attention_heavy_hitter_updates;
+    return 0;
+  } catch (const std::exception& exception) {
+    error_text(error, error_capacity, exception.what());
+    return 1;
+  } catch (...) {
+    error_text(error, error_capacity,
+               "unknown native OLMoE attention metric failure");
+    return 1;
+  }
+}
+
 }  // extern "C"
