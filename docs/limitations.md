@@ -72,6 +72,29 @@
   the evaluator. There is no promoted attention artifact, package descriptor,
   or model-format revision. W32 is already ~50.38%, W64 is worse, and W128
   remains only the diagnostic ceiling.
+- The subsequent layer-adaptive upper-bound result is also negative. The
+  additive layered C ABI and Python binding accept one attention policy for
+  each of the 16 layers and pass exact all-base parity with the scalar path.
+  A frozen greedy search selected layers 11, 6, and 10 for W128 and left 13
+  layers at W16/C8/K4/S2. The schedule used 955,957,248 logical bytes per
+  sequence (44.1701%), and every evidence check passed, but its six-sequence
+  result was KL 0.102321, top-1 0.845052, NLL +0.116776, and hidden L2
+  0.206037. Both early bands passed; every metric failed from position 32
+  onward. This closes the frozen greedy three-layer W128 path under 45%, not
+  every possible interacting whole-layer combination. Milestone 2 remains
+  passed for Q7, but Milestone 3 remains blocked.
+- That layer schedule is not a promoted model feature. The experiment invoked
+  the raw runtime; package version 1 still binds one global W16/C8/K4/S2
+  policy and has no per-layer or per-head descriptor. The next prospectively
+  frozen boundary is a teacher-guided mask rescuing 51 of 256 layer-head pairs
+  at 44.9754% logical traffic. Rescuing 52 would require 45.2438%, above the
+  declared cap, and no head-wise result or package schema exists yet.
+- Interpret the layer-rescue failure narrowly. The greedy search made 45
+  adaptive comparisons on only two sequences, whose positions are correlated;
+  its six-sequence screen reused an already-consumed corpus. Greedy choices
+  can miss interacting layer combinations, and W128 is exact only over the
+  tested 128-position horizon. Finally, all traffic percentages are analytical
+  native logical reads, not hardware-counter DRAM measurements.
 - Package authentication currently hashes about 6.8 GB and the Q7 loader
   performs strict full-artifact structural validation at startup. This is
   fail-closed but makes cold startup materially slower than steady-state token

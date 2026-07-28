@@ -1,4 +1,4 @@
-# OLMoE Q7 sustained-context gate, attribution, and matched-budget sweep
+# OLMoE Q7 sustained-context gate, attribution, sweep, and layer rescue
 
 Date: 2026-07-28
 
@@ -29,13 +29,22 @@ dense logical attention reads and was specified after the W16 failure as an
 attribution diagnostic, not as a replacement gate. It also does not establish
 task-sensitive retrieval quality beyond this fixed corpus.
 
-The subsequently frozen exact-traffic-matched development sweep has now also
+The subsequently frozen exact-traffic-matched development sweep also
 completed. All three <=45%-read policies passed every evidence check, but zero
 arms passed semantic quality. The frozen rule therefore selected no policy:
-there is no defensible “best failure” to promote. The result preserves the
-Milestone 2 Q7 pass, leaves Milestone 3 bounded attention blocked, and moves
-the next experiment to layer/head-adaptive allocation or a learned/distilled
-older-context selector.
+there is no defensible “best failure” to promote.
+
+The following layer-adaptive experiment is now complete as well. An exact
+old-scalar/new-layered parity prerequisite passed, and a frozen 45-candidate
+greedy search selected layers 11, 6, and 10 for W128 rescue. The resulting
+44.1701%-read schedule passed every execution and authentication check but
+failed all four overall semantic metrics on its six-sequence internal screen;
+all four metrics also failed in every band from position 32 onward. No package
+policy was promoted and no fresh confirmation was run. The combined evidence
+preserves the Milestone 2 Q7 pass, closes the tested global policy family and
+this frozen greedy three-layer path under the current cap, leaves interacting
+layer combinations untested, keeps Milestone 3 blocked, and moves the next
+prospective experiment to a fixed teacher-guided 51-of-256 head mask.
 
 ## Frozen experimental contract
 
@@ -75,6 +84,11 @@ All hashes are SHA-256 and are written in full.
 | Matched-sweep result | `813bac5b1d38af7653cf49d8c7b7ca278df8aac5402fdd28692e905bebfc7658` |
 | Matched-sweep source commit | `102bda2` |
 | Matched-sweep evaluator source | `cf2e4be0bc4d8e6da54aebcb11b94e7c4ecde2d56e12831fe8de835a342ffa60` |
+| Frozen layer-rescue protocol | `9514e90bd5d14ae01ea27185763e5a833d4f1963e6bffd0ec0c81848f35b0c3e` |
+| Layer-rescue result | `97ce800bd855c1f16248cada696936c7c56acd49c02d6f1c9ce9885dc44f7c49` |
+| Layer-rescue source commit | `708782b` |
+| Layer-rescue evaluator source | `77dafe8fc1fb6ca317ad7b99d5d86122e26b94b477f5befcf6184ce14080dff0` |
+| Layered candidate native DSO | `fe4dfdcc7e87a3cd5e36074e07d297f838ba345c37e939eeb0d796cb39cce409` |
 | Native package manifest | `861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db` |
 | Native runtime library | `4cd4de8f3e3cefad59d7b9e6e23a0d1d06a26abc10af2e0c4f9242a2b5876ca7` |
 | Sustained-context dataset | `0fb513ea29bdae760b91932d60cf942df047ec5ce578d1c21bbf9438a777abeb` |
@@ -89,7 +103,12 @@ protocol; the control re-authenticated both protocols, the W16 result, and its
 own evaluator source. The sweep additionally re-authenticated both prerequisite
 protocols and results, its evaluator source (committed at `102bda2`), all
 package/DSO/corpus/teacher roots, per-arm counter streams, and its own protocol
-after executing all arms. Every recorded post-run authentication check passed.
+after executing all arms. The layer-rescue result additionally re-authenticated
+the historical and layered DSOs, every prerequisite protocol and result, the
+complete 26-file current execution-source inventory, the six teacher shards,
+its own frozen protocol, and its evaluator source after all 45 candidates,
+the internal screen, and reset replay. Every recorded post-run authentication
+check passed.
 
 ## Semantic results
 
@@ -240,7 +259,129 @@ and every frozen position band. Its eligible set was therefore empty,
 least-bad failure after observing these results would violate the protocol.
 
 Ordinary global window/candidate reallocation under the 45% ceiling is now a
-closed development branch for this policy family. The next boundary is a
-layer/head-adaptive budget or a learned/distilled older-context selector
-trained against the exact-attention teacher. W128 remains the diagnostic
+closed development branch for this policy family. This result motivated the
+prospectively frozen whole-layer test below. W128 remains the diagnostic
 ceiling, Milestone 2 remains passed, and Milestone 3 remains blocked.
+
+## Greedy three-layer dense-attention rescue
+
+The next prospectively frozen development protocol tested a layer-adaptive
+upper bound. It used the new per-layer native attention ABI to keep 13 layers
+at the base `W16/C8/K4/S2` policy while changing exactly three layers to
+`W128/C8/K4/S2`. It did not change the Q7 artifact or policy, construct a
+Transformers model shell, or mutate the authenticated package manifest.
+
+The already-consumed eight-sequence sustained-development corpus was split
+deterministically by ascending `sha256(utf8(record_id))`, then `record_id`, then
+original sequence index. The first two records were used for greedy selection;
+the remaining six were kept output-blind until the final internal screen. The
+split identity was
+`c267dd96c121b5baf9d229b4e6a2a880f396361ae9565020813d7e2e279ed310`.
+This is an auditable development split, not a fresh or independent holdout.
+
+### Authentication and parity
+
+The implementation was frozen at source commit `708782b`. The new layered DSO
+was copied to an immutable hash-named path before the protocol was frozen.
+
+| Object | SHA-256 |
+|---|---|
+| Frozen layer-rescue protocol | `9514e90bd5d14ae01ea27185763e5a833d4f1963e6bffd0ec0c81848f35b0c3e` |
+| Layer-rescue result | `97ce800bd855c1f16248cada696936c7c56acd49c02d6f1c9ce9885dc44f7c49` |
+| Layer-rescue evaluator source | `77dafe8fc1fb6ca317ad7b99d5d86122e26b94b477f5befcf6184ce14080dff0` |
+| Layered native DSO | `fe4dfdcc7e87a3cd5e36074e07d297f838ba345c37e939eeb0d796cb39cce409` |
+| Deterministic record split | `c267dd96c121b5baf9d229b4e6a2a880f396361ae9565020813d7e2e279ed310` |
+
+The mandatory pre-candidate parity run compared the historical scalar DSO with
+an all-base policy opened through the new layered DSO over a complete
+128-position sequence. Tokens, normalized hidden states, complete logits,
+cache positions, deterministic counter streams, and historical diagnostic
+hashes all matched exactly. Every one of its twelve parity checks passed.
+
+The search then passed all exact evidence checks: all 45 candidate contracts,
+the `16/15/14` candidate counts, all three round-resource contracts, the final
+schedule and traffic contract, the six-sequence screen population and counter
+checks, deterministic reset replay, and all 21 post-run authentication roots.
+The result is therefore an authenticated semantic failure rather than an
+infrastructure, ABI, artifact, or counter failure.
+
+### Frozen search and selected schedule
+
+Every candidate in a round was executed before the frozen scoring rule selected
+a winner. No early stop or score adaptation occurred:
+
+| Round | Candidates evaluated | Winning layer | Cumulative rescued layers |
+|---|---:|---:|---|
+| 1 | 16 | 11 | 11 |
+| 2 | 15 | 6 | 11, 6 |
+| 3 | 14 | 10 | 11, 6, 10 |
+| Total | **45** | — | layers 6, 10, and 11 |
+
+The resulting schedule has 13 `W16/C8/K4/S2` layers and three
+`W128/C8/K4/S2` layers. Its frozen per-sequence analytical and observed
+resource contract was:
+
+| Resource or deterministic counter | Exact value |
+|---|---:|
+| Positions processed | 128 |
+| Persistent attention state | 11,865,728 bytes |
+| Attention scratch | 6,528 bytes |
+| Local/exact KV reads | 816,447,488 bytes |
+| Candidate-key reads | 92,438,528 bytes |
+| Selected-value reads | 47,071,232 bytes |
+| Total logical attention reads | 955,957,248 bytes |
+| Dense full-context logical-KV reference | 2,164,260,864 bytes |
+| Logical attention fraction | 44.1701489826% |
+| Eviction events | 1,456 |
+| Older candidate entries scored | 180,544 |
+| Older entries selected for exact values | 91,936 |
+| Sink insertions | 416 |
+| Permitted heavy-hitter updates | 1,248–22,880 |
+| Q7 scheduled bytes | 93,952,409,600 bytes |
+| All-expert ideal-Q4 Q7 reference | 412,316,860,416 bytes |
+| Q7 traffic fraction | 22.7864583333% |
+
+These byte counts are deterministic logical native-interface counts, not
+measured DRAM transactions.
+
+### Six-sequence internal screen
+
+The selected schedule was evaluated on 768 prediction positions from the six
+records whose outputs were not used during greedy selection. The inherited
+quality thresholds applied to the overall population and every position band:
+
+| Population | Positions | Mean KL | Top-1 agreement | Target NLL delta | Hidden rel. L2 | Status |
+|---|---:|---:|---:|---:|---:|---|
+| Threshold | — | <=0.050000 | >=0.900000 | <=+0.050000 | <=0.100000 | — |
+| Overall | 768 | 0.102320950 | 0.845052083 | +0.116775650 | 0.206036865 | **fail** |
+| Offsets 0–15 | 96 | 0.012377540 | 0.947916667 | -0.006711043 | 0.057957455 | pass |
+| Offsets 16–31 | 96 | 0.006325668 | 0.979166667 | +0.010194634 | 0.072582537 | pass |
+| Offsets 32–63 | 192 | 0.065331080 | 0.854166667 | +0.072611753 | 0.193418547 | **fail** |
+| Offsets 64–95 | 192 | 0.147380969 | 0.796875000 | +0.150818163 | 0.261827487 | **fail** |
+| Offsets 96–127 | 192 | 0.187220146 | 0.765625000 | +0.241930887 | 0.303631431 | **fail** |
+
+Offsets 0–15 and 16–31 passed all four thresholds. The overall population and
+each of the three later bands failed all four. The overall maximum
+per-position KL was 2.818039656 and p95 KL was 0.367445458.
+
+The fully authenticated command took 4,443.916 seconds. Of that,
+3,938.180 seconds were the primary sequence executions for 45 candidates,
+86.643 seconds were the layered/scalar parity run, 260.321 seconds were the
+six-sequence internal screen, and 42.033 seconds were deterministic holdout
+reset replay.
+
+### Decision and next boundary
+
+This is a valid negative result. The internal screen failed, so no fresh
+eight-sequence confirmation was run and the development-only layer schedule
+was not integrated into or promoted as a package policy. The experiment closes
+this frozen greedy three-layer `W128` path under the 45% attention-read
+ceiling; as disclosed prospectively, greedy selection can miss interacting
+layer combinations. Milestone 2's authenticated Q7 conclusion remains passed
+and unchanged; Milestone 3 remains blocked on deployable bounded attention.
+
+The next prospective experiment is a teacher-guided fixed head mask. Exactly
+51 of the model's 256 layer-head pairs can be rescued while reading
+973,384,704 logical bytes per sequence, 44.9754% of dense attention. Rescuing
+52 pairs would require 979,193,856 bytes, 45.2438%, and therefore exceed the
+frozen cap.

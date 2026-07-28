@@ -1663,3 +1663,56 @@
 - The committed sweep source passed **653 Python tests** and **19 native
   tests**, including a real tiny-package freeze-to-three-arm native smoke test,
   before the production protocol was frozen.
+
+## 2026-07-28 — Greedy three-layer attention rescue fails the semantic screen
+
+- Added a backward-compatible per-layer native attention ABI and Python
+  binding. The historical scalar open path remains unchanged; the additive
+  layered path accepts one `W/C/K/S` policy for each of OLMoE's 16 layers and
+  sums heterogeneous state, scratch, logical-read, eviction, candidate,
+  selection, sink, and heavy-hitter counters exactly.
+- Before production execution, commit `708782b` passed **677 Python tests**
+  and **20 native tests**. The candidate DSO was then copied to an immutable
+  path with SHA-256
+  `fe4dfdcc7e87a3cd5e36074e07d297f838ba345c37e939eeb0d796cb39cce409`.
+- Froze a deterministic greedy search over three dense-layer rescues. The
+  SHA-ranked split used two already-consumed records for selection and six for
+  an internal screen. Rounds evaluated all `16 + 15 + 14 = 45` candidates
+  before choosing a layer, with no early stop or score adaptation. The
+  protocol and evaluator-source hashes are
+  `9514e90bd5d14ae01ea27185763e5a833d4f1963e6bffd0ec0c81848f35b0c3e`
+  and
+  `77dafe8fc1fb6ca317ad7b99d5d86122e26b94b477f5befcf6184ce14080dff0`.
+- A fail-fast production parity pass proved the historical scalar DSO and the
+  new all-base layered DSO exactly equal over 128 positions: tokens, normalized
+  hidden states, full logits, cache positions, deterministic counter streams,
+  and historical diagnostic hashes all matched.
+- The frozen greedy winners were layer 11, then layer 6, then layer 10. The
+  final schedule kept 13 layers at `W16/C8/K4/S2` and rescued three at
+  `W128/C8/K4/S2`. It used 955,957,248 logical attention-read bytes per
+  sequence, or 44.1701% of dense attention, with 11,865,728 state bytes and
+  6,528 scratch bytes. Q7 remained unchanged at 22.7865% of the all-expert
+  ideal-Q4 reference.
+- All execution evidence passed: 45/45 candidate contracts, every exact
+  round-resource check, the six-sequence population and counter checks,
+  deterministic reset replay, the final traffic budget, and all 21 post-run
+  authentication roots.
+- Semantic quality nevertheless failed on the six-sequence internal screen.
+  Overall KL/top-1/NLL-delta/hidden-L2 were
+  `0.102321/0.845052/+0.116776/0.206037`. Bands 0–15 and 16–31 passed every
+  metric, while all four metrics failed in bands 32–63, 64–95, and 96–127.
+  The result SHA-256 is
+  `97ce800bd855c1f16248cada696936c7c56acd49c02d6f1c9ce9885dc44f7c49`.
+- The authenticated command took 4,443.92 seconds: 3,938.18 seconds of
+  candidate sequence execution, 86.64 seconds for parity, 260.32 seconds for
+  the six-sequence screen, and 42.03 seconds for reset replay. A separate
+  unauthenticated operator liveness observation showed about 6.8 aggregate CPU
+  cores and 59 live threads; it is systems context, not frozen result evidence.
+- This valid negative result does not change the passed Milestone 2 Q7
+  conclusion and does not promote a package schedule. It closes this frozen
+  greedy three-layer `W128` path under the 45% attention budget, while the
+  disclosed search limitation leaves interacting layer combinations
+  untested. Milestone 3 remains blocked. The next prospective boundary is a
+  teacher-guided fixed mask rescuing exactly 51 of 256 layer-head pairs:
+  973,384,704 logical bytes (44.9754%); 52 rescues would require 45.2438% and
+  violate the cap.

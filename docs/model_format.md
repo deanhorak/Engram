@@ -73,6 +73,24 @@ unsafe paths, and unsupported execution contracts. The production
 authentication root is
 `861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db`.
 
+The native token-runtime ABI is intentionally ahead of this package schema.
+Its original scalar open function remains supported, while the additive
+`engram_olmoe_token_open_layered_v1` function accepts an
+`engram_olmoe_attention_policy_v1` entry for each of the 16 layers. The Python
+runtime exposes the same capability through `attention_policies`; scalar
+overrides and a per-layer policy vector are mutually exclusive. This interface
+was used to test heterogeneous schedules without weakening package
+authentication.
+
+Package version 1 still records and enforces exactly one global
+`W16/C8/K4/S2` attention policy. The development-only schedule that rescued
+layers 11, 6, and 10 with W128 failed semantic quality despite valid evidence
+and 44.1701% logical attention traffic. It was therefore not installed:
+there is no per-layer policy descriptor, head mask, new authentication root,
+or schema promotion. The next prospectively frozen 51-of-256 teacher-guided
+head-wise mask is likewise an experiment, not a serializable package
+contract.
+
 The token boundary's companion `olmoe_native_non_mlp_bf16_v1` file is a
 standard, strictly contiguous safetensors mapping. It contains exactly 131
 BF16 tensors: embedding and language-head matrices, final norm, and eight

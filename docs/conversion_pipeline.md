@@ -171,10 +171,37 @@ This was a development intervention, not a conversion-format change. The
 evaluator constructed the raw native token runtime with each candidate policy
 because the authenticated package intentionally remains immutable at
 `W16/C8/K4/S2`. No candidate was installed into the package, and no model
-format was promoted. The next conversion-relevant experiment is a
-layer/head-adaptive or learned/distilled older-context selector; it must pass
-development and fresh confirmation before its policy can enter the package
-schema.
+format was promoted. That result justified the layer-adaptive experiment
+below; any eventual attention policy must still pass development and fresh
+confirmation before it can enter the package schema.
+
+The layer-adaptive upper-bound experiment is now complete and negative. The
+native library gained an additive layered-open ABI and the Python wrapper can
+pass one W/C/K/S policy for each of OLMoE's 16 layers. Exact all-base parity
+against the historical scalar ABI passed before candidate execution. A frozen
+three-round greedy search then evaluated 45 candidates on two selection
+sequences and chose layers 11, 6, and 10 for `W128/C8/K4/S2`, leaving the
+other 13 at `W16/C8/K4/S2`. The resulting schedule used 955,957,248 logical
+attention-read bytes per sequence, or 44.1701% of dense attention.
+
+Every candidate/resource contract, replay check, and authentication root
+passed, but the six-sequence internal screen failed semantic quality:
+KL/top-1/NLL-delta/hidden-L2 were
+0.102321/0.845052/+0.116776/0.206037. The 0–15 and 16–31 bands passed; all
+four metrics failed in every band from position 32 onward. This valid negative
+result closes the frozen greedy three-layer W128 path under the 45% budget; it
+does not rule out every interacting whole-layer combination. It does not
+change the passed Milestone 2 Q7 result, consume a fresh confirmation corpus,
+or unblock Milestone 3.
+
+This was again a raw-runtime intervention. The version-1 package still binds
+one global `W16/C8/K4/S2` policy, and neither the selected layer schedule nor
+the layered ABI has been promoted into its manifest schema. The next
+prospectively frozen causal boundary is a fixed teacher-guided mask that
+rescues 51 of 256 layer-head pairs at 973,384,704 logical bytes per sequence
+(44.9754%). A 52-head mask would require 45.2438% and is therefore outside
+the budget. Only a passing head-wise result followed by fresh confirmation
+could justify a package-format change.
 
 The first command below is the historical sealed-reference reproduction, so
 it explicitly retains the original serial sequence policy:

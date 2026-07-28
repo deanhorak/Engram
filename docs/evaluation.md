@@ -197,10 +197,102 @@ sustained-development corpus; it neither modified nor promoted the package.
 
 This closes global W/C/K reallocation as the next useful search axis under the
 current budget. Milestone 2 remains passed because the matched exact-attention
-control isolates the Q7 path; Milestone 3 remains blocked. The next defensible
-experiment is layer/head-adaptive allocation or a learned/distilled
-older-context selector trained against the exact-attention teacher. W128
-remains only the diagnostic ceiling.
+control isolates the Q7 path; Milestone 3 remains blocked. It motivated the
+prospectively frozen whole-layer experiment below. W128 remains only the
+diagnostic ceiling.
+
+### Authenticated three-layer dense-attention rescue
+
+The next prospectively frozen development experiment tested whether the
+attention error was concentrated in a few layers. It added a backward-compatible
+per-layer native attention ABI, then greedily changed exactly three of OLMoE's
+16 layers from `W16/C8/K4/S2` to `W128/C8/K4/S2`. The selection corpus was the
+same already-consumed sustained-development corpus, deterministically divided
+by SHA-256 of `record_id`: two sequences selected layers and six sequences
+formed an output-blind internal screen. The split identity was
+`c267dd96c121b5baf9d229b4e6a2a880f396361ae9565020813d7e2e279ed310`.
+This was development selection, not an independent confirmation.
+
+All candidates in each round ran before selection. The fixed greedy search
+therefore executed `16 + 15 + 14 = 45` candidate schedules:
+
+| Round | Candidates | Winning layer | Cumulative rescued layers |
+|---|---:|---:|---|
+| 1 | 16 | 11 | 11 |
+| 2 | 15 | 6 | 11, 6 |
+| 3 | 14 | 10 | 11, 6, 10 |
+
+The final schedule retained 13 base layers and rescued layers 6, 10, and 11.
+Its exact per-sequence native resource contract was:
+
+| Resource or counter | Final schedule |
+|---|---:|
+| Persistent attention state | 11,865,728 bytes |
+| Attention scratch | 6,528 bytes |
+| Local/exact KV reads | 816,447,488 bytes |
+| Candidate-key reads | 92,438,528 bytes |
+| Selected-value reads | 47,071,232 bytes |
+| Total logical attention reads | 955,957,248 bytes |
+| Dense logical attention reference | 2,164,260,864 bytes |
+| Logical attention fraction | 44.1701489826% |
+| Evictions | 1,456 |
+| Older entries scored | 180,544 |
+| Older values selected | 91,936 |
+| Sink insertions | 416 |
+| Permitted heavy-hitter updates | 1,248–22,880 |
+| Q7 scheduled bytes | 93,952,409,600 bytes |
+| Q7 all-expert ideal-Q4 fraction | 22.7864583333% |
+
+Before any layer-rescue candidate ran, the new all-base layered ABI was checked
+against the historical scalar DSO over one complete 128-position sequence.
+Tokens, normalized hidden states, full logits, cache positions, deterministic
+counter streams, and historical diagnostic hashes were exactly equal. All 45
+candidate evidence contracts, all three round-resource contracts, the final
+traffic checks, the six-sequence screen evidence, deterministic reset replay,
+and all 21 post-run authentication roots passed.
+
+The selected schedule nevertheless failed semantic quality on the six-sequence,
+768-position internal screen:
+
+| Population | Mean KL | Top-1 | NLL delta | Hidden relative L2 | Result |
+|---|---:|---:|---:|---:|---|
+| Overall, 768 positions | 0.102320950 | 0.845052083 | +0.116775650 | 0.206036865 | **fail** |
+| Positions 0–15, 96 positions | 0.012377540 | 0.947916667 | -0.006711043 | 0.057957455 | pass |
+| Positions 16–31, 96 positions | 0.006325668 | 0.979166667 | +0.010194634 | 0.072582537 | pass |
+| Positions 32–63, 192 positions | 0.065331080 | 0.854166667 | +0.072611753 | 0.193418547 | **fail** |
+| Positions 64–95, 192 positions | 0.147380969 | 0.796875000 | +0.150818163 | 0.261827487 | **fail** |
+| Positions 96–127, 192 positions | 0.187220146 | 0.765625000 | +0.241930887 | 0.303631431 | **fail** |
+| Frozen threshold | <= 0.05 | >= 0.90 | <= +0.05 | <= 0.10 | every row required |
+
+Both early bands passed all four checks, but the overall population and every
+band from position 32 onward failed all four. This is an authenticated quality
+failure, not an execution or provenance failure. No fresh confirmation was
+run, and the development schedule was not integrated into or promoted as a
+package policy.
+
+The authenticated command took 4,443.916 seconds: 3,938.180 seconds for
+candidate primary-sequence execution, 86.643 seconds for layered/scalar parity,
+260.321 seconds for the internal holdout, and 42.033 seconds for its reset
+replay. The implementation was frozen at source commit `708782b`. Authentication
+roots are:
+
+- layer-rescue protocol
+  `9514e90bd5d14ae01ea27185763e5a833d4f1963e6bffd0ec0c81848f35b0c3e`;
+- layer-rescue result
+  `97ce800bd855c1f16248cada696936c7c56acd49c02d6f1c9ce9885dc44f7c49`;
+- evaluator source
+  `77dafe8fc1fb6ca317ad7b99d5d86122e26b94b477f5befcf6184ce14080dff0`;
+- immutable layered native DSO
+  `fe4dfdcc7e87a3cd5e36074e07d297f838ba345c37e939eeb0d796cb39cce409`.
+
+This closes the tested frozen greedy three-layer `W128` path under the 45%
+attention-read cap; the search can miss interacting layer combinations. It
+does not change the passed Milestone 2 Q7 result; Milestone 3 remains blocked
+on bounded attention. The next prospective boundary is a
+teacher-guided fixed head mask that rescues exactly 51 of the 256 layer-head
+pairs. That schedule uses 973,384,704 logical bytes per sequence, or
+44.9754% of dense attention; 52 rescued pairs would use 979,193,856 bytes, or
+45.2438%, and exceed the cap.
 
 A separate low-bit-native source track first passed the causal quality and
 cold-byte checks while executing every record. Its direct CPU kernel

@@ -26,9 +26,14 @@ restores every semantic band. This vindicates the Q7 semantic-memory path but
 blocks OLMoE Milestone 3 attention substitution. A matched 44.7614%-read sweep
 then varies the split between recent and retrieved context three ways; every
 arm is mechanically valid and every arm fails semantic quality. There is no
-selected static policy. The next work is a layer/head-adaptive or
-learned/distilled older-context selector rather than more global W/C/K
-tuning. Broader language quality and performance remain.
+selected static policy. A subsequent authenticated search gives three entire
+layers full W128 context while leaving the other 13 at W16. It stays under
+the traffic cap but also fails all four overall quality metrics. Global
+W/C/K tuning in that tested family and the frozen greedy three-layer path are
+therefore closed; the latter can still miss interacting layer combinations.
+The next work is a teacher-guided fixed mask at head granularity rather than
+another aggregate budget guess. Broader language quality and performance
+remain.
 
 ### Why OLMoE changes the semantic problem
 
@@ -590,11 +595,51 @@ retrieval allocation recovers it reliably at this budget.
 
 The sweep deliberately bypassed the package's immutable W16/C8/K4 setting and
 constructed a raw native runtime for each development arm. It did not modify
-the package or promote a model-format policy. OLMoE therefore still needs a
-bounded attention policy, now specifically one that allocates capacity by
-layer/head or learns older-context selection from the dense teacher. Native
-package promotion and a genuinely long-context hardware benchmark must wait
-for that semantic pass.
+the package or promote a model-format policy.
+
+The next experiment asked a more focused causal question: are a few complete
+layers disproportionately responsible for the older-context loss? The native
+runtime gained a per-layer policy ABI, and an all-base configuration was
+proved exactly equal to the prior scalar-policy ABI before selection. On a
+deterministic two-sequence selection split, a frozen greedy search tried every
+remaining layer in three rounds—16 candidates, then 15, then 14. It selected
+layers 11, 6, and 10 for W128, leaving the other 13 layers at
+W16/C8/K4/S2.
+
+This schedule is admissible under the declared byte criterion:
+
+- logical attention traffic is 955,957,248 bytes per sequence, or
+  44.1701489826% of full attention;
+- attention state is 11,865,728 bytes and scratch is 6,528 bytes;
+- Q7 expert traffic is unchanged at 22.7864583333%.
+
+It nevertheless fails on the six development sequences withheld from layer
+selection. Overall KL/top-1/NLL-delta/hidden-L2 are
+0.10232094998/0.84505208333/+0.11677564952/0.20603686522, so every metric
+misses its quality threshold. Both early bands through offset 31 pass, while
+all four metrics fail in each later band (32–63, 64–95, and 96–127). All
+evidence, exact-resource, reset-replay, old/new-ABI parity, and post-run
+authentication checks pass, so this is an informative quality failure rather
+than a broken run. It is still development-only: the corpus was already
+consumed, the package was not changed, and no fresh confirmation was run.
+
+The implementation is source commit `708782b`; its protocol and result
+SHA-256 values are
+`9514e90bd5d14ae01ea27185763e5a833d4f1963e6bffd0ec0c81848f35b0c3e`
+and
+`97ce800bd855c1f16248cada696936c7c56acd49c02d6f1c9ce9885dc44f7c49`.
+The layered DSO is
+`fe4dfdcc7e87a3cd5e36074e07d297f838ba345c37e939eeb0d796cb39cce409`.
+
+The layer-only result motivates a smaller unit of allocation. OLMoE has 16
+layers and 16 query heads per layer, or 256 layer-head pairs. The next
+prospectively frozen selector will use teacher evidence to choose a fixed mask
+of exactly 51 pairs for full-context rescue. That is the largest admissible
+mask: 51 pairs read 973,384,704 bytes per sequence (44.9753872184%), while 52
+pairs read 45.2437999637% and exceed the 45% cap. This is fixed at inference,
+not an online teacher dependency. Native package promotion and a genuinely
+long-context hardware benchmark must wait for a semantic pass. Milestone 2
+remains passed; Milestone 3 remains blocked.
 
 The generic dense-Llama compiler still writes initialized or heuristic
 fallbacks and records that fact in its conversion report. The native-BitNet

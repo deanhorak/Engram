@@ -33,10 +33,19 @@ conclusion and moves the unresolved OLMoE boundary to Milestone 3 attention.
 The subsequent fixed-budget sweep tested three different allocations of the
 same 44.7614% logical-read budget. All evidence checks passed, but none of the
 three policies passed semantic quality, so no arm was selected. Static
-reallocation of one global W/C/K policy under this budget is now closed. The
-next justified architecture is a layer/head-adaptive or learned/distilled
-selector for older context. W128 itself reads 100% and is not deployable.
-Measured whole-system traffic and optimization also remain.
+reallocation of one global W/C/K policy under this budget is now closed.
+A following layer-adaptive upper-bound experiment added a per-layer native
+runtime interface and greedily rescued layers 11, 6, and 10 with W128 while
+leaving the other 13 layers at W16/C8/K4/S2. Its evidence was valid and its
+44.1701% logical-read schedule stayed under budget, but quality again failed
+from position 32 onward. This frozen greedy three-layer W128 path under the
+45% budget is therefore closed; the result does not rule out every interacting
+whole-layer combination. The next prospectively frozen boundary is a fixed,
+teacher-guided head-wise mask that can rescue 51 of the 256 layer-head pairs at
+44.9754%; 52 rescues would exceed the cap. W128 itself reads 100% when
+applied globally and is not deployable. Measured whole-system traffic and
+optimization also remain. Milestone 2 remains passed for the qualified Q7
+semantic path, while Milestone 3 remains blocked on bounded attention.
 
 Engram's target runtime combines a shared recurrent controller, fixed sparse semantic
 memory derived from SwiGLU records, hybrid local/recurrent/retrieval episodic memory, an
@@ -258,9 +267,38 @@ All three arms passed authentication, counter, traffic, replay, and
 pre-eviction identity checks, but all failed the frozen semantic gate. The
 W128 control remains the causal ceiling at KL 0.003438, top-1 0.974609, NLL
 delta +0.001459, and hidden L2 0.041389. This rules out choosing a “best
-failure” or merely tuning one global cache split. The next operator must
-allocate memory by layer/head or learn which older states to retain from dense
-teacher behavior.
+failure” or merely tuning one global cache split. It justified testing whether
+memory should be allocated by layer/head or whether older-state selection must
+be learned from dense-teacher behavior.
+
+The first layer-adaptive test is also complete. An additive native C ABI,
+`engram_olmoe_token_open_layered_v1`, accepts one W/C/K/S capacity policy for
+each of the 16 OLMoE layers; the existing scalar open ABI remains unchanged.
+The Python `OLMoENativeTokenRuntime` exposes the same mutually exclusive
+`attention_policies` path. Heterogeneous state, scratch, traffic, eviction,
+candidate, selected-entry, sink, and heavy-hitter metrics are summed across
+layers, and an all-base layered run is bit-exact with the historical scalar
+runtime.
+
+A frozen three-round greedy search evaluated all 16 + 15 + 14 layer choices
+on two selection sequences. It chose layers 11, 6, and 10 for
+`W128/C8/K4/S2` and retained `W16/C8/K4/S2` on the other 13 layers. The final
+schedule read 955,957,248 logical attention bytes per 128-position sequence,
+or 44.1701% of dense attention. All candidate, resource, replay, and
+authentication evidence passed. The six-sequence internal screen nevertheless
+failed with KL 0.102321, top-1 agreement 0.845052, NLL delta +0.116776, and
+hidden L2 0.206037. Positions 0–15 and 16–31 passed, while every metric failed
+in each band from 32 onward. This closes the tested frozen greedy three-layer
+path under the cap rather than proving that all layer-adaptive attention or
+every interacting whole-layer combination is ineffective.
+
+The experiment used the raw token runtime only. Package format version 1
+continues to bind one global `W16/C8/K4/S2` policy, so the failed schedule was
+not installed and no package schema was promoted. The next prospectively
+frozen experiment instead allocates exact-local rescue at head granularity:
+51 of 256 layer-head pairs fit at 973,384,704 logical bytes per sequence
+(44.9754%), whereas 52 would require 45.2438%. The mask is fixed from dense
+teacher evidence before causal evaluation.
 
 ## Token-level controller and output path
 

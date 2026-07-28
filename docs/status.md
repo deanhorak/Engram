@@ -178,9 +178,50 @@ the frozen evaluator is source commit `102bda2` with source SHA
 `cf2e4be0…fa60`. The intervention used the raw native runtime to override the
 immutable package's W16/C8/K4/S2 attention policy; it did not mutate or promote
 that installed package. Milestone 2 remains passed, while Milestone 3 remains
-blocked. Another global W/C/K trade is not justified: the next boundary is a
-layer/head-adaptive budget or a learned/distilled older-context selector
-trained against exact attention.
+blocked. Another global W/C/K trade is not justified.
+
+The prospectively frozen layer-rescue follow-up tested whether concentrating
+that budget in a few entire layers could recover quality. The added layered
+native ABI first passed exact old-scalar/all-base-layered parity. A
+three-round greedy search then evaluated 45 causal candidates—16, 15, and 14
+remaining layers—on a deterministic two-record selection split and chose
+layers **11, 6, and 10**. The selected schedule applies W128/C8/K4/S2 to those
+three layers and the base W16/C8/K4/S2 policy to the other 13. It reads
+**955,957,248 logical attention bytes per sequence** (**44.1701489826%**),
+holds **11,865,728 bytes** of attention state, needs **6,528 bytes** of
+scratch, and leaves Q7 traffic at **22.7864583333%**.
+
+The six remaining development records were an internal screen, not a fresh
+confirmation. Its overall result failed all four quality thresholds:
+
+| Layer-rescue range | Mean KL | Top-1 | NLL delta | Hidden L2 | Quality |
+|---|---:|---:|---:|---:|---|
+| Overall | 0.10232094998 | 0.84505208333 | +0.11677564952 | 0.20603686522 | **Fail** |
+| 0–15 | Pass | Pass | Pass | Pass | Pass |
+| 16–31 | Pass | Pass | Pass | Pass | Pass |
+| 32–63 | Fail | Fail | Fail | Fail | **Fail** |
+| 64–95 | Fail | Fail | Fail | Fail | **Fail** |
+| 96–127 | Fail | Fail | Fail | Fail | **Fail** |
+
+Every evidence, exact-resource, reset-replay, ABI-parity, and post-run
+authentication check passed. The evaluator source commit is `708782b`; the
+protocol SHA-256 is
+`9514e90bd5d14ae01ea27185763e5a833d4f1963e6bffd0ec0c81848f35b0c3e`,
+the result SHA-256 is
+`97ce800bd855c1f16248cada696936c7c56acd49c02d6f1c9ce9885dc44f7c49`,
+and the layered candidate DSO SHA-256 is
+`fe4dfdcc7e87a3cd5e36074e07d297f838ba345c37e939eeb0d796cb39cce409`.
+Because the corpus was already consumed for development, the schedule was not
+promoted and no fresh package confirmation was attempted.
+
+This closes the frozen greedy three-layer W128 path, while its disclosed
+search limitation leaves interacting whole-layer combinations untested. The
+next prospectively frozen experiment is teacher-guided fixed head-wise
+allocation: the traffic cap permits exactly **51 of 256 layer-head pairs** to
+use full-context rescue, at **973,384,704 bytes per sequence**
+(**44.9753872184%**). A 52-pair mask would consume **45.2437999637%** and is
+therefore inadmissible. Milestone 2 remains passed; Milestone 3 remains
+blocked.
 
 ### Native-BitNet package integration and evidence caveat
 
@@ -602,7 +643,7 @@ scientific exit criterion has passed.
 |---|---|---|
 | 1. Inspection, tracing, exact MLP decomposition, oracle experiment | Complete | Complete for the fixture and exercised on SmolLM2 |
 | 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP and OLMoE learned-expert routes, authenticated packages, CPU kernels, native token runtimes, and causal evaluators exist | **Native-BitNet passed** by postmortem adjudication and **OLMoE Q7 formally passed** an authenticated frozen complete-native 8×32 protocol. The matched W128 8×128 control passes every band and attributes the later sustained failure to attention, preserving the Q7/M2 decision. Generic dense-Llama conversion and broader replication remain incomplete |
-| 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, and incremental package integration implemented | Native-BitNet has a source-specific bounded trained-model pass. **OLMoE W16/C8/K4/S2 fails the authenticated 8×128 gate beginning at offsets 32–63**; W128 full attention passes but is nondeployable at 100% reads and 35.8 MB state. The exact-traffic-matched 44.7614% sweep also produced zero quality-passing arms, so global W/C/K reallocation is closed and layer/head-adaptive or learned older-context selection is next |
+| 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, incremental package integration, and exact per-layer native policy ABI implemented | Native-BitNet has a source-specific bounded trained-model pass. **OLMoE W16/C8/K4/S2 fails the authenticated 8×128 gate beginning at offsets 32–63**; W128 full attention passes but is nondeployable at 100% reads and 35.8 MB state. The exact-traffic-matched 44.7614% sweep produced zero quality-passing arms, and the 44.1701% greedy three-layer W128 path failed all four overall metrics on its six-sequence internal screen. The tested global family and greedy three-layer path are closed; a prospective 51/256-pair teacher-guided head mask is next |
 | 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, authenticated package installation, persistent native stage state, and a one-call 30-stage C++ attention/semantic runner implemented | **Controller, compiled-substitution, incremental-generation, and C++ orchestration gates pass**; frozen generation reaches 96.875% token agreement, 87.5% exact prompts, correct cache positions, and zero decoder-layer calls |
 | 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, native vocabulary argmax, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and passes source/package parity; generic vocabulary/cache/correction paths are not all active in the promoted native-BitNet runtime |
 | 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime, memory-mapped BitNet DIP/projection kernels, streaming attention, native shell operators, authenticated C++ package mapping, manifest-derived model configuration/EOS, token-step control, greedy argmax, reset, standalone generation, and a versioned shared ABI implemented | **Partial**: model execution is native and chat uses the shared handle; tokenizer/template/history orchestration remains Python-side, OLMoE sustained older-context quality fails under the current bounded policy, and AVX2 tuning and hardware-counter traffic remain |
@@ -628,6 +669,11 @@ independent of the model-worker semantic-gate evidence.
 - The matched OLMoE W128 control is an attribution diagnostic, not a promoted
   Milestone 3 policy. Its 100% logical attention reads and 35.8 MB state violate
   the deployable bounded-attention objective.
+- The OLMoE layer-rescue screen is not a Milestone 3 confirmation. Forty-five
+  adaptive comparisons used two sequences, and the six internal-screen
+  sequences came from an already consumed development corpus. Its valid
+  negative result closes this whole-layer schedule, not every possible
+  layer/head-adaptive design.
 - The derived DIP package, standalone runtime, and shared chat handle pass
   their integration checks. Python still owns tokenization, template
   rendering, and history, but it no longer constructs or executes a
@@ -642,6 +688,15 @@ independent of the model-worker semantic-gate evidence.
   architecture.
 
 ## Current development decision
+
+For the active OLMoE boundary, Milestone 2 remains passed and Milestone 3
+remains blocked. The tested static global family and frozen greedy three-layer
+W128 path have both failed valid development screens under the 45%
+logical-read cap; interacting layer combinations remain untested.
+The next prospective experiment will freeze dense-teacher traces and a fixed
+51-of-256 layer-head rescue mask before causal evaluation; no package or
+model-format promotion is justified unless that mask first passes development
+and then a fresh eight-sequence confirmation.
 
 The shared-controller stage has started with a deployable low-rank design
 rather than the original dense FP64 GRU fixture. At width 2,560, the original

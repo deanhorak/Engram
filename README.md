@@ -254,10 +254,44 @@ promoting a “best failure,” so there is no selected arm and the reserved fre
 confirmation corpus remains unconsumed. The sweep used an explicit raw-runtime
 intervention because the immutable installed package remains bound to
 W16/C8/K4/S2; it consumed the designated sustained-development corpus but did
-not silently rewrite or promote the package policy. The next justified
-boundary is a layer/head-adaptive allocation or a
-learned/distilled older-context selector trained against exact attention, not
-another global W/C/K reallocation. See the
+not silently rewrite or promote the package policy.
+
+The next authenticated experiment tested the layer-adaptive part of that
+boundary. A new native ABI accepts one attention policy per layer; its
+all-base layered configuration matched the old scalar W16/C8/K4/S2 ABI
+exactly for tokens, hidden states, logits, counters, and diagnostics. Starting
+from that base, a prospectively frozen three-round greedy search evaluated
+**45** causal candidates (**16 + 15 + 14**) on a deterministic two-sequence
+selection split. It chose layers **11, 6, and 10** for full W128 rescue, then
+evaluated the resulting schedule on the other six development sequences. The
+schedule uses W16/C8/K4/S2 in 13 layers and W128/C8/K4/S2 in three layers. It
+reads **955,957,248 logical attention bytes per sequence** (**44.1701489826%**
+of dense), holds **11,865,728 bytes** of attention state, uses **6,528 bytes**
+of scratch, and leaves Q7 traffic unchanged at **22.7864583333%**.
+
+Every evidence, exact-resource, replay, old/new-ABI parity, and post-run
+authentication check passed, but all four overall quality metrics failed on
+the six-sequence internal screen: KL **0.10232094998**, top-1
+**0.84505208333**, NLL delta **+0.11677564952**, and hidden L2
+**0.20603686522**. The 0–15 and 16–31 bands passed every metric; all four
+metrics failed in each of 32–63, 64–95, and 96–127. This was a
+development-only use of the already consumed corpus, so the schedule was not
+promoted and no fresh confirmation was run. The authenticated evaluator is
+source commit `708782b`; the protocol SHA-256 is
+`9514e90bd5d14ae01ea27185763e5a833d4f1963e6bffd0ec0c81848f35b0c3e`,
+the result SHA-256 is
+`97ce800bd855c1f16248cada696936c7c56acd49c02d6f1c9ce9885dc44f7c49`,
+and the layered candidate DSO SHA-256 is
+`fe4dfdcc7e87a3cd5e36074e07d297f838ba345c37e939eeb0d796cb39cce409`.
+
+Global W/C/K reallocation in the tested policy family and this frozen greedy
+three-layer W128 path are now closed. The negative greedy result does not rule
+out every interacting whole-layer combination.
+The next prospectively frozen boundary is a teacher-guided, fixed head-wise
+mask: exactly **51 of 256 layer-head pairs** can receive full-context rescue
+at **973,384,704 bytes per sequence** (**44.9753872184%**), whereas 52 pairs
+would require **45.2437999637%** and violate the cap. Milestone 2 remains
+passed; Milestone 3 remains blocked. See the
 [sustained-context evidence and attribution report](reports/olmoe_q7_sustained_context_2026-07-28/summary.md).
 
 Python owns packaged tokenization and prompt text handling. From token IDs
@@ -1239,6 +1273,15 @@ bounded local, recurrent, and older-context retrieval memory. It is not teacher-
 distillation evidence. It is superseded for the native-BitNet track by the
 trained-model W16/C8/K4/S2 attention confirmation and its incremental package
 integration.
+
+For the OLMoE track, the trained-model evidence is source-specific and
+negative at sustained context: W16 fails after offset 31, a 100%-read W128
+control passes, three matched global allocations fail, and the authenticated
+three-layer W128 rescue also fails its six-sequence internal screen at 44.17%
+logical reads. That screen is development evidence from an already consumed
+corpus, not a fresh Milestone 3 confirmation. It justifies the next fixed
+51-of-256 teacher-guided head-mask experiment; it does not qualify an OLMoE
+attention package.
 
 [Gate 4](reports/milestone4_fixture/controller_gate.json) is also synthetic; adaptive
 execution averaged 7.98 of 8 allowed cycles, so it found essentially no compute saving.
