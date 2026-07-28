@@ -1,0 +1,44 @@
+{
+  "artifact": "/home/dean/repos/engram/work/olmoe_q7/model.engram-olmoe-q7",
+  "artifact_bytes": 5842733184,
+  "checks": {
+    "artifact_strictly_validated": true,
+    "native_decoded_relative_l2_within_limit": true,
+    "native_output_finite": true,
+    "native_route_exact": true,
+    "scheduled_packed_traffic_within_limit": true
+  },
+  "experiment": "olmoe_native_q7_systems_confirmation",
+  "gate_passed": true,
+  "layer": 0,
+  "library": "/home/dean/repos/engram/build/libengram_olmoe_q7.so",
+  "parity": {
+    "maximum_absolute_error": 1.6391277313232422e-07,
+    "maximum_relative_l2": 1e-05,
+    "outputs_finite": true,
+    "relative_l2": 1.9471822270134e-06,
+    "route_exact": true
+  },
+  "schema_version": 1,
+  "seed": 7,
+  "states": 1,
+  "threads": 1,
+  "traffic": {
+    "all_expert_ideal_q4_bytes_per_layer": 201326592,
+    "elapsed_ns": 816444586,
+    "fraction_of_all_expert_ideal_q4": 0.22786458333333334,
+    "maximum_fraction": 0.45,
+    "router_stream_bytes": 262144,
+    "rows": 1,
+    "scheduled_bytes_per_state": 45875200.0,
+    "scheduled_stream_bytes": 45875200,
+    "scratch_bytes": 20736,
+    "selected_expert_stream_bytes": 45613056,
+    "selected_experts": 8,
+    "threads": 1
+  },
+  "validation_seconds": {
+    "native_reader": 15.815110315015772,
+    "python_independent_reader": 57.17359030302032
+  }
+}

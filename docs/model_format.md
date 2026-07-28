@@ -27,26 +27,59 @@ source-transformer independence, and every file's byte count and SHA-256. Every 
 also records dtype, shape, byte order, format version, Fortran-order flag, payload offset, and
 actual alignment. Semantic submanifests repeat array-level metadata for independent inspection.
 
-## Proposed OLMoE Q7 expert artifact
+## OLMoE Q7 expert artifact
 
-The passing OLMoE intervention defines, but does not yet implement, a separate
-packed format. Its immutable contract must store 16 layers × 64 experts, with
+`olmoe_native_groupwise_q7_v1` is now implemented. Its immutable contract
+stores 16 layers × 64 experts, with
 three independently addressable matrices per expert, signed Q7 codes grouped
 along the input dimension in groups of 64, and one BF16 scale per group. A
-layer directory must also locate its BF16 64×2,048 router. Selected expert
-blocks must be directly seekable so one token reads only its top-eight blocks.
+layer directory locates its BF16 64×2,048 router. Selected expert blocks are
+directly seekable, so one token reads only its top-eight blocks.
 
-The projected complete artifact contains 5,838,471,168 bytes of Q7 expert codes
-and BF16 scales. Per-token selected expert reads plus all routers total
-734,003,200 bytes, or 22.7865% of the 3,221,225,472-byte all-expert ideal-Q4
-baseline. These are logical bytes; the eventual writer must add and report
-headers, directory entries, alignment, and padding rather than silently
-substituting the projection.
+The canonical code stream adds 63 to codes in `[-63,+63]`, emits each unsigned
+value least-significant-bit first, reserves value 127, and requires unused tail
+bits to be zero. The fixed 128-byte header, 64-byte layer-directory entries,
+64-byte layer headers, 64-byte expert headers, router blocks, expert blocks,
+matrix code streams, and scale streams are all little endian and aligned for
+direct mmap execution. The native reader rejects reserved codes, malformed
+tails, nonfinite/nonpositive scales, inconsistent offsets, and nonzero padding.
 
-No `.engram` manifest may advertise this format yet. Eligibility requires
-canonical seven-bit packing, strict tail/padding validation, source and
-artifact hashes, decoded parity with the authoritative BF16-scale simulator,
-and direct CPU-kernel causal confirmation.
+The physical production artifact is **5,842,733,184 bytes**, versus
+5,838,471,168 logical expert-code/scale bytes before format overhead. One
+top-eight layer step reads 45,613,056 expert bytes plus the 262,144-byte BF16
+router: 45,875,200 bytes, or 22.7865% of the 201,326,592-byte per-layer
+all-expert ideal-Q4 baseline. Direct CPU parity is recorded in the
+[native systems report](../reports/olmoe_q7_native_systems_2026-07-27/summary.md).
+
+The `engram-native-olmoe-q7` version-1 package promotes this artifact into an
+authenticated generation boundary:
+
+```text
+manifest.json
+mlp/experts.q7
+transformer/non_mlp.safetensors
+model/config.json
+model/generation_config.json
+tokenizer/tokenizer.json
+tokenizer/tokenizer_config.json
+tokenizer/special_tokens_map.json
+```
+
+The manifest records every packaged regular file's byte count and SHA-256,
+the Q7 and non-MLP formats, dimensions, CPU thread count, and fixed
+W16/C8/K4/S2 attention policy. Runtime requires the expected manifest SHA-256
+out of band, then rejects symlinks, missing or extra files, size/hash changes,
+unsafe paths, and unsupported execution contracts. The production
+authentication root is
+`861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db`.
+
+The token boundary's companion `olmoe_native_non_mlp_bf16_v1` file is a
+standard, strictly contiguous safetensors mapping. It contains exactly 131
+BF16 tensors: embedding and language-head matrices, final norm, and eight
+non-MLP tensors per layer (two layer norms, Q/K/V/O projections, and Q/K
+norms). The production file is 949,242,368 bytes, including 949,227,520 tensor
+payload bytes. Expert/router tensors are forbidden from this file and remain
+only in the Q7 artifact.
 
 The installed controller artifact uses
 `engram.controller.factorized_residual` schema version 3:

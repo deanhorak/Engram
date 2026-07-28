@@ -1,0 +1,46 @@
+{
+  "boundary": "authenticated_native_olmoe_package_and_single_row_q7",
+  "date": "2026-07-27",
+  "package": {
+    "bytes": 6795550536,
+    "does_not_require_transformers": true,
+    "file_count": 7,
+    "format": "engram-native-olmoe-q7",
+    "manifest_sha256": "861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db",
+    "runtime_device": "cpu",
+    "version": 1
+  },
+  "package_generation": {
+    "attention_state_bytes": 6336512,
+    "attention_weight_bytes": 2684354560,
+    "completion": " Paris",
+    "elapsed_ns": 13325149607,
+    "generated_token_ids": [
+      7785
+    ],
+    "positions_processed": 5,
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [
+      510,
+      5347,
+      273,
+      6181,
+      310
+    ],
+    "q7_elapsed_ns": 13082561317,
+    "q7_scheduled_bytes": 3670016000
+  },
+  "single_row_q7": {
+    "layer": 0,
+    "one_thread_median_ns": 807529578,
+    "output_bit_identical": true,
+    "route_bit_identical": true,
+    "speedup": 6.981465,
+    "threads_12_median_ns": 115667512
+  },
+  "tests": {
+    "native": "19/19 passed",
+    "targeted_python": "7/7 passed",
+    "tamper_rejection": true
+  }
+}

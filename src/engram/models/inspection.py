@@ -303,13 +303,18 @@ def load_named_tensors(path: str | Path, names: list[str]) -> dict[str, np.ndarr
 
 
 def load_local_named_tensors(
-    path: str | Path, names: list[str]
+    path: str | Path,
+    names: list[str],
+    *,
+    inventory: tuple[TensorInfo, ...] | None = None,
 ) -> dict[str, np.ndarray]:
     """Load selected tensors from any supported local layout, without model typing."""
 
     model_path = Path(path).expanduser().resolve()
-    inventory = local_tensor_inventory(model_path)
-    by_name = {tensor.name: tensor for tensor in inventory}
+    resolved_inventory = (
+        local_tensor_inventory(model_path) if inventory is None else inventory
+    )
+    by_name = {tensor.name: tensor for tensor in resolved_inventory}
     missing = set(names) - set(by_name)
     if missing:
         raise KeyError(f"missing source tensors: {sorted(missing)}")

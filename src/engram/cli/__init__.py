@@ -17,6 +17,17 @@ from engram.evaluation.report import (
 from engram.evaluation.mlp_intervention import evaluate_mlp_interventions
 from engram.evaluation.olmoe_q4 import evaluate_olmoe_q4_local
 from engram.evaluation.olmoe_q4_causal import evaluate_olmoe_q4_causal
+from engram.evaluation.olmoe_q7_systems import (
+    evaluate_olmoe_q7_native_systems,
+)
+from engram.evaluation.olmoe_native_generation import (
+    capture_olmoe_teacher_generation,
+    evaluate_native_olmoe_generation,
+)
+from engram.evaluation.olmoe_native_causal import (
+    capture_olmoe_teacher_causal_reference,
+    evaluate_native_olmoe_causal,
+)
 from engram.evaluation.native_bitnet_parity import (
     evaluate_native_bitnet_parity,
 )
@@ -80,6 +91,11 @@ from engram.models.native_bitnet import (
     repack_native_bitnet_model,
 )
 from engram.models.olmoe import audit_olmoe_source
+from engram.models.olmoe_q7 import (
+    inspect_olmoe_q7_artifact,
+    repack_olmoe_q7_model,
+)
+from engram.models.olmoe_native import repack_olmoe_non_mlp_weights
 from engram.semantic.oracle import analyze_magnitude_oracle
 from engram.semantic.evaluate import evaluate_practical_routing
 from engram.semantic.memory import build_semantic_package
@@ -93,6 +109,7 @@ from engram.tracing.olmoe import (
     capture_olmoe_router_traces,
 )
 from engram.compiler import (
+    compile_olmoe_native_package,
     compile_model,
     compile_native_bitnet_package,
     install_native_bitnet_controller,
@@ -102,8 +119,10 @@ from engram.runtime import (
     EngramRuntime,
     NativeBitNetDIPTokenRuntime,
     NativeBitNetRuntime,
+    OLMoENativePackageRuntime,
     run_native_bitnet_chat,
     validate_native_bitnet_package,
+    OLMoENativeTokenRuntime,
 )
 from engram.runtime.validation import benchmark_runtime, validate_package
 from engram.evaluation.end_to_end import evaluate_end_to_end
@@ -171,10 +190,161 @@ def _parser() -> argparse.ArgumentParser:
     olmoe_audit.add_argument(
         "--verify-remote-shapes",
         action="store_true",
-        help=(
-            "read only bounded safetensors header ranges and validate tensor shapes"
-        ),
+        help=("read only bounded safetensors header ranges and validate tensor shapes"),
     )
+
+    olmoe_q7_repack = commands.add_parser(
+        "repack-olmoe-q7",
+        help="compile local OLMoE routers and experts into the native packed-Q7 artifact",
+    )
+    olmoe_q7_repack.add_argument("--model", required=True, type=Path)
+    olmoe_q7_repack.add_argument("--out", required=True, type=Path)
+    olmoe_q7_repack.add_argument("--group-size", type=int, default=64)
+    olmoe_q7_repack.add_argument("--report", type=Path)
+
+    olmoe_q7_inspect = commands.add_parser(
+        "inspect-olmoe-q7",
+        help="strictly validate and describe a native packed OLMoE Q7 artifact",
+    )
+    olmoe_q7_inspect.add_argument("--artifact", required=True, type=Path)
+
+    olmoe_q7_systems = commands.add_parser(
+        "evaluate-native-olmoe-q7",
+        help="prove native packed-Q7 route/output parity and exact scheduled traffic",
+    )
+    olmoe_q7_systems.add_argument("--artifact", required=True, type=Path)
+    olmoe_q7_systems.add_argument("--library", required=True, type=Path)
+    olmoe_q7_systems.add_argument("--out", required=True, type=Path)
+    olmoe_q7_systems.add_argument("--layer", type=int, default=0)
+    olmoe_q7_systems.add_argument("--states", type=int, default=1)
+    olmoe_q7_systems.add_argument("--threads", type=int, default=1)
+    olmoe_q7_systems.add_argument("--seed", type=int, default=7)
+    olmoe_q7_systems.add_argument("--maximum-relative-l2", type=float, default=1e-5)
+    olmoe_q7_systems.add_argument(
+        "--maximum-traffic-fraction", type=float, default=0.45
+    )
+
+    olmoe_non_mlp = commands.add_parser(
+        "repack-olmoe-non-mlp",
+        help="stream OLMoE embedding, attention, norms, and output head into one BF16 mmap file",
+    )
+    olmoe_non_mlp.add_argument("--model", required=True, type=Path)
+    olmoe_non_mlp.add_argument("--out", required=True, type=Path)
+    olmoe_non_mlp.add_argument("--report", type=Path)
+
+    olmoe_token = commands.add_parser(
+        "run-native-olmoe-token",
+        help="run a transformer-shell-free native OLMoE token step",
+    )
+    olmoe_token.add_argument("--config", required=True, type=Path)
+    olmoe_token.add_argument("--non-mlp", required=True, type=Path)
+    olmoe_token.add_argument("--q7-artifact", required=True, type=Path)
+    olmoe_token.add_argument("--library", required=True, type=Path)
+    olmoe_input = olmoe_token.add_mutually_exclusive_group(required=True)
+    olmoe_input.add_argument("--token-ids", nargs="+", type=int)
+    olmoe_input.add_argument("--prompt")
+    olmoe_token.add_argument(
+        "--tokenizer",
+        type=Path,
+        help="tokenizer.json or directory containing it; required with --prompt",
+    )
+    olmoe_token.add_argument("--threads", type=int, default=1)
+    olmoe_token.add_argument("--max-new-tokens", type=int, default=1)
+
+    olmoe_package = commands.add_parser(
+        "compile-native-olmoe",
+        help="assemble an authenticated package for native OLMoE generation",
+    )
+    olmoe_package.add_argument("--model", required=True, type=Path)
+    olmoe_package.add_argument("--q7-artifact", required=True, type=Path)
+    olmoe_package.add_argument("--non-mlp", required=True, type=Path)
+    olmoe_package.add_argument("--out", required=True, type=Path)
+    olmoe_package.add_argument("--threads", type=int, default=12)
+    olmoe_package.add_argument("--report", type=Path)
+
+    olmoe_package_generate = commands.add_parser(
+        "generate-native-olmoe-package",
+        help="authenticate a native OLMoE package and generate without Transformers",
+    )
+    olmoe_package_generate.add_argument("--package", required=True, type=Path)
+    olmoe_package_generate.add_argument("--manifest-sha256", required=True)
+    olmoe_package_generate.add_argument("--library", required=True, type=Path)
+    olmoe_package_generate.add_argument("--prompt", required=True)
+    olmoe_package_generate.add_argument("--max-new-tokens", type=int, default=1)
+    olmoe_package_generate.add_argument("--threads", type=int)
+
+    olmoe_teacher = commands.add_parser(
+        "capture-olmoe-teacher-generation",
+        help="capture a sealed greedy/top-1 reference from untouched OLMoE",
+    )
+    olmoe_teacher.add_argument("--model", required=True, type=Path)
+    olmoe_teacher.add_argument("--prompts", required=True, type=Path)
+    olmoe_teacher.add_argument("--out", required=True, type=Path)
+    olmoe_teacher.add_argument("--max-new-tokens", type=int, default=4)
+    olmoe_teacher.add_argument("--device", choices=("cpu", "cuda"), default="cpu")
+    olmoe_teacher.add_argument("--threads", type=int, default=12)
+
+    olmoe_generation = commands.add_parser(
+        "evaluate-native-olmoe-generation",
+        help="run the frozen authenticated-package versus teacher confirmation",
+    )
+    olmoe_generation.add_argument("--package", required=True, type=Path)
+    olmoe_generation.add_argument("--manifest-sha256", required=True)
+    olmoe_generation.add_argument("--library", required=True, type=Path)
+    olmoe_generation.add_argument("--prompts", required=True, type=Path)
+    olmoe_generation.add_argument("--teacher-reference", required=True, type=Path)
+    olmoe_generation.add_argument("--protocol", required=True, type=Path)
+    olmoe_generation.add_argument("--protocol-sha256", required=True)
+    olmoe_generation.add_argument("--out", required=True, type=Path)
+    olmoe_generation.add_argument("--threads", type=int)
+
+    olmoe_causal_teacher = commands.add_parser(
+        "capture-olmoe-teacher-causal",
+        help="capture sealed BF16 OLMoE logits and hidden states for 8x32",
+    )
+    olmoe_causal_teacher.add_argument("--model", required=True, type=Path)
+    olmoe_causal_teacher.add_argument("--dataset", required=True, type=Path)
+    olmoe_causal_teacher.add_argument("--out", required=True, type=Path)
+    olmoe_causal_teacher.add_argument("--arrays-out", required=True, type=Path)
+    olmoe_causal_teacher.add_argument("--sequences", type=int, default=8)
+    olmoe_causal_teacher.add_argument("--tokens-per-sequence", type=int, default=33)
+    olmoe_causal_teacher.add_argument(
+        "--device", choices=("cpu", "cuda"), default="cpu"
+    )
+    olmoe_causal_teacher.add_argument("--threads", type=int, default=12)
+    olmoe_causal_teacher.add_argument(
+        "--batch-size",
+        type=int,
+        default=1,
+        help="teacher sequences per individual forward pass",
+    )
+    olmoe_causal_teacher.add_argument(
+        "--expert-workers",
+        type=int,
+        default=1,
+        help="capture-only worker threads for independent OLMoE experts",
+    )
+    olmoe_causal_teacher.add_argument(
+        "--sequence-workers",
+        type=int,
+        default=None,
+        help="capture-only concurrent CPU teacher forwards sharing one model",
+    )
+
+    olmoe_causal = commands.add_parser(
+        "evaluate-native-olmoe-causal",
+        help="run the frozen complete 8-sequence/256-position native gate",
+    )
+    olmoe_causal.add_argument("--package", required=True, type=Path)
+    olmoe_causal.add_argument("--manifest-sha256", required=True)
+    olmoe_causal.add_argument("--library", required=True, type=Path)
+    olmoe_causal.add_argument("--dataset", required=True, type=Path)
+    olmoe_causal.add_argument("--teacher-reference", required=True, type=Path)
+    olmoe_causal.add_argument("--teacher-arrays", required=True, type=Path)
+    olmoe_causal.add_argument("--protocol", required=True, type=Path)
+    olmoe_causal.add_argument("--protocol-sha256", required=True)
+    olmoe_causal.add_argument("--out", required=True, type=Path)
+    olmoe_causal.add_argument("--threads", type=int)
 
     bitnet_repack = commands.add_parser(
         "repack-native-bitnet",
@@ -373,12 +543,8 @@ def _parser() -> argparse.ArgumentParser:
         ),
     )
     bitnet_dip_all.add_argument("--model", required=True, type=Path)
-    bitnet_dip_all.add_argument(
-        "--validation-trace", required=True, type=Path
-    )
-    bitnet_dip_all.add_argument(
-        "--oracle-schedule", required=True, type=Path
-    )
+    bitnet_dip_all.add_argument("--validation-trace", required=True, type=Path)
+    bitnet_dip_all.add_argument("--oracle-schedule", required=True, type=Path)
     bitnet_dip_all.add_argument("--out", required=True, type=Path)
     bitnet_dip_all.add_argument("--input-fraction", type=float, default=0.75)
     bitnet_dip_all.add_argument(
@@ -401,13 +567,9 @@ def _parser() -> argparse.ArgumentParser:
             6.0,
         ),
     )
-    bitnet_dip_all.add_argument(
-        "--maximum-traffic-fraction", type=float, default=0.45
-    )
+    bitnet_dip_all.add_argument("--maximum-traffic-fraction", type=float, default=0.45)
     bitnet_dip_all.add_argument("--recall-gate", type=float, default=0.95)
-    bitnet_dip_all.add_argument(
-        "--tail-recall-preference", type=float, default=0.99
-    )
+    bitnet_dip_all.add_argument("--tail-recall-preference", type=float, default=0.99)
     bitnet_dip_all.add_argument(
         "--worst-row-recall-preference", type=float, default=0.95
     )
@@ -420,12 +582,8 @@ def _parser() -> argparse.ArgumentParser:
         ),
     )
     bitnet_adaptive_k.add_argument("--model", required=True, type=Path)
-    bitnet_adaptive_k.add_argument(
-        "--validation-trace", required=True, type=Path
-    )
-    bitnet_adaptive_k.add_argument(
-        "--router-policy", required=True, type=Path
-    )
+    bitnet_adaptive_k.add_argument("--validation-trace", required=True, type=Path)
+    bitnet_adaptive_k.add_argument("--router-policy", required=True, type=Path)
     bitnet_adaptive_k.add_argument("--out", required=True, type=Path)
     bitnet_adaptive_k.add_argument(
         "--energy-targets",
@@ -433,15 +591,9 @@ def _parser() -> argparse.ArgumentParser:
         type=float,
         default=(0.90, 0.95, 0.975, 0.99, 0.995, 0.999),
     )
-    bitnet_adaptive_k.add_argument(
-        "--minimum-fraction", type=float, default=0.05
-    )
-    bitnet_adaptive_k.add_argument(
-        "--maximum-fraction", type=float, default=0.425
-    )
-    bitnet_adaptive_k.add_argument(
-        "--mean-budget-fraction", type=float, default=0.25
-    )
+    bitnet_adaptive_k.add_argument("--minimum-fraction", type=float, default=0.05)
+    bitnet_adaptive_k.add_argument("--maximum-fraction", type=float, default=0.425)
+    bitnet_adaptive_k.add_argument("--mean-budget-fraction", type=float, default=0.25)
     bitnet_adaptive_k.add_argument("--device", default="cuda")
 
     bitnet_joint_policy = commands.add_parser(
@@ -452,9 +604,7 @@ def _parser() -> argparse.ArgumentParser:
         ),
     )
     bitnet_joint_policy.add_argument("--model", required=True, type=Path)
-    bitnet_joint_policy.add_argument(
-        "--validation-trace", required=True, type=Path
-    )
+    bitnet_joint_policy.add_argument("--validation-trace", required=True, type=Path)
     bitnet_joint_policy.add_argument("--out", required=True, type=Path)
     bitnet_joint_policy.add_argument(
         "--candidate-counts",
@@ -462,15 +612,9 @@ def _parser() -> argparse.ArgumentParser:
         type=int,
         default=(3200, 3456, 3712, 3968, 4224, 4480, 4736, 4992, 5248, 5504),
     )
-    bitnet_joint_policy.add_argument(
-        "--input-fraction", type=float, default=0.75
-    )
-    bitnet_joint_policy.add_argument(
-        "--minimum-fraction", type=float, default=0.05
-    )
-    bitnet_joint_policy.add_argument(
-        "--mean-budget-fraction", type=float, default=0.25
-    )
+    bitnet_joint_policy.add_argument("--input-fraction", type=float, default=0.75)
+    bitnet_joint_policy.add_argument("--minimum-fraction", type=float, default=0.05)
+    bitnet_joint_policy.add_argument("--mean-budget-fraction", type=float, default=0.25)
     bitnet_joint_policy.add_argument(
         "--maximum-traffic-fraction", type=float, default=0.45
     )
@@ -739,9 +883,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     controller_substitution.add_argument("--model", required=True, type=Path)
     controller_substitution.add_argument("--dataset", required=True, type=Path)
-    controller_substitution.add_argument(
-        "--controller", required=True, type=Path
-    )
+    controller_substitution.add_argument("--controller", required=True, type=Path)
     controller_substitution.add_argument("--out", required=True, type=Path)
     controller_substitution.add_argument("--library", type=Path)
     controller_substitution.add_argument("--attention-library", type=Path)
@@ -751,14 +893,10 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
     )
     controller_substitution.add_argument("--sequence-count", type=int, default=2)
-    controller_substitution.add_argument(
-        "--prediction-positions", type=int, default=32
-    )
+    controller_substitution.add_argument("--prediction-positions", type=int, default=32)
     controller_substitution.add_argument("--record-offset", type=int, default=0)
     controller_substitution.add_argument("--local-window", type=int, default=16)
-    controller_substitution.add_argument(
-        "--retrieval-candidates", type=int, default=8
-    )
+    controller_substitution.add_argument("--retrieval-candidates", type=int, default=8)
     controller_substitution.add_argument("--retrieval-top-k", type=int, default=4)
     controller_substitution.add_argument("--sink-tokens", type=int, default=2)
 
@@ -816,9 +954,7 @@ def _parser() -> argparse.ArgumentParser:
         help="confirm packaged DIP generation through the pure C++ token runtime",
     )
     dip_token_generation.add_argument("--model", required=True, type=Path)
-    dip_token_generation.add_argument(
-        "--executable", required=True, type=Path
-    )
+    dip_token_generation.add_argument("--executable", required=True, type=Path)
     dip_token_generation.add_argument("--prompts", required=True, type=Path)
     dip_token_generation.add_argument("--reference", required=True, type=Path)
     dip_token_generation.add_argument(
@@ -867,9 +1003,7 @@ def _parser() -> argparse.ArgumentParser:
         ),
     )
     controller_generation.add_argument("--model", required=True, type=Path)
-    controller_generation.add_argument(
-        "--controller", required=True, type=Path
-    )
+    controller_generation.add_argument("--controller", required=True, type=Path)
     controller_generation.add_argument("--prompts", required=True, type=Path)
     controller_generation.add_argument("--out", required=True, type=Path)
     controller_generation.add_argument("--max-tokens", type=int, default=4)
@@ -913,9 +1047,7 @@ def _parser() -> argparse.ArgumentParser:
         help="install an authenticated schema-v3 controller into a BitNet package",
     )
     install_bitnet_controller.add_argument("--model", required=True, type=Path)
-    install_bitnet_controller.add_argument(
-        "--controller", required=True, type=Path
-    )
+    install_bitnet_controller.add_argument("--controller", required=True, type=Path)
 
     install_bitnet_semantic = commands.add_parser(
         "install-native-bitnet-semantic-memory",
@@ -924,19 +1056,11 @@ def _parser() -> argparse.ArgumentParser:
     install_bitnet_semantic.add_argument("--model", required=True, type=Path)
     install_bitnet_semantic.add_argument("--index", required=True, type=Path)
     install_bitnet_semantic.add_argument("--policy", required=True, type=Path)
-    install_bitnet_semantic.add_argument(
-        "--adjudication", required=True, type=Path
-    )
+    install_bitnet_semantic.add_argument("--adjudication", required=True, type=Path)
     install_bitnet_semantic.add_argument("--out", required=True, type=Path)
-    install_bitnet_semantic.add_argument(
-        "--index-sha256", required=True
-    )
-    install_bitnet_semantic.add_argument(
-        "--policy-sha256", required=True
-    )
-    install_bitnet_semantic.add_argument(
-        "--adjudication-sha256", required=True
-    )
+    install_bitnet_semantic.add_argument("--index-sha256", required=True)
+    install_bitnet_semantic.add_argument("--policy-sha256", required=True)
+    install_bitnet_semantic.add_argument("--adjudication-sha256", required=True)
 
     generate = commands.add_parser(
         "generate", help="generate with the PyTorch-free reference runtime"
@@ -977,8 +1101,7 @@ def _parser() -> argparse.ArgumentParser:
     chat_bitnet = commands.add_parser(
         "chat-native-bitnet",
         help=(
-            "chat through the authenticated CPU-only native BitNet DIP "
-            "token runtime"
+            "chat through the authenticated CPU-only native BitNet DIP token runtime"
         ),
     )
     chat_bitnet.add_argument("--model", required=True, type=Path)
@@ -1825,7 +1948,8 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    args = _parser().parse_args(argv)
+    parser = _parser()
+    args = parser.parse_args(argv)
     if args.command == "inspect":
         result = inspect_model(
             args.model, hash_weights=not args.no_weight_hash
@@ -1866,6 +1990,190 @@ def main(argv: Sequence[str] | None = None) -> int:
             }
             else 2
         )
+    elif args.command == "repack-olmoe-q7":
+        artifact = repack_olmoe_q7_model(
+            args.model, args.out, group_size=args.group_size
+        )
+        result = inspect_olmoe_q7_artifact(artifact)
+        if args.report:
+            atomic_json(args.report, result)
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "inspect-olmoe-q7":
+        print(
+            json.dumps(
+                inspect_olmoe_q7_artifact(args.artifact),
+                indent=2,
+                sort_keys=True,
+            )
+        )
+    elif args.command == "evaluate-native-olmoe-q7":
+        result = evaluate_olmoe_q7_native_systems(
+            args.artifact,
+            args.library,
+            args.out,
+            layer=args.layer,
+            states=args.states,
+            threads=args.threads,
+            seed=args.seed,
+            maximum_relative_l2=args.maximum_relative_l2,
+            maximum_traffic_fraction=args.maximum_traffic_fraction,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["gate_passed"] else 2
+    elif args.command == "repack-olmoe-non-mlp":
+        result = repack_olmoe_non_mlp_weights(args.model, args.out)
+        if args.report:
+            atomic_json(args.report, result)
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "run-native-olmoe-token":
+        tokenizer = None
+        token_ids = args.token_ids
+        eos_token_ids: tuple[int, ...] = ()
+        if args.prompt is not None:
+            if args.tokenizer is None:
+                parser.error("run-native-olmoe-token --prompt requires --tokenizer")
+            try:
+                from tokenizers import Tokenizer
+            except ImportError as exc:
+                raise RuntimeError(
+                    "install engram-lm[conversion] for text tokenization"
+                ) from exc
+            tokenizer_path = (
+                args.tokenizer / "tokenizer.json"
+                if args.tokenizer.is_dir()
+                else args.tokenizer
+            )
+            tokenizer = Tokenizer.from_file(str(tokenizer_path))
+            token_ids = tokenizer.encode(args.prompt).ids
+            eos = tokenizer.token_to_id("<|endoftext|>")
+            eos_token_ids = () if eos is None else (int(eos),)
+        if not token_ids:
+            parser.error("native OLMoE input tokenization produced no tokens")
+        with OLMoENativeTokenRuntime(
+            args.config,
+            args.non_mlp,
+            args.q7_artifact,
+            args.library,
+            threads=args.threads,
+        ) as runtime:
+            generated = runtime.generate(
+                token_ids,
+                max_new_tokens=args.max_new_tokens,
+                eos_token_ids=eos_token_ids,
+            )
+            position = runtime.position
+            metrics = (
+                runtime.last_result.metrics if runtime.last_result is not None else {}
+            )
+        print(
+            json.dumps(
+                {
+                    "generated_token_ids": generated,
+                    "completion": (
+                        tokenizer.decode(generated) if tokenizer is not None else None
+                    ),
+                    "metrics": metrics,
+                    "position": position,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+    elif args.command == "compile-native-olmoe":
+        result = compile_olmoe_native_package(
+            args.model,
+            args.q7_artifact,
+            args.non_mlp,
+            args.out,
+            kernel_threads=args.threads,
+        )
+        if args.report:
+            atomic_json(args.report, result)
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "generate-native-olmoe-package":
+        with OLMoENativePackageRuntime(
+            args.package,
+            manifest_sha256=args.manifest_sha256,
+            library=args.library,
+            threads=args.threads,
+        ) as runtime:
+            result = runtime.generate(
+                args.prompt,
+                max_new_tokens=args.max_new_tokens,
+            )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "capture-olmoe-teacher-generation":
+        result = capture_olmoe_teacher_generation(
+            model=args.model,
+            prompts=args.prompts,
+            out=args.out,
+            max_new_tokens=args.max_new_tokens,
+            device=args.device,
+            threads=args.threads,
+        )
+        print(
+            json.dumps(
+                {
+                    "reference": result,
+                    "reference_sha256": sha256_file(args.out),
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+    elif args.command == "evaluate-native-olmoe-generation":
+        result = evaluate_native_olmoe_generation(
+            package=args.package,
+            manifest_sha256=args.manifest_sha256,
+            library=args.library,
+            prompts=args.prompts,
+            teacher_reference=args.teacher_reference,
+            protocol=args.protocol,
+            protocol_sha256=args.protocol_sha256,
+            out=args.out,
+            threads=args.threads,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["gate_passed"] else 2
+    elif args.command == "capture-olmoe-teacher-causal":
+        result = capture_olmoe_teacher_causal_reference(
+            model=args.model,
+            dataset=args.dataset,
+            out=args.out,
+            arrays_out=args.arrays_out,
+            sequences=args.sequences,
+            tokens_per_sequence=args.tokens_per_sequence,
+            device=args.device,
+            threads=args.threads,
+            batch_size=args.batch_size,
+            expert_workers=args.expert_workers,
+            sequence_workers=args.sequence_workers,
+        )
+        print(
+            json.dumps(
+                {
+                    "reference": result,
+                    "reference_sha256": sha256_file(args.out),
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+    elif args.command == "evaluate-native-olmoe-causal":
+        result = evaluate_native_olmoe_causal(
+            package=args.package,
+            manifest_sha256=args.manifest_sha256,
+            library=args.library,
+            dataset=args.dataset,
+            teacher_reference=args.teacher_reference,
+            teacher_arrays=args.teacher_arrays,
+            protocol=args.protocol,
+            protocol_sha256=args.protocol_sha256,
+            out=args.out,
+            threads=args.threads,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["gate_passed"] else 2
     elif args.command == "repack-native-bitnet":
         result = repack_native_bitnet_model(
             args.model,
@@ -2013,8 +2321,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(json.dumps(result, indent=2, sort_keys=True))
         return (
             0
-            if result["selected_highest_energy_target_within_mean_budget"]
-            is not None
+            if result["selected_highest_energy_target_within_mean_budget"] is not None
             else 2
         )
     elif args.command == "optimize-native-bitnet-dip-joint-policy":
@@ -2448,9 +2755,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "controller_mode": result.controller_mode,
                     "controller_seconds": result.controller_seconds,
                     "attention_state_bytes": result.attention_state_bytes,
-                    "decoder_layer_forward_calls": (
-                        result.decoder_layer_forward_calls
-                    ),
+                    "decoder_layer_forward_calls": (result.decoder_layer_forward_calls),
                 },
                 indent=2,
             )

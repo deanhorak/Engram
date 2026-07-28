@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "experiment": "olmoe_q7_block_decode_and_parallel_validation",
+  "date": "2026-07-28",
+  "q7_block_decode": {
+    "baseline_library_sha256": "e747edf13eaf504a987f83c3c1eefd5f7b69324fd48725a2e465c7c17f8576d4",
+    "candidate_library_before_parallel_validation_sha256": "630cf5ff9e098e5e05fd9bae23cd68c0396d86929159e00dc5a1b33895295ff0",
+    "threads": 12,
+    "warmups": 2,
+    "samples": 9,
+    "layers": {
+      "0": {
+        "baseline_median_ns": 108487313,
+        "candidate_median_ns": 16526969,
+        "speedup": 6.564259483998548,
+        "route_exact": true,
+        "output_bit_exact": true,
+        "scheduled_bytes": 45875200
+      },
+      "7": {
+        "baseline_median_ns": 106244738,
+        "candidate_median_ns": 12551931,
+        "speedup": 8.464413802147256,
+        "route_exact": true,
+        "output_bit_exact": true,
+        "scheduled_bytes": 45875200
+      },
+      "15": {
+        "baseline_median_ns": 117090678,
+        "candidate_median_ns": 12666539,
+        "speedup": 9.244094065474396,
+        "route_exact": true,
+        "output_bit_exact": true,
+        "scheduled_bytes": 45875200
+      }
+    }
+  },
+  "complete_five_position_prompt": {
+    "prompt": "The capital of France is",
+    "generated_token_id": 7785,
+    "completion": " Paris",
+    "previous_wall_seconds": 61.78,
+    "current_wall_seconds": 32.06,
+    "previous_native_elapsed_ns": 13325149607,
+    "current_native_elapsed_ns": 2169052986,
+    "previous_q7_elapsed_ns": 13082561317,
+    "current_q7_elapsed_ns": 1911041491,
+    "q7_scheduled_bytes": 3670016000
+  },
+  "cold_validation": {
+    "serial_q7_structure_seconds": [
+      16.391163883003173,
+      16.60233552401769
+    ],
+    "parallel_q7_structure_seconds": [
+      2.294900992012117,
+      2.2770236220094375
+    ],
+    "median_speedup": 7.203,
+    "parallel_teacher_six_shard_sha256_seconds": 23.65,
+    "parallel_package_inventory_sha256_seconds": 27.19,
+    "parallel_validation_token_runtime_library_sha256": "364bef889e3ed3e2d6aaf2e56de7de172ab1ae8814c518935412ce19c68a979b",
+    "final_q7_library_sha256": "79550185c54ddec174b96fec4cb4d6a7987ac1cdc6dde81514e36587e121027e"
+  }
+}

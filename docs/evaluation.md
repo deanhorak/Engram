@@ -2,7 +2,7 @@
 
 ## Current combined-gate decision
 
-As of 2026-07-27, no generic dense-Llama conversion passes the causal quality
+As of 2026-07-28, no generic dense-Llama conversion passes the causal quality
 thresholds and the complete physical cold-traffic threshold together. The
 older dense-SmolLM predictor-free DIP experiment passed quality but reached
 83.33% cache-line traffic and was slower than dense. The
@@ -29,13 +29,65 @@ Q7/group-64 confirmation executes BF16-rounded group scales and scores exactly
 | Final-hidden relative L2 | 0.0460273 | <= 0.10 |
 | Modeled expert/router traffic | 22.7865% | <= 45% |
 
-The maximum single-position KL is 0.587149 and remains disclosed. This is an
-all-layer causal quantization intervention, not a native-runtime pass: decoded
-Q7 values execute inside Transformers and the byte result is modeled from Q7
-codes, BF16 scales, and BF16 routers. The next evaluation must reload one
-serialized packed artifact through a CPU-only kernel and repeat parity,
-physical traffic accounting, and the frozen causal protocol. See the
-[OLMoE confirmation](../reports/olmoe_q7_confirmation_2026-07-27/summary.md).
+The maximum single-position KL is 0.587149 and remains disclosed. That
+all-layer causal confirmation executes decoded Q7 values inside Transformers.
+The subsequent native systems confirmation reloads one 5,842,733,184-byte
+artifact through the CPU-only kernel: route identity is exact, relative output
+L2 is 1.94718e-6, and scheduled packed traffic is 22.7865%. See the
+[causal confirmation](../reports/olmoe_q7_confirmation_2026-07-27/summary.md)
+and [native systems confirmation](../reports/olmoe_q7_native_systems_2026-07-27/summary.md).
+
+The subsequent [native token-boundary confirmation](../reports/olmoe_q7_native_token_boundary_2026-07-27/summary.md)
+adds the mapped BF16 non-MLP state and complete CPU token loop. Fixture tests
+match an independent NumPy reference and prove batch/incremental cache
+equivalence. The pinned production smoke maps both artifacts and predicts
+` Paris` after `The capital of France is` without constructing Transformers.
+The authenticated package-only frontend reproduces the same token after
+checking its external manifest root and exact inventory. Its selected-expert
+parallel kernel plus canonical packed-block decoder improves representative
+production layers by 6.56×–9.24× with bit-identical output. A five-position
+prompt now takes 2.17 seconds of native execution, including 1.91 seconds in
+Q7, down from 13.33 and 13.08 seconds.
+
+The CPU teacher path has a separate safe parallel mode: four independent
+sequence forwards share one read-only model. It reproduces the serial teacher
+arrays byte-for-byte and reduces 8×33 teacher compute from 366.14 to 94.78
+seconds (3.86×). Parallelizing experts directly is not used for sealed
+references because concurrent BF16 kernels alter rounding.
+
+The next two frozen evaluations exercise the complete package rather than
+decoded Q7 inside Transformers. The short generation integration agrees on
+60/60 teacher-forced decisions, 29/32 greedy tokens, and 7/8 complete prompts.
+All remain within W=16.
+
+The stronger complete native causal confirmation scores 8 sequences and 256
+positions, deliberately split into 128 exact-local positions and 128
+post-window positions. Both splits use the same frozen semantic thresholds:
+
+| Population | Mean KL | Top-1 | NLL delta | Hidden relative L2 |
+|---|---:|---:|---:|---:|
+| Overall, 256 positions | 0.0129809 | 0.960938 | +0.0168240 | 0.0620471 |
+| Offsets 0–15, exact local | 0.0153193 | 0.960938 | +0.0199584 | 0.0488925 |
+| Offsets 16–31, bounded retrieval | 0.0106424 | 0.960938 | +0.0136896 | 0.0752018 |
+| Frozen threshold | <= 0.05 | >= 0.90 | <= +0.05 | <= 0.10 |
+
+The CPU-only candidate constructs no Transformers model shell. It passes
+cache-position, diagnostic-argmax, reset, package, DSO, and post-run
+authentication checks. Q7 schedules 187,904,819,200 bytes, 22.7865% of the
+all-expert ideal-Q4 reference. The original candidate/metric loop takes 93.37
+seconds and the fully authenticated command 183.57 seconds. A source-bound,
+explicitly non-independent hardened replay reproduces all metrics exactly and
+separates 88.79 seconds of native execution, 72.17 seconds of Q7 execution,
+92.14 seconds of candidate-plus-metric wall time, and 184.55 seconds for all
+authentication and execution.
+
+This is an aggregate-threshold pass, not uniform positional parity. Maximum
+KL is 0.606769 and p95 is 0.083556. Offset 31 alone has KL 0.051834, top-1
+0.75, NLL +0.265473, and hidden L2 0.124504, missing all four per-offset
+limits; per-offset limits were not part of the frozen gate. The corpus is too
+small for broad language-quality claims. See the
+[short generation report](../reports/olmoe_q7_native_generation_2026-07-28/summary.md)
+and [complete native causal report](../reports/olmoe_q7_native_causal_2026-07-28/summary.md).
 
 A separate low-bit-native source track first passed the causal quality and
 cold-byte checks while executing every record. Its direct CPU kernel

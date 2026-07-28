@@ -11,16 +11,53 @@
   0.604 after 1,014,225 positions.
   See [Project status](status.md).
 - OLMoE Q7/group-64 is the first SwiGLU-family branch here to pass the
-  all-layer semantic thresholds and 8-sequence/256-position evidence floor,
-  but it is not yet a complete Milestone 2 system. The confirmation rewrites
-  6,442,450,944 expert parameters to decoded Q7 values and executes them
-  inside Transformers. No packed Q7 artifact, mmap loader, native top-8 CPU
-  kernel, cache-line accounting, or native latency result exists yet.
-- OLMoE's 22.7865% traffic result is a deterministic format projection, not a
-  hardware DRAM measurement. It includes selected Q7 codes, BF16 group scales,
-  and BF16 router matrices, but excludes cache-line padding, activations,
-  attention, and runtime overhead. One confirmation position has KL 0.587149
-  despite the passing mean of 0.00900774.
+  all-layer semantic thresholds and 8-sequence/256-position evidence floor.
+  Its 5,842,733,184-byte packed artifact and direct top-8 CPU kernel now pass
+  the native systems gate and are installed in an authenticated native OLMoE
+  generation package. The complete token boundary includes embeddings,
+  normalization, attention/cache state, vocabulary projection, and a greedy
+  token loop. Python still owns tokenization and prompt text. A frozen short
+  generation suite and complete 8-sequence/256-position native causal suite
+  now pass, but long-form generation, chat UX, and broad language evaluation
+  remain. This is a native substituted-MLP/token-runtime result, not the
+  Milestone 4 controller-only architecture: source embeddings, norms,
+  Q/K/V/O attention projections, and `lm_head` still execute.
+- OLMoE's 22.7865% native traffic result is exact scheduled unique packed
+  expert/router bytes, not a hardware-counter DRAM measurement. It excludes
+  activations, attention, runtime metadata already resident in cache, and
+  hardware prefetch/write traffic. The 0.816-second scalar layer result is a
+  historical correctness baseline. The current 12-thread packed block decoder
+  reaches 12.55–16.53 ms on representative layers, but this does not establish
+  whole-system DRAM traffic or optimal CPU performance.
+- The complete OLMoE native prompt smoke is deliberately small. Fixture NumPy
+  and cache progression parity pass, and the authenticated package produces
+  ` Paris`, but this is not a language benchmark. The short eight-prompt
+  protocol agrees on 29/32 generated tokens and 7/8 prompts, yet never crosses
+  W=16. The complete causal protocol does include 128 post-window positions
+  and passes its frozen split-mean thresholds. It remains only eight fixed
+  sequences: offset 31 alone misses all four quality thresholds, maximum KL is
+  0.606769, and sustained older-context generation remains open.
+- Package authentication currently hashes about 6.8 GB and the Q7 loader
+  performs strict full-artifact structural validation at startup. This is
+  fail-closed but makes cold startup materially slower than steady-state token
+  execution. Structural validation is parallelized (about 16.5 to 2.29
+  seconds), as are package and source-shard hashing, but the latter remain
+  storage-bandwidth-heavy at 27.19 and 23.65 seconds.
+- The untouched Hugging Face OLMoE teacher is much less parallel than native
+  inference on this CPU. Its installed fallback loops over experts and small
+  per-expert GEMMs often use one core despite a 12-thread setting. The serial
+  8×33 capture took 366.14 seconds and peaked near 50.4 GB RSS. Batched teacher
+  capture alone improved compute by only 1.2%. Four concurrent sequence
+  forwards sharing one read-only model are byte-exact and 3.86× faster, so
+  they are now the CPU default. Direct expert threading is faster than serial
+  but changes BF16 rounding and remains experimental opt-in.
+- The frozen native causal protocol binds the package, immutable DSO, corpus,
+  teacher arrays, source config/index identities, and all six teacher shards,
+  but not the Engram evaluator source itself. The executed result was manually
+  audited. A disclosed, non-independent hardened replay now binds the evaluator
+  inventory, recomputes inputs/targets, reauthenticates all roots, and exactly
+  reproduces every semantic metric. It strengthens implementation provenance
+  but is not a fresh holdout because the original result was already known.
 - The separate native-BitNet artifact reconstructs exactly and its direct
   full-record memory-mapped CPU kernel passes its frozen causal gate at
   40.0527% scheduled cold traffic. This does not say anything about losslessly

@@ -95,15 +95,16 @@ Milestone 2 now has three source-track outcomes that should not be conflated:
 | Deliverable | Native-BitNet | OLMoE Q7 | Generic dense Llama |
 |---|---|---|---|
 | Background/residual operators | Exact packaged residual; learned correction is zero | Native top-8 mixture needs no fitted residual in the passing simulation | Experimental fitted background worsened held-out error |
-| Semantic key/value package | Complete ternary records plus authenticated DIP-v2 index | Source experts are independently addressable; packed Q7 artifact not yet implemented | Quantized research package exists; no qualifying artifact |
-| Practical routing | **Passed** in the native CPU kernel | **Causal screen passed** using the source model's learned top-8 router | **Blocked** by quality/traffic tradeoffs |
-| Quantization | Native packed ternary representation | Q7/group-64 with BF16 scales passes decoded-weight causal confirmation | Product/additive codecs implemented experimentally |
-| Python semantic-memory runtime | Tokenizer/chat drives a persistent native DIP handle | Trace and intervention runtime only; packed runtime missing | Implemented for research packages |
-| End-to-end substituted-MLP evaluation | Complete through native token generation and chat | 8-sequence/256-position Transformers intervention passes | Evaluation path exists; no qualifying compiled candidate |
+| Semantic key/value package | Complete ternary records plus authenticated DIP-v2 index | **Complete immutable 5.84 GB packed-Q7 expert/router artifact** | Quantized research package exists; no qualifying artifact |
+| Practical routing | **Passed** in the native CPU kernel | **Passed** using the learned top-8 router in the direct packed CPU kernel | **Blocked** by quality/traffic tradeoffs |
+| Quantization | Native packed ternary representation | **Canonical Q7/group-64 plus executed BF16 scales** | Product/additive codecs implemented experimentally |
+| Python semantic-memory runtime | Tokenizer/chat drives a persistent native DIP handle | **Persistent complete native OLMoE token runtime implemented** | Implemented for research packages |
+| End-to-end substituted-MLP evaluation | Complete through native token generation and chat | **Frozen complete native 8×32 causal confirmation and package generation pass** | Evaluation path exists; no qualifying compiled candidate |
 
-Therefore the separately trained **native-BitNet Milestone 2 path is
-operational and may advance**. Engram still cannot claim that it converts an
-arbitrary dense Llama checkpoint into a gate-passing semantic-memory model.
+Therefore the separately trained **native-BitNet and OLMoE Q7 Milestone 2
+paths are operational and may advance**. Engram still cannot claim that it
+converts an arbitrary dense Llama checkpoint into a gate-passing
+semantic-memory model.
 
 ### OLMoE source-track experiment
 
@@ -112,9 +113,11 @@ The current controlled source-family experiment is
 pinned at revision `9b0c1aa87e34a20052389dce1f0cf01da783f654`.
 Unlike dense Llama or dense Qwen, each OLMoE layer already contains a learned
 64-way router and 64 separately stored SwiGLU experts, of which eight are
-selected per token. This does not solve Milestone 2, but it gives Engram a
-trained, natively addressable semantic substrate instead of asking a router to
-recover useful records from one monolithic dense MLP after training.
+selected per token. This gives Engram a trained, natively addressable semantic
+substrate instead of asking a router to recover useful records from one
+monolithic dense MLP after training. The topology alone did not solve
+Milestone 2; the compiled causal evidence below is what now closes the
+OLMoE-specific gate.
 
 The new fail-closed audit reads the config and weight index, then optionally
 uses bounded HTTP range requests to read only the six safetensors headers. It
@@ -141,12 +144,123 @@ positions passed the semantic thresholds: KL **0.00900774**, top-1 agreement
 **0.0460273**. Selected packed Q7 experts, BF16 group scales, and BF16 routers
 project to **22.7865%** of the all-expert ideal-Q4 baseline.
 
-This is the first successful causal/evidence screen for the OLMoE branch, but
-it is still a Transformers simulation over decoded weights. Milestone 2
-therefore remains open at the systems boundary: serialize the 5.84 GB Q7
-expert artifact, implement a CPU-only packed top-8 expert kernel, and prove
-parity plus complete physical cold traffic. OLMoE is not yet a compiled Engram
-runtime.
+The systems follow-up now serializes all 16 layers and 1,024 experts into a
+strictly validated **5,842,733,184-byte** artifact. Codes use canonical biased,
+LSB-first seven-bit packing; scales and routers are BF16; every phase and
+expert is cache-line aligned and directly addressable. A CPU-only mmap kernel
+computes the learned router and executes only the selected top-eight experts
+without constructing dense matrices or a Transformers model.
+
+On the production artifact, the native route exactly matches the independent
+decoded reference. Output relative L2 is **1.94718e-6**, maximum absolute error
+is **1.63913e-7**, and one layer/state schedules **45,875,200 bytes**, or
+**22.7865%** of all-expert ideal Q4. The
+[native systems report](reports/olmoe_q7_native_systems_2026-07-27/summary.md)
+passes. This closes the remaining OLMoE Q7 native systems gate.
+
+The next integration boundary now passes too. A separate 949,242,368-byte BF16
+artifact maps embeddings, all attention projections and norms, the final norm,
+and the independent language head. The CPU runtime combines it with Q7 experts
+and performs a complete token step with RMS normalization, Q/K normalization,
+RoPE/cache advancement, bounded attention, residuals, and vocabulary argmax,
+without constructing Transformers. On `The capital of France is`, it predicts
+` Paris`. See the
+[native token-boundary report](reports/olmoe_q7_native_token_boundary_2026-07-27/summary.md).
+
+That pair is now assembled into an authenticated, CPU-only generation package.
+Its manifest covers the exact seven-file inventory, fixes the attention and
+MLP policies, and has external authentication root
+`861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db`.
+Package loading rejects a changed manifest, changed file, extra file, or
+symlink. The package-only runtime loads its own config and tokenizer and
+reproduces token `7785` (` Paris`) without a Transformers model shell.
+
+The single-row Q7 kernel now parallelizes the eight selected experts. On
+production layers 0, 7, and 15, canonical eight-code/seven-byte block decoding
+reduces medians from **108.49/106.24/117.09 ms** to
+**16.53/12.55/12.67 ms** (**6.56×–9.24×**) with bit-identical routes and
+outputs. The complete five-position prompt falls from 13.33 to **2.17
+seconds** of native execution, including Q7 time falling from 13.08 to
+**1.91 seconds**. Parallel structural validation and inventory hashing reduce
+cold wall time from 61.78 to **32.06 seconds**.
+
+Teacher/reference capture is also parallelized safely. Four concurrent
+sequence forwards share one read-only model and reproduce the serial teacher
+arrays byte-for-byte, while reducing the 8×33 BF16 teacher pass from 366.14
+to **94.78 seconds** (**3.86×**). Direct expert threading is faster than
+serial but changes BF16 rounding, so it remains opt-in rather than redefining
+the sealed reference.
+
+The frozen eight-prompt package-generation protocol also passes: all **60/60**
+teacher-forced top-1 decisions, **29/32** greedy reference tokens, and **7/8**
+complete four-token prompts agree with the untouched BF16 teacher. Those
+sequences remain inside W=16, so this is an integration result rather than
+older-context evidence. See the
+[generation and performance report](reports/olmoe_q7_native_generation_2026-07-28/summary.md).
+
+The stronger frozen causal protocol crosses that boundary. The complete
+CPU-only package passes on eight sequences and 256 positions with overall KL
+**0.012981**, top-1 agreement **0.960938**, NLL delta **+0.016824**, and
+final-hidden relative L2 **0.062047**. Positions 16–31, after the exact W=16
+window begins evicting context, independently pass the same thresholds with
+KL **0.010642**, top-1 **0.960938**, NLL **+0.013690**, and hidden L2
+**0.075202**. Scheduled Q7 reads are **22.7865%** of the all-expert ideal-Q4
+reference. See the
+[complete native causal report](reports/olmoe_q7_native_causal_2026-07-28/summary.md).
+A separately frozen, explicitly non-independent source-bound replay reproduces
+every metric and check exactly, authenticates all post-run roots, and measures
+**88.79 seconds** inside native execution, including **72.17 seconds** in Q7.
+
+Python owns packaged tokenization and prompt text handling. From token IDs
+through recurrent state, Q7 routing/expert execution, final logits, and
+argmax, this confirmation uses the native runtime without a Transformers
+model shell. This OLMoE Milestone 2 result substitutes the MLPs at a native
+token boundary but still executes the source model's embeddings, norms,
+Q/K/V/O attention projections, and `lm_head`; it is not the Milestone 4
+controller-only architecture with the original transformer operators removed.
+Remaining OLMoE work is broader and longer generation quality, chat UX,
+whole-system hardware-counter traffic, and lower authentication latency. The
+earlier
+[authenticated package report](reports/olmoe_q7_native_package_2026-07-27/summary.md)
+remains the package-integrity boundary.
+
+```bash
+PYTHONPATH=src python -m engram.cli repack-olmoe-q7 \
+  --model work/huggingface/models--allenai--OLMoE-1B-7B-0125/snapshots/9b0c1aa87e34a20052389dce1f0cf01da783f654 \
+  --out work/olmoe_q7/model.engram-olmoe-q7 \
+  --group-size 64 --report work/olmoe_q7/repack.json
+
+PYTHONPATH=src python -m engram.cli evaluate-native-olmoe-q7 \
+  --artifact work/olmoe_q7/model.engram-olmoe-q7 \
+  --library build/libengram_olmoe_q7.so \
+  --out reports/olmoe_q7_native_systems_2026-07-27/result.json
+
+PYTHONPATH=src python -m engram.cli repack-olmoe-non-mlp \
+  --model work/huggingface/models--allenai--OLMoE-1B-7B-0125/snapshots/9b0c1aa87e34a20052389dce1f0cf01da783f654 \
+  --out work/olmoe_q7/non_mlp.safetensors
+
+PYTHONPATH=src python -m engram.cli run-native-olmoe-token \
+  --config work/huggingface/models--allenai--OLMoE-1B-7B-0125/snapshots/9b0c1aa87e34a20052389dce1f0cf01da783f654/config.json \
+  --non-mlp work/olmoe_q7/non_mlp.safetensors \
+  --q7-artifact work/olmoe_q7/model.engram-olmoe-q7 \
+  --library build/libengram_olmoe_token_runtime.so \
+  --prompt "The capital of France is" \
+  --tokenizer work/huggingface/models--allenai--OLMoE-1B-7B-0125/snapshots/9b0c1aa87e34a20052389dce1f0cf01da783f654 \
+  --max-new-tokens 1 --threads 12
+
+PYTHONPATH=src python -m engram.cli compile-native-olmoe \
+  --model work/huggingface/models--allenai--OLMoE-1B-7B-0125/snapshots/9b0c1aa87e34a20052389dce1f0cf01da783f654 \
+  --q7-artifact work/olmoe_q7/model.engram-olmoe-q7 \
+  --non-mlp work/olmoe_q7/non_mlp.safetensors \
+  --out work/olmoe_q7/package --threads 12 \
+  --report work/olmoe_q7/package-report.json
+
+PYTHONPATH=src python -m engram.cli generate-native-olmoe-package \
+  --package work/olmoe_q7/package \
+  --manifest-sha256 861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db \
+  --library build/libengram_olmoe_token_runtime.so \
+  --prompt "The capital of France is" --max-new-tokens 1
+```
 
 CUDA is permitted for training and distillation only. Packaged inference,
 including the passing BitNet MLP and attention kernels, remains CPU-only and

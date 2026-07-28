@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "experiment": "olmoe_cpu_teacher_capture_threading",
+  "host": {
+    "cpu": "Intel Xeon E5-2695 v2",
+    "physical_cores": 12,
+    "logical_cpus": 24,
+    "torch": "2.5.1+cu121",
+    "torch_intraop_threads": 12,
+    "torch_interop_threads": 12,
+    "grouped_mm_available": false
+  },
+  "configuration": {
+    "model_revision": "9b0c1aa87e34a20052389dce1f0cf01da783f654",
+    "sequences": 8,
+    "tokens_per_sequence": 33,
+    "prediction_positions": 256,
+    "dtype": "bfloat16",
+    "device": "cpu",
+    "weights_modified": false
+  },
+  "serial_reference": {
+    "batch_size": 1,
+    "sequence_workers": 1,
+    "expert_workers": 1,
+    "arrays_sha256": "60a23e32116fb18b7eca7e3c35f4d21784fd6a17ee20243323d35cf90742f99d",
+    "teacher_compute_seconds": 366.1445360319922,
+    "wall_seconds": 389.29,
+    "maximum_rss_kb": 50352300
+  },
+  "variants": {
+    "single_batched_forward": {
+      "batch_size": 8,
+      "sequence_workers": 1,
+      "expert_workers": 1,
+      "arrays_sha256": "60a23e32116fb18b7eca7e3c35f4d21784fd6a17ee20243323d35cf90742f99d",
+      "byte_exact_to_serial": true,
+      "teacher_compute_seconds": 361.69092494397773,
+      "wall_seconds": 385.38,
+      "maximum_rss_kb": 42748736,
+      "teacher_compute_speedup": 1.0123133061430951,
+      "wall_speedup": 1.0101458300897816
+    },
+    "expert_thread_pool": {
+      "batch_size": 8,
+      "sequence_workers": 1,
+      "expert_workers": 8,
+      "arrays_sha256": "ecfd4221203b70dc536199c29566e9a179d1e4019f22f3d9228895f3ade1f5da",
+      "byte_exact_to_serial": false,
+      "teacher_compute_seconds": 156.8433865699917,
+      "wall_seconds": 176.22,
+      "maximum_rss_kb": 50343188,
+      "teacher_compute_speedup": 2.3344595142913427,
+      "wall_speedup": 2.2091136079900124,
+      "serial_top1_agreement": 0.9765625,
+      "serial_to_threaded_mean_kl": 0.0013744394527748227,
+      "serial_to_threaded_hidden_row_relative_l2_mean": 0.02583225816488266
+    },
+    "shared_model_sequence_thread_pool": {
+      "batch_size": 1,
+      "sequence_workers": 4,
+      "expert_workers": 1,
+      "arrays_sha256": "60a23e32116fb18b7eca7e3c35f4d21784fd6a17ee20243323d35cf90742f99d",
+      "byte_exact_to_serial": true,
+      "teacher_compute_seconds": 94.78035198099678,
+      "wall_seconds": 114.3,
+      "maximum_rss_kb": 50621728,
+      "teacher_compute_speedup": 3.8630847889803492,
+      "wall_speedup": 3.4058617672790903
+    }
+  },
+  "decision": {
+    "default_cpu_backend": "shared_model_sequence_thread_pool",
+    "default_batch_size": 1,
+    "default_sequence_workers": 4,
+    "default_expert_workers": 1,
+    "expert_thread_pool_status": "experimental_opt_in_due_to_bfloat16_numeric_drift",
+    "cuda_policy": "sequence and expert worker pools disabled; use the device runtime"
+  }
+}

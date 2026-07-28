@@ -1,0 +1,576 @@
+{
+  "artifacts": {
+    "native_library": "/home/dean/repos/engram/build/libengram_olmoe_token_runtime.so",
+    "native_library_sha256": "26cfc97a7e3f72a504b572801f8677fc333620ec68731466e18282a0ec3fd229",
+    "package": "/home/dean/repos/engram/work/olmoe_q7/package",
+    "package_manifest_sha256": "861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db",
+    "prompt_suite": "/home/dean/repos/engram/tests/fixtures/inference_prompts.jsonl",
+    "prompt_suite_sha256": "dd38c4ce92045d333edd572f23bad3f41f331393edfc58796a7cf2af01554fd2",
+    "protocol": "/home/dean/repos/engram/reports/olmoe_q7_native_generation_2026-07-28/frozen_protocol.json",
+    "protocol_sha256": "f731b002e4ca0cfe42e14a220798cab5ced1d1ab7c7e484d07ca3e3855d803e7",
+    "teacher_reference": "/home/dean/repos/engram/work/olmoe_q7/teacher-generation.json",
+    "teacher_reference_sha256": "b1bd0feac6677b2c1eaa2d0289392ce026695418d7d5192fe9e3fa1f11530e04"
+  },
+  "checks": {
+    "cache_positions": true,
+    "exact_prompt_fraction": true,
+    "generated_reference_tokens": true,
+    "longest_prompt_reset_replay": true,
+    "post_run_artifact_authentication": true,
+    "prompt_count": true,
+    "prompt_positions": true,
+    "teacher_forced_top1_agreement": true,
+    "weighted_greedy_token_agreement": true
+  },
+  "configuration": {
+    "all_sequences_within_exact_local_window": true,
+    "attention_policy": "native_streaming_w16_c8_k4_sinks2",
+    "cpu_only_candidate": true,
+    "greedy": true,
+    "max_new_tokens": 4,
+    "transformers_model_shell_used_by_candidate": false
+  },
+  "decision": "promote_package_generation_boundary_and_optimize_q7",
+  "experiment": "olmoe_native_package_generation_confirmation",
+  "gate_passed": true,
+  "limitations": [
+    "Token identity is measured; full native logits are not exported.",
+    "All prompts stay within the exact local attention window, so this does not validate older-token retrieval quality.",
+    "The suite is a frozen integration confirmation, not a broad language benchmark.",
+    "The Paris prompt had been used by an earlier one-token smoke; the complete eight-prompt protocol and remaining prompts were not executed before freezing this protocol."
+  ],
+  "results": [
+    {
+      "cache_positions_passed": true,
+      "exact_greedy_tokens": true,
+      "expected_greedy_cache_position": 8,
+      "forced_cache_position": 5,
+      "greedy_cache_position": 8,
+      "greedy_token_agreement": 1.0,
+      "input_ids": [
+        510,
+        5347,
+        273,
+        6181,
+        310
+      ],
+      "last_native_metrics": {
+        "attention_state_bytes": 6336512,
+        "attention_weight_bytes": 4294967296,
+        "elapsed_ns": 3069874077,
+        "positions_processed": 8,
+        "q7_elapsed_ns": 2695344918,
+        "q7_scheduled_bytes": 5872025600
+      },
+      "native_elapsed_seconds": 3.070893331983825,
+      "native_forced_elapsed_seconds": 1.5770130069868173,
+      "native_forced_top1": [
+        3662,
+        273,
+        253,
+        310,
+        7785
+      ],
+      "native_generated_text": " Paris.\n\n",
+      "native_generated_token_ids": [
+        7785,
+        15,
+        187,
+        187
+      ],
+      "prompt": "The capital of France is",
+      "prompt_tokens": 5,
+      "teacher_forced_top1": [
+        3662,
+        273,
+        253,
+        310,
+        7785
+      ],
+      "teacher_forced_top1_agreement": 1.0,
+      "teacher_generated_text": " Paris.\n\n",
+      "teacher_generated_token_ids": [
+        7785,
+        15,
+        187,
+        187
+      ]
+    },
+    {
+      "cache_positions_passed": true,
+      "exact_greedy_tokens": true,
+      "expected_greedy_cache_position": 10,
+      "forced_cache_position": 7,
+      "greedy_cache_position": 10,
+      "greedy_token_agreement": 1.0,
+      "input_ids": [
+        688,
+        2969,
+        2426,
+        13,
+        7963,
+        15001,
+        310
+      ],
+      "last_native_metrics": {
+        "attention_state_bytes": 6336512,
+        "attention_weight_bytes": 5368709120,
+        "elapsed_ns": 3295500525,
+        "positions_processed": 10,
+        "q7_elapsed_ns": 2785326367,
+        "q7_scheduled_bytes": 7340032000
+      },
+      "native_elapsed_seconds": 3.296378768980503,
+      "native_forced_elapsed_seconds": 2.2475504290196113,
+      "native_forced_top1": [
+        253,
+        2426,
+        13,
+        253,
+        15001,
+        310,
+        253
+      ],
+      "native_generated_text": " the process by which",
+      "native_generated_token_ids": [
+        253,
+        1232,
+        407,
+        534
+      ],
+      "prompt": "In simple terms, photosynthesis is",
+      "prompt_tokens": 7,
+      "teacher_forced_top1": [
+        253,
+        2426,
+        13,
+        253,
+        15001,
+        310,
+        253
+      ],
+      "teacher_forced_top1_agreement": 1.0,
+      "teacher_generated_text": " the process by which",
+      "teacher_generated_token_ids": [
+        253,
+        1232,
+        407,
+        534
+      ]
+    },
+    {
+      "cache_positions_passed": true,
+      "exact_greedy_tokens": true,
+      "expected_greedy_cache_position": 13,
+      "forced_cache_position": 10,
+      "greedy_cache_position": 13,
+      "greedy_token_agreement": 1.0,
+      "input_ids": [
+        10639,
+        247,
+        2159,
+        13814,
+        1159,
+        326,
+        11323,
+        767,
+        3904,
+        27
+      ],
+      "last_native_metrics": {
+        "attention_state_bytes": 6336512,
+        "attention_weight_bytes": 6979321856,
+        "elapsed_ns": 4407369195,
+        "positions_processed": 13,
+        "q7_elapsed_ns": 3760539020,
+        "q7_scheduled_bytes": 9542041600
+      },
+      "native_elapsed_seconds": 4.408279216993833,
+      "native_forced_elapsed_seconds": 3.3204939780116547,
+      "native_forced_top1": [
+        247,
+        6197,
+        6010,
+        2086,
+        326,
+        3936,
+        767,
+        3904,
+        15,
+        187
+      ],
+      "native_generated_text": "\n\n```python",
+      "native_generated_token_ids": [
+        187,
+        187,
+        11202,
+        16659
+      ],
+      "prompt": "Write a short Python function that adds two numbers:",
+      "prompt_tokens": 10,
+      "teacher_forced_top1": [
+        247,
+        6197,
+        6010,
+        2086,
+        326,
+        3936,
+        767,
+        3904,
+        15,
+        187
+      ],
+      "teacher_forced_top1_agreement": 1.0,
+      "teacher_generated_text": "\n\n```python",
+      "teacher_generated_token_ids": [
+        187,
+        187,
+        11202,
+        16659
+      ]
+    },
+    {
+      "cache_positions_passed": true,
+      "exact_greedy_tokens": true,
+      "expected_greedy_cache_position": 11,
+      "forced_cache_position": 8,
+      "greedy_cache_position": 11,
+      "greedy_token_agreement": 1.0,
+      "input_ids": [
+        510,
+        3625,
+        2847,
+        273,
+        12927,
+        246,
+        1487,
+        310
+      ],
+      "last_native_metrics": {
+        "attention_state_bytes": 6336512,
+        "attention_weight_bytes": 5905580032,
+        "elapsed_ns": 3380776474,
+        "positions_processed": 11,
+        "q7_elapsed_ns": 2825600175,
+        "q7_scheduled_bytes": 8074035200
+      },
+      "native_elapsed_seconds": 3.3818353269889485,
+      "native_forced_elapsed_seconds": 3.1932712590205483,
+      "native_forced_top1": [
+        3662,
+        4096,
+        273,
+        253,
+        3527,
+        1487,
+        310,
+        253
+      ],
+      "native_generated_text": " the gravitational attraction of",
+      "native_generated_token_ids": [
+        253,
+        18924,
+        21779,
+        273
+      ],
+      "prompt": "The primary cause of ocean tides is",
+      "prompt_tokens": 8,
+      "teacher_forced_top1": [
+        3662,
+        4096,
+        273,
+        253,
+        3527,
+        1487,
+        310,
+        253
+      ],
+      "teacher_forced_top1_agreement": 1.0,
+      "teacher_generated_text": " the gravitational attraction of",
+      "teacher_generated_token_ids": [
+        253,
+        18924,
+        21779,
+        273
+      ]
+    },
+    {
+      "cache_positions_passed": true,
+      "exact_greedy_tokens": true,
+      "expected_greedy_cache_position": 11,
+      "forced_cache_position": 8,
+      "greedy_cache_position": 11,
+      "greedy_token_agreement": 1.0,
+      "input_ids": [
+        10758,
+        2220,
+        247,
+        673,
+        13,
+        247,
+        14338,
+        15688
+      ],
+      "last_native_metrics": {
+        "attention_state_bytes": 6336512,
+        "attention_weight_bytes": 5905580032,
+        "elapsed_ns": 3400224610,
+        "positions_processed": 11,
+        "q7_elapsed_ns": 2889884760,
+        "q7_scheduled_bytes": 8074035200
+      },
+      "native_elapsed_seconds": 3.4012059399974532,
+      "native_forced_elapsed_seconds": 2.4806806959968526,
+      "native_forced_top1": [
+        368,
+        247,
+        673,
+        13,
+        627,
+        1048,
+        1652,
+        4907
+      ],
+      "native_generated_text": " named Bolt was",
+      "native_generated_token_ids": [
+        4907,
+        378,
+        7391,
+        369
+      ],
+      "prompt": "Once upon a time, a curious robot",
+      "prompt_tokens": 8,
+      "teacher_forced_top1": [
+        368,
+        247,
+        673,
+        13,
+        627,
+        1048,
+        1652,
+        4907
+      ],
+      "teacher_forced_top1_agreement": 1.0,
+      "teacher_generated_text": " named Bolt was",
+      "teacher_generated_token_ids": [
+        4907,
+        378,
+        7391,
+        369
+      ]
+    },
+    {
+      "cache_positions_passed": true,
+      "exact_greedy_tokens": false,
+      "expected_greedy_cache_position": 9,
+      "forced_cache_position": 6,
+      "greedy_cache_position": 9,
+      "greedy_token_agreement": 0.25,
+      "input_ids": [
+        34,
+        5875,
+        3694,
+        5175,
+        5700,
+        943
+      ],
+      "last_native_metrics": {
+        "attention_state_bytes": 6336512,
+        "attention_weight_bytes": 4831838208,
+        "elapsed_ns": 3149785412,
+        "positions_processed": 9,
+        "q7_elapsed_ns": 2703632691,
+        "q7_scheduled_bytes": 6606028800
+      },
+      "native_elapsed_seconds": 3.1507309839944355,
+      "native_forced_elapsed_seconds": 1.780129366001347,
+      "native_forced_top1": [
+        27,
+        6196,
+        2440,
+        1232,
+        310,
+        2486
+      ],
+      "native_generated_text": " include the following:",
+      "native_generated_token_ids": [
+        2486,
+        253,
+        1563,
+        27
+      ],
+      "prompt": "A healthy software testing strategy should",
+      "prompt_tokens": 6,
+      "teacher_forced_top1": [
+        27,
+        6196,
+        2440,
+        1232,
+        310,
+        2486
+      ],
+      "teacher_forced_top1_agreement": 1.0,
+      "teacher_generated_text": " include a combination of",
+      "teacher_generated_token_ids": [
+        2486,
+        247,
+        5019,
+        273
+      ]
+    },
+    {
+      "cache_positions_passed": true,
+      "exact_greedy_tokens": true,
+      "expected_greedy_cache_position": 11,
+      "forced_cache_position": 8,
+      "greedy_cache_position": 11,
+      "greedy_token_agreement": 1.0,
+      "input_ids": [
+        510,
+        3064,
+        875,
+        21325,
+        285,
+        7592,
+        5718,
+        310
+      ],
+      "last_native_metrics": {
+        "attention_state_bytes": 6336512,
+        "attention_weight_bytes": 5905580032,
+        "elapsed_ns": 3419621803,
+        "positions_processed": 11,
+        "q7_elapsed_ns": 2906187240,
+        "q7_scheduled_bytes": 8074035200
+      },
+      "native_elapsed_seconds": 3.420573591021821,
+      "native_forced_elapsed_seconds": 2.6163069069734775,
+      "native_forced_top1": [
+        3662,
+        875,
+        253,
+        285,
+        33506,
+        2317,
+        310,
+        326
+      ],
+      "native_generated_text": " that RAM is volatile",
+      "native_generated_token_ids": [
+        326,
+        21325,
+        310,
+        22326
+      ],
+      "prompt": "The difference between RAM and disk storage is",
+      "prompt_tokens": 8,
+      "teacher_forced_top1": [
+        3662,
+        875,
+        253,
+        285,
+        33506,
+        2317,
+        310,
+        326
+      ],
+      "teacher_forced_top1_agreement": 1.0,
+      "teacher_generated_text": " that RAM is volatile",
+      "teacher_generated_token_ids": [
+        326,
+        21325,
+        310,
+        22326
+      ]
+    },
+    {
+      "cache_positions_passed": true,
+      "exact_greedy_tokens": true,
+      "expected_greedy_cache_position": 11,
+      "forced_cache_position": 8,
+      "greedy_cache_position": 11,
+      "greedy_token_agreement": 1.0,
+      "input_ids": [
+        1992,
+        1056,
+        247,
+        5500,
+        273,
+        10331,
+        13,
+        806
+      ],
+      "last_native_metrics": {
+        "attention_state_bytes": 6336512,
+        "attention_weight_bytes": 5905580032,
+        "elapsed_ns": 3539714549,
+        "positions_processed": 11,
+        "q7_elapsed_ns": 2957359194,
+        "q7_scheduled_bytes": 8074035200
+      },
+      "native_elapsed_seconds": 3.540690360998269,
+      "native_forced_elapsed_seconds": 2.617790499003604,
+      "native_forced_top1": [
+        1089,
+        253,
+        1048,
+        273,
+        8574,
+        13,
+        368,
+        13
+      ],
+      "native_generated_text": ", you need to",
+      "native_generated_token_ids": [
+        13,
+        368,
+        878,
+        281
+      ],
+      "prompt": "To make a cup of tea, first",
+      "prompt_tokens": 8,
+      "teacher_forced_top1": [
+        1089,
+        253,
+        1048,
+        273,
+        8574,
+        13,
+        368,
+        13
+      ],
+      "teacher_forced_top1_agreement": 1.0,
+      "teacher_generated_text": ", you need to",
+      "teacher_generated_token_ids": [
+        13,
+        368,
+        878,
+        281
+      ]
+    }
+  ],
+  "schema_version": 1,
+  "status": "frozen_confirmation_passed",
+  "summary": {
+    "candidate_wall_seconds_including_post_authentication": 138.6534111420042,
+    "cold_authentication_and_load_seconds": 55.51079764700262,
+    "exact_prompt_fraction": 0.875,
+    "generated_reference_tokens": 32,
+    "mean_native_seconds": 3.458823440119886,
+    "prompt_positions": 60,
+    "prompts": 8,
+    "teacher_forced_top1_agreement": 1.0,
+    "total_native_forced_seconds": 19.833236141013913,
+    "total_native_greedy_seconds": 27.67058752095909,
+    "total_native_seconds": 27.67058752095909,
+    "weighted_greedy_token_agreement": 0.90625
+  },
+  "thresholds": {
+    "minimum_exact_prompt_fraction": 0.75,
+    "minimum_generated_reference_tokens": 32,
+    "minimum_prompt_positions": 60,
+    "minimum_prompts": 8,
+    "minimum_teacher_forced_top1_agreement": 0.9,
+    "minimum_weighted_greedy_token_agreement": 0.9
+  }
+}

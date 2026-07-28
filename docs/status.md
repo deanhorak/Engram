@@ -1,6 +1,6 @@
 # Project status
 
-Snapshot date: **2026-07-27**
+Snapshot date: **2026-07-28**
 
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
@@ -24,7 +24,7 @@ elapsed time, so the kernel is 14.49% slower; latency was disclosed but was
 not part of the frozen semantic gate. The dense-Llama conversion track remains
 blocked.
 
-### New OLMoE feasibility branch
+### Compiled native OLMoE Q7 source track
 
 The repository now has a separate `olmoe_sparse_expert_v1` source adapter. It
 does not route OLMoE through the dense-Llama inspector. The official
@@ -33,7 +33,9 @@ does not route OLMoE through the dense-Llama inspector. The official
 exact remote-header shape validation: 3,219 required tensors, 3,219 present,
 no missing or unexpected names, and no shape errors. The bounded verifier read
 only safetensors header byte ranges and rejected unbounded responses; the
-27.68 GB checkpoint payload was not downloaded by this audit.
+27.68 GB checkpoint payload was not downloaded by that initial audit. The
+checkpoint was subsequently downloaded, authenticated, compiled, and used for
+the frozen evidence below.
 
 The native topology is promising for Milestone 2: 64 addressable experts per
 layer and top-8 learned routing yield a 12.5% active-expert fraction. Selected
@@ -45,13 +47,61 @@ passed an all-layer 8-sequence/256-position confirmation: KL 0.00900774, top-1
 Selected Q7 codes, BF16 scales, and BF16 routers project to 22.7865% of the
 all-expert ideal-Q4 baseline.
 
-This clears the OLMoE semantic quality/evidence screen, but not the final
-Milestone 2 systems gate. The intervention executed decoded Q7 weights inside
-Transformers; it did not read a serialized packed artifact through the
-CPU-only Engram runtime, and its traffic is modeled rather than measured or
-cache-line-accounted. The next implementation is the immutable packed Q7
-expert format and direct top-8 CPU kernel, followed by parity and the same
-frozen causal protocol.
+The native Q7 systems gate now also passes. The compiler emitted one immutable
+5,842,733,184-byte artifact containing all BF16 routers and 1,024 directly
+addressable packed experts. Independent Python and C++ readers strictly
+validated every code, scale, tail, header, directory entry, and zero-padding
+region. The direct CPU mmap kernel exactly matched the production top-eight
+route and reached output relative L2 1.94718e-6. It scheduled 45,875,200
+unique packed bytes per layer/state, or 22.7865% of all-expert ideal Q4, and
+needed no dense expert materialization or Transformers model. The single-row
+path now dispatches the selected experts across the native thread pool. A
+canonical block decoder improves representative layers 0, 7, and 15 from
+108.49/106.24/117.09 ms to 16.53/12.55/12.67 ms at 12 threads
+(6.56×–9.24×), with bit-identical routes and outputs.
+
+The complete token boundary now maps a 949,242,368-byte BF16 non-MLP artifact
+alongside Q7. It executes embeddings, normalization, dense attention
+projections, full-width Q/K normalization, RoPE, persistent bounded attention,
+residuals, Q7 experts, final normalization, and `lm_head` without constructing
+Transformers. Fixture NumPy parity, batch/incremental cache equivalence,
+position advancement, and reset replay pass. The production prompt `The
+capital of France is` predicts ` Paris`.
+
+An atomic package compiler now installs both artifacts, model configuration,
+and tokenizer into a symlink-free exact inventory. Runtime authentication
+requires the externally supplied manifest SHA-256 and rejects manifest,
+content, size, inventory, path, or symlink tampering. The production package
+root is `861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db`.
+Package-only generation reproduces ` Paris`; its five-position run spends
+1.91 seconds in Q7 and 2.17 seconds in native execution, down from 13.08 and
+13.33 seconds respectively, while scheduling the same 3,670,016,000 Q7 bytes.
+Parallel 16-layer structural validation falls from about 16.5 to 2.29
+seconds. Parallel six-shard and package-inventory hashing take 23.65 and 27.19
+seconds respectively; these phases are now storage-bandwidth dominated.
+For the untouched teacher, four concurrent sequence forwards share one model,
+remain byte-exact to serial execution, and reduce the BF16 8×33 compute pass
+from 366.14 to 94.78 seconds (3.86×).
+
+The frozen package-generation integration passes against the untouched BF16
+teacher: 60/60 teacher-forced top-1 decisions, 29/32 greedy tokens, and 7/8
+complete prompts agree. Those short prompts do not cross the W=16 attention
+window.
+
+The complete native causal protocol does cross it and now closes the
+OLMoE-specific Milestone 2 gate. Across eight sequences and 256 positions the
+CPU-only, shell-free package reaches KL 0.0129809, top-1 0.960938, NLL delta
++0.0168240, and final-hidden relative L2 0.0620471. The 128 exact-local
+positions and 128 bounded-retrieval positions are gated separately under the
+same thresholds. The post-window half passes with KL 0.0106424, top-1
+0.960938, NLL +0.0136896, and hidden L2 0.0752018. Scheduled Q7 reads are
+22.7865% of the all-expert ideal-Q4 reference. See the
+[complete native causal report](../reports/olmoe_q7_native_causal_2026-07-28/summary.md).
+A source-bound hardened replay, explicitly labeled non-independent, reproduces
+every metric and check exactly while authenticating all seven post-run roots.
+It measures 88.79 seconds of native execution, of which 72.17 seconds is Q7.
+
+### Native-BitNet package integration and evidence caveat
 
 The qualification is not a pristine runner pass. After the evaluator
 completed, the original wrapper marked the consumed attempt `error`: the
@@ -116,22 +166,25 @@ Large corpora, checkpoints, and scratch experiments remain under ignored
 
 ## Milestone 2 ledger
 
-Native BitNet can proceed beyond Milestone 2. OLMoE now passes the semantic
-quality/evidence screen but remains at the serialized-runtime boundary, while
-generic dense-Llama conversion remains blocked:
+Native BitNet and OLMoE Q7 can proceed beyond their source-specific Milestone
+2 gates. OLMoE now passes its causal quality screen, packed native systems
+gate, complete native token boundary, authenticated package boundary, frozen
+short generation integration, and frozen complete native causal
+confirmation. Generic dense-Llama conversion remains blocked:
 
 | Milestone 2 deliverable | Native BitNet | OLMoE Q7 | Generic dense Llama |
 |---|---|---|---|
 | Background operators | Exact packaged residual; learned correction is zero | Native top-8 mixture requires no added residual in the passing simulation | Current fitted background hurts held-out quality |
-| Semantic key/value package | Complete ternary records plus authenticated DIP-v2 index | 64 source experts/layer are addressable; packed Q7 artifact remains | Format/runtime exist; no qualifying trained artifact |
-| Practical routing | **Passed**, all 30 MLPs, no fallback | **Causal screen passed** with learned top-8 routing | **Blocked** |
-| Quantization | Native packed ternary | Q7/group-64 with BF16 scales passes decoded-weight confirmation | Experimental product/additive codecs exist |
-| Python runtime | Persistent native DIP handle | Tracing and intervention exist; packed runtime missing | Research runtime exists |
-| End-to-end substituted MLPs | Native evaluation, generation, and chat passed | 8 sequences/256 positions pass in Transformers simulation | No gate-passing compilation candidate |
+| Semantic key/value package | Complete ternary records plus authenticated DIP-v2 index | **Authenticated package with 5.84 GB immutable packed-Q7 artifact** | Format/runtime exist; no qualifying trained artifact |
+| Practical routing | **Passed**, all 30 MLPs, no fallback | **Direct native top-8 CPU route passed** | **Blocked** |
+| Quantization | Native packed ternary | **Canonical Q7/group-64 and BF16 scales validated** | Experimental product/additive codecs exist |
+| Python runtime | Persistent native DIP handle | **Complete native token owner and persistent caches pass** | Research runtime exists |
+| End-to-end substituted MLPs | Native evaluation, generation, and chat passed | **Complete shell-free native 8×32 causal confirmation plus frozen generation integration pass** | No gate-passing compilation candidate |
 
 These are track-specific results. Neither successful source track erases the
-original dense-source failures. OLMoE is not complete until packed
-serialization and CPU-only native execution reproduce its passing simulation.
+original dense-source failures. OLMoE's next boundary is longer and broader
+generation/chat evaluation, measured whole-system memory traffic, and
+performance work—not another semantic/Q7 selection experiment.
 
 ## Semantic gate definition and outcome
 
@@ -466,7 +519,7 @@ scientific exit criterion has passed.
 | Milestone | Implementation status | Evidence status |
 |---|---|---|
 | 1. Inspection, tracing, exact MLP decomposition, oracle experiment | Complete | Complete for the fixture and exercised on SmolLM2 |
-| 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP index, CPU-only selected-record kernel, authenticated derived package, substitution evaluator, physical accounting, parity checks, DIP-only C++ token runtime, and packaged-tokenizer chat binding exist | **Native-BitNet path passed** by postmortem adjudication; rebuilt non-holdout token generation remains 32/32 and the real chat command uses the same no-fallback backend. Generic dense-Llama conversion and broader replication remain incomplete |
+| 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP and OLMoE learned-expert routes, authenticated packages, CPU kernels, native token runtimes, and causal evaluators exist | **Native-BitNet passed** by postmortem adjudication and **OLMoE Q7 passed** an authenticated frozen complete-native 8×32 protocol. Generic dense-Llama conversion and broader replication remain incomplete |
 | 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, and incremental package integration implemented | **Frozen trained-model confirmation passes**; randomized parity, bounded-state scaling, cache-position advancement, and incremental generation pass; hardware counters remain |
 | 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, authenticated package installation, persistent native stage state, and a one-call 30-stage C++ attention/semantic runner implemented | **Controller, compiled-substitution, incremental-generation, and C++ orchestration gates pass**; frozen generation reaches 96.875% token agreement, 87.5% exact prompts, correct cache positions, and zero decoder-layer calls |
 | 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, native vocabulary argmax, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and passes source/package parity; generic vocabulary/cache/correction paths are not all active in the promoted native-BitNet runtime |

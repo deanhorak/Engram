@@ -3,11 +3,19 @@ from .native_bitnet import (
     install_native_bitnet_controller,
     install_native_bitnet_semantic_memory,
 )
+from .olmoe_native import (
+    OLMoENativePackageError,
+    compile_olmoe_native_package,
+    validate_olmoe_native_package,
+)
 from .pipeline import compile_model
 
 __all__ = [
+    "OLMoENativePackageError",
     "compile_model",
     "compile_native_bitnet_package",
+    "compile_olmoe_native_package",
     "install_native_bitnet_controller",
     "install_native_bitnet_semantic_memory",
+    "validate_olmoe_native_package",
 ]

@@ -30,6 +30,11 @@ class _Metrics(ctypes.Structure):
         ("candidate_key_bytes", ctypes.c_uint64),
         ("selected_value_bytes", ctypes.c_uint64),
         ("local_kv_bytes", ctypes.c_uint64),
+        ("eviction_events", ctypes.c_uint64),
+        ("older_candidate_entries_scored", ctypes.c_uint64),
+        ("older_selected_entries", ctypes.c_uint64),
+        ("sink_insertions", ctypes.c_uint64),
+        ("heavy_hitter_updates", ctypes.c_uint64),
         ("state_bytes", ctypes.c_uint64),
         ("scratch_bytes", ctypes.c_uint64),
     ]
@@ -43,6 +48,11 @@ class NativeStreamingAttentionMetrics:
     candidate_key_bytes: int
     selected_value_bytes: int
     local_kv_bytes: int
+    eviction_events: int
+    older_candidate_entries_scored: int
+    older_selected_entries: int
+    sink_insertions: int
+    heavy_hitter_updates: int
     state_bytes: int
     scratch_bytes: int
 

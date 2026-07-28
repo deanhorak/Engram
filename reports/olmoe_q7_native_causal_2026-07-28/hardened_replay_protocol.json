@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "experiment": "olmoe_native_package_causal_confirmation",
+  "status": "frozen_before_candidate_execution",
+  "source_revision": "9b0c1aa87e34a20052389dce1f0cf01da783f654",
+  "source_config_sha256": "21dc57233d4664eccd9734f5d46563a3716ff88dea5be0d33483fc2df9ce1482",
+  "source_index_sha256": "0c1713a6cd423db918a95ec64e2145444d86b19b979075f8326129401ed1cb80",
+  "source_shard_sha256": {
+    "model-00001-of-00006.safetensors": "df5a700fa91fd94e9d1a7ae523c5ae055f5879778a02ea19758edd37089da1ca",
+    "model-00002-of-00006.safetensors": "5f299f21e6de71f5334e937fd51a083bab8cffe55682488219e4082d9558fdba",
+    "model-00003-of-00006.safetensors": "4491eb552fd917a6777260f75c88e714f3174fbba7dd69d44b97c4124ddcd56b",
+    "model-00004-of-00006.safetensors": "7aeea413752cd17a8e7c343aa436594a8158d279817e4993aa5df4b7c7cfdf22",
+    "model-00005-of-00006.safetensors": "18c7f749af753359e10c33a9c5deec688b7155f7c01052937806cd351c52cc38",
+    "model-00006-of-00006.safetensors": "299009ba118f5e918de33573a316ad3d3b9236651986fb1a14dc894f55269e67"
+  },
+  "package_manifest_sha256": "861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db",
+  "native_library_sha256": "1892a830f84209f7f0b726b64e43cf19686801f2187f9f2663744baa2738931c",
+  "dataset_sha256": "ddca79850dbd3d97935d969f84d22983ce76517e785febd2911a53545d9bafd4",
+  "input_identity": "2d279e5007f1e76bf2e3870254cfda779b1cd8fecdf0ae2f500957e43a4ebe45",
+  "teacher_reference_sha256": "5be7849f30ae48d045e1293bf657da1da4be090e5bc19b72550a3bd8eeda47ba",
+  "teacher_arrays_sha256": "60a23e32116fb18b7eca7e3c35f4d21784fd6a17ee20243323d35cf90742f99d",
+  "sequences": 8,
+  "tokens_per_sequence": 33,
+  "model": {
+    "layers": 16,
+    "hidden_size": 2048,
+    "intermediate_size": 1024,
+    "experts": 64,
+    "vocab_size": 50304
+  },
+  "thresholds": {
+    "maximum_mean_kl": 0.05,
+    "minimum_top1_agreement": 0.9,
+    "maximum_mean_target_nll_delta": 0.05,
+    "maximum_mean_final_hidden_relative_l2": 0.1,
+    "maximum_q7_traffic_fraction": 0.45,
+    "minimum_sequences": 8,
+    "minimum_prediction_positions": 256,
+    "minimum_split_prediction_positions": 128
+  },
+  "post_window_uses_same_quality_thresholds": true,
+  "evaluator_source_sha256": {
+    "src/engram/evaluation/olmoe_native_causal.py": "a7bd8f300d2149cab8375e8ea9703c099145bd620e7b509c636716be256eb961",
+    "src/engram/evaluation/olmoe_native_generation.py": "a370fa30ab2fa7f62470fc2bef4b05c34645803514665dade25dd8ba6d464a53",
+    "src/engram/compiler/olmoe_native.py": "e1a1bf19ce836b2e7f362e3ba170be42cce7e9791ae711895e1fe5a1e38ecbb1",
+    "src/engram/runtime/olmoe_native.py": "0bc03190752d5b0cd9bbf15b552471ac846a6ddb01db1e344cebfc9014dc2805",
+    "src/engram/cli/__init__.py": "c5d3ed89726933c382bccf56405477151ed576df09259f9c884ee316ad524d9c",
+    "src/engram/utils.py": "1ee77400fcefab77be71f1eb9090c7143710889c6e5c56a1f2de0476a59e8cdc"
+  },
+  "scope": {
+    "candidate_device": "cpu",
+    "candidate_threads": 12,
+    "candidate_transformers_model_shell": false,
+    "teacher_weights_modified": false,
+    "teacher_dtype": "bfloat16",
+    "attention_local_window": 16,
+    "attention_older_candidates": 8,
+    "attention_older_top_k": 4,
+    "attention_sink_tokens": 2,
+    "exact_local_positions": [
+      0,
+      15
+    ],
+    "bounded_retrieval_positions": [
+      16,
+      31
+    ],
+    "protocol_frozen_before_candidate_execution": true
+  },
+  "replay_provenance": {
+    "purpose": "source-bound replay after evaluator provenance hardening",
+    "prior_candidate_result_disclosed": true,
+    "prior_protocol_sha256": "db41e8e6bd8f769acb9d7012354c8d983daa2da0790b6c0b203096c3438a3164",
+    "prior_result_sha256": "43672118ef1a69b15133fe1ae43e21851377a7f53ac9073b2c42ccfb552e89e8",
+    "candidate_artifact_or_policy_changed": false,
+    "scientific_role": "authenticated implementation replay, not a fresh independent holdout"
+  },
+  "decision_rule": {
+    "pass": "reproduce every original aggregate decision while authenticating evaluator sources, inputs, targets, thread count, and all post-run roots",
+    "fail": "retain the original result but stop promotion of the hardened implementation"
+  }
+}

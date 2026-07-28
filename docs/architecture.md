@@ -19,10 +19,15 @@ OLMoE supplies 64 independently stored SwiGLU experts per layer and a trained
 top-8 router, avoiding post-hoc recovery of sparse membership from one dense
 MLP. Signed Q7 weights in groups of 64 with BF16 scales pass an all-layer
 8-sequence/256-position intervention at 22.7865% modeled expert/router traffic.
-That intervention still executes decoded weights through Transformers. The
-architectural result is therefore a qualified semantic substrate, not yet a
-native Engram runtime: packed serialization and the direct CPU expert kernel
-remain required.
+The immutable packed artifact and direct CPU top-eight expert kernel now pass
+route/output and scheduled-byte parity. The architectural result is a
+qualified native semantic substrate and authenticated, installable OLMoE
+generation package. Its package-only frontend performs tokenization; the
+persistent C++ object owns mapped weights, Q7 dispatch, attention caches,
+residual state, full vocabulary logits, and vocabulary selection. The frozen
+complete-native 8×32 causal protocol passes overall and independently on the
+128 positions beyond W=16. Longer generation, measured whole-system traffic,
+and optimization remain.
 
 Engram's target runtime combines a shared recurrent controller, fixed sparse semantic
 memory derived from SwiGLU records, hybrid local/recurrent/retrieval episodic memory, an

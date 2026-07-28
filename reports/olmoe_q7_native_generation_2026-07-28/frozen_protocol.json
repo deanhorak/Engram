@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "experiment": "olmoe_native_package_generation_confirmation",
+  "status": "frozen_before_candidate_execution",
+  "source_revision": "9b0c1aa87e34a20052389dce1f0cf01da783f654",
+  "source_config_sha256": "21dc57233d4664eccd9734f5d46563a3716ff88dea5be0d33483fc2df9ce1482",
+  "source_index_sha256": "0c1713a6cd423db918a95ec64e2145444d86b19b979075f8326129401ed1cb80",
+  "source_shard_sha256": {
+    "model-00001-of-00006.safetensors": "df5a700fa91fd94e9d1a7ae523c5ae055f5879778a02ea19758edd37089da1ca",
+    "model-00002-of-00006.safetensors": "5f299f21e6de71f5334e937fd51a083bab8cffe55682488219e4082d9558fdba",
+    "model-00003-of-00006.safetensors": "4491eb552fd917a6777260f75c88e714f3174fbba7dd69d44b97c4124ddcd56b",
+    "model-00004-of-00006.safetensors": "7aeea413752cd17a8e7c343aa436594a8158d279817e4993aa5df4b7c7cfdf22",
+    "model-00005-of-00006.safetensors": "18c7f749af753359e10c33a9c5deec688b7155f7c01052937806cd351c52cc38",
+    "model-00006-of-00006.safetensors": "299009ba118f5e918de33573a316ad3d3b9236651986fb1a14dc894f55269e67"
+  },
+  "package_manifest_sha256": "861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db",
+  "native_library_sha256": "26cfc97a7e3f72a504b572801f8677fc333620ec68731466e18282a0ec3fd229",
+  "prompt_suite_sha256": "dd38c4ce92045d333edd572f23bad3f41f331393edfc58796a7cf2af01554fd2",
+  "teacher_reference_sha256": "b1bd0feac6677b2c1eaa2d0289392ce026695418d7d5192fe9e3fa1f11530e04",
+  "max_new_tokens": 4,
+  "thresholds": {
+    "minimum_prompts": 8,
+    "minimum_prompt_positions": 60,
+    "minimum_generated_reference_tokens": 32,
+    "minimum_teacher_forced_top1_agreement": 0.9,
+    "minimum_weighted_greedy_token_agreement": 0.9,
+    "minimum_exact_prompt_fraction": 0.75
+  },
+  "scope": {
+    "candidate_device": "cpu",
+    "candidate_transformers_model_shell": false,
+    "teacher_weights_modified": false,
+    "all_prompt_and_generation_lengths_at_most": 14,
+    "attention_local_window": 16,
+    "attention_approximation_exercised": false,
+    "native_logits_exported": false,
+    "known_prior_smoke_prompts": [
+      "The capital of France is"
+    ],
+    "protocol_frozen_before_complete_candidate_suite": true
+  },
+  "decision_rule": {
+    "pass": "all evidence floors, agreement thresholds, cache-position checks, and reset replay pass",
+    "fail": "stop promotion and diagnose the first teacher/native divergence before performance-only work"
+  }
+}

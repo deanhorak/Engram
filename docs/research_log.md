@@ -1,5 +1,48 @@
 # Research log
 
+## 2026-07-27 — Complete native OLMoE token boundary passes
+
+- Added a streaming compiler for the exact 131-tensor BF16 non-MLP inventory.
+  The pinned production artifact is 949,242,368 bytes and excludes every
+  router/expert tensor.
+- Added mapped C++ weight views and a transformer-shell-free token runtime:
+  embedding, RMS norms, dense Q/K/V/O, full-width Q/K norms, absolute RoPE,
+  persistent bounded attention, residuals, native Q7 experts, final norm, and
+  independent `lm_head`.
+- Fixture checks prove NumPy next-token parity, batch-prefill versus
+  incremental-cache equivalence, cache-position advancement, and reset replay.
+- Production single-position native output matches an independent serialized-
+  artifact reference at token ID 21787. Stateful two-token decoding returns
+  `[21787, 13]`.
+- A meaningful five-token prompt, `The capital of France is`, predicts token
+  7785 (` Paris`) without constructing Transformers. Prefill takes 13.6725
+  seconds on 12 threads; Q7 accounts for 13.4510 seconds.
+- Decision: the native token boundary passes. Next build an authenticated
+  package and optimize single-row Q7 expert execution before expanding chat
+  or benchmark claims.
+
+## 2026-07-27 — OLMoE packed Q7 native systems gate passes
+
+- Implemented `olmoe_native_groupwise_q7_v1`: canonical biased LSB-first
+  seven-bit codes, BF16 group scales and routers, fixed little-endian
+  directories, and cache-line-aligned layer/expert/phase blocks.
+- The streaming compiler converted all 16 layers and 1,024 experts from the
+  pinned checkpoint into one strictly validated 5,842,733,184-byte artifact
+  without retaining a layer's dense expert set in memory.
+- Added independent Python and C++ mmap readers. They reject code 127,
+  malformed tails, invalid BF16 scales, inconsistent offsets, and nonzero
+  padding. The native kernel never materializes a dense expert matrix.
+- On the production artifact, native and independently decoded execution chose
+  exactly the same top eight experts. Maximum absolute output error is
+  1.63913e-7 and relative L2 is 1.94718e-6.
+- One layer/state schedules 262,144 router bytes and 45,613,056 selected-expert
+  bytes, totaling 45,875,200 bytes or 22.7865% of all-expert ideal Q4. The
+  scalar one-thread step took 0.816 seconds; this is correctness, not a speed
+  claim or hardware-counter DRAM measurement.
+- Decision: the remaining native Q7 systems gate passes. Next integrate the
+  artifact/kernel into a complete mapped OLMoE token-step and generation
+  package; do not reopen semantic quantizer selection without new evidence.
+
 ## 2026-07-27 — OLMoE Q7 passes the full causal evidence screen
 
 - Downloaded and payload-audited pinned OLMoE revision
@@ -1469,3 +1512,71 @@
   standalone C++ token CLI reproduces `12366 13 12366 374` for the fixed
   six-token prompt, processes 9 positions/120 stages, rejects out-of-vocabulary
   input, and has no Python/Torch/Transformers dynamic dependency.
+
+## 2026-07-27 — Authenticated OLMoE package and single-row Q7 boundary
+
+- Added the atomic `engram-native-olmoe-q7` version-1 package compiler. It
+  dereferences Hugging Face snapshot inputs into a regular-file package,
+  records the exact seven-file inventory, and publishes only after full
+  validation.
+- Added package-only generation with an externally supplied manifest SHA-256.
+  Validation rejects changed manifests, changed or extra files, symlinks,
+  unsafe paths, and unsupported runtime policy before native weights open.
+- Built the 6,795,550,536-byte production directory with authentication root
+  `861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db`.
+  It reproduces token 7785 (` Paris`) for `The capital of France is`.
+- Parallelized a one-row Q7 layer across its eight selected experts. Median
+  production layer time falls from 807.5 ms at one thread to 115.7 ms at 12
+  threads (6.98×), with bit-identical routes and outputs. The complete
+  five-position package run spends 13.08 seconds in Q7.
+
+## 2026-07-28 — Complete native OLMoE causal gate and CPU threading
+
+- Froze and passed an authenticated eight-prompt package-generation protocol
+  against the untouched BF16 teacher: 60/60 teacher-forced top-1 decisions,
+  29/32 greedy tokens, and 7/8 exact four-token prompts.
+- Reworked the canonical Q7 inner loop around eight-code/seven-byte blocks
+  while preserving coefficient accumulation order. Representative production
+  layers improve by 6.56×–9.24× with bit-identical routes and float outputs.
+  The five-position native run falls from 13.33 to 2.17 seconds, including Q7
+  time falling from 13.08 to 1.91 seconds.
+- Parallelized independent 16-layer Q7 structural validation (about 16.5 to
+  2.29 seconds), six-shard teacher hashing, and package inventory hashing.
+  The latter two now take 23.65 and 27.19 seconds and are primarily
+  storage-bandwidth limited.
+- Added an additive native diagnostic ABI for the final normalized hidden
+  state and all 50,304 vocabulary logits. Fixture tests compare both against an
+  independent NumPy computation and reject diagnostics after reset.
+- Captured an untouched CPU BF16 teacher reference for the first eight
+  33-token records of `confirmation_expanded.jsonl`, then froze the package,
+  immutable DSO, teacher, corpus, and all source shards before candidate
+  execution.
+- The complete CPU-only native package passes all frozen aggregate checks over
+  256 positions: KL 0.0129809, top-1 0.960938, NLL +0.0168240, and hidden L2
+  0.0620471. The independently gated 128 positions after W=16 eviction pass
+  with KL 0.0106424, top-1 0.960938, NLL +0.0136896, and hidden L2 0.0752018.
+  Q7 schedules 22.7865% of the all-expert ideal-Q4 bytes.
+- Disclosed nonuniform tails: maximum position KL is 0.606769, and offset 31
+  alone misses all four per-offset quality thresholds. The frozen contract
+  gates overall and 16-position population means, not every individual
+  offset.
+- Diagnosed low CPU utilization in the Transformers teacher. Simple batch-8
+  execution is byte-exact but only 1.2% faster. Four concurrent sequence
+  forwards through one shared read-only model are also byte-exact and reduce
+  teacher compute from 366.14 to 94.78 seconds (3.86×), with wall time falling
+  from 389.29 to 114.30 seconds (3.41×).
+- An experimental eight-worker expert scheduler reduces teacher compute to
+  156.84 seconds but changes BF16 rounding (6/256 top-1 differences versus
+  serial), so it remains explicit opt-in. Shared-model sequence threading is
+  the new default CPU capture policy.
+- Hardened subsequent evaluations to authenticate actual config/index
+  contents, recompute input and target identities, bind the effective thread
+  count, optionally bind evaluator source files, retain per-position rows and
+  native/Q7 timing, and re-authenticate every small root after execution.
+- Froze a disclosed, non-independent hardened replay protocol around that
+  source inventory. The unchanged candidate reproduced every original metric,
+  split, traffic value, and check exactly; all seven post-run roots passed.
+  The replay separates 88.79 seconds of native execution, 72.17 seconds of Q7,
+  92.14 seconds of candidate-plus-metric wall time, and 184.55 seconds for the
+  complete authenticated command.
+- Final validation passes: **629 Python tests** and **19 native tests**.

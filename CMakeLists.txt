@@ -14,6 +14,9 @@ add_library(engram_kernels STATIC
   native/src/native_bitnet_dip.cpp
   native/src/native_bitnet_weights.cpp
   native/src/native_bitnet_token_runtime.cpp
+  native/src/olmoe_q7.cpp
+  native/src/olmoe_token_runtime.cpp
+  native/src/olmoe_weights.cpp
   native/src/native_shell_c.cpp
   native/src/native_stage_c.cpp
   native/src/operator_residual_c.cpp
@@ -77,6 +80,38 @@ set_target_properties(engram_bitnet_dip PROPERTIES
 )
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_link_options(engram_bitnet_dip PRIVATE
+    -static-libstdc++ -static-libgcc
+  )
+endif()
+
+add_library(engram_olmoe_q7 SHARED native/src/olmoe_q7_c.cpp)
+target_link_libraries(engram_olmoe_q7 PRIVATE engram_kernels)
+target_compile_features(engram_olmoe_q7 PRIVATE cxx_std_20)
+target_compile_options(engram_olmoe_q7 PRIVATE -Wall -Wextra -Wpedantic)
+set_target_properties(engram_olmoe_q7 PROPERTIES OUTPUT_NAME engram_olmoe_q7)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_link_options(engram_olmoe_q7 PRIVATE
+    -Wl,--exclude-libs,ALL
+    -Wl,-Bsymbolic
+    -static-libstdc++ -static-libgcc
+  )
+endif()
+
+add_library(engram_olmoe_token_runtime SHARED
+  native/src/olmoe_token_runtime_c.cpp
+)
+target_link_libraries(engram_olmoe_token_runtime PRIVATE engram_kernels)
+target_compile_features(engram_olmoe_token_runtime PRIVATE cxx_std_20)
+target_compile_options(engram_olmoe_token_runtime
+  PRIVATE -Wall -Wextra -Wpedantic
+)
+set_target_properties(engram_olmoe_token_runtime PROPERTIES
+  OUTPUT_NAME engram_olmoe_token_runtime
+)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_link_options(engram_olmoe_token_runtime PRIVATE
+    -Wl,--exclude-libs,ALL
+    -Wl,-Bsymbolic
     -static-libstdc++ -static-libgcc
   )
 endif()

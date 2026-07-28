@@ -3,6 +3,45 @@ import pytest
 from engram.cli import _parser, main
 
 
+def test_olmoe_causal_capture_forwards_batch_size(tmp_path, monkeypatch):
+    captured = {}
+    out = tmp_path / "teacher.json"
+
+    def fake_capture(**kwargs):
+        captured.update(kwargs)
+        out.write_text("{}\n", encoding="utf-8")
+        return {}
+
+    monkeypatch.setattr(
+        "engram.cli.capture_olmoe_teacher_causal_reference",
+        fake_capture,
+    )
+
+    main(
+        [
+            "capture-olmoe-teacher-causal",
+            "--model",
+            str(tmp_path / "model"),
+            "--dataset",
+            str(tmp_path / "dataset.jsonl"),
+            "--out",
+            str(out),
+            "--arrays-out",
+            str(tmp_path / "teacher.npz"),
+            "--batch-size",
+            "4",
+            "--expert-workers",
+            "3",
+            "--sequence-workers",
+            "1",
+        ]
+    )
+
+    assert captured["batch_size"] == 4
+    assert captured["expert_workers"] == 3
+    assert captured["sequence_workers"] == 1
+
+
 def test_composite_gate_cannot_overwrite_an_input_report(tmp_path):
     first_dir = tmp_path / "first"
     second_dir = tmp_path / "second"
@@ -660,9 +699,7 @@ def test_native_bitnet_chat_cli_uses_authenticated_dip_runtime(
 
     assert result == 0
     assert captured["package"] == tmp_path / "model.engram-bitnet-dip"
-    assert captured["library"] == (
-        tmp_path / "libengram_bitnet_token_runtime.so"
-    )
+    assert captured["library"] == (tmp_path / "libengram_bitnet_token_runtime.so")
     assert captured["threads"] == 6
     assert captured["entered"] and captured["closed"]
     assert captured["chat_kwargs"] == {

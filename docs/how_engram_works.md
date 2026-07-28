@@ -16,8 +16,12 @@ adjudication, and the authenticated DIP package now runs inside the complete
 CPU-only C++ token-step runtime and the user-facing chat command. The original
 dense-Llama conversion path still has no qualifying representation. A newer
 OLMoE branch now passes semantic quality/evidence using its native learned
-top-8 expert router and Q7 expert weights, but still lacks packed
-serialization and native CPU execution.
+top-8 expert router and Q7 expert weights. Its packed serialization and direct
+CPU expert kernel now pass too. A mapped BF16 companion artifact and complete
+native token/generation path are installed in an authenticated package.
+The frozen complete-native 8×32 causal protocol now passes both its exact
+local and bounded older-context halves. Longer generation, broader language
+quality, and performance remain.
 
 ### Why OLMoE changes the semantic problem
 
@@ -31,10 +35,16 @@ than guess a replacement.
 The current experiment leaves the router unchanged, rounds every expert
 matrix to signed Q7 in groups of 64, and uses BF16 group scales. On a separate
 8-sequence/256-position confirmation it preserves the teacher closely while
-projecting 22.7865% of the all-expert Q4 traffic baseline. This is evidence
-that the semantic representation can work. It is not yet evidence that the
-final inference engine works, because Transformers still performs the
-decoded expert computation.
+projecting 22.7865% of the all-expert Q4 traffic baseline. Engram now compiles
+those weights into a 5.84 GB immutable artifact and directly executes the
+selected packed experts on CPU with route/output parity. The complete inference
+boundary can now run: it includes embeddings, normalization, attention/cache
+state, vocabulary projection, and persistent greedy generation. Python loads
+the packaged tokenizer and converts text to token IDs; native C++ owns the
+model computation from those IDs through logits and argmax. The package
+authenticates its manifest and exact file inventory before the CPU-only runtime
+opens any model state. It is installable and substantially faster than the
+initial scalar boundary, but it is not yet an interactive-speed chat runtime.
 
 ## 1. What a language model does
 

@@ -111,10 +111,77 @@ PYTHONPATH=src python -m engram.cli evaluate-olmoe-quantized-causal \
 ```
 
 The run passes the 8-sequence/256-position causal thresholds and projects
-22.7865% complete expert/router traffic relative to all-expert ideal Q4. It
-still executes decoded weights inside Transformers, so it does not qualify
-for `compile`. An immutable packed-Q7 artifact, direct CPU top-8 expert kernel,
-serialized parity, and physical traffic confirmation are still required.
+22.7865% complete expert/router traffic relative to all-expert ideal Q4. The
+systems follow-up compiles and confirms the physical artifact:
+
+```bash
+PYTHONPATH=src python -m engram.cli repack-olmoe-q7 \
+  --model work/huggingface/models--allenai--OLMoE-1B-7B-0125/snapshots/9b0c1aa87e34a20052389dce1f0cf01da783f654 \
+  --out work/olmoe_q7/model.engram-olmoe-q7 --group-size 64
+PYTHONPATH=src python -m engram.cli evaluate-native-olmoe-q7 \
+  --artifact work/olmoe_q7/model.engram-olmoe-q7 \
+  --library build/libengram_olmoe_q7.so \
+  --out reports/olmoe_q7_native_systems_2026-07-27/result.json
+```
+
+The 5,842,733,184-byte artifact and direct CPU top-eight kernel pass route,
+output, and scheduled-byte parity. This qualifies the OLMoE MLP artifact for
+package integration. The next implemented commands build and exercise that
+token boundary:
+
+```bash
+PYTHONPATH=src python -m engram.cli repack-olmoe-non-mlp \
+  --model "$OLMOE_SNAPSHOT" --out work/olmoe_q7/non_mlp.safetensors
+PYTHONPATH=src python -m engram.cli run-native-olmoe-token \
+  --config "$OLMOE_SNAPSHOT/config.json" \
+  --non-mlp work/olmoe_q7/non_mlp.safetensors \
+  --q7-artifact work/olmoe_q7/model.engram-olmoe-q7 \
+  --library build/libengram_olmoe_token_runtime.so \
+  --prompt "The capital of France is" \
+  --tokenizer "$OLMOE_SNAPSHOT" --threads 12
+```
+
+This is a complete native token/generation path.
+`compile-native-olmoe` now emits its symlink-free, exact-inventory package
+authenticated by an externally supplied manifest SHA-256.
+`generate-native-olmoe-package` validates that root before loading the
+package-owned tokenizer, config, non-MLP mapping, and Q7 artifact.
+
+The complete package is qualified against an untouched BF16 teacher in two
+stages. The short generation integration remains inside W=16; the causal
+protocol scores 128 exact-local and 128 post-window positions independently.
+The first command below is the historical sealed-reference reproduction, so
+it explicitly retains the original serial sequence policy:
+
+```bash
+PYTHONPATH=src python -m engram.cli capture-olmoe-teacher-causal \
+  --model "$OLMOE_SNAPSHOT" \
+  --dataset tests/fixtures/confirmation_expanded.jsonl \
+  --out work/olmoe_q7/teacher-causal.json \
+  --arrays-out work/olmoe_q7/teacher-causal.npz \
+  --sequences 8 --tokens-per-sequence 33 --threads 12 \
+  --batch-size 1 --sequence-workers 1
+
+PYTHONPATH=src python -m engram.cli evaluate-native-olmoe-causal \
+  --package work/olmoe_q7/package \
+  --manifest-sha256 861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db \
+  --library build/libengram_olmoe_token_runtime.so \
+  --dataset tests/fixtures/confirmation_expanded.jsonl \
+  --teacher-reference work/olmoe_q7/teacher-causal.json \
+  --teacher-arrays work/olmoe_q7/teacher-causal.npz \
+  --protocol reports/olmoe_q7_native_causal_2026-07-28/frozen_protocol.json \
+  --protocol-sha256 db41e8e6bd8f769acb9d7012354c8d983daa2da0790b6c0b203096c3438a3164 \
+  --out reports/olmoe_q7_native_causal_2026-07-28/result.json --threads 12
+```
+
+The frozen run passes overall and on both halves. It used serial teacher
+sequences (`--batch-size 1 --sequence-workers 1`). Future CPU captures default
+to four concurrent, read-only sequence forwards through one shared model. On
+this host that path is byte-identical and 3.86× faster in teacher compute.
+Capture-only expert threading is also available experimentally, but changes
+BF16 rounding and must not silently replace an existing sealed reference.
+For a new, unsealed CPU capture, omit `--sequence-workers 1` (or pass
+`--sequence-workers 4`) to use that safe default.
 
 ## Milestone 1 artifacts
 

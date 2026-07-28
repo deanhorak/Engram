@@ -1,0 +1,44 @@
+{
+  "artifact_inputs": {
+    "non_mlp_bytes": 949242368,
+    "non_mlp_sha256": "93797e149ce7ecabc4fc8833f3ca11bb9e45839501b09b2ffed4940e798044d4",
+    "q7_bytes": 5842733184,
+    "source_revision": "9b0c1aa87e34a20052389dce1f0cf01da783f654"
+  },
+  "checks": {
+    "fixture_batch_incremental_cache_equivalence": true,
+    "fixture_numpy_next_token_parity": true,
+    "fixture_reset_replay": true,
+    "native_cpu_only": true,
+    "production_output_finite": true,
+    "production_prompt_completed": true,
+    "production_single_position_artifact_reference_parity": true,
+    "transformers_model_constructed": false
+  },
+  "experiment": "olmoe_native_token_boundary",
+  "gate_passed": true,
+  "production_prompt": {
+    "completion": " Paris",
+    "generated_token_ids": [
+      7785
+    ],
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [
+      510,
+      5347,
+      273,
+      6181,
+      310
+    ]
+  },
+  "runtime": {
+    "attention_state_bytes": 6336512,
+    "attention_weight_bytes": 2684354560,
+    "elapsed_ns": 13672532318,
+    "positions_processed": 5,
+    "q7_elapsed_ns": 13451005062,
+    "q7_scheduled_bytes": 3670016000,
+    "threads": 12
+  },
+  "schema_version": 1
+}
