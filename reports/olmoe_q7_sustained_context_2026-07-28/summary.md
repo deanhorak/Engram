@@ -712,7 +712,11 @@ commit it before the first eviction it can affect. Adaptive per-head
 arbitrary token-wise promotion is not valid because an unselected head cannot
 recover K/V state that was already evicted.
 
-Two engineering changes can make that research cheaper: a deterministic
-expert-parallel BF16 proxy and a native streaming-attention API that returns
-its selected support during the real-value pass. Both require parity evidence,
-but neither is semantic evidence and neither reopens the closed static result.
+The first engineering optimization is now qualified: a deterministic
+expert-parallel BF16 backward proxy matched one complete archived record's
+non-timing evidence bit for bit and reduced its time from 1,564.347 to 809.168
+seconds (1.933×). See the
+[proxy report](../olmoe_q7_expert_proxy_2026-07-28/summary.md). A native
+streaming-attention API that returns selected support during the real-value
+pass remains a secondary optimization. Neither optimization is semantic
+evidence or reopens the closed static result.

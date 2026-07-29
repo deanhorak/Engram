@@ -361,6 +361,24 @@ took 6,930.10 seconds, or about 115.5 minutes. That development result
 authorized exactly one package-native screen; it did not itself establish Q7
 quality.
 
+The subsequent systems qualification establishes a way to reduce that
+bottleneck without changing the reference arithmetic. Transformers' installed
+`grouped_mm` dispatcher uses a serial CPU fallback on the frozen Torch 2.5.1
+stack; this is numerically distinct from the eager expert loop. The proxy
+therefore executes the installed forward dispatcher unchanged, replays frozen
+expert backwards on 12 workers, and reduces hidden gradients in the exact
+backend-specific order. One complete archived M0/sequence-0 record matched
+loss, all 256 gradients, native non-timing diagnostics, and the projected
+51-head mask bit for bit. It reduced record time from 1,564.347 to 809.168
+seconds (1.933×; 48.274% less wall time), exceeding the predeclared 10%
+qualification boundary. The
+[authenticated proxy report](../reports/olmoe_q7_expert_proxy_2026-07-28/summary.md)
+authorizes larger development fits only; it neither changes the failed mask
+nor advances the Milestone 3 semantic gate.
+This is one previously consumed development record measured across separate
+executions, not a controlled repeated benchmark or a measured speedup for the
+complete 6,930-second fit.
+
 The selected static mask then ran through the complete native Q7 path on the
 six reused development-screen records, totaling 768 positions. Every
 execution, resource, reset, package, source, and authentication check passed,

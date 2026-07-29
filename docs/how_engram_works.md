@@ -720,11 +720,14 @@ If it fails, the next allocation class is a prefix-conditioned dynamic budget
 allocator; every decision must be causal and fixed before the first affected
 eviction, consistent with [Ada-KV](https://arxiv.org/abs/2407.11550) and
 [Task-KV](https://arxiv.org/abs/2501.15113). A deterministic expert-parallel
-training proxy and native support-return API can shorten future experiments,
-but those are performance work and do not count as semantic evidence. Native
-package promotion and a genuinely long-context hardware benchmark must still
-wait for a semantic pass. Milestone 2 remains passed; Milestone 3 remains
-blocked.
+training proxy now qualifies for larger development fits: it reproduced a
+complete archived record's non-timing evidence bit for bit while reducing wall
+time from 1,564.347 to 809.168 seconds (1.933×). This is performance evidence,
+not semantic evidence; the native support-return API remains a secondary
+optimization.
+Native package promotion and a genuinely long-context hardware benchmark must
+still wait for a semantic pass. Milestone 2 remains passed; Milestone 3
+remains blocked.
 
 The generic dense-Llama compiler still writes initialized or heuristic
 fallbacks and records that fact in its conversion report. The native-BitNet

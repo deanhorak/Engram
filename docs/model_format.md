@@ -112,7 +112,10 @@ rule that commits the initial allocation before the first W16 eviction. Any
 later reallocation must precede the eviction it can affect. No such descriptor
 exists today. Deterministic expert-parallel proxy execution and a native API
 that returns exact support are performance optimizations, not format
-eligibility or semantic evidence.
+eligibility or semantic evidence. The frozen-expert proxy is now qualified for
+larger offline fits after exact full-record non-timing parity and a 1.933×
+wall-time speedup; it creates no package field and changes no inference
+behavior.
 
 The token boundary's companion `olmoe_native_non_mlp_bf16_v1` file is a
 standard, strictly contiguous safetensors mapping. It contains exactly 131

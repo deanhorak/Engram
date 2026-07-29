@@ -330,8 +330,20 @@ the maximum training composite objective from **7.867116928100586** to
 **4.755991458892822** and the mean from **6.917216062545776** to
 **4.328476905822754**; both selection records improved. Training evidence
 passed after **6,930.099 seconds**. That CPU fit was the experiment's dominant
-bottleneck; a future implementation may use a deterministic expert-parallel
-proxy to accelerate fitting without changing the sealed native reference.
+bottleneck. A deterministic frozen-expert backward proxy now preserves the
+installed `grouped_mm` CPU forward exactly while replaying independent expert
+backwards on 12 workers. On the authenticated M0/sequence-0 full-record
+qualification it matched the loss, all 256 gate gradients, native diagnostics,
+and projected 51-head mask bit for bit after removing timing fields. Record
+time fell from **1,564.347 seconds** to **809.168 seconds** (**1.933×**,
+**48.274% less wall time**), so
+the proxy is authorized for larger development fits. It changes offline
+training performance only; the sealed native Q7 reference and failed semantic
+result are unchanged. See the
+[expert-proxy qualification](reports/olmoe_q7_expert_proxy_2026-07-28/summary.md).
+This was one previously consumed record measured in separate executions, not
+a controlled repeated benchmark or a claim that the complete 6,930-second fit
+will obtain the same speedup.
 
 The sealed chain is rooted at source commit `483c62f`:
 

@@ -1805,3 +1805,37 @@
 - Before a larger fit, the measured 115.5-minute CPU bottleneck warrants a
   parity-gated deterministic expert-parallel proxy. Native support extraction
   is a secondary optimization and does not change semantic evidence.
+
+## 2026-07-28: exact expert-backward proxy qualifies fitting acceleration
+
+- Confirmed that the archived causal-head-gate fit used Transformers'
+  `grouped_mm` expert dispatcher, not the eager `OlmoeExperts.forward` loop.
+  On Torch 2.5.1 CPU the dispatcher resolves to its serial per-expert fallback,
+  but its sorted-pair and top-K reduction order is still numerically distinct
+  from eager BF16 execution.
+- Added a fail-closed frozen-expert proxy that invokes the installed forward
+  dispatcher unchanged. Backward replays active experts on 12 workers and
+  applies backend-specific ordered hidden-gradient reduction. Native grouped
+  matrix-multiply implementations remain rejected until separately qualified.
+- Unit and stress probes established bit-exact output, hidden-gradient, and
+  routing-gradient parity, including an 805 MB E64/H2048/I1024 real-shape
+  layer. Those bounded probes are validation support, not an archived
+  performance result.
+- The authenticated full-record qualifier reran only the already consumed
+  M0/sequence-0 record against its archived serial reference. Loss, every one
+  of 256 gate gradients, complete non-timing native diagnostics, projected
+  scores, and the exact 51-head mask all matched bit for bit.
+- Total record time fell from 1,564.347 to 809.168 seconds: **1.933× faster**
+  and **48.274% less wall time**, versus the predeclared minimum 10%
+  improvement. This was one previously consumed record measured across
+  separate executions, not a controlled repeated benchmark or a measured
+  full-fit speedup. All 16 layers were restored, 961 expert tasks completed,
+  the executor shut down, frozen parameters had no gradients, and every
+  post-run artifact and source authentication passed.
+- Result SHA-256:
+  `837d4cadb793c191844eac1bc3f4495530cd8e98437804e719fa9375a89f4960`.
+  This authorizes the proxy for larger development fits. It does not change
+  the failed causal/value-sensitive mask, promote a package policy, or advance
+  Milestone 3. The next semantic experiment remains Q7-aware synthetic
+  retrieval-targeted selection with an answer-position objective and reserved
+  holdout.

@@ -261,9 +261,19 @@ the chosen M1 mask reduced the maximum composite objective from
 **7.867116928100586** to **4.755991458892822** and the mean from
 **6.917216062545776** to **4.328476905822754**. Both records improved, the
 training evidence gate passed, and fitting took **6,930.099 seconds**. CPU
-fitting was the dominant systems bottleneck. A future implementation can
-evaluate a deterministic expert-parallel proxy to shorten fitting while
-preserving the sealed native execution path as the reference.
+fitting was the dominant systems bottleneck. That boundary is now resolved
+for development fits: a deterministic frozen-expert proxy preserves the
+installed serial `grouped_mm` CPU forward and parallelizes only independent
+expert backwards across 12 workers. One authenticated full M0/sequence-0
+record matched loss, all 256 gate gradients, non-timing native diagnostics,
+and the projected 51-head mask exactly. Record time fell from 1,564.347 to
+809.168 seconds, a 1.933× speedup and 48.274% reduction. The proxy is
+authorized for larger fits but does not alter the sealed native-Q7 reference
+or count as new semantic evidence. See the
+[qualification report](../reports/olmoe_q7_expert_proxy_2026-07-28/summary.md).
+The comparison used one previously consumed record from separate executions;
+it is not a controlled repeated benchmark or a measured runtime for the full
+two-record, two-step fit.
 
 The sealed artifact chain is rooted at source commit `483c62f`:
 

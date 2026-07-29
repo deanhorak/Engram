@@ -357,6 +357,16 @@ composite objective fell from 7.8671169 to 4.7559915 and the mean fell from
 6.9172161 to 4.3284769, with no per-record regression. The CPU-only serial
 BF16 proxy fit took about 115.5 minutes and passed its full evidence contract.
 
+Offline causal attribution now has a qualified deterministic expert-parallel
+backward path. The installed `grouped_mm` dispatcher still executes forward
+serially through its CPU fallback; only independent frozen-expert backward
+replays are distributed across 12 workers and then reduced in the fallback's
+exact accumulation order. On one complete archived record, 961 expert tasks
+reproduced the entire non-timing result exactly and reduced elapsed time from
+1,564.347 to 809.168 seconds. This is a single-record development
+qualification across separate executions, not a change to the native Q7
+runtime or the unresolved bounded-attention architecture.
+
 The decisive measurement remained the complete native Q7 screen, not the
 BF16 training proxy. On the six reused development records and 768 positions,
 all resource and execution evidence passed at 44.9753872184% logical
