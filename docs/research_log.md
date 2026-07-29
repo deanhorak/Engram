@@ -1776,5 +1776,32 @@
   fresh holdout. No package policy was promoted and no fresh eight-sequence
   confirmation was run. Milestone 2's Q7 conclusion remains passed;
   Milestone 3 remains blocked. Dense attention mass alone did not identify a
-  passing static mask, so the next justified direction is causal/value-
-  sensitive allocation or a dynamic teacher-distilled head allocator.
+  passing static mask, so the next justified direction at that point was
+  causal/value-sensitive allocation or a dynamic teacher-distilled head
+  allocator.
+
+## 2026-07-28: causal/value-sensitive head-gate result and revised boundary
+
+- Froze the exact-native-forward, straight-through causal-head evaluator at
+  source commit `483c62f` and trained exactly 51 rescued heads with two IHT
+  steps on selection records 0 and 1.
+- M1 improved the maximum/mean training composite from
+  `7.8671169/6.9172161` to `4.7559915/4.3284769` without a per-record
+  regression. The CPU-only fit took 6,930.099 seconds.
+- The complete native Q7 screen passed execution, authentication, replay, and
+  the 44.9753872184% resource contract, but failed semantic quality:
+  KL/top-1/NLL-delta/hidden-L2 were
+  `0.0791321/0.864583/+0.0811990/0.1826472`. No fresh confirmation or
+  promotion occurred.
+- The result closes the tested two-record natural-prose causal/value
+  objective, not every static selector. Retrieval-specific supervision was
+  absent. The next experiment is Q7-aware training on a new synthetic
+  retrieval corpus with the loss concentrated on answer positions, motivated
+  by [DuoAttention](https://arxiv.org/abs/2410.10819). If it cannot pass at
+  the exact budget, the next allocation class is a causally committed,
+  prefix-conditioned policy, informed by
+  [Ada-KV](https://arxiv.org/abs/2407.11550) and
+  [Task-KV](https://arxiv.org/abs/2501.15113).
+- Before a larger fit, the measured 115.5-minute CPU bottleneck warrants a
+  parity-gated deterministic expert-parallel proxy. Native support extraction
+  is a secondary optimization and does not change semantic evidence.

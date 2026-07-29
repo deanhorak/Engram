@@ -248,9 +248,58 @@ improves every overall metric, but not enough to pass. No fresh confirmation
 was run and no package policy was promoted.
 
 This closes the tested fixed **teacher-attention-mass ranking**, not all
-head-wise allocation. The recorded decision is to investigate value- or
-sensitivity-guided selection or dynamic allocation. Milestone 2 remains
-passed; the Milestone 3 attention gate remains blocked.
+head-wise allocation. It motivated the prospectively frozen
+causal/value-sensitive static follow-up below. Milestone 2 remains passed; the
+Milestone 3 attention gate remains blocked.
+
+### Causal/value-sensitive 51-head follow-up
+
+The follow-up fit used exact native W16/C8/K4/S2 decisions, a differentiable
+gathered surrogate, two iterative-hard-thresholding steps, and the same fixed
+budget of exactly 51 W128 rescue heads. On the two frozen selection records,
+the chosen M1 mask reduced the maximum composite objective from
+**7.867116928100586** to **4.755991458892822** and the mean from
+**6.917216062545776** to **4.328476905822754**. Both records improved, the
+training evidence gate passed, and fitting took **6,930.099 seconds**. CPU
+fitting was the dominant systems bottleneck. A future implementation can
+evaluate a deterministic expert-parallel proxy to shorten fitting while
+preserving the sealed native execution path as the reference.
+
+The sealed artifact chain is rooted at source commit `483c62f`:
+
+- protocol SHA-256:
+  `037ebfd7d4e40af898ece7f353654eb8a41dc1883f191cbdf05fc34bf50bf4ba`
+- training-result SHA-256:
+  `bacb0e31899f514a8b2b517987566e8bca68d39cabfd50b3c9e7ecf83bc756ea`
+- screen-protocol SHA-256:
+  `282bfe0b9e1da86577f0187112a4a444b0f36d7f84e10f4f9bb67730676807c2`
+- screen-result SHA-256:
+  `437d0de4ce4da37e69ca13279b76627d6f7721e766b8f1b4371fb318e7cbeb59`
+
+The complete native-Q7 screen reused the six already-consumed development
+records and 768 prediction positions. Its evidence and resource gates passed,
+including the **44.9753872%** logical-read budget, but its quality gate failed:
+
+| Causal/value-sensitive 51-head screen | Result | Required | Outcome |
+|---|---:|---:|---|
+| Mean KL | 0.07913208059 | ≤ 0.05 | **Fail** |
+| Teacher top-1 agreement | 0.8645833333 | ≥ 0.90 | **Fail** |
+| Target NLL delta | +0.08119899696 | ≤ 0.05 | **Fail** |
+| Final-hidden relative L2 | 0.18264718059 | ≤ 0.10 | **Fail** |
+
+The 0–15 and 16–31 bands passed. The 32–63 band failed top-1 agreement and
+hidden-state error; both later bands failed all four quality measures. The
+static causal/value-sensitive mask is worse than the earlier attention-mass
+mask on every overall metric. No fresh confirmation was opened and no package
+policy was promoted.
+
+This closes the tested two-record natural-prose causal/value-sensitive
+selector, not every static selector. Milestone 2 remains passed and Milestone
+3 remains blocked. The next defensible semantic experiment is a Q7-aware
+retrieval-head selector trained on a new, larger synthetic retrieval corpus
+with loss concentrated on answer positions. If it cannot pass at the exact
+budget, the next allocation class is a causally valid, prefix-conditioned
+policy.
 
 ### Native-BitNet package integration and evidence caveat
 
@@ -672,7 +721,7 @@ scientific exit criterion has passed.
 |---|---|---|
 | 1. Inspection, tracing, exact MLP decomposition, oracle experiment | Complete | Complete for the fixture and exercised on SmolLM2 |
 | 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP and OLMoE learned-expert routes, authenticated packages, CPU kernels, native token runtimes, and causal evaluators exist | **Native-BitNet passed** by postmortem adjudication and **OLMoE Q7 formally passed** an authenticated frozen complete-native 8×32 protocol. The matched W128 8×128 control passes every band and attributes the later sustained failure to attention, preserving the Q7/M2 decision. Generic dense-Llama conversion and broader replication remain incomplete |
-| 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, incremental package integration, and exact per-layer and per-head native policy ABIs implemented | Native-BitNet has a source-specific bounded trained-model pass. **OLMoE W16/C8/K4/S2 fails the authenticated 8×128 gate beginning at offsets 32–63**; W128 full attention passes but is nondeployable at 100% reads and 35.8 MB state. The exact-traffic-matched 44.7614% sweep produced zero quality-passing arms, the 44.1701% greedy three-layer path failed, and the fixed 51/256 teacher-attention-mass mask improved quality at 44.9754% reads but still failed every overall metric. The tested fixed attention-mass ranking is closed; value/sensitivity-guided or dynamic allocation is next |
+| 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, incremental package integration, and exact per-layer and per-head native policy ABIs implemented | Native-BitNet has a source-specific bounded trained-model pass. **OLMoE W16/C8/K4/S2 fails the authenticated 8×128 gate beginning at offsets 32–63**; W128 full attention passes but is nondeployable at 100% reads and 35.8 MB state. The exact-traffic-matched 44.7614% sweep produced zero quality-passing arms, the 44.1701% greedy three-layer path failed, and the fixed 51/256 teacher-attention-mass mask improved quality at 44.9754% reads but still failed every overall metric. A two-record natural-prose causal/value-sensitive fit improved its training objective but was worse on the reused six-record native-Q7 screen. Those two objectives are closed; Q7-aware retrieval-targeted training on a new synthetic corpus is next, with prefix-conditioned allocation as the fallback |
 | 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, authenticated package installation, persistent native stage state, and a one-call 30-stage C++ attention/semantic runner implemented | **Controller, compiled-substitution, incremental-generation, and C++ orchestration gates pass**; frozen generation reaches 96.875% token agreement, 87.5% exact prompts, correct cache positions, and zero decoder-layer calls |
 | 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, native vocabulary argmax, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and passes source/package parity; generic vocabulary/cache/correction paths are not all active in the promoted native-BitNet runtime |
 | 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime, memory-mapped BitNet DIP/projection kernels, streaming attention, native shell operators, authenticated C++ package mapping, manifest-derived model configuration/EOS, token-step control, greedy argmax, reset, standalone generation, and a versioned shared ABI implemented | **Partial**: model execution is native and chat uses the shared handle; tokenizer/template/history orchestration remains Python-side, OLMoE sustained older-context quality fails under the current bounded policy, and AVX2 tuning and hardware-counter traffic remain |
@@ -706,8 +755,12 @@ independent of the model-worker semantic-gate evidence.
 - The fixed 51-head OLMoE screen is also not a Milestone 3 confirmation. Its
   attention maps came from two development records and its causal metrics from
   six reused records. Its valid negative result closes only the frozen
-  teacher-attention-mass ranking, not value-aware, sensitivity-aware, or
-  dynamic head allocation.
+  teacher-attention-mass ranking.
+- The causal/value-sensitive 51-head follow-up is not a Milestone 3
+  confirmation either. It fit two development records and reused the same six
+  records for its native-Q7 screen. It closes the tested static
+  causal/value-sensitive mask, not prefix-conditioned dynamic allocation on a
+  new corpus.
 - The derived DIP package, standalone runtime, and shared chat handle pass
   their integration checks. Python still owns tokenization, template
   rendering, and history, but it no longer constructs or executes a
@@ -728,10 +781,16 @@ remains blocked. The tested static global family and frozen greedy three-layer
 W128 path have failed valid development screens under the 45% logical-read
 cap. The completed fixed 51-of-256 teacher-attention-mass mask improved on the
 layer rescue but also failed all four overall gates at 44.975387218386625%
-reads. No fresh confirmation or package promotion is justified. The next
-defensible experiment is value- or sensitivity-guided head selection, or
-dynamic allocation; interacting layer combinations and those broader
-head-wise families remain untested.
+reads. The follow-on causal/value-sensitive static mask improved its
+two-record training objective but was worse than the attention-mass mask on
+all four overall native-Q7 metrics at the same read budget. No fresh
+confirmation or package promotion is justified. Those two static objectives
+are closed, but retrieval-specific supervision remains untested. The next
+defensible experiment is a Q7-aware retrieval-head selector trained on a new,
+larger synthetic retrieval corpus with loss concentrated on answer positions.
+If it cannot pass at the exact budget, causally valid prefix-conditioned
+allocation is next; interacting layer combinations and dynamic allocation
+remain untested.
 
 The shared-controller stage has started with a deployable low-rank design
 rather than the original dense FP64 GRU fixture. At width 2,560, the original

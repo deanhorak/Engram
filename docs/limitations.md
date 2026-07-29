@@ -102,9 +102,15 @@
   key/value head counts. Its W128 setting is full context only at the tested
   128-position horizon. The failed mask was not promoted into package format
   version 1, which still has no per-head descriptor. The result closes the
-  fixed teacher-attention-mass heuristic, not every head-wise schedule;
-  causal/value-sensitivity ranking and dynamic teacher-distilled allocation
-  remain open. Milestone 2 remains passed for Q7, while Milestone 3 remains
+  fixed teacher-attention-mass heuristic, not every head-wise schedule.
+- The subsequent two-record natural-prose causal/value-sensitive selector is
+  also negative. Its complete native Q7 screen reached
+  KL 0.079132, top-1 0.864583, NLL +0.081199, and hidden L2 0.182647 at the
+  same 44.9753872184% read fraction—worse than the attention-mass mask on all
+  four overall metrics. That closes the tested objective, not
+  retrieval-specific supervision. Q7-aware retrieval-targeted training on a
+  new synthetic corpus remains open; prefix-conditioned allocation is the
+  fallback. Milestone 2 remains passed for Q7, while Milestone 3 remains
   blocked.
 - Interpret the layer-rescue failure narrowly. The greedy search made 45
   adaptive comparisons on only two sequences, whose positions are correlated;

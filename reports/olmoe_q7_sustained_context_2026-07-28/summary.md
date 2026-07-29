@@ -1,4 +1,4 @@
-# OLMoE Q7 sustained-context gate, attribution, sweep, layer, and head rescue
+# OLMoE Q7 sustained-context gate, attribution, and static rescue experiments
 
 Date: 2026-07-28
 
@@ -54,8 +54,23 @@ resource contract, six-sequence execution evidence, reset replay, and all
 post-run authentication checks passed. Semantic quality nevertheless failed:
 overall KL was 0.073719930, top-1 agreement 0.867187500, target-NLL delta
 +0.053455543, and hidden relative L2 0.167517818. No fresh confirmation was
-run. The next justified direction is causal/value-sensitive or dynamic head
-allocation rather than another static attention-mass ranking.
+run.
+
+The final static experiment replaced attention-mass ranking with gradients
+from a causal/value-sensitive objective. The frozen CPU trainer kept exact
+native sparse and W128 forward results, used differentiable fixed-support
+surrogates only for backward propagation, and projected two averaged-gradient
+IHT steps to exactly 51 heads. The selected `M1` mask improved the two-record
+maximum/mean composite objective from 7.8671169/6.9172161 to
+4.7559915/4.3284769, with no record regression. The fit took 6,930.099 seconds.
+Nevertheless, its one complete-native six-record screen was worse than the
+attention-mass mask: overall KL/top-1/NLL-delta/hidden-L2 were
+0.07913208059/0.8645833333/+0.08119899696/0.18264718059. Evidence and exact
+44.9753872%-read resources passed; semantic quality did not. No confirmation
+or promotion occurred. This closes the two tested static objectives, not every
+possible static selector. The next semantic experiment is Q7-aware,
+retrieval-targeted training on a new synthetic corpus; prefix-conditioned
+dynamic allocation follows if it cannot pass.
 
 ## Frozen experimental contract
 
@@ -109,6 +124,13 @@ All hashes are SHA-256 and are written in full.
 | Head-wise screen result | `16bc2f8c11751612023145a36ace32b44bd082b77179a3c5753cb081424daa06` |
 | Head-wise candidate native DSO | `cb72b31e7afbf9b9986f1ed107ca2b0d893947aac2c96b58b95298e2bfc12d36` |
 | Head-wise evaluator source | `303862d4f2151f6c554fd3605c46100603fb9d37de44537bf866d1e892a9fe00` |
+| Causal-gate source commit | `483c62f` |
+| Causal-gate evaluator source | `442169060860257e78bbc0068bfdf9e5cf6edd93ff2b392c75ed333687765590` |
+| Frozen causal-gate training protocol (`causal_head_gate_protocol.json`) | `037ebfd7d4e40af898ece7f353654eb8a41dc1883f191cbdf05fc34bf50bf4ba` |
+| Causal-gate training result (`causal_head_gate_training.json`) | `bacb0e31899f514a8b2b517987566e8bca68d39cabfd50b3c9e7ecf83bc756ea` |
+| Frozen causal-gate screen protocol (`causal_head_gate_screen_protocol.json`) | `282bfe0b9e1da86577f0187112a4a444b0f36d7f84e10f4f9bb67730676807c2` |
+| Causal-gate screen result (`causal_head_gate_screen_result.json`) | `437d0de4ce4da37e69ca13279b76627d6f7721e766b8f1b4371fb318e7cbeb59` |
+| Causal-gate raw streaming-attention DSO | `153e91d9d1fdb964b678eec0f22498d397888781edfe2d531eda8933c3fe87c5` |
 | Native package manifest | `861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db` |
 | Native runtime library | `4cd4de8f3e3cefad59d7b9e6e23a0d1d06a26abc10af2e0c4f9242a2b5876ca7` |
 | Sustained-context dataset | `0fb513ea29bdae760b91932d60cf942df047ec5ce578d1c21bbf9438a777abeb` |
@@ -134,6 +156,15 @@ maps. The head-wise screen bound the trace protocol, metadata, map array, mask,
 new DSO, complete source inventory, split, and all inherited roots before
 execution, then re-authenticated 27 post-run roots. Every head-wise evidence,
 parity, replay, resource, and authentication check passed.
+The causal-gate trainer additionally bound the exact raw streaming-attention
+DSO, evaluator and 33-file source inventory, installed Transformers
+implementation, two-record gradient population, loss formula, complete
+native-oracle diagnostics, two IHT transitions, and all three executed masks.
+Its result revalidated every stored gradient, projection, mask hash, record
+identity, loss reduction, native metric contract, and 31 post-training roots.
+The screen then bound the selected `M1` mask before reading the six reused
+screen records and passed all seven evidence checks, all six resource checks,
+and all 32 post-run authentication checks.
 
 ## Semantic results
 
@@ -513,6 +544,175 @@ was promoted and no fresh eight-sequence confirmation was run. Milestone 2's
 Q7 result remains passed and unchanged; Milestone 3 remains blocked on
 deployable bounded attention.
 
-The next justified direction is a causal/value-sensitive allocation objective
-or a dynamic teacher-distilled head allocator. Another static ranking based
-only on dense attention mass is not justified by this result.
+That failure justified the causal/value-sensitive static experiment documented
+next. It has now completed and failed as well; neither another attention-mass
+ranking nor more fitting of the same two-record natural-prose objective is
+justified.
+
+## Causal/value-sensitive 51-head gate
+
+The last static experiment tested the remaining causal/value-sensitive
+hypothesis directly. Its implementation was frozen at source commit `483c62f`;
+the evaluator SHA-256 was
+`442169060860257e78bbc0068bfdf9e5cf6edd93ff2b392c75ed333687765590`.
+The training protocol was frozen before gradients under SHA-256
+`037ebfd7d4e40af898ece7f353654eb8a41dc1883f191cbdf05fc34bf50bf4ba`.
+It inherited and authenticated the failed attention-mass experiment rather
+than silently replacing that historical boundary.
+
+### Exact-forward training protocol
+
+The trainer installed one float32 scalar gate for every layer-head pair before
+the attention output projection of an otherwise frozen BF16 OLMoE teacher.
+Gate zero meant `W16/C8/K4/S2`; gate one meant `W128/C8/K4/S2`. Each layer
+computed both branches as follows:
+
+1. Detached float32 Q/K and token-identity D128 values were sent through the
+   existing raw streaming-attention DSO. Because sequence length and head
+   dimension were both 128, each output coordinate exposed the native
+   schedule's exact selected token and weight.
+2. The DSO ran again with the real values, preserving its exact sequential
+   dot products, softmax, top-k selection, eviction victims, counters, and
+   output.
+3. Backward propagation used differentiable gathered attention over the fixed
+   native W16 support and differentiable full causal attention for W128. A
+   straight-through expression retained the exact native forward values. The
+   surrogate did not differentiate through top-k or cache-victim decisions.
+
+This separation matters: hard cache behavior and measured candidate quality
+were native, while gradients were explicitly an attribution proxy. The
+training shell still used BF16 Hugging Face projections and dense MLPs, so it
+could select a mask but could not itself establish packaged Q7 quality. Only
+the later complete-native screen could do that.
+
+Only selection sequences 0 and 1 contributed gradients. The six internal
+screen records were prohibited during fitting. The loss was an equal mean over
+bands 16–31, 32–63, 64–95, and 96–127. It combined normalized
+teacher-to-student KL and final-hidden relative L2 with lower-weight positive
+target-NLL drift and dense-teacher top-1 margin deficit. Two IHT steps each:
+
+- executed both selection records with gradients under the current hard mask;
+- averaged the two 16×16 gradients in float64;
+- divided by global RMS plus `1e-12`;
+- took the frozen unit projected-gradient step; and
+- retained exactly the top 51 layer-head scores with deterministic
+  layer-major tie-breaking.
+
+Both `M1` and `M2` were therefore real executed masks. The terminal `M2`
+evaluation was forward-only. The predeclared rule chose the lower maximum
+per-record composite objective, then lower mean, then `M1` on an exact tie,
+and allowed screening only if maximum and mean both improved over `M0` with no
+individual record regression.
+
+### Training result
+
+The authenticated training result has SHA-256
+`bacb0e31899f514a8b2b517987566e8bca68d39cabfd50b3c9e7ecf83bc756ea`.
+
+| Executed mask | Role | Maximum objective | Mean objective | Selected heads |
+|---|---|---:|---:|---:|
+| `M0` | all-W16 baseline and first gradient | 7.8671169281 | 6.9172160625 | 0 |
+| `M1` | first projection and second gradient | **4.7559914589** | **4.3284769058** | 51 |
+| `M2` | second projection, terminal forward only | 6.2355780602 | 5.3186683655 | 51 |
+
+`M1` improved the two record objectives by -2.0663528442 and -3.1111254692;
+neither record regressed. The first projection changed 51 gates and the second
+changed 42, demonstrating that the second IHT step was not a duplicate.
+`M1` therefore won and was eligible for exactly one native development screen.
+All training evidence and all post-training authentication checks passed.
+
+The CPU-only fit took 6,930.099236 seconds. The four backward-bearing record
+runs took 1,564.347, 1,650.704, 1,656.802, and 1,662.156 seconds; the two
+terminal forwards took 179.301 and 178.861 seconds. These timings expose a
+performance limitation of the BF16 proxy, not additional semantic evidence.
+
+### Frozen complete-native screen
+
+The selected mask was sealed by screen protocol SHA-256
+`282bfe0b9e1da86577f0187112a4a444b0f36d7f84e10f4f9bb67730676807c2`
+before the six reused internal records were executed. The screen used the
+complete mapped native Q7 runtime, not the Transformers training shell. It
+kept exactly 51 heads at W128 and 205 at W16:
+
+| Resource or deterministic boundary | Exact value |
+|---|---:|
+| Positions per sequence | 128 |
+| Rescued/base heads | 51 / 205 |
+| Persistent attention state | 12,284,864 bytes |
+| Attention scratch | 107,136 bytes |
+| Total logical attention reads | 973,384,704 bytes |
+| Dense full-context reference | 2,164,260,864 bytes |
+| Logical attention fraction | 44.9753872184% |
+| Inadmissible 52-head fraction | 45.2437999637% |
+| Q7 scheduled bytes | 93,952,409,600 bytes |
+| Q7 traffic fraction | 22.7864583333% |
+
+The result SHA-256 is
+`437d0de4ce4da37e69ca13279b76627d6f7721e766b8f1b4371fb318e7cbeb59`.
+All historical parity, one-candidate, sequence-order, immutable-mask, native
+candidate, resource, and post-run authentication evidence passed. The screen
+took 319.674715 seconds, including 272.304325 seconds for the six primary
+sequences and 44.940173 seconds for deterministic reset replay.
+
+The semantic result was an authenticated failure:
+
+| Population | Positions | Mean KL | Top-1 agreement | Target NLL delta | Hidden rel. L2 | Status |
+|---|---:|---:|---:|---:|---:|---|
+| Threshold | — | <=0.050000 | >=0.900000 | <=+0.050000 | <=0.100000 | — |
+| Overall | 768 | 0.079132081 | 0.864583333 | +0.081198997 | 0.182647181 | **fail** |
+| Offsets 0–15 | 96 | 0.012377540 | 0.947916667 | -0.006711043 | 0.057957455 | pass |
+| Offsets 16–31 | 96 | 0.005119230 | 0.968750000 | +0.007758211 | 0.065067085 | pass |
+| Offsets 32–63 | 192 | 0.049241551 | 0.869791667 | +0.028802983 | 0.172636807 | **fail** |
+| Offsets 64–95 | 192 | 0.111879486 | 0.859375000 | +0.115367470 | 0.230262711 | **fail** |
+| Offsets 96–127 | 192 | 0.146658900 | 0.770833333 | +0.180101951 | 0.266176934 | **fail** |
+
+Both early bands through offset 31 passed every threshold. Offsets 32–63
+passed KL and NLL but failed top-1 and hidden state; both later bands failed
+all four metrics. Overall maximum per-position KL was 1.509838343 and p95 KL
+was 0.268069629.
+
+The learned causal mask is worse than the earlier attention-mass mask on every
+overall measure:
+
+| Static 51-head selector | Mean KL | Top-1 | NLL delta | Hidden L2 |
+|---|---:|---:|---:|---:|
+| Dense-teacher attention mass | 0.073719930 | 0.867187500 | +0.053455543 | 0.167517818 |
+| Causal/value-sensitive IHT | 0.079132081 | 0.864583333 | +0.081198997 | 0.182647181 |
+
+The training improvement was real but did not transfer through the packaged
+Q7 runtime. This closes the tested fixed causal/value-sensitive static path,
+not merely one failed optimizer run. The confirmation corpus remains unopened,
+no fresh confirmation was frozen, and no head policy or package schema was
+promoted.
+
+### Next semantic boundary
+
+The next experiment must change the supervision rather than merely refine this
+mask. The defensible target is a Q7-aware retrieval-head selector trained
+against complete packaged behavior on a new and substantially larger
+synthetic retrieval corpus. Its loss must concentrate on the answer positions:
+[DuoAttention](https://arxiv.org/abs/2410.10819) reports that synthetic
+retrieval supervision is more effective for identifying retrieval heads than
+ordinary language-model examples. Its protocol must:
+
+- preserve an exact 51-head-equivalent ceiling of 973,384,704 logical
+  attention bytes per 128-position sequence and the 12,284,864-byte attention
+  state contract, with the 52-head boundary remaining inadmissible;
+- predeclare training/development/confirmation splits and forbid adaptive
+  reuse of this exhausted eight-record development corpus; and
+- pass the complete native Q7 development gate before a separately sealed
+  confirmation or any package-format proposal.
+
+If this retrieval-targeted static selector cannot pass under the exact
+resource contract, the next allocation class is a prompt/prefix-conditioned
+dynamic policy. It must make every allocation causally from the prefix and
+commit it before the first eviction it can affect. Adaptive per-head
+[Ada-KV](https://arxiv.org/abs/2407.11550) and task-aware
+[Task-KV](https://arxiv.org/abs/2501.15113) results motivate that fallback;
+arbitrary token-wise promotion is not valid because an unselected head cannot
+recover K/V state that was already evicted.
+
+Two engineering changes can make that research cheaper: a deterministic
+expert-parallel BF16 proxy and a native streaming-attention API that returns
+its selected support during the real-value pass. Both require parity evidence,
+but neither is semantic evidence and neither reopens the closed static result.

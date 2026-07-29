@@ -47,7 +47,18 @@ Its parity, replay, resource, and provenance evidence passed, and its
 require 45.2438%. It materially improved the layer-rescue quality, but still
 failed overall at KL 0.073720, top-1 0.867188, NLL delta +0.053456, and hidden
 L2 0.167518. The fixed attention-mass heuristic is therefore closed, while
-causal/value-sensitive and dynamic head allocation remain open. W128 itself
+causal/value-sensitive and dynamic head allocation were the remaining
+boundaries. The subsequent exact-native-forward, straight-through experiment
+trained a static causal/value-sensitive 51-head mask on the two selection
+records. It improved its maximum and mean training objectives without a
+per-record regression, but transferred worse than the attention-mass mask on
+the six reused development records: KL 0.079132, top-1 0.864583, NLL delta
++0.081199, and hidden L2 0.182647. Its 44.9753872% read schedule and all
+execution evidence passed, but all overall quality thresholds failed. This
+closes the tested two-record natural-prose causal/value objective, not every
+static selector. A Q7-aware selector trained specifically on synthetic
+retrieval failures remains justified; a causally valid prefix-conditioned
+allocator is the next fallback if that distinct objective fails. W128 itself
 reads 100% when applied globally and is not deployable. Measured whole-system
 traffic and optimization also remain. Milestone 2 remains passed for the
 qualified Q7 semantic path, while Milestone 3 remains blocked on bounded
@@ -335,6 +346,42 @@ version 1. This closes the fixed teacher-attention-mass heuristic, not the
 head-wise runtime or all possible masks. A selector trained or calibrated
 against causal/value sensitivity, or a dynamic teacher-distilled allocator,
 is the next architectural boundary.
+
+That static causal/value-sensitive selector has now also been tested. For
+every layer-head pair, training mixed exact native `W16/C8/K4/S2` and
+`W128/C8/K4/S2` forward outputs while using a differentiable
+fixed-membership surrogate only for backward attribution. Two IHT steps
+averaged complete gradients from selection records 0 and 1 and hard-projected
+to exactly 51 rescued heads after each step. M1 was selected: the maximum
+composite objective fell from 7.8671169 to 4.7559915 and the mean fell from
+6.9172161 to 4.3284769, with no per-record regression. The CPU-only serial
+BF16 proxy fit took about 115.5 minutes and passed its full evidence contract.
+
+The decisive measurement remained the complete native Q7 screen, not the
+BF16 training proxy. On the six reused development records and 768 positions,
+all resource and execution evidence passed at 44.9753872184% logical
+attention reads, but quality failed at KL 0.07913208059, top-1
+0.8645833333, NLL delta +0.08119899696, and hidden L2 0.18264718059.
+Both bands through position 31 passed; positions 32–63 failed top-1 and
+hidden L2, and both later bands failed all four metrics. This is worse on
+every overall metric than the prior attention-mass mask. No confirmation was
+opened and no package policy was promoted.
+
+This result closes static selection by attention mass and by the tested
+two-record natural-prose causal/value objective. It does not test
+retrieval-specific supervision. The next experiment will train a Q7-aware
+retrieval-head selector on a new synthetic retrieval corpus, concentrating the
+causal objective on retrieval-answer positions, as motivated by
+[DuoAttention](https://arxiv.org/abs/2410.10819). Selection and adjudication
+must use a genuinely reserved holdout; the consumed six-record screen cannot
+support more tuning. If the retrieval-targeted selector cannot pass at the
+same exact state and read budget, the next architecture must allocate memory
+from a causally available prefix, consistent with adaptive per-head and
+task-aware budgets in [Ada-KV](https://arxiv.org/abs/2407.11550) and
+[Task-KV](https://arxiv.org/abs/2501.15113). Source commit `483c62f` binds the
+completed result. The protocol, training, screen-protocol, and screen-result
+roots begin `037ebfd7`, `bacb0e31`, `282bfe0b`, and `437d0de4`,
+respectively.
 
 ## Token-level controller and output path
 

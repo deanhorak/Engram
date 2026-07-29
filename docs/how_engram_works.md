@@ -34,8 +34,15 @@ therefore closed; the latter can still miss interacting layer combinations.
 A following prospectively fixed head-level mask rescues 51 of 256 layer-head
 pairs using dense-teacher attention mass. It fits at 44.9754% logical reads
 and improves substantially on whole-layer rescue, but still fails the
-six-sequence internal semantic screen. That fixed heuristic is now closed;
-causal/value-sensitive or dynamic teacher-distilled head allocation is next.
+six-sequence internal semantic screen. A subsequent causal/value-sensitive
+experiment trains the same 51-head static budget directly through exact native
+attention forwards and a differentiable surrogate. Its two-record training
+objective improves robustly, but its complete native six-record screen is
+worse than the attention-mass mask and fails after offset 31. The two tested
+static objectives are therefore closed under this evidence, but
+retrieval-specific supervision remains untested. The next semantic experiment
+is a Q7-aware retrieval-head selector trained on a new, larger synthetic
+retrieval corpus; prefix-conditioned dynamic allocation follows if it fails.
 Broader language quality and performance remain.
 
 ### Why OLMoE changes the semantic problem
@@ -660,10 +667,64 @@ and hidden L2; both later bands fail every metric.
 
 This is materially better than the whole-layer rescue, but not a pass. It
 closes only the fixed attention-mass ranking, not all head-wise approaches.
-The next defensible selector should measure causal/value sensitivity directly
-or learn a dynamic allocation policy from the dense teacher. Native package
-promotion and a genuinely long-context hardware benchmark must wait for a
-semantic pass. Milestone 2 remains passed; Milestone 3 remains blocked.
+That result justified one direct causal/value-sensitive static experiment.
+
+The follow-up, frozen at source commit `483c62f` and evaluator SHA-256
+`442169060860257e78bbc0068bfdf9e5cf6edd93ff2b392c75ed333687765590`,
+places one scalar gate before each layer's attention output projection. A
+zero gate selects the exact native `W16/C8/K4/S2` output; a one gate selects
+the exact native `W128/C8/K4/S2` output. For each layer, the existing native
+streaming-attention DSO receives detached float32 Q/K and token-identity
+values to expose its exact hard support, then executes the real values. The
+forward result is therefore the native result, including native top-k and
+victim choices. Backward propagation uses differentiable attention over the
+fixed gathered support for W16 and full causal attention for W128. It does not
+pretend to differentiate through a discrete cache replacement.
+
+Training is deliberately small and auditable. Only the same two development
+selection records contribute gradients; the six screen records are prohibited.
+The untouched dense BF16 MoE teacher remains frozen. Two iterative
+hard-thresholding steps average the two per-record gradients, normalize by
+their global RMS, and project back to exactly 51 of 256 heads after each step.
+The all-W16 baseline `M0` had maximum/mean composite objectives
+7.8671169/6.9172161. The executed `M1` mask improved these to
+4.7559915/4.3284769, with per-record changes of -2.0663528 and -3.1111255.
+`M2` was worse at 6.2355781/5.3186684, so the frozen rule selected `M1`.
+The CPU-only fit took 6,930.099 seconds.
+
+This training run is an attribution proxy, not the semantic gate: its BF16
+Hugging Face projections and dense MLPs differ from the packaged float32/Q7
+runtime. The selected mask therefore ran once through the complete native Q7
+path on the six reused development-screen records. Every evidence,
+authentication, reset-replay, and resource check passed. The exact resource
+contract remained 973,384,704 logical attention bytes per sequence
+(44.975387218386625%), 12,284,864 attention-state bytes, and the unchanged
+22.7864583333% Q7 traffic fraction.
+
+Semantic quality still failed. Over 768 positions, KL/top-1/NLL-delta/hidden-L2
+were 0.07913208059/0.8645833333/+0.08119899696/0.18264718059. Both bands
+through offset 31 passed. Offsets 32–63 failed top-1 and hidden L2, and the
+64–95 and 96–127 bands failed all four metrics. This is also worse on every
+overall metric than the earlier attention-mass mask
+(0.07371992968/0.8671875/+0.05345554335/0.16751781782). The experiment is a
+valid negative result: no confirmation ran, no package policy was promoted,
+and the tested two-record natural-prose causal/value-sensitive path is closed.
+
+The next defensible semantic direction is a Q7-aware retrieval-head selector
+trained on a new, substantially larger synthetic retrieval corpus, with the
+causal objective concentrated on answer positions. This is a different
+learning signal from the failed ordinary-language fit and is motivated by
+[DuoAttention](https://arxiv.org/abs/2410.10819). It must retain the exact
+51-head-equivalent logical-read ceiling and current attention-state contract.
+If it fails, the next allocation class is a prefix-conditioned dynamic budget
+allocator; every decision must be causal and fixed before the first affected
+eviction, consistent with [Ada-KV](https://arxiv.org/abs/2407.11550) and
+[Task-KV](https://arxiv.org/abs/2501.15113). A deterministic expert-parallel
+training proxy and native support-return API can shorten future experiments,
+but those are performance work and do not count as semantic evidence. Native
+package promotion and a genuinely long-context hardware benchmark must still
+wait for a semantic pass. Milestone 2 remains passed; Milestone 3 remains
+blocked.
 
 The generic dense-Llama compiler still writes initialized or heuristic
 fallbacks and records that fact in its conversion report. The native-BitNet

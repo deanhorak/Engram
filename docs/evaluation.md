@@ -333,6 +333,83 @@ head-wise allocation. The next useful boundary is a causal/value-sensitivity
 selector or a dynamic teacher-distilled allocation policy. Milestone 2
 remains passed for Q7; Milestone 3 remains blocked on bounded attention.
 
+### Causal/value-sensitive 51-head gate
+
+The follow-up replaced attention-mass ranking with a direct causal objective
+while retaining the same exact 51-of-256 head budget. For each layer and head,
+the evaluator mixed the native `W16/C8/K4/S2` output with an exact native
+`W128/C8/K4/S2` output. Native float32 execution supplied the forward value;
+a fixed-membership gathered/full-attention surrogate supplied gradients only.
+The frozen dense BF16 model contributed projections, the unchanged MoE path,
+hidden states, and vocabulary logits. This is therefore a serial BF16
+attribution/training proxy with exact native attention forward, not the final
+Q7 runtime measurement.
+
+Two hard-projected IHT steps used only selection records 0 and 1. Each step
+averaged both complete-record gradients and projected back to exactly 51
+heads. All three executed masks were scored, and the predeclared
+maximum-objective, then mean-objective, then M1-tie-break rule selected M1:
+
+| Selection objective | All-sparse M0 | Selected M1 |
+|---|---:|---:|
+| Maximum per-record composite objective | 7.8671169 | 4.7559915 |
+| Mean per-record composite objective | 6.9172161 | 4.3284769 |
+
+Neither selection record regressed. All training evidence, projection-chain,
+native-oracle, artifact, framework, and post-run checks passed. The CPU fit
+took 6,930.10 seconds, or about 115.5 minutes. That development result
+authorized exactly one package-native screen; it did not itself establish Q7
+quality.
+
+The selected static mask then ran through the complete native Q7 path on the
+six reused development-screen records, totaling 768 positions. Every
+execution, resource, reset, package, source, and authentication check passed,
+and the schedule remained within the frozen budget at
+44.9753872184% of dense logical attention reads. Semantic quality failed:
+
+| Population | Mean KL | Top-1 | NLL delta | Hidden relative L2 | Result |
+|---|---:|---:|---:|---:|---|
+| Overall, 768 positions | 0.07913208059 | 0.8645833333 | +0.08119899696 | 0.18264718059 | **fail** |
+| Positions 0–15 | pass | pass | pass | pass | pass |
+| Positions 16–31 | pass | pass | pass | pass | pass |
+| Positions 32–63 | pass | **fail** | pass | **fail** | **fail** |
+| Positions 64–95 | **fail** | **fail** | **fail** | **fail** | **fail** |
+| Positions 96–127 | **fail** | **fail** | **fail** | **fail** | **fail** |
+| Frozen threshold | <= 0.05 | >= 0.90 | <= +0.05 | <= 0.10 | every row required |
+
+The causal/value-selected mask transferred worse on all four overall metrics
+than the earlier fixed attention-mass mask. This closes the tested fixed
+static causal/value selector as well as the attention-mass selector; it does
+not close head-wise execution or dynamic allocation. No fresh confirmation
+was opened, and neither mask nor package format was promoted. Milestone 2
+remains passed for the qualified Q7 semantic path, while Milestone 3 remains
+blocked on bounded long-context attention.
+
+The next defensible semantic experiment changes the supervision before
+changing the allocation class: train a Q7-aware retrieval-head selector on a
+new, substantially larger synthetic retrieval corpus, and concentrate the
+causal loss on answer positions. [DuoAttention](https://arxiv.org/abs/2410.10819)
+reports that this retrieval-specific objective identifies retrieval heads more
+effectively than ordinary language-model examples. A genuinely reserved
+holdout is required; the six records above are consumed development evidence.
+If the retrieval-targeted selector cannot pass under the exact persistent
+state and read budget, the next architecture is a causally valid,
+prefix-conditioned allocator, informed by adaptive per-head
+[Ada-KV](https://arxiv.org/abs/2407.11550) and task-aware
+[Task-KV](https://arxiv.org/abs/2501.15113) allocation.
+
+The evaluator was frozen at source commit `483c62f`. Authenticated artifact
+roots are:
+
+- [training protocol](../reports/olmoe_q7_sustained_context_2026-07-28/causal_head_gate_protocol.json)
+  `037ebfd7d4e40af898ece7f353654eb8a41dc1883f191cbdf05fc34bf50bf4ba`;
+- [training result](../reports/olmoe_q7_sustained_context_2026-07-28/causal_head_gate_training.json)
+  `bacb0e31899f514a8b2b517987566e8bca68d39cabfd50b3c9e7ecf83bc756ea`;
+- [screen protocol](../reports/olmoe_q7_sustained_context_2026-07-28/causal_head_gate_screen_protocol.json)
+  `282bfe0b9e1da86577f0187112a4a444b0f36d7f84e10f4f9bb67730676807c2`;
+- [native Q7 screen result](../reports/olmoe_q7_sustained_context_2026-07-28/causal_head_gate_screen_result.json)
+  `437d0de4ce4da37e69ca13279b76627d6f7721e766b8f1b4371fb318e7cbeb59`.
+
 A separate low-bit-native source track first passed the causal quality and
 cold-byte checks while executing every record. Its direct CPU kernel
 memory-maps the 318,924,544-byte base-3 phase artifact, materializes no dense

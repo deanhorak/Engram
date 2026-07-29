@@ -89,10 +89,30 @@ and 44.1701% logical attention traffic. It was therefore not installed:
 there is no per-layer policy descriptor, head mask, new authentication root,
 or schema promotion. The subsequent prospectively frozen 51-of-256
 teacher-attention-mass mask also failed semantic quality despite valid evidence
-and 44.9754% logical attention traffic. It likewise remains an experiment, not
-a serializable package contract. Value/sensitivity-guided or dynamic head
-allocation must pass development and fresh confirmation before a schema change
-is justified.
+and 44.9754% logical attention traffic. A causal/value-sensitive 51-head mask
+was then trained directly through exact native sparse/full forwards with a
+differentiable fixed-support surrogate. Its two-record training objective
+improved, but the complete native Q7 screen was worse than the attention-mass
+mask: KL/top-1/NLL-delta/hidden-L2 were
+0.07913208059/0.8645833333/+0.08119899696/0.18264718059 over 768 reused
+development positions. It too remains an experiment, not a serializable
+package contract; no confirmation or promotion occurred.
+
+A successful retrieval-targeted static selector would first require an
+explicit, versioned per-head mask descriptor rather than silently overloading
+the current global policy. That selector remains untrained: the next
+experiment uses Q7-aware synthetic retrieval supervision and a new,
+predeclared corpus. Only a development and separately frozen confirmation pass
+could justify adding the descriptor.
+
+A future dynamic allocator would require a broader versioned contract binding
+its parameters, prefix state, exact 51-head-equivalent logical-read ceiling,
+the current 12,284,864-byte head-wise attention-state ceiling, and a causal
+rule that commits the initial allocation before the first W16 eviction. Any
+later reallocation must precede the eviction it can affect. No such descriptor
+exists today. Deterministic expert-parallel proxy execution and a native API
+that returns exact support are performance optimizations, not format
+eligibility or semantic evidence.
 
 The token boundary's companion `olmoe_native_non_mlp_bf16_v1` file is a
 standard, strictly contiguous safetensors mapping. It contains exactly 131

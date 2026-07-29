@@ -202,9 +202,14 @@ layer-head pairs at 973,384,704 logical bytes per sequence (44.9754%); a
 52-head mask would require 45.2438% and is outside the budget. All execution
 evidence passed, but the six-sequence internal semantic screen failed every
 overall threshold, so the mask was not promoted and no fresh confirmation was
-run. A causal/value-sensitive or dynamic head policy must first pass
+run. A later two-record natural-prose causal/value-sensitive selector also
+failed the complete native Q7 screen, at
+KL/top-1/NLL-delta/hidden-L2
+0.079132/0.864583/+0.081199/0.182647. The next experiment changes the
+supervision: a Q7-aware retrieval-head selector trained on a new synthetic
+retrieval corpus with loss concentrated on answer positions. It must pass
 development and then fresh confirmation before a package-format change is
-justified.
+justified; prefix-conditioned allocation is the fallback if it cannot pass.
 
 The first command below is the historical sealed-reference reproduction, so
 it explicitly retains the original serial sequence policy:

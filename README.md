@@ -317,10 +317,63 @@ is materially better than the three-layer rescue at slightly higher traffic
 confirmation was run and no package policy was promoted.
 
 This result closes only the tested **fixed teacher-attention-mass ranking**,
-not all head-wise allocation. The next justified direction is value- or
-sensitivity-guided selection, or a dynamic allocation policy. Milestone 2
-remains passed; Milestone 3 attention remains blocked. See the
+not all head-wise allocation. It motivated the causal/value-sensitive static
+follow-up below. Milestone 2 remains passed; Milestone 3 attention remains
+blocked. See the
 [sustained-context evidence and attribution report](reports/olmoe_q7_sustained_context_2026-07-28/summary.md).
+
+The prospectively frozen causal/value-sensitive follow-up is also complete.
+Its two-record fit used the exact native W16/C8/K4/S2 decisions with a
+differentiable gathered surrogate, two iterative-hard-thresholding steps, and
+an invariant budget of exactly 51 rescued heads. The selected M1 mask improved
+the maximum training composite objective from **7.867116928100586** to
+**4.755991458892822** and the mean from **6.917216062545776** to
+**4.328476905822754**; both selection records improved. Training evidence
+passed after **6,930.099 seconds**. That CPU fit was the experiment's dominant
+bottleneck; a future implementation may use a deterministic expert-parallel
+proxy to accelerate fitting without changing the sealed native reference.
+
+The sealed chain is rooted at source commit `483c62f`:
+
+- training protocol:
+  `037ebfd7d4e40af898ece7f353654eb8a41dc1883f191cbdf05fc34bf50bf4ba`
+- training result:
+  `bacb0e31899f514a8b2b517987566e8bca68d39cabfd50b3c9e7ecf83bc756ea`
+- native-screen protocol:
+  `282bfe0b9e1da86577f0187112a4a444b0f36d7f84e10f4f9bb67730676807c2`
+- native-screen result:
+  `437d0de4ce4da37e69ca13279b76627d6f7721e766b8f1b4371fb318e7cbeb59`
+
+The complete packaged-Q7 screen then reused the same six consumed development
+records and 768 prediction positions. Its evidence and resource gates passed,
+including the **44.9753872%** logical-read budget, but quality did not:
+
+| Causal/value-sensitive 51-head screen | Result | Required | Outcome |
+|---|---:|---:|---|
+| Mean KL | 0.07913208059 | ≤ 0.05 | **Fail** |
+| Teacher top-1 agreement | 0.8645833333 | ≥ 0.90 | **Fail** |
+| Target NLL delta | +0.08119899696 | ≤ 0.05 | **Fail** |
+| Final-hidden relative L2 | 0.18264718059 | ≤ 0.10 | **Fail** |
+
+The 0–15 and 16–31 bands passed. The 32–63 band failed top-1 agreement
+and hidden-state error, and every later band failed all four quality measures.
+This mask is worse than the earlier attention-mass mask on every overall
+metric. No fresh confirmation was opened and no policy was promoted.
+
+The tested two-record natural-prose causal/value-sensitive selector is
+therefore closed, not merely awaiting more CPU fitting. This does **not** close
+every static selector: the fit never trained specifically on retrieval
+failures. The next defensible semantic experiment is a Q7-aware retrieval-head
+selector trained on a new, substantially larger synthetic retrieval corpus,
+with the causal loss concentrated on answer positions. This follows the
+retrieval-specific identification result in
+[DuoAttention](https://arxiv.org/abs/2410.10819) instead of treating ordinary
+language-model loss as sufficient supervision. If that distinct objective
+cannot pass at the exact budget, the next allocation class is a causally
+valid, prefix-conditioned policy, consistent with adaptive per-head and
+task-aware cache allocation in [Ada-KV](https://arxiv.org/abs/2407.11550) and
+[Task-KV](https://arxiv.org/abs/2501.15113). Milestone 2 remains passed;
+Milestone 3 remains blocked.
 
 Python owns packaged tokenization and prompt text handling. From token IDs
 through recurrent state, Q7 routing/expert execution, final logits, and
@@ -1309,11 +1362,15 @@ three-layer W128 rescue also fails its six-sequence internal screen at 44.17%
 logical reads. A prospectively frozen fixed teacher-attention-mass mask then
 rescued 51 of 256 heads at 44.975387218386625% reads and improved every
 overall metric relative to that layer rescue, but still failed all four
-quality gates after position 31. Both six-record screens are development
+quality gates after position 31. A subsequent causal/value-sensitive
+two-record fit improved its training objective on both records, yet its
+static 51-head native-Q7 mask was worse than the attention-mass mask on all
+four overall screen metrics. These six-record screens are development
 evidence from an already consumed corpus, not fresh Milestone 3
-confirmations. The fixed attention-mass result motivates value/sensitivity
-ranking or dynamic head allocation; it does not qualify an OLMoE attention
-package or close every head-wise design.
+confirmations. Those two static objectives are closed. A retrieval-targeted
+static selector trained Q7-aware on a new, larger synthetic corpus remains
+untested; prefix-conditioned dynamic allocation is the next fallback if it
+cannot pass.
 
 [Gate 4](reports/milestone4_fixture/controller_gate.json) is also synthetic; adaptive
 execution averaged 7.98 of 8 allowed cycles, so it found essentially no compute saving.
