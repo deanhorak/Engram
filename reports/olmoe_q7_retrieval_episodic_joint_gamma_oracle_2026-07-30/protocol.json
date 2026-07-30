@@ -1,0 +1,194 @@
+{
+  "authenticated_confirmation_descriptor": {
+    "answer_prediction_positions_per_record": 32,
+    "file": "confirmation.jsonl",
+    "prediction_positions_per_record": 128,
+    "record_identity_sha256": "b507767ea68c015fdb9347313921c59a0dbefc0c61a47883ade1fa837fc4e844",
+    "records": 8,
+    "sha256": "c74aa6532e94bfa4dd10bbc1e13c27a06c35f79edbc9bc921a4219409f903baa",
+    "tokens_per_record": 129
+  },
+  "authorized_next_step_on_discrete_pass": "freeze a train-only causal predictor for the selected 3-bit gamma codes with rolled-out native state and full traffic accounting",
+  "cached_trace_manifest": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_head_mass_oracle_2026-07-29_frozen/trace_shards/manifest.json",
+    "sha256": "93df0a554744b97e7436b9a8b4bb71473bc21fa9f6c90985431274859164e0b6",
+    "shards": 8
+  },
+  "confirmation_split_opened": false,
+  "experiment": "olmoe_q7_retrieval_episodic_joint_gamma_oracle_protocol",
+  "failure_interpretation": {
+    "continuous_failure": "closes the cached same-state bounded per-head q,d relaxation at fixed K256 only when its optimistic recovery upper bound also fails the frozen gate",
+    "continuous_pass_discrete_failure": "closes only the deterministic multistart one/two-flip solution; it does not close the global eight-code grid"
+  },
+  "head_mass_protocol": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_head_mass_oracle_2026-07-29_frozen/protocol.json",
+    "sha256": "fe09689452e6ae4f1a1b15332c61c1cc990cfc29b6a8b0d5a1758d9490a93af5"
+  },
+  "head_mass_result": {
+    "authenticated_failure": {
+      "confirmation_split_opened": false,
+      "failure_scope": "this exact fixed-K256 independent-head scheduled-source-mass matching grid only",
+      "global_recovery": -0.10891245427020602,
+      "status": "train_episodic_head_mass_oracle_gate_failed",
+      "trace_manifest_sha256": "93df0a554744b97e7436b9a8b4bb71473bc21fa9f6c90985431274859164e0b6"
+    },
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_head_mass_oracle_2026-07-29_frozen/train_screen.json",
+    "sha256": "f7060e7373c5faf8f154891e93efad35659723d8e3f04d83638b62fa9cf72596"
+  },
+  "oracle_method": {
+    "base_code": 4,
+    "candidate_coefficients": "code four=(0,0) exact native base; every other code=(1,gamma*me/(mr+gamma*me)) over projected (q,d)",
+    "continuous_diagnostic": "box relaxation z in [0,1], p in [0,p_gamma8] per head; convex diagnostic lower-error bound because its Gram is formed as A.T@A; it cannot authorize progression",
+    "continuous_solver": "exact two-variable box minimization inside each head with forward/reverse block sweeps and a float64 Frank-Wolfe objective-gap certificate after every sweep; fixed maximum 64 sweeps and relative gap target 1.0e-07",
+    "counterfactual_updates_hidden_or_cache": false,
+    "direct_gate_metric": "reconstruct selected finite candidates with the established float32 counterfactual and float32 o_proj path; quadratic objectives are diagnostics",
+    "discrete_optimality_scope": "verified one- and two-head-flip local optimum only; no exact or global optimum claim over the complete 8^16 grid",
+    "discrete_selection": "joint eight-code grouped solver including all cross-head o_proj Gram terms, deterministic multistart coordinate descent, and exhaustive candidate search within each one- or two-head move",
+    "energy_aggregation": "squared Frobenius energy before ratios",
+    "features": [
+      "q_anchor_offset",
+      "episodic_direction"
+    ],
+    "gamma_table": [
+      {
+        "beta_bits": null,
+        "beta_float32": null,
+        "code": 0,
+        "endpoint": "exact_zero_episodic_mass",
+        "gamma": 0.0,
+        "multiplier_float32": 0.0
+      },
+      {
+        "beta_bits": "0xc0051592",
+        "beta_float32": -2.079441547393799,
+        "code": 1,
+        "endpoint": null,
+        "gamma": 0.125,
+        "multiplier_float32": 0.125
+      },
+      {
+        "beta_bits": "0xbfb17218",
+        "beta_float32": -1.3862943649291992,
+        "code": 2,
+        "endpoint": null,
+        "gamma": 0.25,
+        "multiplier_float32": 0.25
+      },
+      {
+        "beta_bits": "0xbf317218",
+        "beta_float32": -0.6931471824645996,
+        "code": 3,
+        "endpoint": null,
+        "gamma": 0.5,
+        "multiplier_float32": 0.5
+      },
+      {
+        "beta_bits": "0x00000000",
+        "beta_float32": 0.0,
+        "code": 4,
+        "endpoint": null,
+        "gamma": 1.0,
+        "multiplier_float32": 1.0
+      },
+      {
+        "beta_bits": "0x3f317218",
+        "beta_float32": 0.6931471824645996,
+        "code": 5,
+        "endpoint": null,
+        "gamma": 2.0,
+        "multiplier_float32": 2.0
+      },
+      {
+        "beta_bits": "0x3fb17218",
+        "beta_float32": 1.3862943649291992,
+        "code": 6,
+        "endpoint": null,
+        "gamma": 4.0,
+        "multiplier_float32": 4.0
+      },
+      {
+        "beta_bits": "0x40051592",
+        "beta_float32": 2.079441547393799,
+        "code": 7,
+        "endpoint": null,
+        "gamma": 8.0,
+        "multiplier_float32": 8.0
+      }
+    ],
+    "single_arm": true,
+    "target": "exact same-state native W128-minus-K256 post-Wo residual",
+    "tie_priority": [
+      4,
+      3,
+      5,
+      2,
+      6,
+      1,
+      7,
+      0
+    ]
+  },
+  "output_projection": {
+    "dtype": "authenticated_BF16_loaded_as_float32",
+    "orientation": "isolated_head_delta @ o_proj.weight.T",
+    "source": "/home/dean/repos/engram/work/olmoe_q7/package/transformer/non_mlp.safetensors",
+    "tensor_sha256": {
+      "model.layers.0.self_attn.o_proj.weight": "713f28304e77aa4a1b0b3a855cf5d3621eb877b5f3d143fdfc58f1e3efb0355e",
+      "model.layers.1.self_attn.o_proj.weight": "cd12b44bf6a0c10a16fa4a6f75e2b69f2cddb23c18eaed447bf83518fbdbd845",
+      "model.layers.10.self_attn.o_proj.weight": "96dcad962efc39eed5daf640a33c2febf2200224ea6b9869be8f49f76001dcc4",
+      "model.layers.11.self_attn.o_proj.weight": "750c064cacd22586000be8bb0045d54a90ba1f67a376203374a750d50b8f406c",
+      "model.layers.12.self_attn.o_proj.weight": "bf458e0d1d544df0b25338fa9338e924af33cb76799d2dcd9ac8d245c45a0a7b",
+      "model.layers.13.self_attn.o_proj.weight": "d0cdda96412dde6fc89549c11aa8603f073e46932db31172d8441fc9b595424b",
+      "model.layers.14.self_attn.o_proj.weight": "ebee83c0aa98367df6e2d21352f96c4b438c5641f10eb980fca4df8e39d0c01b",
+      "model.layers.15.self_attn.o_proj.weight": "3e4961a38a311966cbf66e266fa462ca2050a512e90f56137a57dc19428db1f3",
+      "model.layers.2.self_attn.o_proj.weight": "825b632c003a0340918c52e7e892faaa0d62e708eac22c7cfd9a3d859a81f92f",
+      "model.layers.3.self_attn.o_proj.weight": "912c8f916373aa11f2254bae3ddc153b826ceaf37f25ab6de57b7a8b0e6babbd",
+      "model.layers.4.self_attn.o_proj.weight": "11a42d3e819155730efa070087b43e45a8d1616c94dff441cdc2d27ec90422c9",
+      "model.layers.5.self_attn.o_proj.weight": "0eb89ca8301aa010f4e4ec3c8d451b1450ccc633d50020ea1fdb8af83a612717",
+      "model.layers.6.self_attn.o_proj.weight": "18d21b98611f4d77babf80dce8ae15c231fe90144d7945d2ffaf1c06fc9e23ea",
+      "model.layers.7.self_attn.o_proj.weight": "9263891eff7e90bf151aed8ac269a8ae04f1c214792f991ef1f952538e492f3e",
+      "model.layers.8.self_attn.o_proj.weight": "cf4568a74f1aad83c9804edd06b9747116f0a113dad69e9ed9153c181f0019f7",
+      "model.layers.9.self_attn.o_proj.weight": "8e161772c8f4ccddcf82aacecd39a73543e9dd99b58f62fa0f6dbc88bd43a84d"
+    }
+  },
+  "progression_gate": {
+    "continuous_objective_gap_certificate_required": true,
+    "deterministic_metric_and_code_replay_required": true,
+    "discrete_one_and_two_flip_local_optimality_required": true,
+    "discrete_projected_objective_never_worse_than_base": true,
+    "finite": true,
+    "minimum_every_block_entry_position_recovery": 0.25,
+    "minimum_every_sequence_recovery": 0.25,
+    "minimum_global_recovery": 0.5,
+    "minimum_positive_recovery_layers": 12
+  },
+  "resource_contract": {
+    "fixed_attention_state_bytes": 10534912,
+    "fixed_combined_attention_and_episodic_traffic_bytes": 714866688,
+    "fixed_fraction_of_dense_full_context_KV": 0.33030523255813954,
+    "gamma_zero_earns_read_savings": false,
+    "oracle_shadow_trace_and_projection_evaluator_only": true,
+    "predictor_weights_features_and_execution_not_counted": true
+  },
+  "schema_version": 1,
+  "scope": {
+    "cached_same_state_capacity_evidence_only": true,
+    "causal_rollout": false,
+    "confirmation_file_access_permitted": false,
+    "development_outcomes_used": false,
+    "learned_predictor": false,
+    "semantic_or_M3_pass": false,
+    "split": "train"
+  },
+  "source_sha256": {
+    "src/engram/evaluation/olmoe_joint_gamma_solver.py": "5c6bf5c4680349b8127ed9dca1bb1ad2f92f3691110eb2025e812cd84c235395",
+    "src/engram/evaluation/olmoe_retrieval_episodic_joint_gamma_oracle.py": "084e513d78ab4a9c996e351a0927685bd7fbe02ffe2a4f3f08ebff91ba9e094e"
+  },
+  "status": "frozen_before_cached_joint_gamma_execution",
+  "training_checkpoint": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_selector_2026-07-29_frozen/development_result.training_checkpoint.json",
+    "sha256": "9edf4fe7e7a1340c6f34bfe4d04544525947935116d662e94d98ccea4c282aa4",
+    "training_sha256": "8b4e41bf67cb4a835e6561a4fff194651ffd639976edca55309240311280d633"
+  },
+  "training_checkpoint_payload_sha256": "8b4e41bf67cb4a835e6561a4fff194651ffd639976edca55309240311280d633"
+}

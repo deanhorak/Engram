@@ -106,6 +106,16 @@ paths are operational and may advance**. Engram still cannot claim that it
 converts an arbitrary dense Llama checkpoint into a gate-passing
 semantic-memory model.
 
+For OLMoE, the current Milestone 3 evidence is a train-only
+attention-capacity pass followed by two negative causal-selector screens. A
+frozen oracle over the 28 value rows already read by the bounded native
+runtime recovered **66.54%** of the same-state W128 residual without adding KV
+state or reads. A rank-4 query-content selector then recovered only
+**25.42%**, and a phase-conditioned mass selector recovered only **26.19%**.
+Both passed their authentication, parity, and resource checks but failed the
+frozen semantic threshold. Neither authorized native promotion, development,
+or confirmation; Milestone 3 remains blocked.
+
 ### OLMoE source-track experiment
 
 The current controlled source-family experiment is
@@ -375,17 +385,327 @@ metric. No fresh confirmation was opened and no policy was promoted.
 The tested two-record natural-prose causal/value-sensitive selector is
 therefore closed, not merely awaiting more CPU fitting. This does **not** close
 every static selector: the fit never trained specifically on retrieval
-failures. The next defensible semantic experiment is a Q7-aware retrieval-head
-selector trained on a new, substantially larger synthetic retrieval corpus,
-with the causal loss concentrated on answer positions. This follows the
-retrieval-specific identification result in
-[DuoAttention](https://arxiv.org/abs/2410.10819) instead of treating ordinary
-language-model loss as sufficient supervision. If that distinct objective
-cannot pass at the exact budget, the next allocation class is a causally
-valid, prefix-conditioned policy, consistent with adaptive per-head and
-task-aware cache allocation in [Ada-KV](https://arxiv.org/abs/2407.11550) and
-[Task-KV](https://arxiv.org/abs/2501.15113). Milestone 2 remains passed;
+failures.
+
+### Retrieval-targeted 51-head selector
+
+A separate retrieval-targeted selector and fail-closed protocol are now
+implemented. They use a new synthetic passkey corpus with **8 training, 8
+development, and 8 sealed-confirmation records**. Each record has 129 tokens:
+128 causal prediction rows and 32 ground-truth answer targets scored only at
+logit rows **96–127**. Four eight-token passkeys are placed at four balanced
+source depths. Across all 24 records, the corpus uses **768 globally unique
+numeric singleton tokenizer tokens**, so no passkey token leaks between
+splits.
+
+Training minimizes answer-only ground-truth cross-entropy. The loss value
+comes from the complete packaged native Q7 forward path; gradients cross a
+straight-through boundary into a frozen BF16 shell with exact native
+attention, while the qualified frozen-expert backward proxy uses 12 workers.
+No teacher parameter is updated. Two iterative-hard-thresholding steps produce
+`M0 → M1 → M2`, projecting each learned candidate to exactly **51 of 256
+layer-head pairs**.
+
+That is the largest admissible mask: it reads **973,384,704 logical attention
+bytes per sequence**, or **44.9753872184%** of full causal attention. A
+52-head mask would read **45.2437999637%** and is rejected. If training
+qualifies a mask, development must still pass both a full-W128 packaged-Q7
+control and the 51-head candidate, overall and separately at each of the four
+source depths.
+
+The protocol is frozen at
+`work/olmoe_q7/retrieval_selector_2026-07-29_frozen/protocol.json`, SHA-256
+`f6961ec6bffadb306a75ae8aaa8c400d1282cbb096876532d75e22a295660580`.
+The full 8-record fit and 8-record development screen completed. Training
+selected `M2`: mean answer cross-entropy fell from 7.647114 at `M0` to
+1.005444, with no record regression. The teacher retrieval check and full-W128
+packaged-Q7 control both passed. The exact-51 candidate still failed the
+semantic gate: KL was 0.186610, target-NLL delta 0.283658, and hidden relative
+L2 0.335103, although top-1 agreement reached 0.929688. Every resource,
+reset/replay, and post-run authentication check passed. Confirmation remained
+unopened and was not authorized.
+
+The complete [result and evidence summary](reports/olmoe_q7_retrieval_selector_2026-07-29/summary.md)
+are archived with the source-bound protocol. A SHA-authenticated training
+checkpoint was durably written before development, so future diagnostic
+reruns can skip all 16 expensive surrogate backwards. This closes the static
+retrieval-targeted mask at the declared budget. Milestone 2 remains passed and
 Milestone 3 remains blocked.
+
+```bash
+PYTHONPATH=src python -m engram.evaluation.olmoe_retrieval_head_selector \
+  fit-screen \
+  --protocol work/olmoe_q7/retrieval_selector_2026-07-29_frozen/protocol.json \
+  --protocol-sha256 f6961ec6bffadb306a75ae8aaa8c400d1282cbb096876532d75e22a295660580 \
+  --out work/olmoe_q7/retrieval_selector_2026-07-29_frozen/development_result.json
+```
+
+An interrupted development-only rerun can explicitly authenticate and reuse
+the completed training state with
+`--resume-training-checkpoint <path>` and
+`--resume-training-checkpoint-sha256 <sha256>`. The checkpoint is never
+selected implicitly.
+
+The experiment follows the retrieval-specific identification result in
+[DuoAttention](https://arxiv.org/abs/2410.10819) instead of treating ordinary
+language-model loss as sufficient supervision. The subsequent conditioned and
+episodic experiments retain the causality and task-aware allocation principles
+described by [Ada-KV](https://arxiv.org/abs/2407.11550) and
+[Task-KV](https://arxiv.org/abs/2501.15113).
+
+### Episodic retrieval and head-gated follow-ups
+
+The next experiments asked a narrower question: is the retrieval failure
+caused by choosing the wrong static heads, or does the bounded attention path
+lack the right information at answer time? These are **train-only diagnostic
+screens** over the same eight retrieval-training records. They do not consume
+development or confirmation evidence. The full-context `M2` training result,
+mean answer cross-entropy **1.005444** and worst **1.227907**, remains their
+strict reference.
+
+| Diagnostic | Mean answer CE | Worst answer CE | Result |
+|---|---:|---:|---|
+| Two causal prefix prototypes, 51 heads each | 1.046825 | 1.224952 | Fail: mean regressed and 5/8 records regressed |
+| Exact payload-only episodic oracle, all heads | 1.224460 | 1.327343 | Fail: 7/8 records regressed |
+| Exact label-plus-payload episodic oracle, all heads | 1.231254 | 1.321619 | Fail: 7/8 records regressed |
+| Exact payload oracle gated to the `M2` K51 heads | 1.400569 | 1.694034 | Fail: 7/8 records regressed |
+
+The two-prototype allocator used only causally observed fact order, but its
+mean loss was 0.041381 worse than global `M2`; result SHA-256
+`dacb3f37886d1207bc6b9a5717b3015174c4edc4947b89dd12ef35ff67ae8814`.
+The payload-only oracle then removed selector error completely by writing each
+known eight-token source payload and reading the correct span at its answer
+rows. It still failed, with the damage concentrated at the first row of each
+answer block. See the
+[payload-oracle evidence](reports/olmoe_q7_retrieval_episodic_oracle_2026-07-29/summary.md).
+
+Adding the immediately preceding label token produced a 36-slot, four-span
+label-plus-payload cache and did not repair the failure. Mean answer CE was
+1.231254, 0.225811 worse than `M2`, and worst CE was 1.321619. Every resource,
+counter, replay, and authentication check passed. Its upper-bound traffic was
+719,585,280 bytes, **33.2485%** of dense full-context K/V traffic, with
+11,059,712 bytes of state and 4,992 bytes of scratch. Protocol SHA-256 is
+`1812a6ba72afe0c5f32e459867c29f3d8dbd609a3d0ddf59ac52ae6859ce4d3d`;
+result SHA-256 is
+`e1ec5a2bde8b9ce7198fe1571a7670c45a3bc7a712cdf9a856f869b6429fe69d`.
+
+The native runtime now also exposes the versioned
+`engram_olmoe_token_open_episodic_headwise_v1` ABI. Inactive layers use the
+exact legacy attention step and allocate no episodic bank. Active layers store
+the complete causal K/V rows, while only enabled query heads deduplicate,
+score, normalize against, and read an episodic span. All-zero, malformed, and
+policy-less masks fail closed; an all-ones mask is exactly equivalent to the
+legacy all-head episodic path.
+
+That ABI enabled an exact K51 attribution screen using the frozen `M2` mask
+(`49802a2d37abd44e4015e87633c9a321e333315b9400f6a69d4713ec2270b446`).
+It passed every systems check at 687,472,640 total traffic bytes
+(**31.7648%**) and 10,010,112 state bytes, but semantic loss became worse:
+mean CE 1.400569 and worst CE 1.694034, with only one of eight records
+improving. The authenticated
+[K51 result](reports/olmoe_q7_retrieval_episodic_head_mask_2026-07-29/summary.md)
+therefore rejects transferring the old 51-head cardinality directly to the
+episodic cache; it does not reject episodic memory at larger head budgets.
+
+The prospectively frozen **K64 → K96 → K128 → K165** ranked-prefix train
+screen has now completed. All four candidates executed all eight records,
+passed their systems contracts, and failed the strict
+mean/worst/no-regression gate:
+
+| Ranked payload prefix | Mean answer CE | Worst answer CE |
+|---|---:|---:|
+| K64 | 1.379699 | 1.639418 |
+| K96 | 1.328848 | 1.618843 |
+| K128 | 1.337958 | 1.621764 |
+| K165 | 1.331006 | 1.608617 |
+
+Only one of eight records improved at every K. The frozen total-failure rule
+retained K165 for diagnostic reset replay because it had the lowest worst
+loss; replay passed, but it is not a promotion. The
+[archived protocol and result](reports/olmoe_q7_retrieval_episodic_head_mask_2026-07-29/summary.md)
+have SHA-256 roots
+`e238b5cfc4359422abc96c227f4010ade747ff161c946b2edae14c171a7bf04c`
+and
+`a6fb045bbad526411b8318e7de2412ea56d69b3f2be0d977ca6819635c0718da`.
+Confirmation remained unopened.
+
+This closes larger prefixes under the transferred `M2` ordering, not episodic
+memory. The stronger fixed base was the authenticated K256 all-head payload
+result at 1.224460 mean, 1.327343 worst, and 33.0305% upper-bound traffic.
+The subsequent V2 logit-mass screen held that cache and schedule fixed and
+tested `gamma={1/2,1/4,3/16,1/8}` by adding `float32(log(gamma))` only to
+episodic logits. All four candidates completed all eight training records,
+passed their systems contracts, and failed:
+
+| Fixed-K256 bias arm | Mean answer CE | Worst answer CE |
+|---|---:|---:|
+| Historical `beta=0` attribution | 1.224460 | 1.327343 |
+| `gamma=1/2` | 1.461414 | 1.669250 |
+| `gamma=1/4` | 1.883818 | 2.288258 |
+| `gamma=3/16` | 2.161750 | 2.595642 |
+| `gamma=1/8` | 2.725091 | 3.430532 |
+
+The total-failure rule replayed `gamma=1/2` only because it was the best
+failed nonzero candidate; replay passed exactly, but this is not a promotion
+and `beta=0` remained materially better. The immutable
+[V2 protocol, parity, result, and summary](reports/olmoe_q7_retrieval_episodic_logit_bias_2026-07-29/summary.md)
+are rooted by result SHA-256
+`19d08ce9eb4b673d423e9781a491e25ec03bdec09467a43e7be1881874ef2287`.
+No development run was authorized, and the reserved confirmation split
+remained unopened.
+
+Shared scalar logit calibration is therefore closed. The subsequent
+**same-state shadow residual capacity screen** fixed the stronger `beta=0`
+K256 base, fed its exact post-RoPE Q/K/V into a non-intervening train-only
+W128 shadow, and measured an optimistic leave-one-sequence-out ceiling for the
+post-`W_o` residual. Per-layer output bases were learned from seven records;
+the held-out coefficients were chosen by oracle projection.
+
+| Residual rank | Global recovery | Minimum sequence | Minimum block entry | Positive layers |
+|---:|---:|---:|---:|---:|
+| 2 | 0.400470 | 0.315782 | 0.252050 | 16/16 |
+| 4 | 0.428686 | 0.346947 | 0.325317 | 16/16 |
+| 8 | 0.469253 | 0.387498 | 0.443967 | 16/16 |
+
+Every rank passed the frozen sequence, block-entry, finite, and positive-layer
+conditions, but every rank missed the required 50% global recovery. Result
+SHA-256 is
+`c636ad124d570f3675a36f0a23b276ba2e4cd4f5efc23dbf98cc10cd2cfd8e33`;
+the compact trace-manifest SHA-256 is
+`1f255a59a20089abe4d6805c625a119c167b71153bc21f5edbfcf0fd8050f461`.
+Replay and all post-run authentication checks passed, and confirmation
+remained unopened. See the
+[archived capacity evidence](reports/olmoe_q7_retrieval_episodic_residual_capacity_2026-07-29/summary.md).
+
+This closes only rank-at-most-8 global per-layer output subspaces with oracle
+held-out coefficients. No causal coefficient predictor, correction artifact,
+or package change is authorized.
+
+### Per-head mass and joint output-targeted gamma oracles
+
+The next cached capacity experiment selected one of
+`gamma={0,1/8,1/4,1/2,1,2,4,8}` independently at every
+record/read-row/layer/head coordinate to match the W128 teacher's probability
+mass on the eight scheduled source positions. It successfully reduced mean
+mass error from 0.0445126662 to 0.0084754603 without a coordinate regression,
+but the reconstructed post-`W_o` result moved in the wrong direction:
+global recovery was **-0.10891245427020602**, all eight sequence recoveries
+were negative, all four block-entry recoveries were negative, and only 1/16
+layers had positive recovery. The
+[archived head-mass evidence](reports/olmoe_q7_retrieval_episodic_head_mass_oracle_2026-07-29/summary.md)
+has protocol/result SHA-256 roots
+`fe09689452e6ae4f1a1b15332c61c1cc990cfc29b6a8b0d5a1758d9490a93af5`
+and
+`f7060e7373c5faf8f154891e93efad35659723d8e3f04d83638b62fa9cf72596`.
+This closes exact scheduled-source-mass matching as an objective, not
+output-targeted per-head reweighting.
+
+The follow-up therefore optimized all 16 heads jointly against the exact
+W128-minus-K256 post-output-projection residual, including cross-head
+coupling through `W_o`. Its continuous box relaxation is an optimistic
+superset of the eight-code family; its discrete arm directly replayed the
+selected mixed codes through the established float32 counterfactual path.
+
+| Joint-gamma result | Global recovery | Sequences ≥0.25 | Blocks ≥0.25 | Positive layers |
+|---|---:|---:|---:|---:|
+| Continuous optimistic relaxation | **0.22738059544921096** | 1/8 | 0/4 | 16/16 |
+| Discrete direct float32 | **0.1997680396822742** | 0/8 | 0/4 | 16/16 |
+
+Both arms failed the frozen 0.50 global, every-sequence, and every-block
+requirements. The continuous relaxation's failure makes further search over
+the contained scalar gamma grid unjustified even though the reported discrete
+solution claims only one- and two-head local optimality. The
+[archived joint-gamma evidence](reports/olmoe_q7_retrieval_episodic_joint_gamma_oracle_2026-07-30/summary.md)
+is rooted by protocol SHA-256
+`aa03a71e3dd9e1fbb413a7773d57189c41029c26b2f4372b2fb7a26744305d24`
+and result SHA-256
+`1329a51bac71cb81f44494c8ef70cb23a631eacebac5540b39e2e98ed5e30ea5`.
+Replay and authentication passed, but no predictor, Milestone 3 promotion, or
+confirmation access was authorized.
+
+The follow-up then removed the scalar-mass restriction. A native trace exposed
+all eight exact BF16-decoded episodic values already read by K256. A
+constructible nine-way simplex per head combined those values with the
+regular-cache conditional mean; an optimistic ten-way hull also included the
+exact native head output. Both arms were optimized jointly after `W_o` with a
+certified product-simplex solver.
+
+| Per-slot value result | Global recovery | Sequences ≥0.25 | Blocks ≥0.25 | Positive layers |
+|---|---:|---:|---:|---:|
+| Constructible regular + 8 slots | **0.3844378107** | 8/8 | 4/4 | 16/16 |
+| Optimistic exact-native-anchor hull | **0.3844378142** | 8/8 | 4/4 | 16/16 |
+
+The only failed condition was the prospectively frozen 50% global threshold,
+but it failed decisively: the optimistic hull's maximum per-row objective-gap
+bound was `5.90e-11`, direct/quadratic parity and exact replay passed, and the
+native anchor changed global recovery by only about `3.49e-9`. The immutable
+[per-slot capacity evidence](reports/olmoe_q7_retrieval_episodic_slot_simplex_oracle_2026-07-30/summary.md)
+is rooted by cached protocol SHA-256
+`f3be957ec0c13d0f49c85a2fa149611307de756f2be82165098a43263bb78ce3`
+and result SHA-256
+`2e8e9b7d5f33d33c0e8c642a50359da785d0690d8260ed9f65837b14cd93a5bf`.
+The solve used eight CPU workers, took 91.59 seconds, and never reopened the
+native runtime or confirmation split.
+
+The frozen **full-visible C28/C29 capacity oracle** then exposed the regular
+path's 16 chronological local values and four selected-older values
+separately, alongside the eight episodic values. C28 is fully constructible
+from data the kernel already reads; C29 is an optimistic superset that adds
+the exact native head output as an anchor.
+
+| Full-visible result | Global recovery | Minimum sequence | Minimum block entry | Positive layers |
+|---|---:|---:|---:|---:|
+| Constructible C28 | **0.6653937751** | **0.6447006551** | **0.6306278392** | 16/16 |
+| Optimistic C29 | **0.6653865288** | — | — | 16/16 |
+
+C28 passes the frozen 0.50 global, every-sequence, every-block, and
+positive-layer conditions. Qualification, deterministic replay, source and
+artifact authentication, and post-solve checks all pass. Nested C10 and C16
+diagnostics recover 0.5335805245 and 0.6021187653, but they have no
+progression authority. The experiment retains the fixed 10,534,912-byte
+attention state and 714,866,688 logical traffic bytes—**33.0305%** of dense—
+and adds no KV reads.
+
+This passes the train-only same-state value-capacity gate and authorizes a
+causal 28-logit selector. It does **not** pass Milestone 3, demonstrate native
+causal learnability, promote a package policy, authorize development, or open
+confirmation. The sealed confirmation split remained unopened. The
+[archived full-visible evidence](reports/olmoe_q7_retrieval_episodic_full_visible_simplex_oracle_2026-07-30/README.md)
+is rooted by result SHA-256
+`a8711f07fdcbe48b16ebe962aae1962e4613873640eba20bc7fa88238216aee1`.
+
+Two prospectively frozen causal screens have now tested that authorization:
+
+| Train-only selector | FP32 global | BF16 global | Minimum sequence | Minimum block | Positive layers | Logical traffic |
+|---|---:|---:|---:|---:|---:|---:|
+| Rank-4 query content plus mass | 0.2542615526 | **0.25422074198** | 0.23161600085 | 0.18371154473 | 16/16 | 36.8096% |
+| Eight-phase table plus mass | **0.2618976463** | **0.2618728353** | 0.2405241062 | 0.2244750908 | 16/16 | 34.0116% |
+
+The content arm reconstructs each packaged post-QNorm, pre-RoPE query and
+combines a rank-4 content projection with inference-available source masses.
+Its protocol/result SHA-256 roots are
+`0a58ba3a59d2f0f816046ca28aac304baf7663ef890a6b298f0cc7277613d051`
+and
+`9ea504f83a487584cb9ae2127565674a8e341ca58f6777a03514b0c9a281995c`.
+The phase arm instead adds an eight-step schedule-relative table to the
+smaller learned mass selector. Its four BF16 block-entry recoveries were
+0.314588398, 0.228395562, 0.261696236, and 0.224475091. It contains 82,944
+parameters serialized in 165,888 BF16 bytes; total logical traffic is
+736,100,352 bytes, or 34.0116% of dense. Its protocol/result SHA-256 roots are
+`8cb1c7b0e9a6bc2d23839cdbf4de973e66616cccc86e980e6a151d4f2b773987`
+and
+`52360cf47cb2eeab52e595961f436e4c1e7b79db6cdaa339b7f699d3290883ed`.
+
+All systems, authentication, deterministic replay, zero-model, masking, and
+BF16 parity checks passed. Semantically, however, phase conditioning improved
+the preceding mass-only BF16 recovery by only **0.0040699**, far short of the
+0.50 global requirement, and both learned classes are closed. These are
+train-only model-selection outcomes on an already exposed corpus, not
+independent generalization evidence. No development, confirmation, native
+integration, or package promotion was authorized. The next justified model
+class is a directional blockwise-QK feature controller that can represent
+query-to-key compatibility rather than only source mass, query content, or
+schedule phase. Milestone 2 remains passed; Milestone 3 remains blocked.
 
 Python owns packaged tokenization and prompt text handling. From token IDs
 through recurrent state, Q7 routing/expert execution, final logits, and
@@ -1379,10 +1699,56 @@ two-record fit improved its training objective on both records, yet its
 static 51-head native-Q7 mask was worse than the attention-mass mask on all
 four overall screen metrics. These six-record screens are development
 evidence from an already consumed corpus, not fresh Milestone 3
-confirmations. Those two static objectives are closed. A retrieval-targeted
-static selector trained Q7-aware on a new, larger synthetic corpus remains
-untested; prefix-conditioned dynamic allocation is the next fallback if it
-cannot pass.
+confirmations. Those two static objectives are closed. The separate
+retrieval-targeted implementation and its new synthetic 8/8/8 passkey
+protocol completed its full fit and development screen. `M2` passed the
+training-selection rule and the full-W128 control passed, but the static
+exact-51 candidate failed KL, NLL-delta, and hidden-state gates. The sealed
+confirmation remains unopened. Subsequent K2 prefix, exact payload,
+label-plus-payload, and head-gated K51 train screens also failed semantically
+while passing their systems budgets. The prospectively frozen
+K64/96/128/165 ranked episodic head-prefix screen then executed every
+candidate and failed: its deterministic best failed replay was K165 at
+1.331006 mean and 1.608617 worst CE, while only one record improved. The
+following fixed-K256 V2 logit-bias screen also failed all four nonzero arms;
+`gamma=1/2` was merely its replayed best failure and was worse than the
+historical `beta=0` result. Shared scalar calibration is closed. The
+same-state W128-shadow capacity screen that followed also failed: ranks
+2/4/8 recovered 40.05%/42.87%/46.93% globally, so each missed the frozen 50%
+gate despite passing every other condition. This closes only those global
+per-layer output subspaces with oracle coefficients. The dynamic per-head
+mass-matching oracle then recovered -10.89% globally, with all eight sequences
+negative. Its joint output-targeted successor also failed: even the continuous
+optimistic relaxation recovered only **0.22738059544921096** globally
+(1/8 sequences and 0/4 block entries at or above 0.25), while direct discrete
+replay recovered **0.1997680396822742** (0/8 and 0/4); both had 16/16
+positive layers. Protocol/result SHA-256 roots are
+`aa03a71e3dd9e1fbb413a7773d57189c41029c26b2f4372b2fb7a26744305d24`
+and
+`1329a51bac71cb81f44494c8ef70cb23a631eacebac5540b39e2e98ed5e30ea5`.
+No predictor, Milestone 3 promotion, or confirmation access was authorized.
+The exact per-slot successor then optimized the eight episodic values
+individually. Its constructible and exact-native-anchor optimistic hulls
+recovered **0.3844378107** and **0.3844378142** globally. Both passed all
+sequence, block-entry, and positive-layer checks but decisively missed the
+50% global requirement; the optimistic maximum objective-gap bound was only
+`5.90e-11`. Scalar mass retuning and this current nine-direction value family
+are closed. The no-extra-read full-visible successor then passed its frozen
+train-only capacity gate: constructible C28 recovered **0.6653937751**
+globally, with minimum sequence/block recovery
+**0.6447006551/0.6306278392** and 16/16 positive layers; optimistic C29
+recovered **0.6653865288**. It retained 10,534,912 bytes of state and
+714,866,688 logical traffic bytes (33.0305% of dense), with no new KV reads.
+This authorized a causal 28-logit selector, not Milestone 3 progression,
+development, confirmation, or a claim that the selector was learnable. The
+subsequent rank-4 query-content-plus-mass selector recovered only
+**0.25422074198** in BF16, and the smaller phase-conditioned mass selector
+recovered **0.2618728353**. Both are frozen train-only model-selection
+failures; all systems checks passed, but neither advanced to development,
+confirmation, or native integration. Phase improved the preceding mass-only
+result by only **0.0040699**, so query-content and phase-on-mass are closed.
+The next directional boundary is a blockwise-QK feature controller. See the
+[frozen full-visible report](reports/olmoe_q7_retrieval_episodic_full_visible_simplex_oracle_2026-07-30/README.md).
 
 [Gate 4](reports/milestone4_fixture/controller_gate.json) is also synthetic; adaptive
 execution averaged 7.98 of 8 allowed cycles, so it found essentially no compute saving.

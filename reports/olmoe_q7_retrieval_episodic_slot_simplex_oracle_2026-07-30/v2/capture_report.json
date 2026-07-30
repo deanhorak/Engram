@@ -1,0 +1,505 @@
+{
+  "authenticated_confirmation_descriptor": {
+    "answer_prediction_positions_per_record": 32,
+    "file": "confirmation.jsonl",
+    "prediction_positions_per_record": 128,
+    "record_identity_sha256": "b507767ea68c015fdb9347313921c59a0dbefc0c61a47883ade1fa837fc4e844",
+    "records": 8,
+    "sha256": "c74aa6532e94bfa4dd10bbc1e13c27a06c35f79edbc9bc921a4219409f903baa",
+    "tokens_per_record": 129
+  },
+  "bindings": {
+    "corpus_manifest": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_selector_2026-07-29_frozen/corpus_manifest.json",
+      "sha256": "476676c90cbdd64e595b6554cd1b168a568b4e3158188d4d16c2d18c93b3095e"
+    },
+    "inherited_head_mass_manifest": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_head_mass_oracle_2026-07-29_frozen/trace_shards/manifest.json",
+      "sha256": "93df0a554744b97e7436b9a8b4bb71473bc21fa9f6c90985431274859164e0b6"
+    },
+    "inherited_head_mass_protocol": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_head_mass_oracle_2026-07-29_frozen/protocol.json",
+      "sha256": "fe09689452e6ae4f1a1b15332c61c1cc990cfc29b6a8b0d5a1758d9490a93af5"
+    },
+    "inherited_head_mass_result": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_head_mass_oracle_2026-07-29_frozen/train_screen.json",
+      "sha256": "f7060e7373c5faf8f154891e93efad35659723d8e3f04d83638b62fa9cf72596"
+    },
+    "joint_gamma_protocol": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_joint_gamma_oracle_2026-07-30_v3_frozen/protocol.json",
+      "sha256": "aa03a71e3dd9e1fbb413a7773d57189c41029c26b2f4372b2fb7a26744305d24"
+    },
+    "joint_gamma_result": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_joint_gamma_oracle_2026-07-30_v3_frozen/train_screen.json",
+      "sha256": "1329a51bac71cb81f44494c8ef70cb23a631eacebac5540b39e2e98ed5e30ea5"
+    },
+    "selector_protocol": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_selector_2026-07-29_frozen/protocol.json",
+      "sha256": "f6961ec6bffadb306a75ae8aaa8c400d1282cbb096876532d75e22a295660580"
+    },
+    "slot_trace_manifest": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_slot_simplex_2026-07-30_frozen/trace_shards/manifest.json",
+      "sha256": "0ac40bfa8f41d23627ce9e3ee89283f68828ae02d482c77a43be0d4d17129b04"
+    },
+    "train_split": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_selector_2026-07-29_frozen/train.jsonl",
+      "sha256": "9f09a9f573bd7c33de9699ee4be5f5394dcc54d2595e3210d8bb923712e19b55"
+    },
+    "training_checkpoint": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_selector_2026-07-29_frozen/development_result.training_checkpoint.json",
+      "sha256": "9edf4fe7e7a1340c6f34bfe4d04544525947935116d662e94d98ccea4c282aa4"
+    },
+    "v1_protocol": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_slot_simplex_2026-07-30_frozen/protocol.json",
+      "sha256": "56b33472ee23353e945abb9741f3b5b16e70965450d023a45cd6223a8d85c4cb"
+    },
+    "v1_trace_parity": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_slot_simplex_2026-07-30_frozen/trace_parity.json",
+      "sha256": "4565a5fcaa2039f4229422243e0f121b3444c89495b4141b39f6358c19645a02"
+    }
+  },
+  "capture": {
+    "all_first_capture_tensors_reauthenticated": true,
+    "native_rerun_performed": false,
+    "native_runtime_opened_by_cached_handoff": false,
+    "read_positions_per_record": 32,
+    "record_order": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "records": 8,
+    "stored_slot_tensors": [
+      "slot_mass",
+      "slot_values"
+    ]
+  },
+  "capture_rows_sha256": "e4338c8e79a696f82e375145fcfa7d44cc70b35bfadfe58cb9c6547449c59de8",
+  "confirmation_split_opened": false,
+  "experiment": "olmoe_q7_retrieval_episodic_slot_simplex_authenticated_capture",
+  "output_projection": {
+    "dtype": "authenticated_BF16_loaded_as_float32",
+    "file_sha256": "93797e149ce7ecabc4fc8833f3ca11bb9e45839501b09b2ffed4940e798044d4",
+    "source": "/home/dean/repos/engram/work/olmoe_q7/package/transformer/non_mlp.safetensors",
+    "tensor_sha256": {
+      "model.layers.0.self_attn.o_proj.weight": "713f28304e77aa4a1b0b3a855cf5d3621eb877b5f3d143fdfc58f1e3efb0355e",
+      "model.layers.1.self_attn.o_proj.weight": "cd12b44bf6a0c10a16fa4a6f75e2b69f2cddb23c18eaed447bf83518fbdbd845",
+      "model.layers.10.self_attn.o_proj.weight": "96dcad962efc39eed5daf640a33c2febf2200224ea6b9869be8f49f76001dcc4",
+      "model.layers.11.self_attn.o_proj.weight": "750c064cacd22586000be8bb0045d54a90ba1f67a376203374a750d50b8f406c",
+      "model.layers.12.self_attn.o_proj.weight": "bf458e0d1d544df0b25338fa9338e924af33cb76799d2dcd9ac8d245c45a0a7b",
+      "model.layers.13.self_attn.o_proj.weight": "d0cdda96412dde6fc89549c11aa8603f073e46932db31172d8441fc9b595424b",
+      "model.layers.14.self_attn.o_proj.weight": "ebee83c0aa98367df6e2d21352f96c4b438c5641f10eb980fca4df8e39d0c01b",
+      "model.layers.15.self_attn.o_proj.weight": "3e4961a38a311966cbf66e266fa462ca2050a512e90f56137a57dc19428db1f3",
+      "model.layers.2.self_attn.o_proj.weight": "825b632c003a0340918c52e7e892faaa0d62e708eac22c7cfd9a3d859a81f92f",
+      "model.layers.3.self_attn.o_proj.weight": "912c8f916373aa11f2254bae3ddc153b826ceaf37f25ab6de57b7a8b0e6babbd",
+      "model.layers.4.self_attn.o_proj.weight": "11a42d3e819155730efa070087b43e45a8d1616c94dff441cdc2d27ec90422c9",
+      "model.layers.5.self_attn.o_proj.weight": "0eb89ca8301aa010f4e4ec3c8d451b1450ccc633d50020ea1fdb8af83a612717",
+      "model.layers.6.self_attn.o_proj.weight": "18d21b98611f4d77babf80dce8ae15c231fe90144d7945d2ffaf1c06fc9e23ea",
+      "model.layers.7.self_attn.o_proj.weight": "9263891eff7e90bf151aed8ac269a8ae04f1c214792f991ef1f952538e492f3e",
+      "model.layers.8.self_attn.o_proj.weight": "cf4568a74f1aad83c9804edd06b9747116f0a113dad69e9ed9153c181f0019f7",
+      "model.layers.9.self_attn.o_proj.weight": "8e161772c8f4ccddcf82aacecd39a73543e9dd99b58f62fa0f6dbc88bd43a84d"
+    }
+  },
+  "post_capture_authentication": {
+    "all_combined_trace_digests": true,
+    "all_historical_output_bindings": true,
+    "all_inherited_shards": true,
+    "all_slot_shards": true,
+    "confirmation_not_opened": true,
+    "historical_json_roots": true,
+    "output_projection_file_and_tensors": true
+  },
+  "record_authentication": [
+    {
+      "checks": {
+        "combined_base_slot_trace_digest_recomputed": true,
+        "inherited_file_and_tensor_hashes_authenticated": true,
+        "output_digest_bound_to_historical_result": true,
+        "reset_digest_matches_first_capture_descriptor": true,
+        "slot_file_and_tensor_hashes_authenticated": true,
+        "slot_values_exact_bf16_decodes": true,
+        "source_record_rederived_from_authenticated_train_split": true
+      },
+      "combined_full_trace_sha256": "24a5867c299fb0bc4967afb950c2a70512780f5f2b06cf74f70709ba4894c796",
+      "descriptor_reset_full_trace_sha256": "24a5867c299fb0bc4967afb950c2a70512780f5f2b06cf74f70709ba4894c796",
+      "descriptor_reset_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+      "historical_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+      "inherited_shard": {
+        "file": "train-00.safetensors",
+        "file_sha256": "082164c8738fd268f19dd14dd2f37e22facebb8551c8c888e11170d571ee8736",
+        "tensor_sha256": {
+          "base_attention_output": "45bce467122694847c7e4f6a50926531f4feb31cd4df665169f0fe6d5bd9dba5",
+          "base_projected": "4d2b96b363268f448dfeef1957ac2e9e63b087187fab332059a957653d504184",
+          "episodic_component": "d5da283feb734b914d1b2cbe4e49986f10f5862368da33fd05254fdf97e12e29",
+          "episodic_mass": "e7cb421f291758ba848a566535971e3953a6ff7b1d092c7e1189b310d528bf3f",
+          "regular_component": "eb4bd91cd7cb0569f717036e02ec7f5bf34b8d5cc3fa03d3937a461101b75833",
+          "regular_mass": "3fa82fb2168cbacb6d8b8176b560aba19b480bd376057bc40725c966808ef841",
+          "shadow_scheduled_mass": "714436238725f18f1726da51f23a3a090119798b81cad16fd8b41b0ae7d10990",
+          "target_residual": "efd2d50e21c10ed6007f8ac0e22ce378755f79c90672b4496662cabe271ada1e"
+        },
+        "trace_sha256": "4d67b0ab56aba553ca3b1f807ca265ab43294e0c85b66cd9bf89271fefee2d80"
+      },
+      "reconstruction": {
+        "base_component_reconstruction_max_abs": 5.960464477539063e-08,
+        "episodic_component_reconstruction_max_abs": 0.0,
+        "mass_partition_max_abs": 4.76837158203125e-07,
+        "slot_mass_reconstruction_max_abs": 1.7881393432617188e-07
+      },
+      "record_id": "olmoe-retrieval-passkey-v1-train-00",
+      "record_index": 0,
+      "slot_shard": {
+        "file": "train-00.safetensors",
+        "file_sha256": "390a4875a73b349c36254d45f6b1038c1d051971007273d4a7e609bf23f85c8e",
+        "tensor_sha256": {
+          "slot_mass": "dae9d71f42cf9f6b327e83c0edbeab22a201d7884488011daa95476a08931b14",
+          "slot_values": "528c1b8d99852d4c5c34a8c8c2d68f1d3f5a9d860b3534d49e71408a1b1a9e39"
+        }
+      },
+      "source_record_sha256": "f768e132d581d13927d3e3e9316017ce702290b95e346bd03b939210bcd30435"
+    },
+    {
+      "checks": {
+        "combined_base_slot_trace_digest_recomputed": true,
+        "inherited_file_and_tensor_hashes_authenticated": true,
+        "output_digest_bound_to_historical_result": true,
+        "reset_digest_matches_first_capture_descriptor": true,
+        "slot_file_and_tensor_hashes_authenticated": true,
+        "slot_values_exact_bf16_decodes": true,
+        "source_record_rederived_from_authenticated_train_split": true
+      },
+      "combined_full_trace_sha256": "fefeb2d231ab08d34cb187b2839d1dcdb6cf438381eab37f1353a0d7d5b1bd90",
+      "descriptor_reset_full_trace_sha256": "fefeb2d231ab08d34cb187b2839d1dcdb6cf438381eab37f1353a0d7d5b1bd90",
+      "descriptor_reset_output_evidence_sha256": "04aa7f77859554fdbdd8d6ede1fe5c9f23b42d804460a6d180157efe6715f291",
+      "historical_output_evidence_sha256": "04aa7f77859554fdbdd8d6ede1fe5c9f23b42d804460a6d180157efe6715f291",
+      "inherited_shard": {
+        "file": "train-01.safetensors",
+        "file_sha256": "5e9daa2a9449849b632c50b3f942838611206ac66d84e8f03bba294879d157ab",
+        "tensor_sha256": {
+          "base_attention_output": "54d7c852a42c7a27f6f041ab37fa95d27c1e68bc1e72933d27969cb1199ee516",
+          "base_projected": "a13bb38139a07849a576897e6572575b827ab3e9f06ca57346b7733e3cfa1f62",
+          "episodic_component": "57ae6551abbed24107e65f62509abd2ff722f84623c362031df35d0d1375a7e0",
+          "episodic_mass": "16d058dd48df6e00031dbaf77007e504a767e24c5cda6c36804c8b50da737df4",
+          "regular_component": "e07eb90b7cc25420091eed9105c9e23e0bc12fdf2a2f22c7cc769727f9cf0cc1",
+          "regular_mass": "99838bbaf8fe4f7c51fce8c4358e0658fe548372f09a09de87cd2b02de2d12a1",
+          "shadow_scheduled_mass": "d9af9bfad96691f5573d1edc738bdcf962a7761a339e03a38f3d0b37fd216650",
+          "target_residual": "aa364fd757f2bf739937e0148dc7f4dcb30d5fc38d19d4b9e9576380622addaa"
+        },
+        "trace_sha256": "b2c6e1795d1afc6256ec633f1243e4f1de3dcaddfc87a07941350e614367e749"
+      },
+      "reconstruction": {
+        "base_component_reconstruction_max_abs": 5.960464477539063e-08,
+        "episodic_component_reconstruction_max_abs": 0.0,
+        "mass_partition_max_abs": 4.76837158203125e-07,
+        "slot_mass_reconstruction_max_abs": 1.1920928955078125e-07
+      },
+      "record_id": "olmoe-retrieval-passkey-v1-train-01",
+      "record_index": 1,
+      "slot_shard": {
+        "file": "train-01.safetensors",
+        "file_sha256": "e44e4c9da396b991e980a6450347d39ed50a8b422848e2385eb592bdd1a9d91e",
+        "tensor_sha256": {
+          "slot_mass": "250f9bbc6e3e7bbdc574d4e8fd8a917e30ed1aeb741330aee3b34ec24afec8e0",
+          "slot_values": "52ec6142f3f3c029b893ea69ee79f403003c26fb3834c198def360fbb2d351ef"
+        }
+      },
+      "source_record_sha256": "87ebe0dc116e3d1998272119bca12d5b2b68dd2427330b7378fbf6d55bde874f"
+    },
+    {
+      "checks": {
+        "combined_base_slot_trace_digest_recomputed": true,
+        "inherited_file_and_tensor_hashes_authenticated": true,
+        "output_digest_bound_to_historical_result": true,
+        "reset_digest_matches_first_capture_descriptor": true,
+        "slot_file_and_tensor_hashes_authenticated": true,
+        "slot_values_exact_bf16_decodes": true,
+        "source_record_rederived_from_authenticated_train_split": true
+      },
+      "combined_full_trace_sha256": "7d64d28be34c73590f2b2121900db7aa97dcc6b342291d9b2018971c1c279f45",
+      "descriptor_reset_full_trace_sha256": "7d64d28be34c73590f2b2121900db7aa97dcc6b342291d9b2018971c1c279f45",
+      "descriptor_reset_output_evidence_sha256": "01430f19b5f02a868126d3e2da98891b778179dc346e4e8f43e4cb97cc8ebdc4",
+      "historical_output_evidence_sha256": "01430f19b5f02a868126d3e2da98891b778179dc346e4e8f43e4cb97cc8ebdc4",
+      "inherited_shard": {
+        "file": "train-02.safetensors",
+        "file_sha256": "8ca9c5cf8b01b41644cf9e124b2797ddc9bc33173c6ce0e2ed7f419749d180dc",
+        "tensor_sha256": {
+          "base_attention_output": "531c9fbb21a62df2435cc9b4844f22794c5453b94275a0dcc23945b40473e1fe",
+          "base_projected": "ce5b84ba08b0666ea452eba69d8c8745bdbf3aaaf4d59bea1229dfd52e46cb4a",
+          "episodic_component": "e2e187d49164b73d74fbd64fb538edf3e9dead87b403881e0d32a95208a39ebd",
+          "episodic_mass": "7a1783035541aa35a70e31f56f561415f43813116e26a6227a697972804997f7",
+          "regular_component": "b06fb05f5e35bb52ef0ba7781a90060d3db03231a95b5d49be64a0d600c3c121",
+          "regular_mass": "69546d3297d105fac7df7576d2f13bdd98727b3c4e9138b2d71a48a751b8b499",
+          "shadow_scheduled_mass": "c245f1cee5d8c07d70a5bc5d0334cc3743db0274c99de37b75b2632e02b40cad",
+          "target_residual": "1f89a571a83b3b03efd57935ac562a21ec8b4afbffda4f2ea91f101cd99e88a3"
+        },
+        "trace_sha256": "c9e846c60ea10ec1f3af8505da6736c37a85b3d81634f20f6a1edd2300d84be6"
+      },
+      "reconstruction": {
+        "base_component_reconstruction_max_abs": 5.960464477539063e-08,
+        "episodic_component_reconstruction_max_abs": 0.0,
+        "mass_partition_max_abs": 4.172325134277344e-07,
+        "slot_mass_reconstruction_max_abs": 1.1920928955078125e-07
+      },
+      "record_id": "olmoe-retrieval-passkey-v1-train-02",
+      "record_index": 2,
+      "slot_shard": {
+        "file": "train-02.safetensors",
+        "file_sha256": "3f6b11d06e4cbe9b33d2b42e9e84adcd2afecc733f1441307920019419aed11e",
+        "tensor_sha256": {
+          "slot_mass": "60de3476eb5361f9563d17043b9770d48172ce01fb506dc6cd41d9d2ce026bad",
+          "slot_values": "55e64248c8e0fdab273addd97e54898a93f73c87442bae75c4817388aeb0dfb8"
+        }
+      },
+      "source_record_sha256": "aad8003fb58143a002e52f17e0bcded43b6a11bc647afb7574bb6926e8aa82d9"
+    },
+    {
+      "checks": {
+        "combined_base_slot_trace_digest_recomputed": true,
+        "inherited_file_and_tensor_hashes_authenticated": true,
+        "output_digest_bound_to_historical_result": true,
+        "reset_digest_matches_first_capture_descriptor": true,
+        "slot_file_and_tensor_hashes_authenticated": true,
+        "slot_values_exact_bf16_decodes": true,
+        "source_record_rederived_from_authenticated_train_split": true
+      },
+      "combined_full_trace_sha256": "80208c787406db7fa887df4b04da9faeab27db4e32ef5af7bd1d084ed510deb2",
+      "descriptor_reset_full_trace_sha256": "80208c787406db7fa887df4b04da9faeab27db4e32ef5af7bd1d084ed510deb2",
+      "descriptor_reset_output_evidence_sha256": "d3e7606a86515688bd3d027f222e3e437bc5eead49079781a9824fc0636a1f61",
+      "historical_output_evidence_sha256": "d3e7606a86515688bd3d027f222e3e437bc5eead49079781a9824fc0636a1f61",
+      "inherited_shard": {
+        "file": "train-03.safetensors",
+        "file_sha256": "022b055f916d91db533a35c365aee4a5bcc80ffc4b440065a8212fcf54aad953",
+        "tensor_sha256": {
+          "base_attention_output": "b22cca53ee03274e49e886d5dba4358122fd2759475c64ee8de1a15645f4d9e7",
+          "base_projected": "8a0a47e6ee9c5ef65df60b3e72af5fc349c24fda6dec8876f1d4eadd9c225684",
+          "episodic_component": "bbd91a0af971dbdb650d74e3115e66ec888738581604f8359955212154f4976e",
+          "episodic_mass": "979e921cb526a01f9a7330aeef9f3135eef7280e08186af87f2b50cfcc11199d",
+          "regular_component": "c4da05fdc52ea77bb958752abf67f235e5b3f8459687309c2ce0b82c2ed33644",
+          "regular_mass": "0a5b6e584c25bf287b034319adc928c811d4eda40dce25e8fdbc083b05ed6516",
+          "shadow_scheduled_mass": "61476325efe54cfd3d0d92f76ee2c945501513f05fee3d0bf75ba7dcbde02d58",
+          "target_residual": "6c634d23b5586348caf32a10d2006ca56b8992f9825abdcee53843eb8332fd6a"
+        },
+        "trace_sha256": "e1aefc80d53432be10d8d68adce558d70d76fe363e63daf4be1fc6c3b727bdb0"
+      },
+      "reconstruction": {
+        "base_component_reconstruction_max_abs": 8.940696716308594e-08,
+        "episodic_component_reconstruction_max_abs": 0.0,
+        "mass_partition_max_abs": 4.172325134277344e-07,
+        "slot_mass_reconstruction_max_abs": 1.1920928955078125e-07
+      },
+      "record_id": "olmoe-retrieval-passkey-v1-train-03",
+      "record_index": 3,
+      "slot_shard": {
+        "file": "train-03.safetensors",
+        "file_sha256": "c81d045a499d0e819f30dfd3f2ce746cb6ba5f946c06572710db52790c215adf",
+        "tensor_sha256": {
+          "slot_mass": "7bfd4fd4e82868b4a836a1867c1799076c6a86f300e87d55f8bbc1ad111951fa",
+          "slot_values": "39334687a2d24c11f63ca810dc80a1710e64541cb73fb983538aa69294290794"
+        }
+      },
+      "source_record_sha256": "2b1376b347834536f3bf5305c4edd6733a761e126a999d8d44d8c9b7527865c7"
+    },
+    {
+      "checks": {
+        "combined_base_slot_trace_digest_recomputed": true,
+        "inherited_file_and_tensor_hashes_authenticated": true,
+        "output_digest_bound_to_historical_result": true,
+        "reset_digest_matches_first_capture_descriptor": true,
+        "slot_file_and_tensor_hashes_authenticated": true,
+        "slot_values_exact_bf16_decodes": true,
+        "source_record_rederived_from_authenticated_train_split": true
+      },
+      "combined_full_trace_sha256": "6752df1b933fc51f59be1d1e4e43fb45a4cff9f89630c242f7211adabb6ac5e1",
+      "descriptor_reset_full_trace_sha256": "6752df1b933fc51f59be1d1e4e43fb45a4cff9f89630c242f7211adabb6ac5e1",
+      "descriptor_reset_output_evidence_sha256": "21e3141de7cad305dc954ab321aa5f67af91eaba0ff1be9f8e4d2c63c7be2530",
+      "historical_output_evidence_sha256": "21e3141de7cad305dc954ab321aa5f67af91eaba0ff1be9f8e4d2c63c7be2530",
+      "inherited_shard": {
+        "file": "train-04.safetensors",
+        "file_sha256": "137ef71a3e0ffdc1882bf555be5c366cf097df35f27fe71cef0c0b26a64ad527",
+        "tensor_sha256": {
+          "base_attention_output": "da24b6ecb7fa6533ada849bbcddb652b448db93b4974b935137906dc8fab3905",
+          "base_projected": "75b827ef9548cfe09e9356a872a37db2ac12e33908a2c531afb1b401f6dfb7b4",
+          "episodic_component": "55947643cfa0dd1c68c9422b66b838e8209ca9417a2c7aa600d7fce954f032a3",
+          "episodic_mass": "26da77e4945668318a844af8bf4c13a66b82f23ea7197bf91481e40bc83f3f30",
+          "regular_component": "3bb97e812afd5285f7960f191df8f5d72b937a8e7ac2b70673fbe9c0daecb68f",
+          "regular_mass": "1adf26c752669ca049cff30124bda8b097bfa20c8a20e42552486a384b7014fe",
+          "shadow_scheduled_mass": "8d82aece4da7a07dfd944cda21278988d2ce37cfdc253d471f2888bc4bec82f5",
+          "target_residual": "e4b553d8937b44c44fd8a2574dfd4750149fbdefb47ca1df9fc31984b3c5c916"
+        },
+        "trace_sha256": "8ab6a4154036675c96bab22939adfe7a1b36ee11c0acd6b7249d8f509eb08dda"
+      },
+      "reconstruction": {
+        "base_component_reconstruction_max_abs": 5.960464477539063e-08,
+        "episodic_component_reconstruction_max_abs": 0.0,
+        "mass_partition_max_abs": 4.172325134277344e-07,
+        "slot_mass_reconstruction_max_abs": 1.1920928955078125e-07
+      },
+      "record_id": "olmoe-retrieval-passkey-v1-train-04",
+      "record_index": 4,
+      "slot_shard": {
+        "file": "train-04.safetensors",
+        "file_sha256": "fd668d72e20cac7a2b5c730c9f4f4dfbc53c72d34761e7e5fdf30468e4cbfdad",
+        "tensor_sha256": {
+          "slot_mass": "952ceab988bf72835e89f9a4e5bb33db740d0276ab6424c4ed9a438232a5f7c0",
+          "slot_values": "01be6f9aa4007d9fab4dd04470eb7ebf65432c53e0e68b003796eb2ff82b5488"
+        }
+      },
+      "source_record_sha256": "33b139cf3c4d564d38cb0af058e4c3d553f18293fa676098952267884115abbb"
+    },
+    {
+      "checks": {
+        "combined_base_slot_trace_digest_recomputed": true,
+        "inherited_file_and_tensor_hashes_authenticated": true,
+        "output_digest_bound_to_historical_result": true,
+        "reset_digest_matches_first_capture_descriptor": true,
+        "slot_file_and_tensor_hashes_authenticated": true,
+        "slot_values_exact_bf16_decodes": true,
+        "source_record_rederived_from_authenticated_train_split": true
+      },
+      "combined_full_trace_sha256": "f0a16b44515cda6ab12a46a2b36d4c1a85009fa3217f49cd18b5e1acb5d58e37",
+      "descriptor_reset_full_trace_sha256": "f0a16b44515cda6ab12a46a2b36d4c1a85009fa3217f49cd18b5e1acb5d58e37",
+      "descriptor_reset_output_evidence_sha256": "a128fd9d55f8966699a31d11fbce139d5a12e624e1fde050bb5a41944f7aec33",
+      "historical_output_evidence_sha256": "a128fd9d55f8966699a31d11fbce139d5a12e624e1fde050bb5a41944f7aec33",
+      "inherited_shard": {
+        "file": "train-05.safetensors",
+        "file_sha256": "aaa11f7c74303ad5bb4652d8a944e0cce49923381eacba0cce2a110e67fee068",
+        "tensor_sha256": {
+          "base_attention_output": "b5bf52f9c6bfa5447d6263b8937cfb2bd1188008d2c6e1a4410847595f2ba6de",
+          "base_projected": "35128835d8ca851adb186599f5cf75d60eda29d044651e2478fee03019d312c5",
+          "episodic_component": "4c33d92b443f409d84a32c59a13ba03ab04314f69db2e47b386ecbfa019b9b66",
+          "episodic_mass": "fece01c499d90de52d407e19bb285d6790008c6c1c70bf092463d23c9bbb014c",
+          "regular_component": "ab22eb06d3f7ad74611b2099290cce4ef28ad916b2aa0063d9c645257fec4b14",
+          "regular_mass": "797c4a3840373de142d1b92bd798507118420c9347d37ef850cb4b173bd72e45",
+          "shadow_scheduled_mass": "d5ff35146317f801f7e99439ad324086825c6e193486e5a4bb852e0424ca64b0",
+          "target_residual": "16d677ec3a1a8c3d43325de9fe78eec292f2b0aaed62262f980b50cc8ac03e12"
+        },
+        "trace_sha256": "5c5ac52b52ff829c6097e050524b0d32d29454c28692d58fa7bfa0c82edeabc0"
+      },
+      "reconstruction": {
+        "base_component_reconstruction_max_abs": 5.960464477539063e-08,
+        "episodic_component_reconstruction_max_abs": 0.0,
+        "mass_partition_max_abs": 4.172325134277344e-07,
+        "slot_mass_reconstruction_max_abs": 1.1920928955078125e-07
+      },
+      "record_id": "olmoe-retrieval-passkey-v1-train-05",
+      "record_index": 5,
+      "slot_shard": {
+        "file": "train-05.safetensors",
+        "file_sha256": "f97d95c6bbc2284bab07fb1e29ca77ca88fd7f9b7c500ab5136b3afe761b93c7",
+        "tensor_sha256": {
+          "slot_mass": "322e3b0fcce5ba5ba6df89d4c156cb7ee7d6b526d488afc39c91379916d0089d",
+          "slot_values": "68f99fde4f2045df3bcade5e046c498abeac8ff2a645d47e448af9b59d28c147"
+        }
+      },
+      "source_record_sha256": "c7208f31d27d1b33b35ed2ff2e4aaf09106f21388599c4378bffc81df3815a90"
+    },
+    {
+      "checks": {
+        "combined_base_slot_trace_digest_recomputed": true,
+        "inherited_file_and_tensor_hashes_authenticated": true,
+        "output_digest_bound_to_historical_result": true,
+        "reset_digest_matches_first_capture_descriptor": true,
+        "slot_file_and_tensor_hashes_authenticated": true,
+        "slot_values_exact_bf16_decodes": true,
+        "source_record_rederived_from_authenticated_train_split": true
+      },
+      "combined_full_trace_sha256": "6363c154972911b4b2db18216ddc87e36321e06f3fb7bfce3de54754563657e0",
+      "descriptor_reset_full_trace_sha256": "6363c154972911b4b2db18216ddc87e36321e06f3fb7bfce3de54754563657e0",
+      "descriptor_reset_output_evidence_sha256": "4bb78772d10f8a4fbcb62434e4a8a3b561bae7291bbb64b5751ba93e15b0538e",
+      "historical_output_evidence_sha256": "4bb78772d10f8a4fbcb62434e4a8a3b561bae7291bbb64b5751ba93e15b0538e",
+      "inherited_shard": {
+        "file": "train-06.safetensors",
+        "file_sha256": "5e1dde85be1cad04289c51d4315920e9a0d3059940cd6a34ad23460fac397c5a",
+        "tensor_sha256": {
+          "base_attention_output": "425e0176d46a68cec415d210bc61dd37bf61724a059805afc4d70e940bdeff65",
+          "base_projected": "a089d88082b56f58437a9f4fb65ea408fa727da7d00e219bab5d13efe8248134",
+          "episodic_component": "5d54fc07b46f86193f3041f9ad50d0d466fe16e82f658136bc0664be8fc215f5",
+          "episodic_mass": "6da71d23f6d0b9ec45cba06217691ae34b1ad27c3d44c5e1b13ad25210846267",
+          "regular_component": "d36cf4d4661c95ad9a0fcbcf4315c05ca7a12d65188f859e95960c9c0a3dcc82",
+          "regular_mass": "d7c838bfe016da003085727b3a1541ebb2a5ac109cee8e6a1fad566625fd8143",
+          "shadow_scheduled_mass": "10196974339dcf698b83ee9053b680a793a651ea051c889cee72447d885e5d0c",
+          "target_residual": "3f5ec8f5e83384bd164789d4b97578e0b74aa083b363535086b1ab2329d990bc"
+        },
+        "trace_sha256": "b5f5c9150700c5ce3bfa3abe8413b0c6a6f0508c9f147c34678042781bf07db8"
+      },
+      "reconstruction": {
+        "base_component_reconstruction_max_abs": 8.940696716308594e-08,
+        "episodic_component_reconstruction_max_abs": 0.0,
+        "mass_partition_max_abs": 4.172325134277344e-07,
+        "slot_mass_reconstruction_max_abs": 1.1920928955078125e-07
+      },
+      "record_id": "olmoe-retrieval-passkey-v1-train-06",
+      "record_index": 6,
+      "slot_shard": {
+        "file": "train-06.safetensors",
+        "file_sha256": "d91d329bde5296679a7c17bc7975b73139e16f5c47e4d721da609d2e05c1189d",
+        "tensor_sha256": {
+          "slot_mass": "d82facd2889c7448f46158ba1210772078ef68af4116057dbf69b5b9575d8fe2",
+          "slot_values": "58bf36bc155d11420b97ec62a39945384699c3e0619685fd668aad8d85c0a676"
+        }
+      },
+      "source_record_sha256": "a26fc441493c653d0e8878244cac3b7461968e0894b4f7bec7a1cba3ea07e4ac"
+    },
+    {
+      "checks": {
+        "combined_base_slot_trace_digest_recomputed": true,
+        "inherited_file_and_tensor_hashes_authenticated": true,
+        "output_digest_bound_to_historical_result": true,
+        "reset_digest_matches_first_capture_descriptor": true,
+        "slot_file_and_tensor_hashes_authenticated": true,
+        "slot_values_exact_bf16_decodes": true,
+        "source_record_rederived_from_authenticated_train_split": true
+      },
+      "combined_full_trace_sha256": "1ec3178e93f546b6da95539cf401111a2fc180a6f25bc7293f9a56c00028e399",
+      "descriptor_reset_full_trace_sha256": "1ec3178e93f546b6da95539cf401111a2fc180a6f25bc7293f9a56c00028e399",
+      "descriptor_reset_output_evidence_sha256": "cad925a275ba13a05040ce4b670b25c4779d3d4ed6ca3b17f2223d526814cc38",
+      "historical_output_evidence_sha256": "cad925a275ba13a05040ce4b670b25c4779d3d4ed6ca3b17f2223d526814cc38",
+      "inherited_shard": {
+        "file": "train-07.safetensors",
+        "file_sha256": "262b789ce2397fd722ab34cdf23f71498a791dcaab6041a74cb4f6d391c537b1",
+        "tensor_sha256": {
+          "base_attention_output": "145fc0856ce1ad750401693ca8cfbaf72e228bedc63dbc16869cdffc2bdda530",
+          "base_projected": "e1e45cc935ebe603d8dd9781a225925d3da4e7359a9c5a13738c28eabf214be5",
+          "episodic_component": "cd5831a309b0608b971f6e37fcaa90362729b6f38b61d0e97009e9532af3d1f5",
+          "episodic_mass": "46e94a4b0832502cf59aaea2d7ead15514e1bcbfc87fb0259773b0fa5ba17a2e",
+          "regular_component": "07ea13daa4a6d1e1e2cb4a3f111f8d13ca30e00cf0098e6ecb6d151e29dd632d",
+          "regular_mass": "d206e1263ff48ecd53182ce46aea8355c0aeb14fcaaa26741ab03f7854bd0234",
+          "shadow_scheduled_mass": "4e3443ca94c9c111b491241e5a317c48621baad8ef8573132136735e646bcc53",
+          "target_residual": "4aef2f170cb6ab361adfdc273b6c206bb4e1d7d56027baaff99673c9ee4f3bdc"
+        },
+        "trace_sha256": "5a79bd7bc793fd4366043ee699504fd8c7d77a0c97ab20cd008aa2e29bf8e999"
+      },
+      "reconstruction": {
+        "base_component_reconstruction_max_abs": 8.940696716308594e-08,
+        "episodic_component_reconstruction_max_abs": 0.0,
+        "mass_partition_max_abs": 4.76837158203125e-07,
+        "slot_mass_reconstruction_max_abs": 1.1920928955078125e-07
+      },
+      "record_id": "olmoe-retrieval-passkey-v1-train-07",
+      "record_index": 7,
+      "slot_shard": {
+        "file": "train-07.safetensors",
+        "file_sha256": "52c52df43121e6a73a8966b345f1cf48724e0c14255d8d339d0f596a6bab4d0e",
+        "tensor_sha256": {
+          "slot_mass": "9c369e7b875f54849ed21f6fe0d37bf3ae873b2402506b3b25f9fa892fbfadd3",
+          "slot_values": "9b02dcb4daff24fcafb0ad74026de3295dcb844e60aa37697d570a182445adfb"
+        }
+      },
+      "source_record_sha256": "21e4a9a20939bea60c037e28a74f678c877cf45739713e346dd7e7cb54fc77ed"
+    }
+  ],
+  "reset_replay_evidence": {
+    "claim": "V1 recorded equal first/reset full-trace and output-evidence digests for every record; V2 verifies those descriptor equalities but cannot independently reconstruct reset execution from tensors that were not persisted",
+    "complete_output_evidence_payloads_persisted": false,
+    "first_capture_tensors_recomputed_from_persisted_shards": true,
+    "native_rerun_performed": false,
+    "reset_tensors_persisted": false,
+    "status": "descriptor_attested_not_independently_rederived"
+  },
+  "schema_version": 1,
+  "status": "authenticated_complete_v1_capture_for_cached_v2"
+}

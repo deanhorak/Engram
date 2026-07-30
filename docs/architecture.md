@@ -56,13 +56,32 @@ the six reused development records: KL 0.079132, top-1 0.864583, NLL delta
 +0.081199, and hidden L2 0.182647. Its 44.9753872% read schedule and all
 execution evidence passed, but all overall quality thresholds failed. This
 closes the tested two-record natural-prose causal/value objective, not every
-static selector. A Q7-aware selector trained specifically on synthetic
-retrieval failures remains justified; a causally valid prefix-conditioned
-allocator is the next fallback if that distinct objective fails. W128 itself
-reads 100% when applied globally and is not deployable. Measured whole-system
-traffic and optimization also remain. Milestone 2 remains passed for the
-qualified Q7 semantic path, while Milestone 3 remains blocked on bounded
-attention.
+static selector. The later Q7-aware synthetic retrieval selector also failed
+its exact-51 development gate while its W128 control passed. Train-only K2
+prefix, payload, label-plus-payload, K51, ranked K64/K96/K128/K165, and
+fixed-K256 scalar-bias branches then failed without violating their systems
+contracts. Finally, a same-state W128-shadow capacity screen found that ranks
+2/4/8 recovered 40.05%/42.87%/46.93% of the K256 residual globally with
+oracle coefficients, below its frozen 50% gate. A later per-head
+scheduled-source-mass oracle made scalar mass matching much more accurate but
+worsened post-`W_o` recovery to -10.89%. The final joint output-targeted
+gamma screen also failed: its continuous optimistic capacity bound recovered
+22.74% globally and its discrete direct arm recovered 19.98%, versus the
+frozen 50% requirement. A later exact per-slot product-simplex oracle raised
+the ceiling to 38.44%, but its exact-native-anchor optimistic hull still
+failed the global gate with negligible certificate uncertainty. The current
+regular aggregate plus eight episodic values is therefore closed. The
+full-visible successor exposed the 16 local, four selected-older, and eight
+episodic values separately. Its constructible C28 arm passed the frozen
+train-only capacity gate at 66.54% global recovery, with no additional KV
+state or reads; optimistic C29 also passed. This establishes that the values
+already fetched contain sufficient same-state capacity and authorizes a
+causal 28-logit selector. It does not establish that such a selector is
+learnable or pass a native rollout, development, confirmation, package, or
+Milestone 3 gate. W128 itself reads 100% when applied globally and is not
+deployable. Measured whole-system traffic and optimization also remain.
+Milestone 2 remains passed for the qualified Q7 semantic path, while
+Milestone 3 remains blocked on causal bounded-attention selection.
 
 Engram's target runtime combines a shared recurrent controller, fixed sparse semantic
 memory derived from SwiGLU records, hybrid local/recurrent/retrieval episodic memory, an
@@ -377,21 +396,90 @@ hidden L2, and both later bands failed all four metrics. This is worse on
 every overall metric than the prior attention-mass mask. No confirmation was
 opened and no package policy was promoted.
 
-This result closes static selection by attention mass and by the tested
-two-record natural-prose causal/value objective. It does not test
-retrieval-specific supervision. The next experiment will train a Q7-aware
-retrieval-head selector on a new synthetic retrieval corpus, concentrating the
-causal objective on retrieval-answer positions, as motivated by
-[DuoAttention](https://arxiv.org/abs/2410.10819). Selection and adjudication
-must use a genuinely reserved holdout; the consumed six-record screen cannot
-support more tuning. If the retrieval-targeted selector cannot pass at the
-same exact state and read budget, the next architecture must allocate memory
-from a causally available prefix, consistent with adaptive per-head and
-task-aware budgets in [Ada-KV](https://arxiv.org/abs/2407.11550) and
-[Task-KV](https://arxiv.org/abs/2501.15113). Source commit `483c62f` binds the
-completed result. The protocol, training, screen-protocol, and screen-result
-roots begin `037ebfd7`, `bacb0e31`, `282bfe0b`, and `437d0de4`,
-respectively.
+This result closed static selection by attention mass and by the tested
+two-record natural-prose causal/value objective. A later Q7-aware
+retrieval-targeted selector used a new 8/8/8 synthetic passkey corpus and
+answer-only supervision. Its exact-51 `M2` mask passed the training-selection
+rule, but failed development KL, NLL-delta, and hidden-state gates while the
+full-W128 control passed. The reserved confirmation split was not opened.
+
+The subsequent train-only capacity branch removed selector uncertainty.
+Causal K2 prefix prototypes, exact payload-only and label-plus-payload
+episodic oracles, the transferred K51 mask, and ranked K64/K96/K128/K165
+head prefixes all failed strict answer-loss progression while passing native
+resource and replay checks. The all-head K256 payload was still the strongest
+bounded representation at mean/worst answer CE 1.224460/1.327343 and
+33.0305% upper-bound traffic.
+
+A versioned logit-bias ABI then kept that K256 representation and schedule
+fixed and added one shared `beta=float32(log(gamma))` to every episodic score.
+Exact `beta=0` V1/V2 parity passed. All four nonzero arms
+`gamma={1/2,1/4,3/16,1/8}` completed the eight-record train screen and
+failed; their mean/worst CE values were 1.461414/1.669250,
+1.883818/2.288258, 2.161750/2.595642, and 2.725091/3.430532.
+`gamma=1/2` was replayed only as the best failed nonzero arm and remained
+worse than historical `beta=0`. The immutable
+[V2 report](../reports/olmoe_q7_retrieval_episodic_logit_bias_2026-07-29/summary.md)
+closes shared scalar softmax calibration; it does not promote a new attention
+policy.
+
+The subsequent **same-state shadow residual** screen fixed `beta=0` as the
+K256 base. At every layer/token, a non-intervening train-only W128 shadow and
+the deployable branch consumed identical candidate-produced Q/K/V. If `b` is
+the base output after `W_o` and `f` is the shadow output after the same
+projection, the target was `f-b`. Leave-one-sequence-out ranks 2/4/8 recovered
+0.400470/0.428686/0.469253 globally with oracle held-out coefficients. Every
+rank passed its per-sequence, block-entry, finite, and positive-layer
+conditions, but all missed the frozen 0.50 global gate. The
+[archived result](../reports/olmoe_q7_retrieval_episodic_residual_capacity_2026-07-29/summary.md)
+therefore closes rank-at-most-8 global per-layer output subspaces, not residual
+correction in general.
+
+No causal coefficient predictor, production correction operator, loader, or
+package field was authorized. Two subsequent capacity tests have now closed
+the remaining scalar-mass branch. First, an oracle selected one of eight gamma
+codes independently at every record/read/layer/head coordinate to match exact
+scheduled-source probability mass. Mean mass error fell from 0.04451 to
+0.00848, yet global post-`W_o` residual recovery worsened to -10.89%. Scalar
+probability mass is not a sufficient proxy for the value vector delivered
+through the output projection.
+
+The follow-up [joint output-targeted oracle](../reports/olmoe_q7_retrieval_episodic_joint_gamma_oracle_2026-07-30/summary.md)
+optimized all 16 head codes together against the exact post-`W_o` residual,
+including cross-head projection terms. Even its more permissive continuous
+box relaxation had an optimistic recovery upper bound of only 22.74%
+globally, with seven of eight sequences and every block entry below 25%. The
+discrete direct float32 arm recovered 19.98%. All 16 layers improved, but the
+frozen global, sequence, and block gates failed. This closes only the cached
+same-state bounded affine `(q,d)` family at fixed K256. It does not close
+episodic attention generally; the next architecture must expose additional
+retrieved value directions or change the bounded memory mechanism rather than
+retune one aggregate episodic mass.
+
+The next [per-slot capacity oracle](../reports/olmoe_q7_retrieval_episodic_slot_simplex_oracle_2026-07-30/summary.md)
+did expose all eight episodic values separately. A constructible convex
+mixture over those values plus the regular aggregate recovered 38.44%
+globally. An optimistic hull containing the exact native head output changed
+that result by less than `4e-9`; its certified upper bound still missed the
+50% gate. This closes that nine-direction value family while leaving one
+important no-extra-read expansion: split the regular aggregate into the 16
+local and four selected-older values that the current kernel already reads.
+The frozen
+[full-visible capacity oracle](../reports/olmoe_q7_retrieval_episodic_full_visible_simplex_oracle_2026-07-30/README.md)
+then exposed those 20 regular values separately alongside all eight episodic
+values. Constructible C28 recovered 0.6653937751 globally, with minimum
+sequence and block-entry recoveries of 0.6447006551 and 0.6306278392 and
+16/16 positive layers. Optimistic C29 recovered 0.6653865288. Both passed
+their frozen qualification, replay, certificate, and authentication checks.
+Nested C10/C16 results of 0.5335805245/0.6021187653 are diagnostics only.
+
+Architecturally, this is the first evidence that the existing bounded value
+set—not a larger KV store—contains enough same-state residual capacity. It
+does not define the causal map from inference state to the 28 coefficients.
+The next component is therefore a causal 28-logit selector whose inputs,
+state, traffic, and latency are fully accounted. Package promotion and
+Milestone 3 remain blocked until that selector survives native causal
+rollout, development, and later confirmation.
 
 ## Token-level controller and output path
 

@@ -107,11 +107,97 @@
   also negative. Its complete native Q7 screen reached
   KL 0.079132, top-1 0.864583, NLL +0.081199, and hidden L2 0.182647 at the
   same 44.9753872184% read fraction—worse than the attention-mass mask on all
-  four overall metrics. That closes the tested objective, not
-  retrieval-specific supervision. Q7-aware retrieval-targeted training on a
-  new synthetic corpus remains open; prefix-conditioned allocation is the
-  fallback. Milestone 2 remains passed for Q7, while Milestone 3 remains
+  four overall metrics. That closes the tested objective.
+- Retrieval-specific supervision has now also produced a negative result. An
+  exact-51 selector trained on eight synthetic passkey records and passed its
+  answer-only training rule, but failed KL, NLL-delta, and hidden-state gates
+  on eight separate development records while the W128 control passed. The
+  eight-record confirmation split stayed sealed. This rules out that static
+  mask at the declared budget; it is not broad evidence about natural
+  long-context language.
+- The later episodic results are train-only capacity/attribution evidence.
+  Causal K2 prototypes, exact payload and label-plus-payload caches, K51, and
+  ranked K64/K96/K128/K165 prefixes all failed strict answer-loss
+  progression. They reuse one eight-record synthetic training population and
+  cannot support a development or confirmation claim.
+- The fixed-K256 V2 logit-bias screen also failed all four nonzero candidates.
+  `gamma=1/2` is only the deterministic best failed nonzero arm; it is not
+  promoted and is materially worse than historical `beta=0`. This closes one
+  shared scalar adjustment to episodic softmax mass, not learned vector
+  correction or episodic memory as a class. See the
+  [archived result](../reports/olmoe_q7_retrieval_episodic_logit_bias_2026-07-29/summary.md).
+- The completed same-state shadow residual screen is train-only optimistic
+  capacity evidence, not an inference feature. Ranks 2/4/8 recovered
+  40.05%/42.87%/46.93% globally with oracle held-out coefficients and missed
+  the frozen 50% condition; every other capacity condition passed. This
+  closes only rank-at-most-8 global per-layer output subspaces for that fixed
+  K256 residual. It does not reject higher or input-conditioned bases,
+  per-head control, learned causal prediction, or episodic memory as a class.
+  The [archived result](../reports/olmoe_q7_retrieval_episodic_residual_capacity_2026-07-29/summary.md)
+  promoted no rank, native loader, package field, development run, or
+  confirmation. Milestone 2 remains passed for Q7, while Milestone 3 remains
   blocked.
+- The later per-head gamma evidence is also narrow. Scheduled-source-mass
+  matching improved mean scalar error from 0.04451 to 0.00848 but produced
+  -10.89% post-`W_o` recovery, showing that total source-span probability is
+  not a sufficient value-vector target. The joint output-targeted oracle then
+  recovered at most 22.74% under a certified optimistic continuous bound and
+  19.98% through its direct discrete arm. Seven of eight sequences and all
+  four block entries missed 25% even under the optimistic bound. This closes
+  only the cached same-state bounded affine `(q,d)` reweighting family at
+  fixed K256. The discrete solver certifies one- and two-head-flip local
+  optimality, not the global `8^16` grid. It does not reject separately
+  addressable retrieved value groups, richer memory, causal learned retrieval,
+  or attention substitution in general. The
+  [archived joint result](../reports/olmoe_q7_retrieval_episodic_joint_gamma_oracle_2026-07-30/summary.md)
+  authorized no predictor, development run, confirmation access, package
+  field, or Milestone 3 progression.
+- The later exact per-slot value oracle is stronger but still train-only,
+  same-state capacity evidence. Its constructible and exact-native-anchor
+  optimistic arms recovered 38.443781% and 38.443781% globally. Every
+  sequence, block entry, and layer condition passed, but both missed the
+  frozen 50% global requirement. The optimistic maximum objective-gap bound
+  was `5.90e-11`, so this is a decisive failure for the current regular
+  aggregate plus eight episodic values. It does not reject independent
+  reweighting of the 16 local and four selected-older values hidden inside
+  that aggregate, nor does it reject a memory that stores new values. The
+  [archived per-slot result](../reports/olmoe_q7_retrieval_episodic_slot_simplex_oracle_2026-07-30/summary.md)
+  authorized no selector, causal rollout, development/confirmation access,
+  package field, or Milestone 3 progression.
+- The subsequent
+  [full-visible result](../reports/olmoe_q7_retrieval_episodic_full_visible_simplex_oracle_2026-07-30/README.md)
+  is positive but remains train-only, same-state oracle evidence.
+  Constructible C28 recovered 66.539378% globally, with 64.470066% minimum
+  sequence recovery, 63.062784% minimum block-entry recovery, and 16/16
+  positive layers. Optimistic C29 recovered 66.538653%. All frozen
+  qualification, gate, replay, and post-authentication checks passed at
+  10,534,912 bytes of state and 714,866,688 logical traffic bytes (33.0305%
+  of dense), with no new KV reads. The coefficients were nevertheless chosen
+  using the target residual. This result does not show causal learnability,
+  native rollout quality, generalization, latency, development or
+  confirmation success, package eligibility, or a Milestone 3 pass. It
+  authorized the later causal selector screens; it did not prejudge their
+  outcome.
+- The authorized learned-selector screens are now both negative. The rank-4
+  query-content-plus-mass arm recovered 0.25422074198 globally in BF16, with
+  0.23161600085 minimum-sequence and 0.18371154473 minimum-block recovery. Its
+  36.8096% traffic contract and all systems/authentication checks passed. The
+  result closes this particular low-rank query-content class, not every
+  content-sensitive attention controller.
+- The phase-conditioned mass arm recovered 26.187284% globally in BF16, with
+  24.052411% minimum-sequence and 22.447509% minimum-block recovery. All 16/16
+  layers were positive, but two of four block entries missed 25% and the
+  global result missed 50%. Its 82,944-parameter, 165,888-byte artifact fits
+  the 34.0116% traffic contract and passed all parity, systems, and
+  authentication checks. Phase improved the preceding mass-only result by
+  only 0.0040699. This closes phase-on-mass, not causal attention selection in
+  general.
+- Both selector results reuse the eight-record training population for
+  out-of-fold model selection. They are not independent development or
+  confirmation evidence and authorize no native integration or package
+  promotion. The next directional class is blockwise-QK because neither total
+  source mass, query content alone, nor answer-span phase represents explicit
+  query-to-key compatibility.
 - Interpret the layer-rescue failure narrowly. The greedy search made 45
   adaptive comparisons on only two sequences, whose positions are correlated;
   its six-sequence screen reused an already-consumed corpus. Greedy choices

@@ -1,0 +1,235 @@
+{
+  "authenticated_confirmation_descriptor": {
+    "answer_prediction_positions_per_record": 32,
+    "file": "confirmation.jsonl",
+    "prediction_positions_per_record": 128,
+    "record_identity_sha256": "b507767ea68c015fdb9347313921c59a0dbefc0c61a47883ade1fa837fc4e844",
+    "records": 8,
+    "sha256": "c74aa6532e94bfa4dd10bbc1e13c27a06c35f79edbc9bc921a4219409f903baa",
+    "tokens_per_record": 129
+  },
+  "authorized_next_step_on_feasible_pass": "freeze a train-only causal per-slot selector or logit-bias model with rolled-out native state and full selector accounting",
+  "cache_contract": {
+    "all_shards_reauthenticated_before_solve": true,
+    "combined_base_slot_digests_recomputed_before_solve": true,
+    "confirmation_file_access_permitted": false,
+    "immutable_complete_v1_capture_required": true,
+    "native_execution_permitted": false,
+    "native_library_loading_permitted": false,
+    "output_projection_reauthenticated_before_solve": true,
+    "partial_v1_solver_output_permitted": false,
+    "trace_shard_creation_permitted": false
+  },
+  "capture_report": {
+    "capture_rows_sha256": "e4338c8e79a696f82e375145fcfa7d44cc70b35bfadfe58cb9c6547449c59de8",
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_slot_simplex_2026-07-30_frozen/capture_report.json",
+    "sha256": "18218d3a7dbcae731ae42b85cefc09a20ab738ad15531bae3be74c17368d8258"
+  },
+  "confirmation_split_opened": false,
+  "experiment": "olmoe_q7_retrieval_episodic_slot_simplex_cached_v2_protocol",
+  "failure_interpretation": "when the certified optimistic recovery upper bound fails, close all same-state reweighting over the current regular aggregate and eight episodic values at fixed K256; the next experiment must add new value directions or a different memory",
+  "historical_bindings": {
+    "corpus_manifest": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_selector_2026-07-29_frozen/corpus_manifest.json",
+      "sha256": "476676c90cbdd64e595b6554cd1b168a568b4e3158188d4d16c2d18c93b3095e"
+    },
+    "inherited_head_mass_manifest": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_head_mass_oracle_2026-07-29_frozen/trace_shards/manifest.json",
+      "sha256": "93df0a554744b97e7436b9a8b4bb71473bc21fa9f6c90985431274859164e0b6"
+    },
+    "inherited_head_mass_protocol": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_head_mass_oracle_2026-07-29_frozen/protocol.json",
+      "sha256": "fe09689452e6ae4f1a1b15332c61c1cc990cfc29b6a8b0d5a1758d9490a93af5"
+    },
+    "inherited_head_mass_result": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_head_mass_oracle_2026-07-29_frozen/train_screen.json",
+      "sha256": "f7060e7373c5faf8f154891e93efad35659723d8e3f04d83638b62fa9cf72596"
+    },
+    "joint_gamma_protocol": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_joint_gamma_oracle_2026-07-30_v3_frozen/protocol.json",
+      "sha256": "aa03a71e3dd9e1fbb413a7773d57189c41029c26b2f4372b2fb7a26744305d24"
+    },
+    "joint_gamma_result": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_joint_gamma_oracle_2026-07-30_v3_frozen/train_screen.json",
+      "sha256": "1329a51bac71cb81f44494c8ef70cb23a631eacebac5540b39e2e98ed5e30ea5"
+    },
+    "selector_protocol": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_selector_2026-07-29_frozen/protocol.json",
+      "sha256": "f6961ec6bffadb306a75ae8aaa8c400d1282cbb096876532d75e22a295660580"
+    },
+    "slot_trace_manifest": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_slot_simplex_2026-07-30_frozen/trace_shards/manifest.json",
+      "sha256": "0ac40bfa8f41d23627ce9e3ee89283f68828ae02d482c77a43be0d4d17129b04"
+    },
+    "train_split": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_selector_2026-07-29_frozen/train.jsonl",
+      "sha256": "9f09a9f573bd7c33de9699ee4be5f5394dcc54d2595e3210d8bb923712e19b55"
+    },
+    "training_checkpoint": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_selector_2026-07-29_frozen/development_result.training_checkpoint.json",
+      "sha256": "9edf4fe7e7a1340c6f34bfe4d04544525947935116d662e94d98ccea4c282aa4"
+    },
+    "v1_protocol": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_slot_simplex_2026-07-30_frozen/protocol.json",
+      "sha256": "56b33472ee23353e945abb9741f3b5b16e70965450d023a45cd6223a8d85c4cb"
+    },
+    "v1_trace_parity": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_slot_simplex_2026-07-30_frozen/trace_parity.json",
+      "sha256": "4565a5fcaa2039f4229422243e0f121b3444c89495b4141b39f6358c19645a02"
+    }
+  },
+  "oracle_method": {
+    "absolute_objective_gap_target": 1e-13,
+    "active_set_solution_authority": "feasibility plus the recomputed full product-simplex Frank-Wolfe gap; KKT support termination alone has no progression authority",
+    "capacity_interpretation": "the nine-way arm is the traced constructible value set; the ten-way exact-native-anchor hull is its optimistic superset and absorbs trace-regrouping roundoff",
+    "constructible_arm": {
+      "authority": "a feasible gate pass may authorize a separately accounted causal selector experiment",
+      "components": [
+        "regular_cache_conditional_mean",
+        "eight_exact_BF16_episodic_slot_values_in_read_order"
+      ],
+      "components_per_selected_head": 9
+    },
+    "counterfactual_updates_hidden_or_cache": false,
+    "fallback_maximum_iterations": 512,
+    "feasible_sets": "Cartesian products of one probability simplex per query head, optimized jointly after o_proj",
+    "kkt_residual_tolerance": 1e-10,
+    "maximum_active_set_iterations": 128,
+    "maximum_iterations": 512,
+    "optimistic_hull_arm": {
+      "authority": "its certified optimistic failure is decisive; a pass cannot authorize a selector by itself",
+      "components": [
+        "exact_native_head_output_anchor",
+        "regular_cache_conditional_mean",
+        "eight_exact_BF16_episodic_slot_values_in_read_order"
+      ],
+      "components_per_selected_head": 10
+    },
+    "quadratic_construction": "float64 factor-defined Gram A.T@A from isolated head/value correction directions projected through authenticated BF16 Wo",
+    "reduced_cost_tolerance": 1e-12,
+    "relative_objective_gap_target": 1e-12,
+    "row_batch_size": 256,
+    "row_batching_changes_feasible_set_or_objective": false,
+    "solver": "deterministic bulk product-simplex active-set KKT solves with scale-checked singular/cycle fail-closed handling, full Frank-Wolfe certification, and pairwise block Frank-Wolfe fallback",
+    "target": "exact same-state native W128-minus-K256 post-Wo residual",
+    "two_arms": true,
+    "v1_capture_protocol_row_batch_size": 16,
+    "v1_relative_objective_gap_target": 1e-07,
+    "working_set_tolerance": 1e-12
+  },
+  "output_projection": {
+    "dtype": "authenticated_BF16_loaded_as_float32",
+    "file_sha256": "93797e149ce7ecabc4fc8833f3ca11bb9e45839501b09b2ffed4940e798044d4",
+    "source": "/home/dean/repos/engram/work/olmoe_q7/package/transformer/non_mlp.safetensors",
+    "tensor_sha256": {
+      "model.layers.0.self_attn.o_proj.weight": "713f28304e77aa4a1b0b3a855cf5d3621eb877b5f3d143fdfc58f1e3efb0355e",
+      "model.layers.1.self_attn.o_proj.weight": "cd12b44bf6a0c10a16fa4a6f75e2b69f2cddb23c18eaed447bf83518fbdbd845",
+      "model.layers.10.self_attn.o_proj.weight": "96dcad962efc39eed5daf640a33c2febf2200224ea6b9869be8f49f76001dcc4",
+      "model.layers.11.self_attn.o_proj.weight": "750c064cacd22586000be8bb0045d54a90ba1f67a376203374a750d50b8f406c",
+      "model.layers.12.self_attn.o_proj.weight": "bf458e0d1d544df0b25338fa9338e924af33cb76799d2dcd9ac8d245c45a0a7b",
+      "model.layers.13.self_attn.o_proj.weight": "d0cdda96412dde6fc89549c11aa8603f073e46932db31172d8441fc9b595424b",
+      "model.layers.14.self_attn.o_proj.weight": "ebee83c0aa98367df6e2d21352f96c4b438c5641f10eb980fca4df8e39d0c01b",
+      "model.layers.15.self_attn.o_proj.weight": "3e4961a38a311966cbf66e266fa462ca2050a512e90f56137a57dc19428db1f3",
+      "model.layers.2.self_attn.o_proj.weight": "825b632c003a0340918c52e7e892faaa0d62e708eac22c7cfd9a3d859a81f92f",
+      "model.layers.3.self_attn.o_proj.weight": "912c8f916373aa11f2254bae3ddc153b826ceaf37f25ab6de57b7a8b0e6babbd",
+      "model.layers.4.self_attn.o_proj.weight": "11a42d3e819155730efa070087b43e45a8d1616c94dff441cdc2d27ec90422c9",
+      "model.layers.5.self_attn.o_proj.weight": "0eb89ca8301aa010f4e4ec3c8d451b1450ccc633d50020ea1fdb8af83a612717",
+      "model.layers.6.self_attn.o_proj.weight": "18d21b98611f4d77babf80dce8ae15c231fe90144d7945d2ffaf1c06fc9e23ea",
+      "model.layers.7.self_attn.o_proj.weight": "9263891eff7e90bf151aed8ac269a8ae04f1c214792f991ef1f952538e492f3e",
+      "model.layers.8.self_attn.o_proj.weight": "cf4568a74f1aad83c9804edd06b9747116f0a113dad69e9ed9153c181f0019f7",
+      "model.layers.9.self_attn.o_proj.weight": "8e161772c8f4ccddcf82aacecd39a73543e9dd99b58f62fa0f6dbc88bd43a84d"
+    }
+  },
+  "parallel_execution": {
+    "arrays_and_output_projection_installed_before_fork": true,
+    "backend": "forked_process_pool",
+    "deterministic_destination_order": "record_position_layer",
+    "full_deterministic_solver_replay_per_task": true,
+    "task_unit": "one_layer_one_arm",
+    "worker_blas_threads": 1,
+    "worker_task_payload": [
+      "arm",
+      "layer",
+      "row_batch_size",
+      "maximum_active_set_iterations",
+      "fallback_maximum_iterations",
+      "relative_gap_tolerance",
+      "absolute_gap_tolerance",
+      "working_set_tolerance",
+      "kkt_residual_tolerance",
+      "reduced_cost_tolerance"
+    ],
+    "workers": 8
+  },
+  "progression_gate": {
+    "deterministic_coefficient_and_metric_replay_required": true,
+    "minimum_every_block_entry_position_recovery": 0.25,
+    "minimum_every_sequence_recovery": 0.25,
+    "minimum_global_recovery": 0.5,
+    "minimum_positive_recovery_layers": 12,
+    "objective_gap_certificate_required": true,
+    "objective_never_worse_than_native_base": true
+  },
+  "reset_replay_evidence": {
+    "claim": "V1 recorded equal first/reset full-trace and output-evidence digests for every record; V2 verifies those descriptor equalities but cannot independently reconstruct reset execution from tensors that were not persisted",
+    "complete_output_evidence_payloads_persisted": false,
+    "first_capture_tensors_recomputed_from_persisted_shards": true,
+    "native_rerun_performed": false,
+    "reset_tensors_persisted": false,
+    "status": "descriptor_attested_not_independently_rederived"
+  },
+  "resource_contract": {
+    "fixed_attention_state_bytes": 10534912,
+    "fixed_combined_attention_and_episodic_traffic_bytes": 714866688,
+    "fixed_fraction_of_dense_full_context_KV": 0.33030523255813954,
+    "gamma_zero_earns_read_savings": false,
+    "oracle_shadow_trace_and_projection_evaluator_only": true,
+    "predictor_weights_features_and_execution_not_counted": true
+  },
+  "schema_version": 1,
+  "scope": {
+    "cached_same_state_capacity_evidence_only": true,
+    "causal_rollout": false,
+    "confirmation_file_access_permitted": false,
+    "development_outcomes_used": false,
+    "semantic_or_M3_pass": false,
+    "split": "train"
+  },
+  "solver_source_transition": {
+    "cached_v2_active_set_solver_sha256": "057c2f70f5b154564743648d20fb4d8df796cff89cac63b438181a915af3325e",
+    "cached_v2_reference_solver_sha256": "dbeac6c0f66fb563cb19dcc5bba64dacc3a5d540ad4e81c1eadc8512ff9d6adf",
+    "exact_v1_solver_source_replay_claimed": false,
+    "reason": "the product-simplex solver source changed after V1 capture; V2 prospectively binds the current solver and reuses only the authenticated capture tensors",
+    "v1_frozen_solver_sha256": "ab033052f39366163f34913df75b1df4b2400e0e0410cb1faf7dea58e327957a"
+  },
+  "source_sha256": {
+    "native/include/engram/olmoe_token_runtime.h": "e5f97907c6b690475c6e160a3f075afd856f0474c8c962904287eebca6d35504",
+    "native/include/engram/olmoe_token_runtime_c.h": "18fd75202ded0b73bf7291bacb2036b46848bfbea9a0a0ce6e79bf52c15dcee1",
+    "native/include/engram/streaming_attention.h": "101beeaba4a49550b8dc316e11696ebadd860520f17c262b07b65599a99a2f1f",
+    "native/include/engram/streaming_attention_c.h": "f07e075e28a4cdc8b55280adbf428156516ec473cd7508a811661cb1ed46d787",
+    "native/src/native_bitnet_token_runtime.cpp": "eef6695ce0c40ae4b6762e4c397ea9b6cdfa013faad512a757bd1c89dac091ce",
+    "native/src/olmoe_token_runtime.cpp": "e6bed594e366694fd77a682dbc0fd802b85024425b1c75f82fb9d113b2acdd69",
+    "native/src/olmoe_token_runtime_c.cpp": "06d57e2405376ed611a3b13e3a224f7064c0f54372539d323008da37ee05b853",
+    "native/src/streaming_attention.cpp": "0132bb06132bf8b4c15e01b67b79000cd3493fe568e9a27d8faba761625a7107",
+    "native/src/streaming_attention_c.cpp": "aa3a841a87bb9c3b165a8aa0a32b5306e27a903ed048b37900cb36e1741c8162",
+    "src/engram/compiler/olmoe_native.py": "e1a1bf19ce836b2e7f362e3ba170be42cce7e9791ae711895e1fe5a1e38ecbb1",
+    "src/engram/evaluation/olmoe_native_causal.py": "a7bd8f300d2149cab8375e8ea9703c099145bd620e7b509c636716be256eb961",
+    "src/engram/evaluation/olmoe_native_headwise.py": "303862d4f2151f6c554fd3605c46100603fb9d37de44537bf866d1e892a9fe00",
+    "src/engram/evaluation/olmoe_native_sustained.py": "019c6cf4fd74a77b5ffe992908c4d885f8ca7efb386e20c906695454dfbee520",
+    "src/engram/evaluation/olmoe_product_simplex_active_set_solver.py": "057c2f70f5b154564743648d20fb4d8df796cff89cac63b438181a915af3325e",
+    "src/engram/evaluation/olmoe_product_simplex_solver.py": "dbeac6c0f66fb563cb19dcc5bba64dacc3a5d540ad4e81c1eadc8512ff9d6adf",
+    "src/engram/evaluation/olmoe_retrieval_episodic_head_mask_oracle.py": "d70468b8ddb1a872b05518d2b93fcc7300f624713a9bec71770764c2dbf3e4ab",
+    "src/engram/evaluation/olmoe_retrieval_episodic_head_mass_oracle.py": "363a7291711cb5fc3a53ffc833e8ab43212a2c484154e049009838ce532974c6",
+    "src/engram/evaluation/olmoe_retrieval_episodic_logit_bias.py": "8ab1ec4aaab30a8e218a33f52f81637e22918e3cc9f0773988a97d09936b2802",
+    "src/engram/evaluation/olmoe_retrieval_episodic_oracle.py": "7f82670a99e5ba71ce7558138eb779bd095df5b183ff074d9ccd7184531eb684",
+    "src/engram/evaluation/olmoe_retrieval_episodic_rank_sweep.py": "a1428e8f620106c408fe5773f2336514d7961b1e123246231d0d911f47ccf981",
+    "src/engram/evaluation/olmoe_retrieval_episodic_residual_capacity.py": "1e4df29eb0440502d5fa248bb2e2aeec572024e8508e10862d313fb027b3a934",
+    "src/engram/evaluation/olmoe_retrieval_episodic_slot_simplex_cached.py": "b676b2b8c657ce41777616d9b4f41054555f5975738aa5131d15dc0a8f9d2f13",
+    "src/engram/evaluation/olmoe_retrieval_episodic_slot_simplex_oracle.py": "42942bc0fffff9bbbb33efd78a61e21421731bbf99dd9dda6d6509d0aec83d51",
+    "src/engram/evaluation/olmoe_retrieval_head_selector.py": "0f7f80952b6c6b4b7511e999345c2d50ddc057014d5a336d5d50b6d50291cf4e",
+    "src/engram/evaluation/olmoe_retrieval_prefix_selector.py": "b4b53c042f27a76d2876bbcef77909328877acf5a83845788fd77e9dec02b2c3",
+    "src/engram/runtime/olmoe_native.py": "4f9b02824ef63fa8ac9f69c3958c3ae284a651eef492291800301729fb863c55",
+    "src/engram/utils.py": "1ee77400fcefab77be71f1eb9090c7143710889c6e5c56a1f2de0476a59e8cdc"
+  },
+  "status": "frozen_before_authenticated_cached_v2_solve"
+}

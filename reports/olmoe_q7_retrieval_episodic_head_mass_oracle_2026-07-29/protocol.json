@@ -1,0 +1,1381 @@
+{
+  "authenticated_confirmation_descriptor": {
+    "answer_prediction_positions_per_record": 32,
+    "file": "confirmation.jsonl",
+    "prediction_positions_per_record": 128,
+    "record_identity_sha256": "b507767ea68c015fdb9347313921c59a0dbefc0c61a47883ade1fa837fc4e844",
+    "records": 8,
+    "sha256": "c74aa6532e94bfa4dd10bbc1e13c27a06c35f79edbc9bc921a4219409f903baa",
+    "tokens_per_record": 129
+  },
+  "authorized_next_step_on_pass": "freeze a train-only causal predictor for the selected 3-bit gamma codes, including predictor traffic and rolled-out native state updates",
+  "base_choice": {
+    "K": 256,
+    "base_tuning_permitted": false,
+    "beta_float32": 0.0,
+    "beta_float32_bits": "0x00000000",
+    "diagnostic_gamma_1_2_mean_answer_cross_entropy": 1.4614136666059494,
+    "diagnostic_gamma_1_2_worst_answer_cross_entropy": 1.66925048828125,
+    "fixed_before_trace_execution": true,
+    "historical_mean_answer_cross_entropy": 1.2244600802659988,
+    "historical_worst_answer_cross_entropy": 1.3273429870605469,
+    "selected_base": "historical_beta0_K256",
+    "selection_rule": "choose beta=0 K256 only because both authenticated historical mean and worst train CE strictly beat diagnostic gamma=1/2"
+  },
+  "capacity_protocol": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_residual_capacity_2026-07-29_frozen/protocol.json",
+    "sha256": "584302d17a3224cda1b61dfe1f62685497fa5a0dc335cfc0a074439456ee1606"
+  },
+  "capacity_result": {
+    "authenticated_failure": {
+      "confirmation_split_opened": false,
+      "failure_condition": "global_recovery_below_0_50_only",
+      "selected_global_recovery": 0.469252618228868,
+      "selected_rank": 8,
+      "status": "train_residual_capacity_gate_failed"
+    },
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_residual_capacity_2026-07-29_frozen/train_screen.json",
+    "sha256": "c636ad124d570f3675a36f0a23b276ba2e4cd4f5efc23dbf98cc10cd2cfd8e33"
+  },
+  "capacity_trace_manifest": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_residual_capacity_2026-07-29_frozen/trace_shards/manifest.json",
+    "sha256": "1f255a59a20089abe4d6805c625a119c167b71153bc21f5edbfcf0fd8050f461"
+  },
+  "confirmation_split_opened": false,
+  "corpus": {
+    "manifest_file": "corpus_manifest.json",
+    "manifest_sha256": "476676c90cbdd64e595b6554cd1b168a568b4e3158188d4d16c2d18c93b3095e",
+    "splits": {
+      "confirmation": {
+        "answer_prediction_positions_per_record": 32,
+        "file": "confirmation.jsonl",
+        "prediction_positions_per_record": 128,
+        "record_identity_sha256": "b507767ea68c015fdb9347313921c59a0dbefc0c61a47883ade1fa837fc4e844",
+        "records": 8,
+        "sha256": "c74aa6532e94bfa4dd10bbc1e13c27a06c35f79edbc9bc921a4219409f903baa",
+        "tokens_per_record": 129
+      },
+      "development": {
+        "answer_prediction_positions_per_record": 32,
+        "file": "development.jsonl",
+        "prediction_positions_per_record": 128,
+        "record_identity_sha256": "9408db643a9d500e4b9f9bb6737a352e55b11c26d3880b0f52deca3ea85b806d",
+        "records": 8,
+        "sha256": "0f45b6848ced22b42b27995577691398214697b58018537acd6fe5037cd0072f",
+        "tokens_per_record": 129
+      },
+      "train": {
+        "answer_prediction_positions_per_record": 32,
+        "file": "train.jsonl",
+        "prediction_positions_per_record": 128,
+        "record_identity_sha256": "ead052a706c236ad8dd4a1347bafb5f55bea2d76a7dd4e086c8683c8dfd0c10b",
+        "records": 8,
+        "sha256": "9f09a9f573bd7c33de9699ee4be5f5394dcc54d2595e3210d8bb923712e19b55",
+        "tokens_per_record": 129
+      }
+    }
+  },
+  "experiment": "olmoe_q7_retrieval_episodic_head_mass_oracle_protocol",
+  "failure_scope": "this exact fixed-K256 independent-head scheduled-source-mass matching grid only",
+  "fixed_K256_arm": {
+    "head_mask": {
+      "K": 256,
+      "active_layer_count": 16,
+      "active_layers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "fitted_by_this_experiment": false,
+      "mask": [
+        [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ]
+      ],
+      "mask_sha256": "924932a9df2ba2670f1d44a0f55a5e7aae42a12582ccca2440b5b320ce9b9922",
+      "selected_heads_per_layer": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "selected_layer_head_pairs": 256,
+      "source": "fixed all-head K256 historical payload attribution"
+    },
+    "historical_K256_attribution": {
+      "attribution_only": true,
+      "historical_episodic_library": {
+        "path": "/home/dean/repos/engram/work/olmoe_q7/libengram_olmoe_token_runtime.episodic-877dac1d.so",
+        "sha256": "877dac1dcff9ab6749a2abc5fe2f9f21b9660fadafe8dc7714e26ea77629221e"
+      },
+      "protocol": {
+        "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_oracle_2026-07-29_frozen/protocol.json",
+        "sha256": "1e7b89e5b376430b82456bf306e50a0fb7c0cb9ed75b0d4e400ad7950b517cce"
+      },
+      "record_answer_cross_entropy": [
+        1.3091617822647095,
+        1.1883000135421753,
+        1.3092560768127441,
+        0.9684914350509644,
+        1.2390215396881104,
+        1.196218729019165,
+        1.2578880786895752,
+        1.3273429870605469
+      ],
+      "record_ids": [
+        "olmoe-retrieval-passkey-v1-train-00",
+        "olmoe-retrieval-passkey-v1-train-01",
+        "olmoe-retrieval-passkey-v1-train-02",
+        "olmoe-retrieval-passkey-v1-train-03",
+        "olmoe-retrieval-passkey-v1-train-04",
+        "olmoe-retrieval-passkey-v1-train-05",
+        "olmoe-retrieval-passkey-v1-train-06",
+        "olmoe-retrieval-passkey-v1-train-07"
+      ],
+      "result": {
+        "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_oracle_2026-07-29_frozen/train_screen.json",
+        "sha256": "b2daa5eff271b6f030c01e8a4854a602f7b2907f7af487d38ab750468bbc42cc"
+      },
+      "sequence_evidence_sha256": "e2be8a559ad8feafc0088058c13f0fd13d1e422436067a4fcc7d11bf6c6b36d9",
+      "status": "train_episodic_oracle_gate_failed",
+      "strictly_better_than_K51_on_all_train_records": true,
+      "systems_clean": true
+    },
+    "resource_contract": {
+      "base_attention_expectations_per_sequence": {
+        "attention_candidate_key_bytes": 113770496,
+        "attention_eviction_events": 1792,
+        "attention_heavy_hitter_updates_maximum": 28160,
+        "attention_heavy_hitter_updates_minimum": 1536,
+        "attention_local_kv_bytes": 505413632,
+        "attention_logical_read_bytes": 677117952,
+        "attention_logical_read_fraction": 0.31286337209302323,
+        "attention_older_candidate_entries_scored": 222208,
+        "attention_older_selected_entries": 113152,
+        "attention_scratch_bytes": 3840,
+        "attention_selected_value_bytes": 57933824,
+        "attention_sink_insertions": 512,
+        "attention_state_bytes": 6336512,
+        "dense_full_context_logical_kv_bytes": 2164260864,
+        "positions_processed": 128
+      },
+      "cache_payload": {
+        "capacity_slots": 32,
+        "contents": "per-layer key and value rows across the hidden width",
+        "dtype": "bfloat16",
+        "dtype_bytes": 2,
+        "payload_state_bytes": 4194304,
+        "position_dtype": "uint64",
+        "position_state_bytes": 4096,
+        "slot_payload_bytes_per_layer": 8192,
+        "state_bytes": 4198400
+      },
+      "combined_attention_and_episodic_read_bytes": 710672384,
+      "combined_attention_and_episodic_traffic_bytes": 714866688,
+      "combined_read_fraction_of_dense": 0.3283672480620155,
+      "combined_scratch_bytes": 4864,
+      "combined_state_bytes": 10534912,
+      "combined_traffic_fraction_of_dense": 0.33030523255813954,
+      "dense_full_context_logical_kv_bytes": 2164260864,
+      "episodic_joint_softmax_scratch_bytes": 1024,
+      "episodic_key_read_bytes_per_sequence": 16777216,
+      "episodic_read_bytes_per_sequence": 33554432,
+      "episodic_value_read_bytes_per_sequence": 16777216,
+      "episodic_write_bytes_per_sequence": 4194304,
+      "maximum_traffic_fraction_of_dense": 0.45,
+      "q7_expectations_per_sequence": {
+        "artifact_bytes": 5842733184,
+        "router_bytes_per_layer_position": 262144,
+        "scheduled_bytes_per_layer_position": 45875200,
+        "scheduled_bytes_per_position": 734003200,
+        "scheduled_bytes_per_sequence": 93952409600,
+        "selected_expert_bytes_per_layer_position": 45613056
+      },
+      "schedule": {
+        "entries_read": 65536,
+        "plan_arrays_are_caller_memory": true,
+        "plan_dtype": "int32",
+        "read_rows": 32,
+        "read_span_tokens": 8,
+        "unique_write_slots": 32,
+        "write_rows": 32
+      },
+      "within_read_budget": true,
+      "within_total_traffic_budget": true
+    }
+  },
+  "libraries": {
+    "attention": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/libengram_attention.causal-gate-153e91d9.so",
+      "sha256": "153e91d9d1fdb964b678eec0f22498d397888781edfe2d531eda8933c3fe87c5"
+    },
+    "headwise": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/libengram_olmoe_token_runtime.headwise-cb72b31e.so",
+      "sha256": "cb72b31e7afbf9b9986f1ed107ca2b0d893947aac2c96b58b95298e2bfc12d36"
+    },
+    "layered": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/libengram_olmoe_token_runtime.layered-fe4dfdcc.so",
+      "sha256": "fe4dfdcc7e87a3cd5e36074e07d297f838ba345c37e939eeb0d796cb39cce409"
+    }
+  },
+  "oracle_method": {
+    "answer_cross_entropy_gate": false,
+    "counterfactual": "(R+gamma*E)/(m_regular+gamma*m_episodic), with gamma-one anchored to exact beta-zero pre-Wo output",
+    "counterfactual_qualification": "the shared StreamingAttention kernel is unit-tested over the full gamma grid; direct real-model qualification uses layer zero at the first read because only that layer has an identical input in beta-zero and biased executions",
+    "counterfactual_updates_hidden_or_cache": false,
+    "direct_downstream_layers": "diagnostic only because earlier biased layers causally change their input state",
+    "energy_aggregation": "squared Frobenius energy before ratios",
+    "gamma_table": [
+      {
+        "beta_bits": null,
+        "beta_float32": null,
+        "code": 0,
+        "endpoint": "exact_zero_episodic_mass",
+        "gamma": 0.0,
+        "multiplier_float32": 0.0
+      },
+      {
+        "beta_bits": "0xc0051592",
+        "beta_float32": -2.079441547393799,
+        "code": 1,
+        "endpoint": null,
+        "gamma": 0.125,
+        "multiplier_float32": 0.125
+      },
+      {
+        "beta_bits": "0xbfb17218",
+        "beta_float32": -1.3862943649291992,
+        "code": 2,
+        "endpoint": null,
+        "gamma": 0.25,
+        "multiplier_float32": 0.25
+      },
+      {
+        "beta_bits": "0xbf317218",
+        "beta_float32": -0.6931471824645996,
+        "code": 3,
+        "endpoint": null,
+        "gamma": 0.5,
+        "multiplier_float32": 0.5
+      },
+      {
+        "beta_bits": "0x00000000",
+        "beta_float32": 0.0,
+        "code": 4,
+        "endpoint": null,
+        "gamma": 1.0,
+        "multiplier_float32": 1.0
+      },
+      {
+        "beta_bits": "0x3f317218",
+        "beta_float32": 0.6931471824645996,
+        "code": 5,
+        "endpoint": null,
+        "gamma": 2.0,
+        "multiplier_float32": 2.0
+      },
+      {
+        "beta_bits": "0x3fb17218",
+        "beta_float32": 1.3862943649291992,
+        "code": 6,
+        "endpoint": null,
+        "gamma": 4.0,
+        "multiplier_float32": 4.0
+      },
+      {
+        "beta_bits": "0x40051592",
+        "beta_float32": 2.079441547393799,
+        "code": 7,
+        "endpoint": null,
+        "gamma": 8.0,
+        "multiplier_float32": 8.0
+      }
+    ],
+    "gamma_zero": "exact zero episodic mass while retaining the K256 duplicate-suppressed regular candidate set; not ordinary W16",
+    "output_metric": "project selected pre-Wo delta through authenticated BF16 o_proj and compare against exact native W128-minus-K256 projected residual",
+    "selection": "independently minimize absolute target-mass error at each record/read-row/layer/head coordinate",
+    "single_arm": true,
+    "target": "same-state W128 attention probability mass on the exact eight scheduled source positions",
+    "tie_priority": [
+      4,
+      3,
+      5,
+      2,
+      6,
+      1,
+      7,
+      0
+    ]
+  },
+  "package": {
+    "manifest_sha256": "861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db",
+    "model": {
+      "experts": 64,
+      "head_dimension": 128,
+      "hidden_size": 2048,
+      "intermediate_size": 1024,
+      "key_value_heads": 16,
+      "layers": 16,
+      "q7_group_size": 64,
+      "query_heads": 16,
+      "top_k": 8,
+      "vocab_size": 50304
+    },
+    "path": "/home/dean/repos/engram/work/olmoe_q7/package",
+    "q7_expectations_per_sequence": {
+      "artifact_bytes": 5842733184,
+      "router_bytes_per_layer_position": 262144,
+      "scheduled_bytes_per_layer_position": 45875200,
+      "scheduled_bytes_per_position": 734003200,
+      "scheduled_bytes_per_sequence": 93952409600,
+      "selected_expert_bytes_per_layer_position": 45613056
+    },
+    "tokenizer_sha256": "ff3f2a2fc3b88f6f8504650e2ebb8e018bc4206a90eb41f1a9ff351e02e44ff9"
+  },
+  "policies": {
+    "base": {
+      "local_window": 16,
+      "older_candidates": 8,
+      "older_top_k": 4,
+      "sink_tokens": 2
+    },
+    "episodic": {
+      "slots": 32,
+      "span_size": 8
+    },
+    "mask": "all_ones_K256",
+    "shadow": {
+      "local_window": 128,
+      "older_candidates": 8,
+      "older_top_k": 4,
+      "sink_tokens": 2
+    },
+    "trajectory_beta_bits": "0x00000000",
+    "trajectory_beta_float32": 0.0
+  },
+  "progression_gate": {
+    "deterministic_metric_and_code_replay_required": true,
+    "finite": true,
+    "minimum_every_block_entry_position_recovery": 0.25,
+    "minimum_every_sequence_recovery": 0.25,
+    "minimum_global_recovery": 0.5,
+    "minimum_positive_recovery_layers": 12,
+    "selected_mass_never_worse_than_gamma_one": true
+  },
+  "resource_contract": {
+    "fixed_attention_state_bytes": 10534912,
+    "fixed_combined_attention_and_episodic_traffic_bytes": 714866688,
+    "fixed_fraction_of_dense_full_context_KV": 0.33030523255813954,
+    "gamma_zero_earns_read_savings": false,
+    "oracle_shadow_trace_and_projection_evaluator_only": true,
+    "predictor_weights_features_and_execution_not_counted": true
+  },
+  "schedule_contract": {
+    "coordinates": 65536,
+    "per_record_rows_sha256": [
+      "f2200d9ca229d28d87c25b78a59c77007ce24185a03bc75966362a85d620b15d",
+      "07e9d88af17607631c4fd2e0f6c92ed8a11075295d5289de1ba6996878e6e55c",
+      "c5f0b6e22d42889908d8ae72f9ee61b40f082ddd35d140bfdb08f6bc366ff911",
+      "a86103c0638e7729a5d4a9b64f5edb1d8e6f7794f376e019bc51c37fbd4644e9",
+      "aa44e5aa669f5fc562570613fc1ecc2e02e2969505de47658481ce276912fb91",
+      "d6d4e916d4664fadad2338dec4f33790f4d4c6771b86ec89720aa0b34e38cae7",
+      "080360836b626ca23116d19e4b9b8609d01e730e57a25b51b7b6be9e2c39ea3c",
+      "60db4ac8d45b7609af585c36a7ea4af85795e7c888034a5b2f77252f7eaceb6f"
+    ],
+    "positions_per_record": 128,
+    "read_positions": [
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127
+    ],
+    "read_rows_per_record": 32,
+    "records": 8,
+    "tokenizer_fact_anchor_ids": {
+      "A": [
+        10030,
+        329,
+        556,
+        2127
+      ],
+      "B": [
+        10030,
+        378,
+        556,
+        2127
+      ],
+      "C": [
+        10030,
+        330,
+        556,
+        2127
+      ],
+      "D": [
+        10030,
+        399,
+        556,
+        2127
+      ]
+    }
+  },
+  "schema_version": 1,
+  "scope": {
+    "causal_rollout": false,
+    "confirmation_file_access_permitted": false,
+    "development_outcomes_used": false,
+    "learned_predictor": false,
+    "same_state_capacity_evidence_only": true,
+    "semantic_or_M3_pass": false,
+    "split": "train"
+  },
+  "source_model": {
+    "config_sha256": "21dc57233d4664eccd9734f5d46563a3716ff88dea5be0d33483fc2df9ce1482",
+    "index_sha256": "0c1713a6cd423db918a95ec64e2145444d86b19b979075f8326129401ed1cb80",
+    "path": "/home/dean/repos/engram/work/huggingface/models--allenai--OLMoE-1B-7B-0125/snapshots/9b0c1aa87e34a20052389dce1f0cf01da783f654",
+    "revision": "9b0c1aa87e34a20052389dce1f0cf01da783f654",
+    "shard_sha256": {
+      "model-00001-of-00006.safetensors": "df5a700fa91fd94e9d1a7ae523c5ae055f5879778a02ea19758edd37089da1ca",
+      "model-00002-of-00006.safetensors": "5f299f21e6de71f5334e937fd51a083bab8cffe55682488219e4082d9558fdba",
+      "model-00003-of-00006.safetensors": "4491eb552fd917a6777260f75c88e714f3174fbba7dd69d44b97c4124ddcd56b",
+      "model-00004-of-00006.safetensors": "7aeea413752cd17a8e7c343aa436594a8158d279817e4993aa5df4b7c7cfdf22",
+      "model-00005-of-00006.safetensors": "18c7f749af753359e10c33a9c5deec688b7155f7c01052937806cd351c52cc38",
+      "model-00006-of-00006.safetensors": "299009ba118f5e918de33573a316ad3d3b9236651986fb1a14dc894f55269e67"
+    }
+  },
+  "source_sha256": {
+    "native/include/engram/olmoe_token_runtime.h": "7953313937029f3d269640c31c11194403219f20e5c1fa27c9642d3f20d5513c",
+    "native/include/engram/olmoe_token_runtime_c.h": "0eb7dd58c287a02694af0ea1ebbfc245d648833415f577b6cf1fa0047a42b58f",
+    "native/include/engram/streaming_attention.h": "999fbfe06e589fdd385108c39dd6044f274f3c22b7f08413d831da818d66b05c",
+    "native/include/engram/streaming_attention_c.h": "f07e075e28a4cdc8b55280adbf428156516ec473cd7508a811661cb1ed46d787",
+    "native/src/native_bitnet_token_runtime.cpp": "eef6695ce0c40ae4b6762e4c397ea9b6cdfa013faad512a757bd1c89dac091ce",
+    "native/src/olmoe_token_runtime.cpp": "5e24a8f98a98ed671f9bf9301f54879eba45b384f98563c522c14fdde1d147cd",
+    "native/src/olmoe_token_runtime_c.cpp": "254396915d3bea16692876157324e0037a7442955f516ba93d3a0b472cfddbce",
+    "native/src/streaming_attention.cpp": "6c17285d2131e527089bfdd50a29e1e002a798af9f25e384ce26854137a9f7de",
+    "native/src/streaming_attention_c.cpp": "aa3a841a87bb9c3b165a8aa0a32b5306e27a903ed048b37900cb36e1741c8162",
+    "src/engram/compiler/olmoe_native.py": "e1a1bf19ce836b2e7f362e3ba170be42cce7e9791ae711895e1fe5a1e38ecbb1",
+    "src/engram/evaluation/olmoe_native_causal.py": "a7bd8f300d2149cab8375e8ea9703c099145bd620e7b509c636716be256eb961",
+    "src/engram/evaluation/olmoe_native_headwise.py": "303862d4f2151f6c554fd3605c46100603fb9d37de44537bf866d1e892a9fe00",
+    "src/engram/evaluation/olmoe_native_sustained.py": "019c6cf4fd74a77b5ffe992908c4d885f8ca7efb386e20c906695454dfbee520",
+    "src/engram/evaluation/olmoe_retrieval_episodic_head_mask_oracle.py": "d70468b8ddb1a872b05518d2b93fcc7300f624713a9bec71770764c2dbf3e4ab",
+    "src/engram/evaluation/olmoe_retrieval_episodic_head_mass_oracle.py": "363a7291711cb5fc3a53ffc833e8ab43212a2c484154e049009838ce532974c6",
+    "src/engram/evaluation/olmoe_retrieval_episodic_logit_bias.py": "8ab1ec4aaab30a8e218a33f52f81637e22918e3cc9f0773988a97d09936b2802",
+    "src/engram/evaluation/olmoe_retrieval_episodic_oracle.py": "7f82670a99e5ba71ce7558138eb779bd095df5b183ff074d9ccd7184531eb684",
+    "src/engram/evaluation/olmoe_retrieval_episodic_rank_sweep.py": "a1428e8f620106c408fe5773f2336514d7961b1e123246231d0d911f47ccf981",
+    "src/engram/evaluation/olmoe_retrieval_episodic_residual_capacity.py": "1e4df29eb0440502d5fa248bb2e2aeec572024e8508e10862d313fb027b3a934",
+    "src/engram/evaluation/olmoe_retrieval_head_selector.py": "0f7f80952b6c6b4b7511e999345c2d50ddc057014d5a336d5d50b6d50291cf4e",
+    "src/engram/evaluation/olmoe_retrieval_prefix_selector.py": "b4b53c042f27a76d2876bbcef77909328877acf5a83845788fd77e9dec02b2c3",
+    "src/engram/runtime/olmoe_native.py": "5ff2972cd37c6d948dbabc162858503904716194cf2af86b9a8dca9293fd488d",
+    "src/engram/utils.py": "1ee77400fcefab77be71f1eb9090c7143710889c6e5c56a1f2de0476a59e8cdc"
+  },
+  "status": "frozen_before_dynamic_head_mass_trace_execution",
+  "trace_library": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/libengram_olmoe_token_runtime.head-mass-6c466bb7.so",
+    "required_symbols": [
+      "engram_olmoe_token_open_episodic_shadow_trace_v1",
+      "engram_olmoe_token_copy_last_shadow_trace_v1",
+      "engram_olmoe_token_copy_last_episodic_mass_trace_v1"
+    ],
+    "sha256": "6c466bb75a508bd7f8b9173667e7bd9d8433d91c3be818db25f01a495be6d2da"
+  },
+  "trace_parity": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_head_mass_oracle_2026-07-29_frozen/trace_parity.json",
+    "report": {
+      "base_policy": {
+        "local_window": 16,
+        "older_candidates": 8,
+        "older_top_k": 4,
+        "sink_tokens": 2
+      },
+      "capacity_protocol": {
+        "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_residual_capacity_2026-07-29_frozen/protocol.json",
+        "sha256": "584302d17a3224cda1b61dfe1f62685497fa5a0dc335cfc0a074439456ee1606"
+      },
+      "capacity_result": {
+        "authenticated_failure": {
+          "confirmation_split_opened": false,
+          "failure_condition": "global_recovery_below_0_50_only",
+          "selected_global_recovery": 0.469252618228868,
+          "selected_rank": 8,
+          "status": "train_residual_capacity_gate_failed"
+        },
+        "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_residual_capacity_2026-07-29_frozen/train_screen.json",
+        "sha256": "c636ad124d570f3675a36f0a23b276ba2e4cd4f5efc23dbf98cc10cd2cfd8e33"
+      },
+      "capacity_trace_manifest": {
+        "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_residual_capacity_2026-07-29_frozen/trace_shards/manifest.json",
+        "sha256": "1f255a59a20089abe4d6805c625a119c167b71153bc21f5edbfcf0fd8050f461"
+      },
+      "confirmation_split_opened": false,
+      "episodic_policy": {
+        "slots": 32,
+        "span_size": 8
+      },
+      "experiment": "olmoe_q7_retrieval_episodic_head_mass_oracle_parity",
+      "gamma_table": [
+        {
+          "beta_bits": null,
+          "beta_float32": null,
+          "code": 0,
+          "endpoint": "exact_zero_episodic_mass",
+          "gamma": 0.0,
+          "multiplier_float32": 0.0
+        },
+        {
+          "beta_bits": "0xc0051592",
+          "beta_float32": -2.079441547393799,
+          "code": 1,
+          "endpoint": null,
+          "gamma": 0.125,
+          "multiplier_float32": 0.125
+        },
+        {
+          "beta_bits": "0xbfb17218",
+          "beta_float32": -1.3862943649291992,
+          "code": 2,
+          "endpoint": null,
+          "gamma": 0.25,
+          "multiplier_float32": 0.25
+        },
+        {
+          "beta_bits": "0xbf317218",
+          "beta_float32": -0.6931471824645996,
+          "code": 3,
+          "endpoint": null,
+          "gamma": 0.5,
+          "multiplier_float32": 0.5
+        },
+        {
+          "beta_bits": "0x00000000",
+          "beta_float32": 0.0,
+          "code": 4,
+          "endpoint": null,
+          "gamma": 1.0,
+          "multiplier_float32": 1.0
+        },
+        {
+          "beta_bits": "0x3f317218",
+          "beta_float32": 0.6931471824645996,
+          "code": 5,
+          "endpoint": null,
+          "gamma": 2.0,
+          "multiplier_float32": 2.0
+        },
+        {
+          "beta_bits": "0x3fb17218",
+          "beta_float32": 1.3862943649291992,
+          "code": 6,
+          "endpoint": null,
+          "gamma": 4.0,
+          "multiplier_float32": 4.0
+        },
+        {
+          "beta_bits": "0x40051592",
+          "beta_float32": 2.079441547393799,
+          "code": 7,
+          "endpoint": null,
+          "gamma": 8.0,
+          "multiplier_float32": 8.0
+        }
+      ],
+      "parity": {
+        "checks": {
+          "direct_first_read_layer_zero_gamma_grid_qualified": true,
+          "gamma_one_exact_anchor": true,
+          "historical_base_outputs_counters_and_loss_exact": true,
+          "historical_projected_trace_exact": true,
+          "passed": true,
+          "reset_outputs_counters_and_loss_exact": true,
+          "reset_trace_exact": true
+        },
+        "direct_first_read_qualification": {
+          "downstream_layers_are_nonqualifying_causal_diagnostics": true,
+          "layer_zero_episodic_mass_max_abs_tolerance": 5e-06,
+          "layer_zero_output_max_abs_tolerance": 5e-05,
+          "layer_zero_projected_output_max_abs_tolerance": 0.0005,
+          "passed": true,
+          "position": 96,
+          "qualification_scope": "layer zero only: it has the same input state in beta-zero and direct biased execution; later layers are causal diagnostics",
+          "qualified_layer": 0,
+          "rows": [
+            {
+              "beta_bits": "0xc0051592",
+              "code": 1,
+              "downstream_causal_episodic_mass_max_abs": 0.01923680678009987,
+              "downstream_causal_output_max_abs": 0.03669595718383789,
+              "downstream_causal_projected_output_max_abs": 0.03777670860290527,
+              "gamma": 0.125,
+              "layer_zero_episodic_mass_max_abs": 1.862645149230957e-08,
+              "layer_zero_output_max_abs": 9.313225746154785e-09,
+              "layer_zero_projected_output_max_abs": 3.3527612686157227e-08,
+              "passed": true
+            },
+            {
+              "beta_bits": "0xbfb17218",
+              "code": 2,
+              "downstream_causal_episodic_mass_max_abs": 0.03273080289363861,
+              "downstream_causal_output_max_abs": 0.034935686737298965,
+              "downstream_causal_projected_output_max_abs": 0.03782933950424194,
+              "gamma": 0.25,
+              "layer_zero_episodic_mass_max_abs": 1.4901161193847656e-08,
+              "layer_zero_output_max_abs": 9.313225746154785e-09,
+              "layer_zero_projected_output_max_abs": 5.960464477539063e-08,
+              "passed": true
+            },
+            {
+              "beta_bits": "0xbf317218",
+              "code": 3,
+              "downstream_causal_episodic_mass_max_abs": 0.05134953558444977,
+              "downstream_causal_output_max_abs": 0.025686826556921005,
+              "downstream_causal_projected_output_max_abs": 0.03177787363529205,
+              "gamma": 0.5,
+              "layer_zero_episodic_mass_max_abs": 4.470348358154297e-08,
+              "layer_zero_output_max_abs": 9.313225746154785e-09,
+              "layer_zero_projected_output_max_abs": 4.470348358154297e-08,
+              "passed": true
+            },
+            {
+              "beta_bits": "0x3f317218",
+              "code": 5,
+              "downstream_causal_episodic_mass_max_abs": 0.11884647607803345,
+              "downstream_causal_output_max_abs": 0.08336517214775085,
+              "downstream_causal_projected_output_max_abs": 0.026259660720825195,
+              "gamma": 2.0,
+              "layer_zero_episodic_mass_max_abs": 8.940696716308594e-08,
+              "layer_zero_output_max_abs": 7.450580596923828e-09,
+              "layer_zero_projected_output_max_abs": 4.470348358154297e-08,
+              "passed": true
+            },
+            {
+              "beta_bits": "0x3fb17218",
+              "code": 6,
+              "downstream_causal_episodic_mass_max_abs": 0.14864876866340637,
+              "downstream_causal_output_max_abs": 0.06448736041784286,
+              "downstream_causal_projected_output_max_abs": 0.045280821621418,
+              "gamma": 4.0,
+              "layer_zero_episodic_mass_max_abs": 1.1920928955078125e-07,
+              "layer_zero_output_max_abs": 7.450580596923828e-09,
+              "layer_zero_projected_output_max_abs": 5.21540641784668e-08,
+              "passed": true
+            },
+            {
+              "beta_bits": "0x40051592",
+              "code": 7,
+              "downstream_causal_episodic_mass_max_abs": 0.3143279254436493,
+              "downstream_causal_output_max_abs": 0.11330239474773407,
+              "downstream_causal_projected_output_max_abs": 0.0629814937710762,
+              "gamma": 8.0,
+              "layer_zero_episodic_mass_max_abs": 1.1920928955078125e-07,
+              "layer_zero_output_max_abs": 7.450580596923828e-09,
+              "layer_zero_projected_output_max_abs": 7.404014468193054e-08,
+              "passed": true
+            }
+          ],
+          "shared_streaming_attention_kernel_grid_unit_tested": true
+        },
+        "first_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+        "first_trace": {
+          "component_reconstruction_max_abs": 5.960464477539063e-08,
+          "dtype": "float32",
+          "gamma_one_exact_anchor": true,
+          "layout": "position_layer_coordinate",
+          "mass_partition_max_abs": 4.76837158203125e-07,
+          "mass_shape": [
+            32,
+            16,
+            16
+          ],
+          "positions": [
+            96,
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            106,
+            107,
+            108,
+            109,
+            110,
+            111,
+            112,
+            113,
+            114,
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127
+          ],
+          "selected_code_stream_sha256": "b8bd68ac0f0d3b02bcb27218376d5bea31e183d06cfb33238a605ce34de860fc",
+          "selected_mass_distance_mean": 0.008714232593774796,
+          "selected_mass_sha256": "2f3aad8a3e59f0fffd9ad5ea8f52231810d2612e72c0b149afa275f48a37d5ff",
+          "shadow_scheduled_mass_nonzero_coordinates": 8192,
+          "tensor_sha256": {
+            "base_attention_output": "45bce467122694847c7e4f6a50926531f4feb31cd4df665169f0fe6d5bd9dba5",
+            "base_projected": "4d2b96b363268f448dfeef1957ac2e9e63b087187fab332059a957653d504184",
+            "episodic_component": "d5da283feb734b914d1b2cbe4e49986f10f5862368da33fd05254fdf97e12e29",
+            "episodic_mass": "e7cb421f291758ba848a566535971e3953a6ff7b1d092c7e1189b310d528bf3f",
+            "regular_component": "eb4bd91cd7cb0569f717036e02ec7f5bf34b8d5cc3fa03d3937a461101b75833",
+            "regular_mass": "3fa82fb2168cbacb6d8b8176b560aba19b480bd376057bc40725c966808ef841",
+            "shadow_scheduled_mass": "714436238725f18f1726da51f23a3a090119798b81cad16fd8b41b0ae7d10990",
+            "target_residual": "efd2d50e21c10ed6007f8ac0e22ce378755f79c90672b4496662cabe271ada1e"
+          },
+          "trace_sha256": "4d67b0ab56aba553ca3b1f807ca265ab43294e0c85b66cd9bf89271fefee2d80",
+          "value_shape": [
+            32,
+            16,
+            2048
+          ]
+        },
+        "historical_tensor_sha256": {
+          "base_projected": "4d2b96b363268f448dfeef1957ac2e9e63b087187fab332059a957653d504184",
+          "target_residual": "efd2d50e21c10ed6007f8ac0e22ce378755f79c90672b4496662cabe271ada1e"
+        },
+        "native_sequence_forwards": 8,
+        "native_token_steps": 838,
+        "output_projection_tensor_sha256": {
+          "model.layers.0.self_attn.o_proj.weight": "713f28304e77aa4a1b0b3a855cf5d3621eb877b5f3d143fdfc58f1e3efb0355e",
+          "model.layers.1.self_attn.o_proj.weight": "cd12b44bf6a0c10a16fa4a6f75e2b69f2cddb23c18eaed447bf83518fbdbd845",
+          "model.layers.10.self_attn.o_proj.weight": "96dcad962efc39eed5daf640a33c2febf2200224ea6b9869be8f49f76001dcc4",
+          "model.layers.11.self_attn.o_proj.weight": "750c064cacd22586000be8bb0045d54a90ba1f67a376203374a750d50b8f406c",
+          "model.layers.12.self_attn.o_proj.weight": "bf458e0d1d544df0b25338fa9338e924af33cb76799d2dcd9ac8d245c45a0a7b",
+          "model.layers.13.self_attn.o_proj.weight": "d0cdda96412dde6fc89549c11aa8603f073e46932db31172d8441fc9b595424b",
+          "model.layers.14.self_attn.o_proj.weight": "ebee83c0aa98367df6e2d21352f96c4b438c5641f10eb980fca4df8e39d0c01b",
+          "model.layers.15.self_attn.o_proj.weight": "3e4961a38a311966cbf66e266fa462ca2050a512e90f56137a57dc19428db1f3",
+          "model.layers.2.self_attn.o_proj.weight": "825b632c003a0340918c52e7e892faaa0d62e708eac22c7cfd9a3d859a81f92f",
+          "model.layers.3.self_attn.o_proj.weight": "912c8f916373aa11f2254bae3ddc153b826ceaf37f25ab6de57b7a8b0e6babbd",
+          "model.layers.4.self_attn.o_proj.weight": "11a42d3e819155730efa070087b43e45a8d1616c94dff441cdc2d27ec90422c9",
+          "model.layers.5.self_attn.o_proj.weight": "0eb89ca8301aa010f4e4ec3c8d451b1450ccc633d50020ea1fdb8af83a612717",
+          "model.layers.6.self_attn.o_proj.weight": "18d21b98611f4d77babf80dce8ae15c231fe90144d7945d2ffaf1c06fc9e23ea",
+          "model.layers.7.self_attn.o_proj.weight": "9263891eff7e90bf151aed8ac269a8ae04f1c214792f991ef1f952538e492f3e",
+          "model.layers.8.self_attn.o_proj.weight": "cf4568a74f1aad83c9804edd06b9747116f0a113dad69e9ed9153c181f0019f7",
+          "model.layers.9.self_attn.o_proj.weight": "8e161772c8f4ccddcf82aacecd39a73543e9dd99b58f62fa0f6dbc88bd43a84d"
+        },
+        "passed": true,
+        "record_index": 0,
+        "reset_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+        "reset_trace": {
+          "component_reconstruction_max_abs": 5.960464477539063e-08,
+          "dtype": "float32",
+          "gamma_one_exact_anchor": true,
+          "layout": "position_layer_coordinate",
+          "mass_partition_max_abs": 4.76837158203125e-07,
+          "mass_shape": [
+            32,
+            16,
+            16
+          ],
+          "positions": [
+            96,
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            106,
+            107,
+            108,
+            109,
+            110,
+            111,
+            112,
+            113,
+            114,
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127
+          ],
+          "selected_code_stream_sha256": "b8bd68ac0f0d3b02bcb27218376d5bea31e183d06cfb33238a605ce34de860fc",
+          "selected_mass_distance_mean": 0.008714232593774796,
+          "selected_mass_sha256": "2f3aad8a3e59f0fffd9ad5ea8f52231810d2612e72c0b149afa275f48a37d5ff",
+          "shadow_scheduled_mass_nonzero_coordinates": 8192,
+          "tensor_sha256": {
+            "base_attention_output": "45bce467122694847c7e4f6a50926531f4feb31cd4df665169f0fe6d5bd9dba5",
+            "base_projected": "4d2b96b363268f448dfeef1957ac2e9e63b087187fab332059a957653d504184",
+            "episodic_component": "d5da283feb734b914d1b2cbe4e49986f10f5862368da33fd05254fdf97e12e29",
+            "episodic_mass": "e7cb421f291758ba848a566535971e3953a6ff7b1d092c7e1189b310d528bf3f",
+            "regular_component": "eb4bd91cd7cb0569f717036e02ec7f5bf34b8d5cc3fa03d3937a461101b75833",
+            "regular_mass": "3fa82fb2168cbacb6d8b8176b560aba19b480bd376057bc40725c966808ef841",
+            "shadow_scheduled_mass": "714436238725f18f1726da51f23a3a090119798b81cad16fd8b41b0ae7d10990",
+            "target_residual": "efd2d50e21c10ed6007f8ac0e22ce378755f79c90672b4496662cabe271ada1e"
+          },
+          "trace_sha256": "4d67b0ab56aba553ca3b1f807ca265ab43294e0c85b66cd9bf89271fefee2d80",
+          "value_shape": [
+            32,
+            16,
+            2048
+          ]
+        },
+        "schedule_rows_sha256": "f2200d9ca229d28d87c25b78a59c77007ce24185a03bc75966362a85d620b15d"
+      },
+      "post_run_authentication": {
+        "attention_library": true,
+        "base_protocol": true,
+        "confirmation_not_opened": true,
+        "corpus_manifest": true,
+        "headwise_library": true,
+        "historical_K256_result": true,
+        "historical_capacity_manifest": true,
+        "historical_capacity_protocol": true,
+        "historical_capacity_result": true,
+        "historical_episodic_library": true,
+        "layered_library": true,
+        "logit_bias_library": true,
+        "logit_bias_protocol": true,
+        "logit_bias_result": true,
+        "mass_trace_library": true,
+        "package": true,
+        "rank_protocol": true,
+        "rank_result": true,
+        "source_config": true,
+        "source_index": true,
+        "source_shards": true,
+        "trace_library": true,
+        "train_split": true,
+        "training_checkpoint": true
+      },
+      "schema_version": 1,
+      "scope": {
+        "confirmation_split_opened": false,
+        "development_outcomes_used": false,
+        "positions": 128,
+        "record_index": 0,
+        "same_state_capacity_only": true,
+        "split": "train",
+        "trace_positions": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ]
+      },
+      "shadow_policy": {
+        "local_window": 128,
+        "older_candidates": 8,
+        "older_top_k": 4,
+        "sink_tokens": 2
+      },
+      "source_sha256": {
+        "native/include/engram/olmoe_token_runtime.h": "7953313937029f3d269640c31c11194403219f20e5c1fa27c9642d3f20d5513c",
+        "native/include/engram/olmoe_token_runtime_c.h": "0eb7dd58c287a02694af0ea1ebbfc245d648833415f577b6cf1fa0047a42b58f",
+        "native/include/engram/streaming_attention.h": "999fbfe06e589fdd385108c39dd6044f274f3c22b7f08413d831da818d66b05c",
+        "native/include/engram/streaming_attention_c.h": "f07e075e28a4cdc8b55280adbf428156516ec473cd7508a811661cb1ed46d787",
+        "native/src/native_bitnet_token_runtime.cpp": "eef6695ce0c40ae4b6762e4c397ea9b6cdfa013faad512a757bd1c89dac091ce",
+        "native/src/olmoe_token_runtime.cpp": "5e24a8f98a98ed671f9bf9301f54879eba45b384f98563c522c14fdde1d147cd",
+        "native/src/olmoe_token_runtime_c.cpp": "254396915d3bea16692876157324e0037a7442955f516ba93d3a0b472cfddbce",
+        "native/src/streaming_attention.cpp": "6c17285d2131e527089bfdd50a29e1e002a798af9f25e384ce26854137a9f7de",
+        "native/src/streaming_attention_c.cpp": "aa3a841a87bb9c3b165a8aa0a32b5306e27a903ed048b37900cb36e1741c8162",
+        "src/engram/compiler/olmoe_native.py": "e1a1bf19ce836b2e7f362e3ba170be42cce7e9791ae711895e1fe5a1e38ecbb1",
+        "src/engram/evaluation/olmoe_native_causal.py": "a7bd8f300d2149cab8375e8ea9703c099145bd620e7b509c636716be256eb961",
+        "src/engram/evaluation/olmoe_native_headwise.py": "303862d4f2151f6c554fd3605c46100603fb9d37de44537bf866d1e892a9fe00",
+        "src/engram/evaluation/olmoe_native_sustained.py": "019c6cf4fd74a77b5ffe992908c4d885f8ca7efb386e20c906695454dfbee520",
+        "src/engram/evaluation/olmoe_retrieval_episodic_head_mask_oracle.py": "d70468b8ddb1a872b05518d2b93fcc7300f624713a9bec71770764c2dbf3e4ab",
+        "src/engram/evaluation/olmoe_retrieval_episodic_head_mass_oracle.py": "363a7291711cb5fc3a53ffc833e8ab43212a2c484154e049009838ce532974c6",
+        "src/engram/evaluation/olmoe_retrieval_episodic_logit_bias.py": "8ab1ec4aaab30a8e218a33f52f81637e22918e3cc9f0773988a97d09936b2802",
+        "src/engram/evaluation/olmoe_retrieval_episodic_oracle.py": "7f82670a99e5ba71ce7558138eb779bd095df5b183ff074d9ccd7184531eb684",
+        "src/engram/evaluation/olmoe_retrieval_episodic_rank_sweep.py": "a1428e8f620106c408fe5773f2336514d7961b1e123246231d0d911f47ccf981",
+        "src/engram/evaluation/olmoe_retrieval_episodic_residual_capacity.py": "1e4df29eb0440502d5fa248bb2e2aeec572024e8508e10862d313fb027b3a934",
+        "src/engram/evaluation/olmoe_retrieval_head_selector.py": "0f7f80952b6c6b4b7511e999345c2d50ddc057014d5a336d5d50b6d50291cf4e",
+        "src/engram/evaluation/olmoe_retrieval_prefix_selector.py": "b4b53c042f27a76d2876bbcef77909328877acf5a83845788fd77e9dec02b2c3",
+        "src/engram/runtime/olmoe_native.py": "5ff2972cd37c6d948dbabc162858503904716194cf2af86b9a8dca9293fd488d",
+        "src/engram/utils.py": "1ee77400fcefab77be71f1eb9090c7143710889c6e5c56a1f2de0476a59e8cdc"
+      },
+      "status": "same_state_episodic_head_mass_trace_parity_passed",
+      "tie_priority": [
+        4,
+        3,
+        5,
+        2,
+        6,
+        1,
+        7,
+        0
+      ],
+      "trace_library": {
+        "path": "/home/dean/repos/engram/work/olmoe_q7/libengram_olmoe_token_runtime.head-mass-6c466bb7.so",
+        "required_symbols": [
+          "engram_olmoe_token_open_episodic_shadow_trace_v1",
+          "engram_olmoe_token_copy_last_shadow_trace_v1",
+          "engram_olmoe_token_copy_last_episodic_mass_trace_v1"
+        ],
+        "sha256": "6c466bb75a508bd7f8b9173667e7bd9d8433d91c3be818db25f01a495be6d2da"
+      }
+    },
+    "sha256": "569218dbb3ba8667c15ff932e0f9dffe5575774418080cc4e4239062fe2c6d01"
+  },
+  "trace_schema": {
+    "W128_exact_full_context_only_for_position_horizon": 128,
+    "block_entry_positions": [
+      96,
+      104,
+      112,
+      120
+    ],
+    "dtype": "float32",
+    "keys": [
+      "base_attention_output",
+      "regular_component",
+      "episodic_component",
+      "regular_mass",
+      "episodic_mass",
+      "shadow_scheduled_mass",
+      "base_projected",
+      "target_residual"
+    ],
+    "layout": "position_layer_coordinate",
+    "mass_native_step_shape": [
+      16,
+      16
+    ],
+    "mass_stored_shape": [
+      32,
+      16,
+      16
+    ],
+    "pickle_permitted": false,
+    "positions": [
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127
+    ],
+    "storage": "safetensors",
+    "support_rule": "capture iff schedule read_span >= 0",
+    "unbounded_context_claim": false,
+    "value_native_step_shape": [
+      16,
+      2048
+    ],
+    "value_stored_shape": [
+      32,
+      16,
+      2048
+    ]
+  },
+  "training_checkpoint": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_selector_2026-07-29_frozen/development_result.training_checkpoint.json",
+    "sha256": "9edf4fe7e7a1340c6f34bfe4d04544525947935116d662e94d98ccea4c282aa4",
+    "training_sha256": "8b4e41bf67cb4a835e6561a4fff194651ffd639976edca55309240311280d633"
+  },
+  "training_checkpoint_payload_sha256": "8b4e41bf67cb4a835e6561a4fff194651ffd639976edca55309240311280d633"
+}

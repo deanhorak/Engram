@@ -98,12 +98,61 @@ mask: KL/top-1/NLL-delta/hidden-L2 were
 development positions. It too remains an experiment, not a serializable
 package contract; no confirmation or promotion occurred.
 
-A successful retrieval-targeted static selector would first require an
-explicit, versioned per-head mask descriptor rather than silently overloading
-the current global policy. That selector remains untrained: the next
-experiment uses Q7-aware synthetic retrieval supervision and a new,
-predeclared corpus. Only a development and separately frozen confirmation pass
-could justify adding the descriptor.
+A retrieval-targeted static selector would require an explicit, versioned
+per-head mask descriptor rather than silently overloading the current global
+policy. That selector has now been trained on a new 8/8/8 synthetic passkey
+corpus, but its exact-51 candidate failed development KL, NLL-delta, and
+hidden-state gates while the W128 control passed. The sealed confirmation
+split was not opened, so no per-head descriptor was added.
+
+The later episodic K/V, head-gated episodic, and V2 episodic-logit-bias ABIs
+are also raw-runtime experiments. The completed V2 screen passed exact
+`beta=0` ABI parity but failed all four nonzero `gamma` candidates. Its
+replayed `gamma=1/2` arm is a diagnostic best failure, not a package default.
+The current manifest therefore has no episodic span schedule, head mask,
+logit-bias field, or new authentication root. The immutable
+[V2 report](../reports/olmoe_q7_retrieval_episodic_logit_bias_2026-07-29/summary.md)
+records that negative boundary.
+
+The completed same-state shadow residual screen was deliberately format-free.
+With `beta=0` fixed as the K256 base, ranks 2/4/8 recovered
+40.05%/42.87%/46.93% globally with oracle held-out coefficients and all missed
+the frozen 50% gate. It therefore authorized neither a causal coefficient fit
+nor a residual format contract. The immutable
+[capacity report](../reports/olmoe_q7_retrieval_episodic_residual_capacity_2026-07-29/summary.md)
+records that narrow closure.
+
+The completed dynamic per-head experiments were also format-free. The first
+matched scheduled-source probability mass but recovered -10.89% of the actual
+post-`W_o` residual. The second optimized all head gamma codes jointly against
+that output residual; its continuous optimistic capacity bound reached 22.74%
+and its direct discrete arm reached 19.98%, below the frozen 50% gate. Neither
+result authorized a gamma predictor, descriptor, tensor payload, loader, or
+runtime policy. The
+[joint-gamma report](../reports/olmoe_q7_retrieval_episodic_joint_gamma_oracle_2026-07-30/summary.md)
+records the fixed-K256 affine-family closure.
+
+The later
+[per-slot report](../reports/olmoe_q7_retrieval_episodic_slot_simplex_oracle_2026-07-30/summary.md)
+also remains format-free. Its constructible and exact-native-anchor
+optimistic hulls both recovered only 38.44% globally, below the frozen 50%
+gate. It therefore authorizes no per-slot coefficient tensor, selector
+descriptor, or native policy field.
+
+The later
+[full-visible capacity report](../reports/olmoe_q7_retrieval_episodic_full_visible_simplex_oracle_2026-07-30/README.md)
+also remains format-free even though its train-only capacity gate passed.
+Constructible C28—16 local, four selected-older, and eight episodic values—
+recovered 66.54% globally without adding KV state or reads. Optimistic C29
+also passed. These coefficients were oracle-selected from the target
+residual; there is no causal 28-logit selector artifact to serialize yet.
+
+A model-format revision becomes eligible only after that causal selector
+passes train progression and later development/confirmation. Such a revision
+would need to bind tensor names and dtypes, layer/head/query semantics,
+feature and normalization contracts, source hashes, exact state/traffic
+accounting, and a native loader. No residual, dynamic-mass, joint-gamma,
+per-slot, or full-visible selector contract is promoted today.
 
 A future dynamic allocator would require a broader versioned contract binding
 its parameters, prefix state, exact 51-head-equivalent logical-read ceiling,

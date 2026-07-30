@@ -1,0 +1,2087 @@
+{
+  "base_choice": {
+    "K": 256,
+    "base_tuning_permitted": false,
+    "beta_float32": 0.0,
+    "beta_float32_bits": "0x00000000",
+    "diagnostic_gamma_1_2_mean_answer_cross_entropy": 1.4614136666059494,
+    "diagnostic_gamma_1_2_worst_answer_cross_entropy": 1.66925048828125,
+    "fixed_before_trace_execution": true,
+    "historical_mean_answer_cross_entropy": 1.2244600802659988,
+    "historical_worst_answer_cross_entropy": 1.3273429870605469,
+    "selected_base": "historical_beta0_K256",
+    "selection_rule": "choose beta=0 K256 only because both authenticated historical mean and worst train CE strictly beat diagnostic gamma=1/2"
+  },
+  "base_output_authentication": [
+    {
+      "answer_cross_entropy": 1.3091617822647095,
+      "base_outputs_counters_and_loss_exact": true,
+      "counter_stream_sha256": "caad6975b5e7a11145fed40f6106a9f7b316133ec4dcdf23d1f345ba24cfea1f",
+      "episodic_call_stream_sha256": "7149c2fbb7ad66d275d5f3f5af532b8a56f6684615d264d93abbfe5d60720618",
+      "hidden_sha256": "7f6e0f678136500cf523ece27aca02c200382ec35ea848edab2665d58f24f389",
+      "historical_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+      "logits_sha256": "d87ce31b10fd0584a81248227657010b3e9edd16d39aa0d0f2cfd3fc9b4da81e",
+      "observed_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+      "record_id": "olmoe-retrieval-passkey-v1-train-00",
+      "record_index": 0,
+      "reset_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+      "reset_outputs_counters_loss_and_trace_exact": true,
+      "reset_trace_sha256": "4f8651e53bd72af848f3317fa83a0b50571890e649c93064b75f7b17ed8c6afa",
+      "shard_file_sha256": "57cb51e0d946636b1f3ecf5fe9cd67a221e78c619cb3a2b0e5873834fde5cd22",
+      "source_record_sha256": "f768e132d581d13927d3e3e9316017ce702290b95e346bd03b939210bcd30435",
+      "trace_sha256": "4f8651e53bd72af848f3317fa83a0b50571890e649c93064b75f7b17ed8c6afa"
+    },
+    {
+      "answer_cross_entropy": 1.1883000135421753,
+      "base_outputs_counters_and_loss_exact": true,
+      "counter_stream_sha256": "9bffac6fbab529b174f8235521c8aa089813ae370e0c09552e35b2bf97653493",
+      "episodic_call_stream_sha256": "7ef6779d3cf81e0714ff4b9d4b994069abf8b4a4d375621b024cb934829ab5bf",
+      "hidden_sha256": "9789dd2b81ff6c834bd9a2555df9186aaf2b9071ff19dc045124e709085cb553",
+      "historical_output_evidence_sha256": "04aa7f77859554fdbdd8d6ede1fe5c9f23b42d804460a6d180157efe6715f291",
+      "logits_sha256": "aa2656b5df25a10ba4e9d0fb1ac30289bb219a23a8f2c5721db0dc08bcee5c1f",
+      "observed_output_evidence_sha256": "04aa7f77859554fdbdd8d6ede1fe5c9f23b42d804460a6d180157efe6715f291",
+      "record_id": "olmoe-retrieval-passkey-v1-train-01",
+      "record_index": 1,
+      "reset_output_evidence_sha256": "04aa7f77859554fdbdd8d6ede1fe5c9f23b42d804460a6d180157efe6715f291",
+      "reset_outputs_counters_loss_and_trace_exact": true,
+      "reset_trace_sha256": "a576399a917ee1e9aad4a7516e245fa80129c83c6c5ec1bae03598feffb37eb7",
+      "shard_file_sha256": "20499f0083caa57e401dce868c24cb900e79f1e5f292b7cb54fd5098bf5be3a4",
+      "source_record_sha256": "87ebe0dc116e3d1998272119bca12d5b2b68dd2427330b7378fbf6d55bde874f",
+      "trace_sha256": "a576399a917ee1e9aad4a7516e245fa80129c83c6c5ec1bae03598feffb37eb7"
+    },
+    {
+      "answer_cross_entropy": 1.3092560768127441,
+      "base_outputs_counters_and_loss_exact": true,
+      "counter_stream_sha256": "1397f7aaf2634e37009b6509a76c67ba54a262a306fb7c0ffcf5b72f65d0f27a",
+      "episodic_call_stream_sha256": "ed218c7a1bb75cc7c6def7d7f0102de9fe4a942ee5447816fe20d8c00333367c",
+      "hidden_sha256": "23fbca094fd12ec7c7809a7dcc7f373ec37799c403ad2dacdbc68bb8a26f5bec",
+      "historical_output_evidence_sha256": "01430f19b5f02a868126d3e2da98891b778179dc346e4e8f43e4cb97cc8ebdc4",
+      "logits_sha256": "59988dadbddeb3789e82f6ce4c4c3133932a80cbe9b382333b8ed0ae8ea97918",
+      "observed_output_evidence_sha256": "01430f19b5f02a868126d3e2da98891b778179dc346e4e8f43e4cb97cc8ebdc4",
+      "record_id": "olmoe-retrieval-passkey-v1-train-02",
+      "record_index": 2,
+      "reset_output_evidence_sha256": "01430f19b5f02a868126d3e2da98891b778179dc346e4e8f43e4cb97cc8ebdc4",
+      "reset_outputs_counters_loss_and_trace_exact": true,
+      "reset_trace_sha256": "c3605b9f1e1df2f3dc6fcb2878476cfa7236697463bdf91be901735b75abb666",
+      "shard_file_sha256": "0f03f56f6582c1fcfd19f13f539b0260e714c4b27f5d2d6714e79034d4f87513",
+      "source_record_sha256": "aad8003fb58143a002e52f17e0bcded43b6a11bc647afb7574bb6926e8aa82d9",
+      "trace_sha256": "c3605b9f1e1df2f3dc6fcb2878476cfa7236697463bdf91be901735b75abb666"
+    },
+    {
+      "answer_cross_entropy": 0.9684914350509644,
+      "base_outputs_counters_and_loss_exact": true,
+      "counter_stream_sha256": "eb4184e2d54caf71e01f8473ff3edffb2e4619dca493bd8a2bb79f890a307f30",
+      "episodic_call_stream_sha256": "d43d87f0ef3233a40a4aece77a963808d30c194fb398cc10d4c5237123b39e0c",
+      "hidden_sha256": "193eb0040ccb941f4a0be54a1b798da6429387bc9d98295d74c2959caba7223c",
+      "historical_output_evidence_sha256": "d3e7606a86515688bd3d027f222e3e437bc5eead49079781a9824fc0636a1f61",
+      "logits_sha256": "173845a712f7449bdfbc3db073cf731cc3b1fe1577860507d45b5fa043b3fd13",
+      "observed_output_evidence_sha256": "d3e7606a86515688bd3d027f222e3e437bc5eead49079781a9824fc0636a1f61",
+      "record_id": "olmoe-retrieval-passkey-v1-train-03",
+      "record_index": 3,
+      "reset_output_evidence_sha256": "d3e7606a86515688bd3d027f222e3e437bc5eead49079781a9824fc0636a1f61",
+      "reset_outputs_counters_loss_and_trace_exact": true,
+      "reset_trace_sha256": "b3f5feaa5013a5d8927af333efade5322097d7409309ebab6b749144e685104a",
+      "shard_file_sha256": "941cc084ec048b75ad2cb8953aa7d015fe98bcead3e4c3e2ef8eb266e9771298",
+      "source_record_sha256": "2b1376b347834536f3bf5305c4edd6733a761e126a999d8d44d8c9b7527865c7",
+      "trace_sha256": "b3f5feaa5013a5d8927af333efade5322097d7409309ebab6b749144e685104a"
+    },
+    {
+      "answer_cross_entropy": 1.2390215396881104,
+      "base_outputs_counters_and_loss_exact": true,
+      "counter_stream_sha256": "220468063496da0b08d055125850ff1edaa3b1089d93ebad11a65898acd12239",
+      "episodic_call_stream_sha256": "deab7d9f2504a1d563c372374292d3dc4b1d078ebcb59ec55d1f1e6f69a1aa74",
+      "hidden_sha256": "10f26719302cf75a682dc93ac35547a0ec3608340159c7097e697c07560c78ea",
+      "historical_output_evidence_sha256": "21e3141de7cad305dc954ab321aa5f67af91eaba0ff1be9f8e4d2c63c7be2530",
+      "logits_sha256": "f5259e5b3c5aa6bfcc7bb942356d0c781434db8632340415bdfd9569acb1cf29",
+      "observed_output_evidence_sha256": "21e3141de7cad305dc954ab321aa5f67af91eaba0ff1be9f8e4d2c63c7be2530",
+      "record_id": "olmoe-retrieval-passkey-v1-train-04",
+      "record_index": 4,
+      "reset_output_evidence_sha256": "21e3141de7cad305dc954ab321aa5f67af91eaba0ff1be9f8e4d2c63c7be2530",
+      "reset_outputs_counters_loss_and_trace_exact": true,
+      "reset_trace_sha256": "0c5a88a6b098ca70900f84dc1da9a3d10c969a2d5d94f4a3a0daf015a8d5faec",
+      "shard_file_sha256": "d9cf60a0fc20fbebbc0f0519416b254f3662267b565ce98a0967328b2de3e349",
+      "source_record_sha256": "33b139cf3c4d564d38cb0af058e4c3d553f18293fa676098952267884115abbb",
+      "trace_sha256": "0c5a88a6b098ca70900f84dc1da9a3d10c969a2d5d94f4a3a0daf015a8d5faec"
+    },
+    {
+      "answer_cross_entropy": 1.196218729019165,
+      "base_outputs_counters_and_loss_exact": true,
+      "counter_stream_sha256": "6122b2a1a0b589a9d5780285909f7d884f311123a19a31b5a020ee7f4a97aabc",
+      "episodic_call_stream_sha256": "ae3e4dd3efedd037081e0108a6ccd9a8af7552e6b28d0679c49b80d232d40e96",
+      "hidden_sha256": "1343ef6ef0ac42504e8e0201b871de97cf02ed1890b7eb184c7d783d26dd4e10",
+      "historical_output_evidence_sha256": "a128fd9d55f8966699a31d11fbce139d5a12e624e1fde050bb5a41944f7aec33",
+      "logits_sha256": "2c774341379beb489d5c04ddda41d29afb346831da858656285475bd9024f75a",
+      "observed_output_evidence_sha256": "a128fd9d55f8966699a31d11fbce139d5a12e624e1fde050bb5a41944f7aec33",
+      "record_id": "olmoe-retrieval-passkey-v1-train-05",
+      "record_index": 5,
+      "reset_output_evidence_sha256": "a128fd9d55f8966699a31d11fbce139d5a12e624e1fde050bb5a41944f7aec33",
+      "reset_outputs_counters_loss_and_trace_exact": true,
+      "reset_trace_sha256": "767b28b368ee6a39e3a67dadfdc7b24bdd0794d9d2907696bb9d1ac5ca0fa91a",
+      "shard_file_sha256": "570a9096d5d4b1a99458f830019e01c4c09736f234043b0f4e81e324d3ed5d25",
+      "source_record_sha256": "c7208f31d27d1b33b35ed2ff2e4aaf09106f21388599c4378bffc81df3815a90",
+      "trace_sha256": "767b28b368ee6a39e3a67dadfdc7b24bdd0794d9d2907696bb9d1ac5ca0fa91a"
+    },
+    {
+      "answer_cross_entropy": 1.2578880786895752,
+      "base_outputs_counters_and_loss_exact": true,
+      "counter_stream_sha256": "eb4e136a6c7b0f8afd3247bdeaa81bbfc3aab553ddea283d95e3d7451af5a540",
+      "episodic_call_stream_sha256": "d2eff56b5c4c9e8ff22100097de498d5c56c34fff559f2ed770417f647382648",
+      "hidden_sha256": "7d888decbc539c5097a3dc9ff7458194ccf579e05e3b6556e1162b76c6913c65",
+      "historical_output_evidence_sha256": "4bb78772d10f8a4fbcb62434e4a8a3b561bae7291bbb64b5751ba93e15b0538e",
+      "logits_sha256": "8674efe8084de595b17093469abfe5a412f37fbef8265e6149a82b2dd9e6a164",
+      "observed_output_evidence_sha256": "4bb78772d10f8a4fbcb62434e4a8a3b561bae7291bbb64b5751ba93e15b0538e",
+      "record_id": "olmoe-retrieval-passkey-v1-train-06",
+      "record_index": 6,
+      "reset_output_evidence_sha256": "4bb78772d10f8a4fbcb62434e4a8a3b561bae7291bbb64b5751ba93e15b0538e",
+      "reset_outputs_counters_loss_and_trace_exact": true,
+      "reset_trace_sha256": "4fdafd7090777ac74a16178d3ca4a4a0185a23bd688d68003f53a5f363123cc1",
+      "shard_file_sha256": "8affc923af56bf0ecf8d7a664443a9bb27c9e353e9b16ec14a3ba00f0b175ac9",
+      "source_record_sha256": "a26fc441493c653d0e8878244cac3b7461968e0894b4f7bec7a1cba3ea07e4ac",
+      "trace_sha256": "4fdafd7090777ac74a16178d3ca4a4a0185a23bd688d68003f53a5f363123cc1"
+    },
+    {
+      "answer_cross_entropy": 1.3273429870605469,
+      "base_outputs_counters_and_loss_exact": true,
+      "counter_stream_sha256": "cd8aa3b6243a82ac084fba69136beefe0927256e5046713c035c4f493bf2e5bf",
+      "episodic_call_stream_sha256": "d0fad9dbc5af58d985303996099f3e16dd110ee9161e4c7cd94cfac1bbd0374c",
+      "hidden_sha256": "8a59449e30503bd1fb50deee94e20840b692ff584483c7bbdb6eff545609cc16",
+      "historical_output_evidence_sha256": "cad925a275ba13a05040ce4b670b25c4779d3d4ed6ca3b17f2223d526814cc38",
+      "logits_sha256": "2ed0b315afa190a921861d9b2c2aa0b6f76e58ddc2866e446be5c354561bf7ea",
+      "observed_output_evidence_sha256": "cad925a275ba13a05040ce4b670b25c4779d3d4ed6ca3b17f2223d526814cc38",
+      "record_id": "olmoe-retrieval-passkey-v1-train-07",
+      "record_index": 7,
+      "reset_output_evidence_sha256": "cad925a275ba13a05040ce4b670b25c4779d3d4ed6ca3b17f2223d526814cc38",
+      "reset_outputs_counters_loss_and_trace_exact": true,
+      "reset_trace_sha256": "411fff3c5fddf6a26afc571f7d2011d5589c50ba0d41beef6f067d4218a8e783",
+      "shard_file_sha256": "c41359e2aa74d19235a9c40014248b5730d9957a01fc2480b9b774a78a8e6038",
+      "source_record_sha256": "21e4a9a20939bea60c037e28a74f678c877cf45739713e346dd7e7cb54fc77ed",
+      "trace_sha256": "411fff3c5fddf6a26afc571f7d2011d5589c50ba0d41beef6f067d4218a8e783"
+    }
+  ],
+  "capacity": {
+    "passed": false,
+    "rank_order": [
+      2,
+      4,
+      8
+    ],
+    "rank_outcomes": {
+      "2": {
+        "block_entry_positions": [
+          {
+            "error_ratio": 0.8648412574570635,
+            "error_squared_frobenius": 6.764106922653185,
+            "position": 96,
+            "recovery": 0.2520495994000852,
+            "target_squared_frobenius": 9.043523363618553
+          },
+          {
+            "error_ratio": 0.788034333988005,
+            "error_squared_frobenius": 7.208615377186805,
+            "position": 104,
+            "recovery": 0.3790018884560814,
+            "target_squared_frobenius": 11.608111591941602
+          },
+          {
+            "error_ratio": 0.7547252795397544,
+            "error_squared_frobenius": 9.296791488175753,
+            "position": 112,
+            "recovery": 0.4303897524236395,
+            "target_squared_frobenius": 16.32132063587822
+          },
+          {
+            "error_ratio": 0.7793181443571268,
+            "error_squared_frobenius": 8.661311797509315,
+            "position": 120,
+            "recovery": 0.3926632298757645,
+            "target_squared_frobenius": 14.261135211256146
+          }
+        ],
+        "folds": [
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 0,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 1,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 2,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 3,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              2,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 4,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              2,
+              3,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 5,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 6,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 7,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ]
+          }
+        ],
+        "gate": {
+          "at_least_12_of_16_layers_positive_recovery": true,
+          "every_block_entry_recovery_at_least_0_25": true,
+          "every_sequence_recovery_at_least_0_25": true,
+          "finite": true,
+          "global_recovery_at_least_0_50": false,
+          "passed": false
+        },
+        "global": {
+          "error_ratio": 0.7742935347260635,
+          "error_squared_frobenius": 185.1027899982507,
+          "recovery": 0.40046952208141817,
+          "target_squared_frobenius": 308.7462553044522
+        },
+        "heldout_sequences": [
+          {
+            "error_ratio": 0.8149246188223485,
+            "error_squared_frobenius": 24.548124386215218,
+            "record_index": 0,
+            "recovery": 0.3358978656372501,
+            "target_squared_frobenius": 36.964381103474054
+          },
+          {
+            "error_ratio": 0.7414086831809509,
+            "error_squared_frobenius": 21.39081068177243,
+            "record_index": 1,
+            "recovery": 0.4503131645038885,
+            "target_squared_frobenius": 38.914540608320145
+          },
+          {
+            "error_ratio": 0.7732288869646692,
+            "error_squared_frobenius": 23.046557518506773,
+            "record_index": 2,
+            "recovery": 0.4021170883633789,
+            "target_squared_frobenius": 38.54694133240911
+          },
+          {
+            "error_ratio": 0.7686727435368221,
+            "error_squared_frobenius": 22.541357952900714,
+            "record_index": 3,
+            "recovery": 0.4091422133435748,
+            "target_squared_frobenius": 38.150225759837824
+          },
+          {
+            "error_ratio": 0.8271747761529133,
+            "error_squared_frobenius": 27.60601677038298,
+            "record_index": 4,
+            "recovery": 0.31578188969637766,
+            "target_squared_frobenius": 40.346808064073
+          },
+          {
+            "error_ratio": 0.7506422162950149,
+            "error_squared_frobenius": 18.371465077861288,
+            "record_index": 5,
+            "recovery": 0.43653626311570803,
+            "target_squared_frobenius": 32.604520708728224
+          },
+          {
+            "error_ratio": 0.7399282609991247,
+            "error_squared_frobenius": 22.584479484639605,
+            "record_index": 6,
+            "recovery": 0.4525061685748112,
+            "target_squared_frobenius": 41.2506556025474
+          },
+          {
+            "error_ratio": 0.772024893092467,
+            "error_squared_frobenius": 25.013978125971747,
+            "record_index": 7,
+            "recovery": 0.4039775644455649,
+            "target_squared_frobenius": 41.96818212506231
+          }
+        ],
+        "layers": [
+          {
+            "error_ratio": 0.40143316032265686,
+            "error_squared_frobenius": 0.03864183044920908,
+            "layer": 0,
+            "recovery": 0.838851417793364,
+            "target_squared_frobenius": 0.23979007398066857
+          },
+          {
+            "error_ratio": 0.5102408373693755,
+            "error_squared_frobenius": 0.20017376318708235,
+            "layer": 1,
+            "recovery": 0.7396542878805985,
+            "target_squared_frobenius": 0.7688767429950116
+          },
+          {
+            "error_ratio": 0.5718378747851521,
+            "error_squared_frobenius": 0.18049653950001895,
+            "layer": 2,
+            "recovery": 0.6730014449612007,
+            "target_squared_frobenius": 0.5519796241258697
+          },
+          {
+            "error_ratio": 0.5878003464436141,
+            "error_squared_frobenius": 0.4107597291057883,
+            "layer": 3,
+            "recovery": 0.6544907527207672,
+            "target_squared_frobenius": 1.1888530693183488
+          },
+          {
+            "error_ratio": 0.6208651777022512,
+            "error_squared_frobenius": 0.3352126570100028,
+            "layer": 4,
+            "recovery": 0.614526431116752,
+            "target_squared_frobenius": 0.8696125598990987
+          },
+          {
+            "error_ratio": 0.5986690416668133,
+            "error_squared_frobenius": 0.8124226834726382,
+            "layer": 5,
+            "recovery": 0.6415953785497392,
+            "target_squared_frobenius": 2.266775133047178
+          },
+          {
+            "error_ratio": 0.644225868438307,
+            "error_squared_frobenius": 0.9065263432730831,
+            "layer": 6,
+            "recovery": 0.5849730304349092,
+            "target_squared_frobenius": 2.184258878942343
+          },
+          {
+            "error_ratio": 0.7374360112799555,
+            "error_squared_frobenius": 1.729824252672327,
+            "layer": 7,
+            "recovery": 0.4561881292675093,
+            "target_squared_frobenius": 3.180924039672635
+          },
+          {
+            "error_ratio": 0.7328843873251141,
+            "error_squared_frobenius": 0.8882495421939346,
+            "layer": 8,
+            "recovery": 0.4628804748150922,
+            "target_squared_frobenius": 1.6537278958312815
+          },
+          {
+            "error_ratio": 0.7618431662200817,
+            "error_squared_frobenius": 4.753296628976697,
+            "layer": 9,
+            "recovery": 0.4195949900837609,
+            "target_squared_frobenius": 8.189620261311436
+          },
+          {
+            "error_ratio": 0.7184634323662383,
+            "error_squared_frobenius": 2.8593489181661385,
+            "layer": 10,
+            "recovery": 0.4838102963525237,
+            "target_squared_frobenius": 5.539337375312868
+          },
+          {
+            "error_ratio": 0.6629396660867523,
+            "error_squared_frobenius": 2.435259324871187,
+            "layer": 11,
+            "recovery": 0.5605109991287854,
+            "target_squared_frobenius": 5.541115522899746
+          },
+          {
+            "error_ratio": 0.908307761160305,
+            "error_squared_frobenius": 34.279861650597006,
+            "layer": 12,
+            "recovery": 0.17497701101595442,
+            "target_squared_frobenius": 41.550189641151825
+          },
+          {
+            "error_ratio": 0.918537053747937,
+            "error_squared_frobenius": 57.39352208117683,
+            "layer": 13,
+            "recovery": 0.15628968089205952,
+            "target_squared_frobenius": 68.02515126502105
+          },
+          {
+            "error_ratio": 0.8139583091756688,
+            "error_squared_frobenius": 33.44959930060082,
+            "layer": 14,
+            "recovery": 0.3374718709238864,
+            "target_squared_frobenius": 50.48781754707658
+          },
+          {
+            "error_ratio": 0.6175297455952393,
+            "error_squared_frobenius": 44.429594752997986,
+            "layer": 15,
+            "recovery": 0.618657013305079,
+            "target_squared_frobenius": 116.50822567386615
+          }
+        ],
+        "positive_recovery_layer_count": 16,
+        "rank": 2,
+        "worst_sequence_error_ratio": 0.8271747761529133
+      },
+      "4": {
+        "block_entry_positions": [
+          {
+            "error_ratio": 0.8213906163172542,
+            "error_squared_frobenius": 6.101507354880935,
+            "position": 96,
+            "recovery": 0.32531745542596124,
+            "target_squared_frobenius": 9.043523363618553
+          },
+          {
+            "error_ratio": 0.7708360451125635,
+            "error_squared_frobenius": 6.897403030242842,
+            "position": 104,
+            "recovery": 0.40581179155522196,
+            "target_squared_frobenius": 11.608111591941602
+          },
+          {
+            "error_ratio": 0.7293059248012496,
+            "error_squared_frobenius": 8.681100422656977,
+            "position": 112,
+            "recovery": 0.46811286804979413,
+            "target_squared_frobenius": 16.32132063587822
+          },
+          {
+            "error_ratio": 0.7685036442862793,
+            "error_squared_frobenius": 8.422595812599855,
+            "position": 120,
+            "recovery": 0.40940214871870795,
+            "target_squared_frobenius": 14.261135211256146
+          }
+        ],
+        "folds": [
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 0,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 1,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 2,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 3,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              2,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 4,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              2,
+              3,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 5,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 6,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 7,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ]
+          }
+        ],
+        "gate": {
+          "at_least_12_of_16_layers_positive_recovery": true,
+          "every_block_entry_recovery_at_least_0_25": true,
+          "every_sequence_recovery_at_least_0_25": true,
+          "finite": true,
+          "global_recovery_at_least_0_50": false,
+          "passed": false
+        },
+        "global": {
+          "error_ratio": 0.755853019221204,
+          "error_squared_frobenius": 176.3909922368754,
+          "recovery": 0.4286862133341903,
+          "target_squared_frobenius": 308.7462553044522
+        },
+        "heldout_sequences": [
+          {
+            "error_ratio": 0.7965335342149702,
+            "error_squared_frobenius": 23.452630864683464,
+            "record_index": 0,
+            "recovery": 0.3655343288710089,
+            "target_squared_frobenius": 36.964381103474054
+          },
+          {
+            "error_ratio": 0.7171680318936353,
+            "error_squared_frobenius": 20.0149151251137,
+            "record_index": 1,
+            "recovery": 0.4856700140298097,
+            "target_squared_frobenius": 38.914540608320145
+          },
+          {
+            "error_ratio": 0.760325268038004,
+            "error_squared_frobenius": 22.283775285565717,
+            "record_index": 2,
+            "recovery": 0.4219054867829374,
+            "target_squared_frobenius": 38.54694133240911
+          },
+          {
+            "error_ratio": 0.7530399457894849,
+            "error_squared_frobenius": 21.63381647371073,
+            "record_index": 3,
+            "recovery": 0.43293084004536975,
+            "target_squared_frobenius": 38.150225759837824
+          },
+          {
+            "error_ratio": 0.8081171250308536,
+            "error_squared_frobenius": 26.348615657192674,
+            "record_index": 4,
+            "recovery": 0.34694671223186757,
+            "target_squared_frobenius": 40.346808064073
+          },
+          {
+            "error_ratio": 0.7307038048877036,
+            "error_squared_frobenius": 17.408468178760206,
+            "record_index": 5,
+            "recovery": 0.46607194952263287,
+            "target_squared_frobenius": 32.604520708728224
+          },
+          {
+            "error_ratio": 0.7184098446563124,
+            "error_squared_frobenius": 21.289987441892237,
+            "record_index": 6,
+            "recovery": 0.4838872951008931,
+            "target_squared_frobenius": 41.2506556025474
+          },
+          {
+            "error_ratio": 0.7555658142971137,
+            "error_squared_frobenius": 23.958783209956724,
+            "record_index": 7,
+            "recovery": 0.4291203002655395,
+            "target_squared_frobenius": 41.96818212506231
+          }
+        ],
+        "layers": [
+          {
+            "error_ratio": 0.31400216010516724,
+            "error_squared_frobenius": 0.023642667421593367,
+            "layer": 0,
+            "recovery": 0.9014026434492889,
+            "target_squared_frobenius": 0.23979007398066857
+          },
+          {
+            "error_ratio": 0.4538644672425514,
+            "error_squared_frobenius": 0.15838319203226986,
+            "layer": 1,
+            "recovery": 0.794007045374635,
+            "target_squared_frobenius": 0.7688767429950116
+          },
+          {
+            "error_ratio": 0.5525020878714227,
+            "error_squared_frobenius": 0.1684965036105226,
+            "layer": 2,
+            "recovery": 0.6947414428977186,
+            "target_squared_frobenius": 0.5519796241258697
+          },
+          {
+            "error_ratio": 0.5665962295937954,
+            "error_squared_frobenius": 0.38165903136070933,
+            "layer": 3,
+            "recovery": 0.6789687126100952,
+            "target_squared_frobenius": 1.1888530693183488
+          },
+          {
+            "error_ratio": 0.6024439749716474,
+            "error_squared_frobenius": 0.3156160893690848,
+            "layer": 4,
+            "recovery": 0.6370612570203611,
+            "target_squared_frobenius": 0.8696125598990987
+          },
+          {
+            "error_ratio": 0.5812982386981005,
+            "error_squared_frobenius": 0.7659606408628736,
+            "layer": 5,
+            "recovery": 0.6620923576864861,
+            "target_squared_frobenius": 2.266775133047178
+          },
+          {
+            "error_ratio": 0.6134363436565259,
+            "error_squared_frobenius": 0.821945675837374,
+            "layer": 6,
+            "recovery": 0.6236958522813126,
+            "target_squared_frobenius": 2.184258878942343
+          },
+          {
+            "error_ratio": 0.6813221296074916,
+            "error_squared_frobenius": 1.47658444392354,
+            "layer": 7,
+            "recovery": 0.5358001557071124,
+            "target_squared_frobenius": 3.180924039672635
+          },
+          {
+            "error_ratio": 0.7079146545064268,
+            "error_squared_frobenius": 0.8287544202969991,
+            "layer": 8,
+            "recovery": 0.4988568419350464,
+            "target_squared_frobenius": 1.6537278958312815
+          },
+          {
+            "error_ratio": 0.7379357775587462,
+            "error_squared_frobenius": 4.459651258248536,
+            "layer": 9,
+            "recovery": 0.4554507881987687,
+            "target_squared_frobenius": 8.189620261311436
+          },
+          {
+            "error_ratio": 0.6830378993370709,
+            "error_squared_frobenius": 2.5843267350635895,
+            "layer": 10,
+            "recovery": 0.5334592280692013,
+            "target_squared_frobenius": 5.539337375312868
+          },
+          {
+            "error_ratio": 0.6440573817000486,
+            "error_squared_frobenius": 2.29850963646434,
+            "layer": 11,
+            "recovery": 0.5851900890776779,
+            "target_squared_frobenius": 5.541115522899746
+          },
+          {
+            "error_ratio": 0.8910308246910094,
+            "error_squared_frobenius": 32.988188477257744,
+            "layer": 12,
+            "recovery": 0.20606406945045974,
+            "target_squared_frobenius": 41.550189641151825
+          },
+          {
+            "error_ratio": 0.9093723494039766,
+            "error_squared_frobenius": 56.253947792090905,
+            "layer": 13,
+            "recovery": 0.17304193013949198,
+            "target_squared_frobenius": 68.02515126502105
+          },
+          {
+            "error_ratio": 0.7933319744279901,
+            "error_squared_frobenius": 31.775801554433666,
+            "layer": 14,
+            "recovery": 0.3706243783501869,
+            "target_squared_frobenius": 50.48781754707658
+          },
+          {
+            "error_ratio": 0.5938643588001348,
+            "error_squared_frobenius": 41.089524118601716,
+            "layer": 15,
+            "recovery": 0.6473251233469048,
+            "target_squared_frobenius": 116.50822567386615
+          }
+        ],
+        "positive_recovery_layer_count": 16,
+        "rank": 4,
+        "worst_sequence_error_ratio": 0.8081171250308536
+      },
+      "8": {
+        "block_entry_positions": [
+          {
+            "error_ratio": 0.7322832434503063,
+            "error_squared_frobenius": 4.849487651786238,
+            "position": 96,
+            "recovery": 0.4637612513618995,
+            "target_squared_frobenius": 9.043523363618553
+          },
+          {
+            "error_ratio": 0.7446786285203434,
+            "error_squared_frobenius": 6.437234866361336,
+            "position": 104,
+            "recovery": 0.44545374022506035,
+            "target_squared_frobenius": 11.608111591941602
+          },
+          {
+            "error_ratio": 0.7006864325144837,
+            "error_squared_frobenius": 8.013139681246113,
+            "position": 112,
+            "recovery": 0.5090385232901258,
+            "target_squared_frobenius": 16.32132063587822
+          },
+          {
+            "error_ratio": 0.7456760912929554,
+            "error_squared_frobenius": 7.929659415106856,
+            "position": 120,
+            "recovery": 0.44396716687406,
+            "target_squared_frobenius": 14.261135211256146
+          }
+        ],
+        "folds": [
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 0,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 1,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 2,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 3,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              2,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 4,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              2,
+              3,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 5,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              6,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 6,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              7
+            ]
+          },
+          {
+            "heldout_coefficients": "oracle",
+            "heldout_record_index": 7,
+            "training_positions_per_record": 32,
+            "training_record_indices": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ]
+          }
+        ],
+        "gate": {
+          "at_least_12_of_16_layers_positive_recovery": true,
+          "every_block_entry_recovery_at_least_0_25": true,
+          "every_sequence_recovery_at_least_0_25": true,
+          "finite": true,
+          "global_recovery_at_least_0_50": false,
+          "passed": false
+        },
+        "global": {
+          "error_ratio": 0.7285241120039418,
+          "error_squared_frobenius": 163.86626663447947,
+          "recovery": 0.469252618228868,
+          "target_squared_frobenius": 308.7462553044522
+        },
+        "heldout_sequences": [
+          {
+            "error_ratio": 0.7713231000537367,
+            "error_squared_frobenius": 21.991563930785883,
+            "record_index": 0,
+            "recovery": 0.4050606753234932,
+            "target_squared_frobenius": 36.964381103474054
+          },
+          {
+            "error_ratio": 0.6855598597153924,
+            "error_squared_frobenius": 18.289535270998066,
+            "record_index": 1,
+            "recovery": 0.5300076787470116,
+            "target_squared_frobenius": 38.914540608320145
+          },
+          {
+            "error_ratio": 0.734817649038127,
+            "error_squared_frobenius": 20.813689927469756,
+            "record_index": 2,
+            "recovery": 0.4600430226620801,
+            "target_squared_frobenius": 38.54694133240911
+          },
+          {
+            "error_ratio": 0.7263917700728028,
+            "error_squared_frobenius": 20.129776009515858,
+            "record_index": 3,
+            "recovery": 0.4723549963705004,
+            "target_squared_frobenius": 38.150225759837824
+          },
+          {
+            "error_ratio": 0.7826247900465768,
+            "error_squared_frobenius": 24.71248296077527,
+            "record_index": 4,
+            "recovery": 0.3874984380045515,
+            "target_squared_frobenius": 40.346808064073
+          },
+          {
+            "error_ratio": 0.6982305406867808,
+            "error_squared_frobenius": 15.895547909633668,
+            "record_index": 5,
+            "recovery": 0.5124741120522458,
+            "target_squared_frobenius": 32.604520708728224
+          },
+          {
+            "error_ratio": 0.6885451825324069,
+            "error_squared_frobenius": 19.556707638570337,
+            "record_index": 6,
+            "recovery": 0.5259055316114144,
+            "target_squared_frobenius": 41.2506556025474
+          },
+          {
+            "error_ratio": 0.7318275189436332,
+            "error_squared_frobenius": 22.47696298673067,
+            "record_index": 7,
+            "recovery": 0.46442848251680624,
+            "target_squared_frobenius": 41.96818212506231
+          }
+        ],
+        "layers": [
+          {
+            "error_ratio": 0.27366923565071327,
+            "error_squared_frobenius": 0.017959041752152325,
+            "layer": 0,
+            "recovery": 0.9251051494583543,
+            "target_squared_frobenius": 0.23979007398066857
+          },
+          {
+            "error_ratio": 0.42942972777968924,
+            "error_squared_frobenius": 0.14178847644575399,
+            "layer": 1,
+            "recovery": 0.815590108899062,
+            "target_squared_frobenius": 0.7688767429950116
+          },
+          {
+            "error_ratio": 0.5286833148501286,
+            "error_squared_frobenius": 0.15428164298526745,
+            "layer": 2,
+            "recovery": 0.7204939525990798,
+            "target_squared_frobenius": 0.5519796241258697
+          },
+          {
+            "error_ratio": 0.5201327102188552,
+            "error_squared_frobenius": 0.32162997475082095,
+            "layer": 3,
+            "recovery": 0.7294619637603883,
+            "target_squared_frobenius": 1.1888530693183488
+          },
+          {
+            "error_ratio": 0.5670948250191532,
+            "error_squared_frobenius": 0.279664390894123,
+            "layer": 4,
+            "recovery": 0.678403459436496,
+            "target_squared_frobenius": 0.8696125598990987
+          },
+          {
+            "error_ratio": 0.5510355713008276,
+            "error_squared_frobenius": 0.6882840566549095,
+            "layer": 5,
+            "recovery": 0.6963597991611705,
+            "target_squared_frobenius": 2.266775133047178
+          },
+          {
+            "error_ratio": 0.5792737971886155,
+            "error_squared_frobenius": 0.732945829461084,
+            "layer": 6,
+            "recovery": 0.6644418678906827,
+            "target_squared_frobenius": 2.184258878942343
+          },
+          {
+            "error_ratio": 0.6429235452010001,
+            "error_squared_frobenius": 1.3148371306483821,
+            "layer": 7,
+            "recovery": 0.5866493150261776,
+            "target_squared_frobenius": 3.180924039672635
+          },
+          {
+            "error_ratio": 0.6786825628978678,
+            "error_squared_frobenius": 0.7617236411274795,
+            "layer": 8,
+            "recovery": 0.5393899788183818,
+            "target_squared_frobenius": 1.6537278958312815
+          },
+          {
+            "error_ratio": 0.6978900703618991,
+            "error_squared_frobenius": 3.9887590550995022,
+            "layer": 9,
+            "recovery": 0.5129494496902636,
+            "target_squared_frobenius": 8.189620261311436
+          },
+          {
+            "error_ratio": 0.6608257994021288,
+            "error_squared_frobenius": 2.418977321778182,
+            "layer": 10,
+            "recovery": 0.5633092628445373,
+            "target_squared_frobenius": 5.539337375312868
+          },
+          {
+            "error_ratio": 0.6223929656815674,
+            "error_squared_frobenius": 2.1464785641200326,
+            "layer": 11,
+            "recovery": 0.6126269962701032,
+            "target_squared_frobenius": 5.541115522899746
+          },
+          {
+            "error_ratio": 0.8522891148411885,
+            "error_squared_frobenius": 30.18192210546363,
+            "layer": 12,
+            "recovery": 0.27360326472322327,
+            "target_squared_frobenius": 41.550189641151825
+          },
+          {
+            "error_ratio": 0.8867861848491664,
+            "error_squared_frobenius": 53.49428085617631,
+            "layer": 13,
+            "recovery": 0.21361026236066016,
+            "target_squared_frobenius": 68.02515126502105
+          },
+          {
+            "error_ratio": 0.7717247431457531,
+            "error_squared_frobenius": 30.068478128315355,
+            "layer": 14,
+            "recovery": 0.4044409208166213,
+            "target_squared_frobenius": 50.48781754707658
+          },
+          {
+            "error_ratio": 0.5647106689522,
+            "error_squared_frobenius": 37.15425641880651,
+            "layer": 15,
+            "recovery": 0.6811018603715587,
+            "target_squared_frobenius": 116.50822567386615
+          }
+        ],
+        "positive_recovery_layer_count": 16,
+        "rank": 8,
+        "worst_sequence_error_ratio": 0.7826247900465768
+      }
+    },
+    "rank_zero_mean_baseline": {
+      "block_entry_positions": [
+        {
+          "error_ratio": 0.948123265402546,
+          "error_squared_frobenius": 8.129564331114716,
+          "position": 96,
+          "recovery": 0.10106227360241338,
+          "target_squared_frobenius": 9.043523363618553
+        },
+        {
+          "error_ratio": 0.8828032320046287,
+          "error_squared_frobenius": 9.046683639286533,
+          "position": 104,
+          "recovery": 0.22065845356218172,
+          "target_squared_frobenius": 11.608111591941602
+        },
+        {
+          "error_ratio": 0.8254746557308371,
+          "error_squared_frobenius": 11.121485098774706,
+          "position": 112,
+          "recovery": 0.318591592746056,
+          "target_squared_frobenius": 16.32132063587822
+        },
+        {
+          "error_ratio": 0.8356645324969869,
+          "error_squared_frobenius": 9.95905286504674,
+          "position": 120,
+          "recovery": 0.30166478912659234,
+          "target_squared_frobenius": 14.261135211256146
+        }
+      ],
+      "folds": [
+        {
+          "heldout_coefficients": "oracle",
+          "heldout_record_index": 0,
+          "training_positions_per_record": 32,
+          "training_record_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "heldout_coefficients": "oracle",
+          "heldout_record_index": 1,
+          "training_positions_per_record": 32,
+          "training_record_indices": [
+            0,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "heldout_coefficients": "oracle",
+          "heldout_record_index": 2,
+          "training_positions_per_record": 32,
+          "training_record_indices": [
+            0,
+            1,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "heldout_coefficients": "oracle",
+          "heldout_record_index": 3,
+          "training_positions_per_record": 32,
+          "training_record_indices": [
+            0,
+            1,
+            2,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "heldout_coefficients": "oracle",
+          "heldout_record_index": 4,
+          "training_positions_per_record": 32,
+          "training_record_indices": [
+            0,
+            1,
+            2,
+            3,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "heldout_coefficients": "oracle",
+          "heldout_record_index": 5,
+          "training_positions_per_record": 32,
+          "training_record_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            6,
+            7
+          ]
+        },
+        {
+          "heldout_coefficients": "oracle",
+          "heldout_record_index": 6,
+          "training_positions_per_record": 32,
+          "training_record_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            7
+          ]
+        },
+        {
+          "heldout_coefficients": "oracle",
+          "heldout_record_index": 7,
+          "training_positions_per_record": 32,
+          "training_record_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        }
+      ],
+      "global": {
+        "error_ratio": 0.8318997211912565,
+        "error_squared_frobenius": 213.6700523206465,
+        "recovery": 0.30794285388190956,
+        "target_squared_frobenius": 308.7462553044522
+      },
+      "heldout_sequences": [
+        {
+          "error_ratio": 0.8556222960662825,
+          "error_squared_frobenius": 27.06123577982227,
+          "record_index": 0,
+          "recovery": 0.26791048647426285,
+          "target_squared_frobenius": 36.964381103474054
+        },
+        {
+          "error_ratio": 0.8088694328010607,
+          "error_squared_frobenius": 25.460607117850476,
+          "record_index": 1,
+          "recovery": 0.3457302406800903,
+          "target_squared_frobenius": 38.914540608320145
+        },
+        {
+          "error_ratio": 0.8271109931538912,
+          "error_squared_frobenius": 26.3704480640736,
+          "record_index": 2,
+          "recovery": 0.3158874050039836,
+          "target_squared_frobenius": 38.54694133240911
+        },
+        {
+          "error_ratio": 0.8185276602025411,
+          "error_squared_frobenius": 25.5601755454863,
+          "record_index": 3,
+          "recovery": 0.3300124694833535,
+          "target_squared_frobenius": 38.150225759837824
+        },
+        {
+          "error_ratio": 0.8903816902671681,
+          "error_squared_frobenius": 31.98612451700607,
+          "record_index": 4,
+          "recovery": 0.20722044563698072,
+          "target_squared_frobenius": 40.346808064073
+        },
+        {
+          "error_ratio": 0.8101165295112926,
+          "error_squared_frobenius": 21.39798148969739,
+          "record_index": 5,
+          "recovery": 0.34371120861257887,
+          "target_squared_frobenius": 32.604520708728224
+        },
+        {
+          "error_ratio": 0.805857912104547,
+          "error_squared_frobenius": 26.78846345105365,
+          "record_index": 6,
+          "recovery": 0.35059302549850013,
+          "target_squared_frobenius": 41.2506556025474
+        },
+        {
+          "error_ratio": 0.8319088295051923,
+          "error_squared_frobenius": 29.04501635565676,
+          "record_index": 7,
+          "recovery": 0.3079276993913008,
+          "target_squared_frobenius": 41.96818212506231
+        }
+      ],
+      "layers": [
+        {
+          "error_ratio": 0.5614930412197041,
+          "error_squared_frobenius": 0.07559968017394905,
+          "layer": 0,
+          "recovery": 0.6847255646618478,
+          "target_squared_frobenius": 0.23979007398066857
+        },
+        {
+          "error_ratio": 0.5975156351968174,
+          "error_squared_frobenius": 0.274508168656172,
+          "layer": 1,
+          "recovery": 0.6429750656953439,
+          "target_squared_frobenius": 0.7688767429950116
+        },
+        {
+          "error_ratio": 0.6458325976697086,
+          "error_squared_frobenius": 0.23023056003357975,
+          "layer": 2,
+          "recovery": 0.5829002557871963,
+          "target_squared_frobenius": 0.5519796241258697
+        },
+        {
+          "error_ratio": 0.6869885235248662,
+          "error_squared_frobenius": 0.5610830477898419,
+          "layer": 3,
+          "recovery": 0.5280467685451244,
+          "target_squared_frobenius": 1.1888530693183488
+        },
+        {
+          "error_ratio": 0.7331107976321488,
+          "error_squared_frobenius": 0.46737452395545065,
+          "layer": 4,
+          "recovery": 0.4625485583951545,
+          "target_squared_frobenius": 0.8696125598990987
+        },
+        {
+          "error_ratio": 0.6852647326019368,
+          "error_squared_frobenius": 1.064449842979457,
+          "layer": 5,
+          "recovery": 0.530412246251996,
+          "target_squared_frobenius": 2.266775133047178
+        },
+        {
+          "error_ratio": 0.7740391454030909,
+          "error_squared_frobenius": 1.3086694352270716,
+          "layer": 6,
+          "recovery": 0.4008634013836526,
+          "target_squared_frobenius": 2.184258878942343
+        },
+        {
+          "error_ratio": 0.8137045303795314,
+          "error_squared_frobenius": 2.106137720163192,
+          "layer": 7,
+          "recovery": 0.33788493723982627,
+          "target_squared_frobenius": 3.180924039672635
+        },
+        {
+          "error_ratio": 0.8383002424293966,
+          "error_squared_frobenius": 1.1621528078712624,
+          "layer": 8,
+          "recovery": 0.29725270354281497,
+          "target_squared_frobenius": 1.6537278958312815
+        },
+        {
+          "error_ratio": 0.9120327221532196,
+          "error_squared_frobenius": 6.812156322577587,
+          "layer": 9,
+          "recovery": 0.168196313721788,
+          "target_squared_frobenius": 8.189620261311436
+        },
+        {
+          "error_ratio": 0.8022112844550907,
+          "error_squared_frobenius": 3.5648014873427334,
+          "layer": 10,
+          "recovery": 0.3564570550929136,
+          "target_squared_frobenius": 5.539337375312868
+        },
+        {
+          "error_ratio": 0.7484735662579006,
+          "error_squared_frobenius": 3.104203173875567,
+          "layer": 11,
+          "recovery": 0.43978732061318004,
+          "target_squared_frobenius": 5.541115522899746
+        },
+        {
+          "error_ratio": 0.9312728066515804,
+          "error_squared_frobenius": 36.03519309888174,
+          "layer": 12,
+          "recovery": 0.13273095959128822,
+          "target_squared_frobenius": 41.550189641151825
+        },
+        {
+          "error_ratio": 0.9306426977112323,
+          "error_squared_frobenius": 58.91629990039449,
+          "layer": 13,
+          "recovery": 0.13390416919675985,
+          "target_squared_frobenius": 68.02515126502105
+        },
+        {
+          "error_ratio": 0.82923612750572,
+          "error_squared_frobenius": 34.71706698438262,
+          "layer": 14,
+          "recovery": 0.31236744483931733,
+          "target_squared_frobenius": 50.48781754707658
+        },
+        {
+          "error_ratio": 0.7369212057191626,
+          "error_squared_frobenius": 63.270125566341804,
+          "layer": 15,
+          "recovery": 0.4569471365614156,
+          "target_squared_frobenius": 116.50822567386615
+        }
+      ],
+      "rank": 0
+    },
+    "selected_metric_replay": {
+      "checks": {
+        "passed": true,
+        "selected_rank_exact_metric_recomputation": true,
+        "selected_rank_metric_sha256": true
+      },
+      "passed": true,
+      "rank": 8,
+      "recomputed_sha256": "a8ac7e5d8c45b8d23f37dcc11840a37480cd2ef418058c05b9e3d60de4a370e1",
+      "reference_sha256": "a8ac7e5d8c45b8d23f37dcc11840a37480cd2ef418058c05b9e3d60de4a370e1"
+    },
+    "selected_rank": 8,
+    "selection_key": [
+      0.7826247900465768,
+      0.7285241120039418,
+      8
+    ],
+    "selection_role": "best_failed_rank_for_diagnostic_replay"
+  },
+  "confirmation_split_opened": false,
+  "decision": {
+    "capacity_gate_passed": false,
+    "confirmation_authorized": false,
+    "development_authorized": false,
+    "failure_scope": "rank<=8 global per-layer output-subspace residuals only; no broader residual or selector family is rejected",
+    "native_integration_authorized": false,
+    "next_step": "close rank<=8 global per-layer output-subspace residuals",
+    "semantic_or_M3_gate_passed": false,
+    "train_only_predictor_fit_authorized": false
+  },
+  "experiment": "olmoe_q7_retrieval_episodic_residual_capacity_train_screen",
+  "post_run_authentication": {
+    "attention_library": true,
+    "base_protocol": true,
+    "capacity_parity": true,
+    "capacity_protocol": true,
+    "capacity_source_inventory": true,
+    "confirmation_not_opened": true,
+    "corpus_manifest": true,
+    "headwise_library": true,
+    "historical_K256_result": true,
+    "historical_episodic_library": true,
+    "layered_library": true,
+    "logit_bias_library": true,
+    "logit_bias_protocol": true,
+    "logit_bias_result": true,
+    "package": true,
+    "rank_protocol": true,
+    "rank_result": true,
+    "source_config": true,
+    "source_index": true,
+    "source_shards": true,
+    "trace_library": true,
+    "train_split": true,
+    "training_checkpoint": true
+  },
+  "protocol": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_residual_capacity_2026-07-29_frozen/protocol.json",
+    "sha256": "584302d17a3224cda1b61dfe1f62685497fa5a0dc335cfc0a074439456ee1606"
+  },
+  "schema_version": 1,
+  "scope": {
+    "capacity_evidence_only": true,
+    "confirmation_split_opened": false,
+    "development_outcomes_used": false,
+    "native_correction_integrated": false,
+    "positions_per_record": 128,
+    "predictor_fitted": false,
+    "records": 8,
+    "semantic_or_M3_gate_passed": false,
+    "split": "train",
+    "trace_positions_per_record": 32
+  },
+  "status": "train_residual_capacity_gate_failed",
+  "total_elapsed_seconds": 934.6437739590183,
+  "trace_manifest": {
+    "directory": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_residual_capacity_2026-07-29_frozen/trace_shards",
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_residual_capacity_2026-07-29_frozen/trace_shards/manifest.json",
+    "sha256": "1f255a59a20089abe4d6805c625a119c167b71153bc21f5edbfcf0fd8050f461",
+    "shard_count": 8,
+    "shards": [
+      {
+        "dtype": "float32",
+        "file": "train-00.safetensors",
+        "file_sha256": "57cb51e0d946636b1f3ecf5fe9cd67a221e78c619cb3a2b0e5873834fde5cd22",
+        "format": "safetensors",
+        "keys": [
+          "input_norm",
+          "base_projected",
+          "target_residual",
+          "positions"
+        ],
+        "output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+        "positions": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ],
+        "record_id": "olmoe-retrieval-passkey-v1-train-00",
+        "record_index": 0,
+        "reset_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+        "reset_trace_sha256": "4f8651e53bd72af848f3317fa83a0b50571890e649c93064b75f7b17ed8c6afa",
+        "shape": [
+          32,
+          16,
+          2048
+        ],
+        "source_record_sha256": "f768e132d581d13927d3e3e9316017ce702290b95e346bd03b939210bcd30435",
+        "tensor_sha256": {
+          "base_projected": "4d2b96b363268f448dfeef1957ac2e9e63b087187fab332059a957653d504184",
+          "input_norm": "139747ed54c8ba778b596e3ada3d13a8605575d435fc10875fcd95147e62c6cd",
+          "target_residual": "efd2d50e21c10ed6007f8ac0e22ce378755f79c90672b4496662cabe271ada1e"
+        },
+        "trace_sha256": "4f8651e53bd72af848f3317fa83a0b50571890e649c93064b75f7b17ed8c6afa"
+      },
+      {
+        "dtype": "float32",
+        "file": "train-01.safetensors",
+        "file_sha256": "20499f0083caa57e401dce868c24cb900e79f1e5f292b7cb54fd5098bf5be3a4",
+        "format": "safetensors",
+        "keys": [
+          "input_norm",
+          "base_projected",
+          "target_residual",
+          "positions"
+        ],
+        "output_evidence_sha256": "04aa7f77859554fdbdd8d6ede1fe5c9f23b42d804460a6d180157efe6715f291",
+        "positions": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ],
+        "record_id": "olmoe-retrieval-passkey-v1-train-01",
+        "record_index": 1,
+        "reset_output_evidence_sha256": "04aa7f77859554fdbdd8d6ede1fe5c9f23b42d804460a6d180157efe6715f291",
+        "reset_trace_sha256": "a576399a917ee1e9aad4a7516e245fa80129c83c6c5ec1bae03598feffb37eb7",
+        "shape": [
+          32,
+          16,
+          2048
+        ],
+        "source_record_sha256": "87ebe0dc116e3d1998272119bca12d5b2b68dd2427330b7378fbf6d55bde874f",
+        "tensor_sha256": {
+          "base_projected": "a13bb38139a07849a576897e6572575b827ab3e9f06ca57346b7733e3cfa1f62",
+          "input_norm": "1f2b1e584731af3770c078641bab5e2758d42ec51663a07d887986e138753518",
+          "target_residual": "aa364fd757f2bf739937e0148dc7f4dcb30d5fc38d19d4b9e9576380622addaa"
+        },
+        "trace_sha256": "a576399a917ee1e9aad4a7516e245fa80129c83c6c5ec1bae03598feffb37eb7"
+      },
+      {
+        "dtype": "float32",
+        "file": "train-02.safetensors",
+        "file_sha256": "0f03f56f6582c1fcfd19f13f539b0260e714c4b27f5d2d6714e79034d4f87513",
+        "format": "safetensors",
+        "keys": [
+          "input_norm",
+          "base_projected",
+          "target_residual",
+          "positions"
+        ],
+        "output_evidence_sha256": "01430f19b5f02a868126d3e2da98891b778179dc346e4e8f43e4cb97cc8ebdc4",
+        "positions": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ],
+        "record_id": "olmoe-retrieval-passkey-v1-train-02",
+        "record_index": 2,
+        "reset_output_evidence_sha256": "01430f19b5f02a868126d3e2da98891b778179dc346e4e8f43e4cb97cc8ebdc4",
+        "reset_trace_sha256": "c3605b9f1e1df2f3dc6fcb2878476cfa7236697463bdf91be901735b75abb666",
+        "shape": [
+          32,
+          16,
+          2048
+        ],
+        "source_record_sha256": "aad8003fb58143a002e52f17e0bcded43b6a11bc647afb7574bb6926e8aa82d9",
+        "tensor_sha256": {
+          "base_projected": "ce5b84ba08b0666ea452eba69d8c8745bdbf3aaaf4d59bea1229dfd52e46cb4a",
+          "input_norm": "e3a5663453ff2d6eb00c8fe1b81f881dec98db3ef1eb81fe0fd356f7edc28e67",
+          "target_residual": "1f89a571a83b3b03efd57935ac562a21ec8b4afbffda4f2ea91f101cd99e88a3"
+        },
+        "trace_sha256": "c3605b9f1e1df2f3dc6fcb2878476cfa7236697463bdf91be901735b75abb666"
+      },
+      {
+        "dtype": "float32",
+        "file": "train-03.safetensors",
+        "file_sha256": "941cc084ec048b75ad2cb8953aa7d015fe98bcead3e4c3e2ef8eb266e9771298",
+        "format": "safetensors",
+        "keys": [
+          "input_norm",
+          "base_projected",
+          "target_residual",
+          "positions"
+        ],
+        "output_evidence_sha256": "d3e7606a86515688bd3d027f222e3e437bc5eead49079781a9824fc0636a1f61",
+        "positions": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ],
+        "record_id": "olmoe-retrieval-passkey-v1-train-03",
+        "record_index": 3,
+        "reset_output_evidence_sha256": "d3e7606a86515688bd3d027f222e3e437bc5eead49079781a9824fc0636a1f61",
+        "reset_trace_sha256": "b3f5feaa5013a5d8927af333efade5322097d7409309ebab6b749144e685104a",
+        "shape": [
+          32,
+          16,
+          2048
+        ],
+        "source_record_sha256": "2b1376b347834536f3bf5305c4edd6733a761e126a999d8d44d8c9b7527865c7",
+        "tensor_sha256": {
+          "base_projected": "8a0a47e6ee9c5ef65df60b3e72af5fc349c24fda6dec8876f1d4eadd9c225684",
+          "input_norm": "728b223c577c22ad7d81002c0ea11d5b4207276fad7e50ef630740052db5c531",
+          "target_residual": "6c634d23b5586348caf32a10d2006ca56b8992f9825abdcee53843eb8332fd6a"
+        },
+        "trace_sha256": "b3f5feaa5013a5d8927af333efade5322097d7409309ebab6b749144e685104a"
+      },
+      {
+        "dtype": "float32",
+        "file": "train-04.safetensors",
+        "file_sha256": "d9cf60a0fc20fbebbc0f0519416b254f3662267b565ce98a0967328b2de3e349",
+        "format": "safetensors",
+        "keys": [
+          "input_norm",
+          "base_projected",
+          "target_residual",
+          "positions"
+        ],
+        "output_evidence_sha256": "21e3141de7cad305dc954ab321aa5f67af91eaba0ff1be9f8e4d2c63c7be2530",
+        "positions": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ],
+        "record_id": "olmoe-retrieval-passkey-v1-train-04",
+        "record_index": 4,
+        "reset_output_evidence_sha256": "21e3141de7cad305dc954ab321aa5f67af91eaba0ff1be9f8e4d2c63c7be2530",
+        "reset_trace_sha256": "0c5a88a6b098ca70900f84dc1da9a3d10c969a2d5d94f4a3a0daf015a8d5faec",
+        "shape": [
+          32,
+          16,
+          2048
+        ],
+        "source_record_sha256": "33b139cf3c4d564d38cb0af058e4c3d553f18293fa676098952267884115abbb",
+        "tensor_sha256": {
+          "base_projected": "75b827ef9548cfe09e9356a872a37db2ac12e33908a2c531afb1b401f6dfb7b4",
+          "input_norm": "a57dafcb8d2a82bd778e18d15b1624f29f4fb0789f76495e3a09d0019f93b988",
+          "target_residual": "e4b553d8937b44c44fd8a2574dfd4750149fbdefb47ca1df9fc31984b3c5c916"
+        },
+        "trace_sha256": "0c5a88a6b098ca70900f84dc1da9a3d10c969a2d5d94f4a3a0daf015a8d5faec"
+      },
+      {
+        "dtype": "float32",
+        "file": "train-05.safetensors",
+        "file_sha256": "570a9096d5d4b1a99458f830019e01c4c09736f234043b0f4e81e324d3ed5d25",
+        "format": "safetensors",
+        "keys": [
+          "input_norm",
+          "base_projected",
+          "target_residual",
+          "positions"
+        ],
+        "output_evidence_sha256": "a128fd9d55f8966699a31d11fbce139d5a12e624e1fde050bb5a41944f7aec33",
+        "positions": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ],
+        "record_id": "olmoe-retrieval-passkey-v1-train-05",
+        "record_index": 5,
+        "reset_output_evidence_sha256": "a128fd9d55f8966699a31d11fbce139d5a12e624e1fde050bb5a41944f7aec33",
+        "reset_trace_sha256": "767b28b368ee6a39e3a67dadfdc7b24bdd0794d9d2907696bb9d1ac5ca0fa91a",
+        "shape": [
+          32,
+          16,
+          2048
+        ],
+        "source_record_sha256": "c7208f31d27d1b33b35ed2ff2e4aaf09106f21388599c4378bffc81df3815a90",
+        "tensor_sha256": {
+          "base_projected": "35128835d8ca851adb186599f5cf75d60eda29d044651e2478fee03019d312c5",
+          "input_norm": "cbc32d66b5ea7a4e72520b5fccf430dee508aa1fb2106d626226b3a90c329894",
+          "target_residual": "16d677ec3a1a8c3d43325de9fe78eec292f2b0aaed62262f980b50cc8ac03e12"
+        },
+        "trace_sha256": "767b28b368ee6a39e3a67dadfdc7b24bdd0794d9d2907696bb9d1ac5ca0fa91a"
+      },
+      {
+        "dtype": "float32",
+        "file": "train-06.safetensors",
+        "file_sha256": "8affc923af56bf0ecf8d7a664443a9bb27c9e353e9b16ec14a3ba00f0b175ac9",
+        "format": "safetensors",
+        "keys": [
+          "input_norm",
+          "base_projected",
+          "target_residual",
+          "positions"
+        ],
+        "output_evidence_sha256": "4bb78772d10f8a4fbcb62434e4a8a3b561bae7291bbb64b5751ba93e15b0538e",
+        "positions": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ],
+        "record_id": "olmoe-retrieval-passkey-v1-train-06",
+        "record_index": 6,
+        "reset_output_evidence_sha256": "4bb78772d10f8a4fbcb62434e4a8a3b561bae7291bbb64b5751ba93e15b0538e",
+        "reset_trace_sha256": "4fdafd7090777ac74a16178d3ca4a4a0185a23bd688d68003f53a5f363123cc1",
+        "shape": [
+          32,
+          16,
+          2048
+        ],
+        "source_record_sha256": "a26fc441493c653d0e8878244cac3b7461968e0894b4f7bec7a1cba3ea07e4ac",
+        "tensor_sha256": {
+          "base_projected": "a089d88082b56f58437a9f4fb65ea408fa727da7d00e219bab5d13efe8248134",
+          "input_norm": "c92c62d0daac1d899e34d3a0ee2e77906384cde4c9511074e9dc1b6c57a02375",
+          "target_residual": "3f5ec8f5e83384bd164789d4b97578e0b74aa083b363535086b1ab2329d990bc"
+        },
+        "trace_sha256": "4fdafd7090777ac74a16178d3ca4a4a0185a23bd688d68003f53a5f363123cc1"
+      },
+      {
+        "dtype": "float32",
+        "file": "train-07.safetensors",
+        "file_sha256": "c41359e2aa74d19235a9c40014248b5730d9957a01fc2480b9b774a78a8e6038",
+        "format": "safetensors",
+        "keys": [
+          "input_norm",
+          "base_projected",
+          "target_residual",
+          "positions"
+        ],
+        "output_evidence_sha256": "cad925a275ba13a05040ce4b670b25c4779d3d4ed6ca3b17f2223d526814cc38",
+        "positions": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ],
+        "record_id": "olmoe-retrieval-passkey-v1-train-07",
+        "record_index": 7,
+        "reset_output_evidence_sha256": "cad925a275ba13a05040ce4b670b25c4779d3d4ed6ca3b17f2223d526814cc38",
+        "reset_trace_sha256": "411fff3c5fddf6a26afc571f7d2011d5589c50ba0d41beef6f067d4218a8e783",
+        "shape": [
+          32,
+          16,
+          2048
+        ],
+        "source_record_sha256": "21e4a9a20939bea60c037e28a74f678c877cf45739713e346dd7e7cb54fc77ed",
+        "tensor_sha256": {
+          "base_projected": "e1e45cc935ebe603d8dd9781a225925d3da4e7359a9c5a13738c28eabf214be5",
+          "input_norm": "fe988f86ba954133b642ef5163bdad8b5458b5f71d59d383851d5c84b520f7b5",
+          "target_residual": "4aef2f170cb6ab361adfdc273b6c206bb4e1d7d56027baaff99673c9ee4f3bdc"
+        },
+        "trace_sha256": "411fff3c5fddf6a26afc571f7d2011d5589c50ba0d41beef6f067d4218a8e783"
+      }
+    ]
+  }
+}

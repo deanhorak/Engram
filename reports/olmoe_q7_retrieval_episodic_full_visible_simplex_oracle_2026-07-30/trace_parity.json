@@ -1,0 +1,336 @@
+{
+  "checks": {
+    "base_partition_reconstructs_native_output": true,
+    "episodic_slots_reconstruct_episodic_component": true,
+    "inherited_base_trace_exact": true,
+    "outputs_counters_and_loss_exact": true,
+    "passed": true,
+    "regular_entries_reconstruct_regular_component": true,
+    "reset_full_trace_exact": true,
+    "slot_values_are_exact_bf16_decodes": true
+  },
+  "confirmation_split_opened": false,
+  "execution_evidence": {
+    "checks": {
+      "first_reset_outputs_counters_and_loss_exact": true,
+      "first_reset_trace_summary_exact": true,
+      "first_reset_trace_tensors_exact": true,
+      "historical_first_outputs_counters_and_loss_exact": true,
+      "historical_output_root_exact": true,
+      "historical_reset_outputs_counters_and_loss_exact": true,
+      "inherited_first_base_trace_exact": true,
+      "inherited_reset_base_trace_exact": true,
+      "passed": true,
+      "reset_output_root_exact": true,
+      "reset_trace_root_exact": true,
+      "source_record_root_exact": true
+    },
+    "first_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+    "record_id": "olmoe-retrieval-passkey-v1-train-00",
+    "record_index": 0,
+    "reset_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+    "schedule_rows_sha256": "f2200d9ca229d28d87c25b78a59c77007ce24185a03bc75966362a85d620b15d",
+    "source_record_sha256": "f768e132d581d13927d3e3e9316017ce702290b95e346bd03b939210bcd30435"
+  },
+  "experiment": "olmoe_q7_retrieval_episodic_full_visible_simplex_trace_parity",
+  "first_trace": {
+    "base_component_reconstruction_max_abs": 4.76837158203125e-07,
+    "episodic_component_reconstruction_max_abs": 0.0,
+    "episodic_mass_reconstruction_max_abs": 1.7881393432617188e-07,
+    "episodic_order": "read_span_offset_0_to_7",
+    "episodic_source_position_shape": [
+      32,
+      8
+    ],
+    "invalid_regular_entries": 8,
+    "local_entries_per_head": {
+      "maximum": 16,
+      "minimum": 16
+    },
+    "mass_shape": [
+      32,
+      16,
+      16
+    ],
+    "older_entries_per_head": {
+      "maximum": 4,
+      "minimum": 3
+    },
+    "query_positions": [
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127
+    ],
+    "regular_component_reconstruction_max_abs": 5.960464477539063e-08,
+    "regular_entry_mass_shape": [
+      32,
+      16,
+      16,
+      20
+    ],
+    "regular_entry_value_shape": [
+      32,
+      16,
+      16,
+      20,
+      128
+    ],
+    "regular_mass_reconstruction_max_abs": 1.7881393432617188e-07,
+    "regular_order": "entries[0:16] local oldest_to_newest then suffix padding; entries[16:20] selected older descending native score with absolute-position tie break then suffix padding",
+    "slot_mass_shape": [
+      32,
+      16,
+      16,
+      8
+    ],
+    "slot_value_shape": [
+      32,
+      16,
+      16,
+      8,
+      128
+    ],
+    "slot_values_exact_bf16_decodes": true,
+    "tensor_sha256": {
+      "base_attention_output": "45bce467122694847c7e4f6a50926531f4feb31cd4df665169f0fe6d5bd9dba5",
+      "base_projected": "4d2b96b363268f448dfeef1957ac2e9e63b087187fab332059a957653d504184",
+      "episodic_component": "d5da283feb734b914d1b2cbe4e49986f10f5862368da33fd05254fdf97e12e29",
+      "episodic_mass": "e7cb421f291758ba848a566535971e3953a6ff7b1d092c7e1189b310d528bf3f",
+      "episodic_source_positions": "72c4347cd7cd49ee85a7b582b4d139d8b19007e4a49763fcc984093ce0296ca5",
+      "regular_component": "eb4bd91cd7cb0569f717036e02ec7f5bf34b8d5cc3fa03d3937a461101b75833",
+      "regular_entry_mass": "716b2e2c82a85ef2940dcffe4bc134dd2c08be8c38d3352829b9ac4df62e5f6e",
+      "regular_entry_positions": "cbfc31395e62a346ec4e61b1c25b94e435cee65c988b43b2a13ab966c24eec03",
+      "regular_entry_valid_kind": "061bf76ad5382b7fc686952bbebc8afdb80fcc6cd857956d93a52aabd2da5b60",
+      "regular_entry_values": "b8232d4953ecdae7f3705b291642b1d42dbae34557d9ed54f0b80a5f61e588aa",
+      "regular_mass": "3fa82fb2168cbacb6d8b8176b560aba19b480bd376057bc40725c966808ef841",
+      "slot_mass": "dae9d71f42cf9f6b327e83c0edbeab22a201d7884488011daa95476a08931b14",
+      "slot_values": "528c1b8d99852d4c5c34a8c8c2d68f1d3f5a9d860b3534d49e71408a1b1a9e39",
+      "target_residual": "efd2d50e21c10ed6007f8ac0e22ce378755f79c90672b4496662cabe271ada1e"
+    },
+    "trace_sha256": "092bde3240970dd91782815488c49ef41154024080c37a3008d566765a01cd3b",
+    "value_shape": [
+      32,
+      16,
+      2048
+    ],
+    "visible_entries_per_head": {
+      "maximum": 28,
+      "mean": 27.9990234375,
+      "minimum": 27
+    }
+  },
+  "instrumentation_source_sha256": {
+    "native/include/engram/olmoe_token_runtime.h": "1c3959cbed7c50a67bd3db38af8c8b72bb8b66d7478c433f2c1f44dc2d93afb6",
+    "native/include/engram/olmoe_token_runtime_c.h": "e43e3fb8b4e330fd679a2ada77d067c04ed238a7ccabcd6112f04ff57be99e4f",
+    "native/include/engram/streaming_attention.h": "f477517f954e7a9c4a5ae447ab415d6cb8dcc5d12184a184d314a9a9afe13dca",
+    "native/include/engram/streaming_attention_c.h": "f07e075e28a4cdc8b55280adbf428156516ec473cd7508a811661cb1ed46d787",
+    "native/src/native_bitnet_token_runtime.cpp": "eef6695ce0c40ae4b6762e4c397ea9b6cdfa013faad512a757bd1c89dac091ce",
+    "native/src/olmoe_token_runtime.cpp": "6be96482d2fe5b0fb170fc4847a6bb310d423df1d09886237ce2f3d8f1792ce9",
+    "native/src/olmoe_token_runtime_c.cpp": "46774519e8b447aff90ed18ccb4e56dfc102a738f6bad6f35af2d7fe77f0e7a5",
+    "native/src/streaming_attention.cpp": "3108ef6899f26ac1d82b96eb2b80393cecf802fb71b1e0a1ce2f8b702d35cd87",
+    "native/src/streaming_attention_c.cpp": "aa3a841a87bb9c3b165a8aa0a32b5306e27a903ed048b37900cb36e1741c8162",
+    "src/engram/compiler/olmoe_native.py": "e1a1bf19ce836b2e7f362e3ba170be42cce7e9791ae711895e1fe5a1e38ecbb1",
+    "src/engram/evaluation/olmoe_joint_gamma_solver.py": "5c6bf5c4680349b8127ed9dca1bb1ad2f92f3691110eb2025e812cd84c235395",
+    "src/engram/evaluation/olmoe_native_causal.py": "a7bd8f300d2149cab8375e8ea9703c099145bd620e7b509c636716be256eb961",
+    "src/engram/evaluation/olmoe_native_headwise.py": "303862d4f2151f6c554fd3605c46100603fb9d37de44537bf866d1e892a9fe00",
+    "src/engram/evaluation/olmoe_native_sustained.py": "019c6cf4fd74a77b5ffe992908c4d885f8ca7efb386e20c906695454dfbee520",
+    "src/engram/evaluation/olmoe_product_simplex_active_set_solver.py": "057c2f70f5b154564743648d20fb4d8df796cff89cac63b438181a915af3325e",
+    "src/engram/evaluation/olmoe_product_simplex_solver.py": "dbeac6c0f66fb563cb19dcc5bba64dacc3a5d540ad4e81c1eadc8512ff9d6adf",
+    "src/engram/evaluation/olmoe_retrieval_episodic_full_visible_runner.py": "e5232930c35b6ba38b4d93838e08c16c0bfa30080cc9028c39cba10b82ab62c4",
+    "src/engram/evaluation/olmoe_retrieval_episodic_full_visible_simplex_oracle.py": "6d1daed537b33c0901101d6db8285a3ed5d2e1d2ab0a80bb66014b3575522e69",
+    "src/engram/evaluation/olmoe_retrieval_episodic_head_mask_oracle.py": "d70468b8ddb1a872b05518d2b93fcc7300f624713a9bec71770764c2dbf3e4ab",
+    "src/engram/evaluation/olmoe_retrieval_episodic_head_mass_oracle.py": "363a7291711cb5fc3a53ffc833e8ab43212a2c484154e049009838ce532974c6",
+    "src/engram/evaluation/olmoe_retrieval_episodic_joint_gamma_oracle.py": "084e513d78ab4a9c996e351a0927685bd7fbe02ffe2a4f3f08ebff91ba9e094e",
+    "src/engram/evaluation/olmoe_retrieval_episodic_logit_bias.py": "8ab1ec4aaab30a8e218a33f52f81637e22918e3cc9f0773988a97d09936b2802",
+    "src/engram/evaluation/olmoe_retrieval_episodic_oracle.py": "7f82670a99e5ba71ce7558138eb779bd095df5b183ff074d9ccd7184531eb684",
+    "src/engram/evaluation/olmoe_retrieval_episodic_rank_sweep.py": "a1428e8f620106c408fe5773f2336514d7961b1e123246231d0d911f47ccf981",
+    "src/engram/evaluation/olmoe_retrieval_episodic_residual_capacity.py": "1e4df29eb0440502d5fa248bb2e2aeec572024e8508e10862d313fb027b3a934",
+    "src/engram/evaluation/olmoe_retrieval_episodic_slot_simplex_cached.py": "b676b2b8c657ce41777616d9b4f41054555f5975738aa5131d15dc0a8f9d2f13",
+    "src/engram/evaluation/olmoe_retrieval_episodic_slot_simplex_oracle.py": "42942bc0fffff9bbbb33efd78a61e21421731bbf99dd9dda6d6509d0aec83d51",
+    "src/engram/evaluation/olmoe_retrieval_head_selector.py": "0f7f80952b6c6b4b7511e999345c2d50ddc057014d5a336d5d50b6d50291cf4e",
+    "src/engram/evaluation/olmoe_retrieval_prefix_selector.py": "b4b53c042f27a76d2876bbcef77909328877acf5a83845788fd77e9dec02b2c3",
+    "src/engram/runtime/olmoe_native.py": "a8d9e13e1e8fda8fae1a2d7e3a1737096e350885798992036397092fb7e6e12c",
+    "src/engram/utils.py": "1ee77400fcefab77be71f1eb9090c7143710889c6e5c56a1f2de0476a59e8cdc"
+  },
+  "post_run_authentication": {
+    "config_artifact": true,
+    "confirmation_not_opened": true,
+    "corpus_manifest": true,
+    "head_mass_manifest": true,
+    "head_mass_protocol": true,
+    "head_mass_result": true,
+    "joint_gamma_protocol": true,
+    "joint_gamma_result": true,
+    "output_projection_file": true,
+    "package_manifest": true,
+    "predecessor_capture_report": true,
+    "predecessor_protocol": true,
+    "predecessor_result": true,
+    "selector_protocol": true,
+    "trace_library": true,
+    "train_split": true,
+    "training_checkpoint": true
+  },
+  "predecessor_protocol": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_slot_simplex_2026-07-30_frozen/cached_v2_protocol.json",
+    "sha256": "f3be957ec0c13d0f49c85a2fa149611307de756f2be82165098a43263bb78ce3"
+  },
+  "predecessor_result": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_slot_simplex_2026-07-30_frozen/cached_v2_train_screen.json",
+    "sha256": "2e8e9b7d5f33d33c0e8c642a50359da785d0690d8260ed9f65837b14cd93a5bf"
+  },
+  "reset_trace": {
+    "base_component_reconstruction_max_abs": 4.76837158203125e-07,
+    "episodic_component_reconstruction_max_abs": 0.0,
+    "episodic_mass_reconstruction_max_abs": 1.7881393432617188e-07,
+    "episodic_order": "read_span_offset_0_to_7",
+    "episodic_source_position_shape": [
+      32,
+      8
+    ],
+    "invalid_regular_entries": 8,
+    "local_entries_per_head": {
+      "maximum": 16,
+      "minimum": 16
+    },
+    "mass_shape": [
+      32,
+      16,
+      16
+    ],
+    "older_entries_per_head": {
+      "maximum": 4,
+      "minimum": 3
+    },
+    "query_positions": [
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127
+    ],
+    "regular_component_reconstruction_max_abs": 5.960464477539063e-08,
+    "regular_entry_mass_shape": [
+      32,
+      16,
+      16,
+      20
+    ],
+    "regular_entry_value_shape": [
+      32,
+      16,
+      16,
+      20,
+      128
+    ],
+    "regular_mass_reconstruction_max_abs": 1.7881393432617188e-07,
+    "regular_order": "entries[0:16] local oldest_to_newest then suffix padding; entries[16:20] selected older descending native score with absolute-position tie break then suffix padding",
+    "slot_mass_shape": [
+      32,
+      16,
+      16,
+      8
+    ],
+    "slot_value_shape": [
+      32,
+      16,
+      16,
+      8,
+      128
+    ],
+    "slot_values_exact_bf16_decodes": true,
+    "tensor_sha256": {
+      "base_attention_output": "45bce467122694847c7e4f6a50926531f4feb31cd4df665169f0fe6d5bd9dba5",
+      "base_projected": "4d2b96b363268f448dfeef1957ac2e9e63b087187fab332059a957653d504184",
+      "episodic_component": "d5da283feb734b914d1b2cbe4e49986f10f5862368da33fd05254fdf97e12e29",
+      "episodic_mass": "e7cb421f291758ba848a566535971e3953a6ff7b1d092c7e1189b310d528bf3f",
+      "episodic_source_positions": "72c4347cd7cd49ee85a7b582b4d139d8b19007e4a49763fcc984093ce0296ca5",
+      "regular_component": "eb4bd91cd7cb0569f717036e02ec7f5bf34b8d5cc3fa03d3937a461101b75833",
+      "regular_entry_mass": "716b2e2c82a85ef2940dcffe4bc134dd2c08be8c38d3352829b9ac4df62e5f6e",
+      "regular_entry_positions": "cbfc31395e62a346ec4e61b1c25b94e435cee65c988b43b2a13ab966c24eec03",
+      "regular_entry_valid_kind": "061bf76ad5382b7fc686952bbebc8afdb80fcc6cd857956d93a52aabd2da5b60",
+      "regular_entry_values": "b8232d4953ecdae7f3705b291642b1d42dbae34557d9ed54f0b80a5f61e588aa",
+      "regular_mass": "3fa82fb2168cbacb6d8b8176b560aba19b480bd376057bc40725c966808ef841",
+      "slot_mass": "dae9d71f42cf9f6b327e83c0edbeab22a201d7884488011daa95476a08931b14",
+      "slot_values": "528c1b8d99852d4c5c34a8c8c2d68f1d3f5a9d860b3534d49e71408a1b1a9e39",
+      "target_residual": "efd2d50e21c10ed6007f8ac0e22ce378755f79c90672b4496662cabe271ada1e"
+    },
+    "trace_sha256": "092bde3240970dd91782815488c49ef41154024080c37a3008d566765a01cd3b",
+    "value_shape": [
+      32,
+      16,
+      2048
+    ],
+    "visible_entries_per_head": {
+      "maximum": 28,
+      "mean": 27.9990234375,
+      "minimum": 27
+    }
+  },
+  "runner_source_sha256": {
+    "src/engram/evaluation/olmoe_retrieval_episodic_full_visible_runner.py": "e5232930c35b6ba38b4d93838e08c16c0bfa30080cc9028c39cba10b82ab62c4"
+  },
+  "schema_version": 1,
+  "status": "full_visible_trace_parity_passed",
+  "trace_library": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/libengram_olmoe_token_runtime.full-visible-6a01d54e.so",
+    "regular_entry_copy_symbol": "engram_olmoe_token_copy_last_regular_entry_trace_v1",
+    "sha256": "6a01d54ef1e57857550219d951dd515dc16001a7e7243425aadd1ea096cece94"
+  }
+}

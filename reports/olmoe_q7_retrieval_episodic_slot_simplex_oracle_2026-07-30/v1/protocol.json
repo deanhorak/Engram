@@ -1,0 +1,421 @@
+{
+  "authenticated_confirmation_descriptor": {
+    "answer_prediction_positions_per_record": 32,
+    "file": "confirmation.jsonl",
+    "prediction_positions_per_record": 128,
+    "record_identity_sha256": "b507767ea68c015fdb9347313921c59a0dbefc0c61a47883ade1fa837fc4e844",
+    "records": 8,
+    "sha256": "c74aa6532e94bfa4dd10bbc1e13c27a06c35f79edbc9bc921a4219409f903baa",
+    "tokens_per_record": 129
+  },
+  "authorized_next_step_on_feasible_pass": "freeze a train-only causal per-slot selector or logit-bias model with rolled-out native state and full selector accounting",
+  "confirmation_split_opened": false,
+  "experiment": "olmoe_q7_retrieval_episodic_slot_simplex_protocol",
+  "failure_interpretation": "when the certified optimistic recovery upper bound fails, close all same-state reweighting over the current regular aggregate and eight episodic values at fixed K256; the next experiment must add new value directions or a different memory",
+  "inherited_head_mass_trace_manifest": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_head_mass_oracle_2026-07-29_frozen/trace_shards/manifest.json",
+    "sha256": "93df0a554744b97e7436b9a8b4bb71473bc21fa9f6c90985431274859164e0b6",
+    "shards": 8
+  },
+  "joint_gamma_protocol": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_joint_gamma_oracle_2026-07-30_v3_frozen/protocol.json",
+    "sha256": "aa03a71e3dd9e1fbb413a7773d57189c41029c26b2f4372b2fb7a26744305d24"
+  },
+  "joint_gamma_result": {
+    "authenticated_failure": {
+      "confirmation_split_opened": false,
+      "continuous_optimistic_global_recovery": 0.22738059544921096,
+      "discrete_direct_global_recovery": 0.1997680396822742,
+      "status": "train_episodic_joint_gamma_oracle_gate_failed"
+    },
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_joint_gamma_oracle_2026-07-30_v3_frozen/train_screen.json",
+    "sha256": "1329a51bac71cb81f44494c8ef70cb23a631eacebac5540b39e2e98ed5e30ea5"
+  },
+  "oracle_method": {
+    "capacity_interpretation": "the nine-way arm is the traced constructible value set; the ten-way exact-native-anchor hull is its optimistic superset and absorbs trace-regrouping roundoff",
+    "constructible_arm": {
+      "authority": "a feasible gate pass may authorize a separately accounted causal selector experiment",
+      "components": [
+        "regular_cache_conditional_mean",
+        "eight_exact_BF16_episodic_slot_values_in_read_order"
+      ],
+      "components_per_selected_head": 9
+    },
+    "counterfactual_updates_hidden_or_cache": false,
+    "feasible_sets": "Cartesian products of one probability simplex per query head, optimized jointly after o_proj",
+    "maximum_iterations": 512,
+    "optimistic_hull_arm": {
+      "authority": "its certified optimistic failure is decisive; a pass cannot authorize a selector by itself",
+      "components": [
+        "exact_native_head_output_anchor",
+        "regular_cache_conditional_mean",
+        "eight_exact_BF16_episodic_slot_values_in_read_order"
+      ],
+      "components_per_selected_head": 10
+    },
+    "quadratic_construction": "float64 factor-defined Gram A.T@A from isolated head/value correction directions projected through authenticated BF16 Wo",
+    "relative_objective_gap_target": 1e-07,
+    "row_batch_size": 16,
+    "solver": "deterministic block-coordinate Frank-Wolfe with pairwise away steps, exact quadratic line searches, and full product-simplex Frank-Wolfe objective-gap certificate",
+    "target": "exact same-state native W128-minus-K256 post-Wo residual",
+    "two_arms": true
+  },
+  "progression_gate": {
+    "deterministic_coefficient_and_metric_replay_required": true,
+    "minimum_every_block_entry_position_recovery": 0.25,
+    "minimum_every_sequence_recovery": 0.25,
+    "minimum_global_recovery": 0.5,
+    "minimum_positive_recovery_layers": 12,
+    "objective_gap_certificate_required": true,
+    "objective_never_worse_than_native_base": true
+  },
+  "resource_contract": {
+    "fixed_attention_state_bytes": 10534912,
+    "fixed_combined_attention_and_episodic_traffic_bytes": 714866688,
+    "fixed_fraction_of_dense_full_context_KV": 0.33030523255813954,
+    "gamma_zero_earns_read_savings": false,
+    "oracle_shadow_trace_and_projection_evaluator_only": true,
+    "predictor_weights_features_and_execution_not_counted": true
+  },
+  "schedule_contract": {
+    "coordinates": 65536,
+    "per_record_rows_sha256": [
+      "f2200d9ca229d28d87c25b78a59c77007ce24185a03bc75966362a85d620b15d",
+      "07e9d88af17607631c4fd2e0f6c92ed8a11075295d5289de1ba6996878e6e55c",
+      "c5f0b6e22d42889908d8ae72f9ee61b40f082ddd35d140bfdb08f6bc366ff911",
+      "a86103c0638e7729a5d4a9b64f5edb1d8e6f7794f376e019bc51c37fbd4644e9",
+      "aa44e5aa669f5fc562570613fc1ecc2e02e2969505de47658481ce276912fb91",
+      "d6d4e916d4664fadad2338dec4f33790f4d4c6771b86ec89720aa0b34e38cae7",
+      "080360836b626ca23116d19e4b9b8609d01e730e57a25b51b7b6be9e2c39ea3c",
+      "60db4ac8d45b7609af585c36a7ea4af85795e7c888034a5b2f77252f7eaceb6f"
+    ],
+    "positions_per_record": 128,
+    "read_positions": [
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127
+    ],
+    "read_rows_per_record": 32,
+    "records": 8,
+    "tokenizer_fact_anchor_ids": {
+      "A": [
+        10030,
+        329,
+        556,
+        2127
+      ],
+      "B": [
+        10030,
+        378,
+        556,
+        2127
+      ],
+      "C": [
+        10030,
+        330,
+        556,
+        2127
+      ],
+      "D": [
+        10030,
+        399,
+        556,
+        2127
+      ]
+    }
+  },
+  "schema_version": 1,
+  "scope": {
+    "causal_rollout": false,
+    "confirmation_file_access_permitted": false,
+    "development_outcomes_used": false,
+    "fresh_native_slot_trace_required": true,
+    "learned_selector": false,
+    "same_state_capacity_evidence_only": true,
+    "semantic_or_M3_pass": false,
+    "split": "train"
+  },
+  "slot_trace_library": {
+    "copy_symbol": "engram_olmoe_token_copy_last_episodic_slot_trace_v1",
+    "path": "/home/dean/repos/engram/work/olmoe_q7/libengram_olmoe_token_runtime.slot-simplex-deeee538.so",
+    "sha256": "deeee538cbf651793aff8a003b35dca9b64b39796454830b6fb7d57954938f96"
+  },
+  "source_sha256": {
+    "native/include/engram/olmoe_token_runtime.h": "e5f97907c6b690475c6e160a3f075afd856f0474c8c962904287eebca6d35504",
+    "native/include/engram/olmoe_token_runtime_c.h": "18fd75202ded0b73bf7291bacb2036b46848bfbea9a0a0ce6e79bf52c15dcee1",
+    "native/include/engram/streaming_attention.h": "101beeaba4a49550b8dc316e11696ebadd860520f17c262b07b65599a99a2f1f",
+    "native/src/olmoe_token_runtime.cpp": "e6bed594e366694fd77a682dbc0fd802b85024425b1c75f82fb9d113b2acdd69",
+    "native/src/olmoe_token_runtime_c.cpp": "06d57e2405376ed611a3b13e3a224f7064c0f54372539d323008da37ee05b853",
+    "native/src/streaming_attention.cpp": "0132bb06132bf8b4c15e01b67b79000cd3493fe568e9a27d8faba761625a7107",
+    "src/engram/evaluation/olmoe_product_simplex_solver.py": "ab033052f39366163f34913df75b1df4b2400e0e0410cb1faf7dea58e327957a",
+    "src/engram/evaluation/olmoe_retrieval_episodic_slot_simplex_oracle.py": "42942bc0fffff9bbbb33efd78a61e21421731bbf99dd9dda6d6509d0aec83d51",
+    "src/engram/runtime/olmoe_native.py": "4f9b02824ef63fa8ac9f69c3958c3ae284a651eef492291800301729fb863c55"
+  },
+  "status": "frozen_before_per_slot_simplex_train_execution",
+  "trace_contract": {
+    "head_dimension": 128,
+    "instrumentation_state_and_traffic_counted": false,
+    "required_invariants": [
+      "sum(slot_mass,span)==episodic_mass",
+      "sum(slot_mass*slot_values,span)==episodic_component",
+      "regular_component+episodic_component==base_attention_output",
+      "ordinary output state and resource counters remain unchanged"
+    ],
+    "slot_count": 8,
+    "slot_mass_layout": "position_layer_query_head_read_span_offset",
+    "slot_value_layout": "position_layer_query_head_read_span_offset_head_dimension",
+    "slot_value_storage": "exact_BF16_decode_in_float32"
+  },
+  "trace_parity": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_slot_simplex_2026-07-30_frozen/trace_parity.json",
+    "report": {
+      "confirmation_split_opened": false,
+      "experiment": "olmoe_q7_retrieval_episodic_slot_simplex_trace_parity",
+      "joint_gamma_protocol": {
+        "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_joint_gamma_oracle_2026-07-30_v3_frozen/protocol.json",
+        "sha256": "aa03a71e3dd9e1fbb413a7773d57189c41029c26b2f4372b2fb7a26744305d24"
+      },
+      "joint_gamma_result": {
+        "authenticated_failure": {
+          "confirmation_split_opened": false,
+          "continuous_optimistic_global_recovery": 0.22738059544921096,
+          "discrete_direct_global_recovery": 0.1997680396822742,
+          "status": "train_episodic_joint_gamma_oracle_gate_failed"
+        },
+        "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_joint_gamma_oracle_2026-07-30_v3_frozen/train_screen.json",
+        "sha256": "1329a51bac71cb81f44494c8ef70cb23a631eacebac5540b39e2e98ed5e30ea5"
+      },
+      "parity": {
+        "checks": {
+          "historical_base_outputs_counters_and_loss_exact": true,
+          "inherited_mass_and_projected_trace_exact": true,
+          "passed": true,
+          "reset_outputs_counters_and_loss_exact": true,
+          "reset_trace_exact": true,
+          "slot_mass_reconstructs_episodic_mass": true,
+          "slot_values_exact_bf16_decodes": true,
+          "slot_values_reconstruct_episodic_component": true
+        },
+        "first_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+        "first_trace": {
+          "base_component_reconstruction_max_abs": 5.960464477539063e-08,
+          "dtype": "float32",
+          "episodic_component_reconstruction_max_abs": 0.0,
+          "layout": "position_layer_query_head_span_dimension",
+          "mass_partition_max_abs": 4.76837158203125e-07,
+          "mass_shape": [
+            32,
+            16,
+            16
+          ],
+          "positions": [
+            96,
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            106,
+            107,
+            108,
+            109,
+            110,
+            111,
+            112,
+            113,
+            114,
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127
+          ],
+          "slot_mass_reconstruction_max_abs": 1.7881393432617188e-07,
+          "slot_mass_shape": [
+            32,
+            16,
+            16,
+            8
+          ],
+          "slot_value_shape": [
+            32,
+            16,
+            16,
+            8,
+            128
+          ],
+          "slot_values_exact_bf16_decodes": true,
+          "tensor_sha256": {
+            "base_attention_output": "45bce467122694847c7e4f6a50926531f4feb31cd4df665169f0fe6d5bd9dba5",
+            "base_projected": "4d2b96b363268f448dfeef1957ac2e9e63b087187fab332059a957653d504184",
+            "episodic_component": "d5da283feb734b914d1b2cbe4e49986f10f5862368da33fd05254fdf97e12e29",
+            "episodic_mass": "e7cb421f291758ba848a566535971e3953a6ff7b1d092c7e1189b310d528bf3f",
+            "regular_component": "eb4bd91cd7cb0569f717036e02ec7f5bf34b8d5cc3fa03d3937a461101b75833",
+            "regular_mass": "3fa82fb2168cbacb6d8b8176b560aba19b480bd376057bc40725c966808ef841",
+            "slot_mass": "dae9d71f42cf9f6b327e83c0edbeab22a201d7884488011daa95476a08931b14",
+            "slot_values": "528c1b8d99852d4c5c34a8c8c2d68f1d3f5a9d860b3534d49e71408a1b1a9e39",
+            "target_residual": "efd2d50e21c10ed6007f8ac0e22ce378755f79c90672b4496662cabe271ada1e"
+          },
+          "trace_sha256": "24a5867c299fb0bc4967afb950c2a70512780f5f2b06cf74f70709ba4894c796",
+          "value_shape": [
+            32,
+            16,
+            2048
+          ]
+        },
+        "inherited_trace_sha256": "4d67b0ab56aba553ca3b1f807ca265ab43294e0c85b66cd9bf89271fefee2d80",
+        "native_sequence_forwards": 2,
+        "native_token_steps": 256,
+        "passed": true,
+        "record_index": 0,
+        "reset_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+        "reset_trace": {
+          "base_component_reconstruction_max_abs": 5.960464477539063e-08,
+          "dtype": "float32",
+          "episodic_component_reconstruction_max_abs": 0.0,
+          "layout": "position_layer_query_head_span_dimension",
+          "mass_partition_max_abs": 4.76837158203125e-07,
+          "mass_shape": [
+            32,
+            16,
+            16
+          ],
+          "positions": [
+            96,
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            106,
+            107,
+            108,
+            109,
+            110,
+            111,
+            112,
+            113,
+            114,
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127
+          ],
+          "slot_mass_reconstruction_max_abs": 1.7881393432617188e-07,
+          "slot_mass_shape": [
+            32,
+            16,
+            16,
+            8
+          ],
+          "slot_value_shape": [
+            32,
+            16,
+            16,
+            8,
+            128
+          ],
+          "slot_values_exact_bf16_decodes": true,
+          "tensor_sha256": {
+            "base_attention_output": "45bce467122694847c7e4f6a50926531f4feb31cd4df665169f0fe6d5bd9dba5",
+            "base_projected": "4d2b96b363268f448dfeef1957ac2e9e63b087187fab332059a957653d504184",
+            "episodic_component": "d5da283feb734b914d1b2cbe4e49986f10f5862368da33fd05254fdf97e12e29",
+            "episodic_mass": "e7cb421f291758ba848a566535971e3953a6ff7b1d092c7e1189b310d528bf3f",
+            "regular_component": "eb4bd91cd7cb0569f717036e02ec7f5bf34b8d5cc3fa03d3937a461101b75833",
+            "regular_mass": "3fa82fb2168cbacb6d8b8176b560aba19b480bd376057bc40725c966808ef841",
+            "slot_mass": "dae9d71f42cf9f6b327e83c0edbeab22a201d7884488011daa95476a08931b14",
+            "slot_values": "528c1b8d99852d4c5c34a8c8c2d68f1d3f5a9d860b3534d49e71408a1b1a9e39",
+            "target_residual": "efd2d50e21c10ed6007f8ac0e22ce378755f79c90672b4496662cabe271ada1e"
+          },
+          "trace_sha256": "24a5867c299fb0bc4967afb950c2a70512780f5f2b06cf74f70709ba4894c796",
+          "value_shape": [
+            32,
+            16,
+            2048
+          ]
+        },
+        "schedule_rows_sha256": "f2200d9ca229d28d87c25b78a59c77007ce24185a03bc75966362a85d620b15d"
+      },
+      "post_run_authentication": {
+        "confirmation_not_opened": true,
+        "head_mass_manifest": true,
+        "joint_gamma_protocol": true,
+        "joint_gamma_result": true,
+        "slot_trace_library": true
+      },
+      "schema_version": 1,
+      "status": "per_slot_trace_parity_passed",
+      "trace_library": {
+        "path": "/home/dean/repos/engram/work/olmoe_q7/libengram_olmoe_token_runtime.slot-simplex-deeee538.so",
+        "required_symbols": [
+          "engram_olmoe_token_open_episodic_shadow_trace_v1",
+          "engram_olmoe_token_copy_last_shadow_trace_v1",
+          "engram_olmoe_token_copy_last_episodic_mass_trace_v1",
+          "engram_olmoe_token_copy_last_episodic_slot_trace_v1"
+        ],
+        "sha256": "deeee538cbf651793aff8a003b35dca9b64b39796454830b6fb7d57954938f96"
+      }
+    },
+    "sha256": "4565a5fcaa2039f4229422243e0f121b3444c89495b4141b39f6358c19645a02"
+  },
+  "training_checkpoint": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_selector_2026-07-29_frozen/development_result.training_checkpoint.json",
+    "sha256": "9edf4fe7e7a1340c6f34bfe4d04544525947935116d662e94d98ccea4c282aa4",
+    "training_sha256": "8b4e41bf67cb4a835e6561a4fff194651ffd639976edca55309240311280d633"
+  },
+  "training_checkpoint_payload_sha256": "8b4e41bf67cb4a835e6561a4fff194651ffd639976edca55309240311280d633"
+}

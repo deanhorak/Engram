@@ -1,0 +1,1292 @@
+{
+  "base_output_authentication": [
+    {
+      "answer_cross_entropy": 1.3091617822647095,
+      "base_outputs_counters_and_loss_exact": true,
+      "counter_stream_sha256": "caad6975b5e7a11145fed40f6106a9f7b316133ec4dcdf23d1f345ba24cfea1f",
+      "episodic_call_stream_sha256": "7149c2fbb7ad66d275d5f3f5af532b8a56f6684615d264d93abbfe5d60720618",
+      "hidden_sha256": "7f6e0f678136500cf523ece27aca02c200382ec35ea848edab2665d58f24f389",
+      "historical_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+      "historical_projected_tensor_sha256": {
+        "base_projected": "4d2b96b363268f448dfeef1957ac2e9e63b087187fab332059a957653d504184",
+        "target_residual": "efd2d50e21c10ed6007f8ac0e22ce378755f79c90672b4496662cabe271ada1e"
+      },
+      "historical_projected_trace_exact": true,
+      "logits_sha256": "d87ce31b10fd0584a81248227657010b3e9edd16d39aa0d0f2cfd3fc9b4da81e",
+      "observed_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+      "observed_projected_tensor_sha256": {
+        "base_projected": "4d2b96b363268f448dfeef1957ac2e9e63b087187fab332059a957653d504184",
+        "target_residual": "efd2d50e21c10ed6007f8ac0e22ce378755f79c90672b4496662cabe271ada1e"
+      },
+      "record_id": "olmoe-retrieval-passkey-v1-train-00",
+      "record_index": 0,
+      "reset_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+      "reset_outputs_counters_loss_and_trace_exact": true,
+      "reset_trace_sha256": "4d67b0ab56aba553ca3b1f807ca265ab43294e0c85b66cd9bf89271fefee2d80",
+      "selected_code_stream_sha256": "b8bd68ac0f0d3b02bcb27218376d5bea31e183d06cfb33238a605ce34de860fc",
+      "shard_file_sha256": "082164c8738fd268f19dd14dd2f37e22facebb8551c8c888e11170d571ee8736",
+      "source_record_sha256": "f768e132d581d13927d3e3e9316017ce702290b95e346bd03b939210bcd30435",
+      "trace_sha256": "4d67b0ab56aba553ca3b1f807ca265ab43294e0c85b66cd9bf89271fefee2d80"
+    },
+    {
+      "answer_cross_entropy": 1.1883000135421753,
+      "base_outputs_counters_and_loss_exact": true,
+      "counter_stream_sha256": "9bffac6fbab529b174f8235521c8aa089813ae370e0c09552e35b2bf97653493",
+      "episodic_call_stream_sha256": "7ef6779d3cf81e0714ff4b9d4b994069abf8b4a4d375621b024cb934829ab5bf",
+      "hidden_sha256": "9789dd2b81ff6c834bd9a2555df9186aaf2b9071ff19dc045124e709085cb553",
+      "historical_output_evidence_sha256": "04aa7f77859554fdbdd8d6ede1fe5c9f23b42d804460a6d180157efe6715f291",
+      "historical_projected_tensor_sha256": {
+        "base_projected": "a13bb38139a07849a576897e6572575b827ab3e9f06ca57346b7733e3cfa1f62",
+        "target_residual": "aa364fd757f2bf739937e0148dc7f4dcb30d5fc38d19d4b9e9576380622addaa"
+      },
+      "historical_projected_trace_exact": true,
+      "logits_sha256": "aa2656b5df25a10ba4e9d0fb1ac30289bb219a23a8f2c5721db0dc08bcee5c1f",
+      "observed_output_evidence_sha256": "04aa7f77859554fdbdd8d6ede1fe5c9f23b42d804460a6d180157efe6715f291",
+      "observed_projected_tensor_sha256": {
+        "base_projected": "a13bb38139a07849a576897e6572575b827ab3e9f06ca57346b7733e3cfa1f62",
+        "target_residual": "aa364fd757f2bf739937e0148dc7f4dcb30d5fc38d19d4b9e9576380622addaa"
+      },
+      "record_id": "olmoe-retrieval-passkey-v1-train-01",
+      "record_index": 1,
+      "reset_output_evidence_sha256": "04aa7f77859554fdbdd8d6ede1fe5c9f23b42d804460a6d180157efe6715f291",
+      "reset_outputs_counters_loss_and_trace_exact": true,
+      "reset_trace_sha256": "b2c6e1795d1afc6256ec633f1243e4f1de3dcaddfc87a07941350e614367e749",
+      "selected_code_stream_sha256": "4781a9b0b1a93f4a94e608915bf381d854a86fbc391e1f77fb1571af0dfde056",
+      "shard_file_sha256": "5e9daa2a9449849b632c50b3f942838611206ac66d84e8f03bba294879d157ab",
+      "source_record_sha256": "87ebe0dc116e3d1998272119bca12d5b2b68dd2427330b7378fbf6d55bde874f",
+      "trace_sha256": "b2c6e1795d1afc6256ec633f1243e4f1de3dcaddfc87a07941350e614367e749"
+    },
+    {
+      "answer_cross_entropy": 1.3092560768127441,
+      "base_outputs_counters_and_loss_exact": true,
+      "counter_stream_sha256": "1397f7aaf2634e37009b6509a76c67ba54a262a306fb7c0ffcf5b72f65d0f27a",
+      "episodic_call_stream_sha256": "ed218c7a1bb75cc7c6def7d7f0102de9fe4a942ee5447816fe20d8c00333367c",
+      "hidden_sha256": "23fbca094fd12ec7c7809a7dcc7f373ec37799c403ad2dacdbc68bb8a26f5bec",
+      "historical_output_evidence_sha256": "01430f19b5f02a868126d3e2da98891b778179dc346e4e8f43e4cb97cc8ebdc4",
+      "historical_projected_tensor_sha256": {
+        "base_projected": "ce5b84ba08b0666ea452eba69d8c8745bdbf3aaaf4d59bea1229dfd52e46cb4a",
+        "target_residual": "1f89a571a83b3b03efd57935ac562a21ec8b4afbffda4f2ea91f101cd99e88a3"
+      },
+      "historical_projected_trace_exact": true,
+      "logits_sha256": "59988dadbddeb3789e82f6ce4c4c3133932a80cbe9b382333b8ed0ae8ea97918",
+      "observed_output_evidence_sha256": "01430f19b5f02a868126d3e2da98891b778179dc346e4e8f43e4cb97cc8ebdc4",
+      "observed_projected_tensor_sha256": {
+        "base_projected": "ce5b84ba08b0666ea452eba69d8c8745bdbf3aaaf4d59bea1229dfd52e46cb4a",
+        "target_residual": "1f89a571a83b3b03efd57935ac562a21ec8b4afbffda4f2ea91f101cd99e88a3"
+      },
+      "record_id": "olmoe-retrieval-passkey-v1-train-02",
+      "record_index": 2,
+      "reset_output_evidence_sha256": "01430f19b5f02a868126d3e2da98891b778179dc346e4e8f43e4cb97cc8ebdc4",
+      "reset_outputs_counters_loss_and_trace_exact": true,
+      "reset_trace_sha256": "c9e846c60ea10ec1f3af8505da6736c37a85b3d81634f20f6a1edd2300d84be6",
+      "selected_code_stream_sha256": "8f3b90dbacbdf4cefb5af7f3ad03e6d0131a8237247a7a356baa6b9e3b30cf59",
+      "shard_file_sha256": "8ca9c5cf8b01b41644cf9e124b2797ddc9bc33173c6ce0e2ed7f419749d180dc",
+      "source_record_sha256": "aad8003fb58143a002e52f17e0bcded43b6a11bc647afb7574bb6926e8aa82d9",
+      "trace_sha256": "c9e846c60ea10ec1f3af8505da6736c37a85b3d81634f20f6a1edd2300d84be6"
+    },
+    {
+      "answer_cross_entropy": 0.9684914350509644,
+      "base_outputs_counters_and_loss_exact": true,
+      "counter_stream_sha256": "eb4184e2d54caf71e01f8473ff3edffb2e4619dca493bd8a2bb79f890a307f30",
+      "episodic_call_stream_sha256": "d43d87f0ef3233a40a4aece77a963808d30c194fb398cc10d4c5237123b39e0c",
+      "hidden_sha256": "193eb0040ccb941f4a0be54a1b798da6429387bc9d98295d74c2959caba7223c",
+      "historical_output_evidence_sha256": "d3e7606a86515688bd3d027f222e3e437bc5eead49079781a9824fc0636a1f61",
+      "historical_projected_tensor_sha256": {
+        "base_projected": "8a0a47e6ee9c5ef65df60b3e72af5fc349c24fda6dec8876f1d4eadd9c225684",
+        "target_residual": "6c634d23b5586348caf32a10d2006ca56b8992f9825abdcee53843eb8332fd6a"
+      },
+      "historical_projected_trace_exact": true,
+      "logits_sha256": "173845a712f7449bdfbc3db073cf731cc3b1fe1577860507d45b5fa043b3fd13",
+      "observed_output_evidence_sha256": "d3e7606a86515688bd3d027f222e3e437bc5eead49079781a9824fc0636a1f61",
+      "observed_projected_tensor_sha256": {
+        "base_projected": "8a0a47e6ee9c5ef65df60b3e72af5fc349c24fda6dec8876f1d4eadd9c225684",
+        "target_residual": "6c634d23b5586348caf32a10d2006ca56b8992f9825abdcee53843eb8332fd6a"
+      },
+      "record_id": "olmoe-retrieval-passkey-v1-train-03",
+      "record_index": 3,
+      "reset_output_evidence_sha256": "d3e7606a86515688bd3d027f222e3e437bc5eead49079781a9824fc0636a1f61",
+      "reset_outputs_counters_loss_and_trace_exact": true,
+      "reset_trace_sha256": "e1aefc80d53432be10d8d68adce558d70d76fe363e63daf4be1fc6c3b727bdb0",
+      "selected_code_stream_sha256": "56527e05af1c58d22cb1919aa915b02cb3b267d46c8fa6efa40549ae95c343a4",
+      "shard_file_sha256": "022b055f916d91db533a35c365aee4a5bcc80ffc4b440065a8212fcf54aad953",
+      "source_record_sha256": "2b1376b347834536f3bf5305c4edd6733a761e126a999d8d44d8c9b7527865c7",
+      "trace_sha256": "e1aefc80d53432be10d8d68adce558d70d76fe363e63daf4be1fc6c3b727bdb0"
+    },
+    {
+      "answer_cross_entropy": 1.2390215396881104,
+      "base_outputs_counters_and_loss_exact": true,
+      "counter_stream_sha256": "220468063496da0b08d055125850ff1edaa3b1089d93ebad11a65898acd12239",
+      "episodic_call_stream_sha256": "deab7d9f2504a1d563c372374292d3dc4b1d078ebcb59ec55d1f1e6f69a1aa74",
+      "hidden_sha256": "10f26719302cf75a682dc93ac35547a0ec3608340159c7097e697c07560c78ea",
+      "historical_output_evidence_sha256": "21e3141de7cad305dc954ab321aa5f67af91eaba0ff1be9f8e4d2c63c7be2530",
+      "historical_projected_tensor_sha256": {
+        "base_projected": "75b827ef9548cfe09e9356a872a37db2ac12e33908a2c531afb1b401f6dfb7b4",
+        "target_residual": "e4b553d8937b44c44fd8a2574dfd4750149fbdefb47ca1df9fc31984b3c5c916"
+      },
+      "historical_projected_trace_exact": true,
+      "logits_sha256": "f5259e5b3c5aa6bfcc7bb942356d0c781434db8632340415bdfd9569acb1cf29",
+      "observed_output_evidence_sha256": "21e3141de7cad305dc954ab321aa5f67af91eaba0ff1be9f8e4d2c63c7be2530",
+      "observed_projected_tensor_sha256": {
+        "base_projected": "75b827ef9548cfe09e9356a872a37db2ac12e33908a2c531afb1b401f6dfb7b4",
+        "target_residual": "e4b553d8937b44c44fd8a2574dfd4750149fbdefb47ca1df9fc31984b3c5c916"
+      },
+      "record_id": "olmoe-retrieval-passkey-v1-train-04",
+      "record_index": 4,
+      "reset_output_evidence_sha256": "21e3141de7cad305dc954ab321aa5f67af91eaba0ff1be9f8e4d2c63c7be2530",
+      "reset_outputs_counters_loss_and_trace_exact": true,
+      "reset_trace_sha256": "8ab6a4154036675c96bab22939adfe7a1b36ee11c0acd6b7249d8f509eb08dda",
+      "selected_code_stream_sha256": "41a41a756e8ab248628581e8c132d18d077e7719a348eb102fadd94d7af1b948",
+      "shard_file_sha256": "137ef71a3e0ffdc1882bf555be5c366cf097df35f27fe71cef0c0b26a64ad527",
+      "source_record_sha256": "33b139cf3c4d564d38cb0af058e4c3d553f18293fa676098952267884115abbb",
+      "trace_sha256": "8ab6a4154036675c96bab22939adfe7a1b36ee11c0acd6b7249d8f509eb08dda"
+    },
+    {
+      "answer_cross_entropy": 1.196218729019165,
+      "base_outputs_counters_and_loss_exact": true,
+      "counter_stream_sha256": "6122b2a1a0b589a9d5780285909f7d884f311123a19a31b5a020ee7f4a97aabc",
+      "episodic_call_stream_sha256": "ae3e4dd3efedd037081e0108a6ccd9a8af7552e6b28d0679c49b80d232d40e96",
+      "hidden_sha256": "1343ef6ef0ac42504e8e0201b871de97cf02ed1890b7eb184c7d783d26dd4e10",
+      "historical_output_evidence_sha256": "a128fd9d55f8966699a31d11fbce139d5a12e624e1fde050bb5a41944f7aec33",
+      "historical_projected_tensor_sha256": {
+        "base_projected": "35128835d8ca851adb186599f5cf75d60eda29d044651e2478fee03019d312c5",
+        "target_residual": "16d677ec3a1a8c3d43325de9fe78eec292f2b0aaed62262f980b50cc8ac03e12"
+      },
+      "historical_projected_trace_exact": true,
+      "logits_sha256": "2c774341379beb489d5c04ddda41d29afb346831da858656285475bd9024f75a",
+      "observed_output_evidence_sha256": "a128fd9d55f8966699a31d11fbce139d5a12e624e1fde050bb5a41944f7aec33",
+      "observed_projected_tensor_sha256": {
+        "base_projected": "35128835d8ca851adb186599f5cf75d60eda29d044651e2478fee03019d312c5",
+        "target_residual": "16d677ec3a1a8c3d43325de9fe78eec292f2b0aaed62262f980b50cc8ac03e12"
+      },
+      "record_id": "olmoe-retrieval-passkey-v1-train-05",
+      "record_index": 5,
+      "reset_output_evidence_sha256": "a128fd9d55f8966699a31d11fbce139d5a12e624e1fde050bb5a41944f7aec33",
+      "reset_outputs_counters_loss_and_trace_exact": true,
+      "reset_trace_sha256": "5c5ac52b52ff829c6097e050524b0d32d29454c28692d58fa7bfa0c82edeabc0",
+      "selected_code_stream_sha256": "505e46f5b9e1164ed998a50f0286fb0654a81989fa9203c19fd2a4bf69d3a2aa",
+      "shard_file_sha256": "aaa11f7c74303ad5bb4652d8a944e0cce49923381eacba0cce2a110e67fee068",
+      "source_record_sha256": "c7208f31d27d1b33b35ed2ff2e4aaf09106f21388599c4378bffc81df3815a90",
+      "trace_sha256": "5c5ac52b52ff829c6097e050524b0d32d29454c28692d58fa7bfa0c82edeabc0"
+    },
+    {
+      "answer_cross_entropy": 1.2578880786895752,
+      "base_outputs_counters_and_loss_exact": true,
+      "counter_stream_sha256": "eb4e136a6c7b0f8afd3247bdeaa81bbfc3aab553ddea283d95e3d7451af5a540",
+      "episodic_call_stream_sha256": "d2eff56b5c4c9e8ff22100097de498d5c56c34fff559f2ed770417f647382648",
+      "hidden_sha256": "7d888decbc539c5097a3dc9ff7458194ccf579e05e3b6556e1162b76c6913c65",
+      "historical_output_evidence_sha256": "4bb78772d10f8a4fbcb62434e4a8a3b561bae7291bbb64b5751ba93e15b0538e",
+      "historical_projected_tensor_sha256": {
+        "base_projected": "a089d88082b56f58437a9f4fb65ea408fa727da7d00e219bab5d13efe8248134",
+        "target_residual": "3f5ec8f5e83384bd164789d4b97578e0b74aa083b363535086b1ab2329d990bc"
+      },
+      "historical_projected_trace_exact": true,
+      "logits_sha256": "8674efe8084de595b17093469abfe5a412f37fbef8265e6149a82b2dd9e6a164",
+      "observed_output_evidence_sha256": "4bb78772d10f8a4fbcb62434e4a8a3b561bae7291bbb64b5751ba93e15b0538e",
+      "observed_projected_tensor_sha256": {
+        "base_projected": "a089d88082b56f58437a9f4fb65ea408fa727da7d00e219bab5d13efe8248134",
+        "target_residual": "3f5ec8f5e83384bd164789d4b97578e0b74aa083b363535086b1ab2329d990bc"
+      },
+      "record_id": "olmoe-retrieval-passkey-v1-train-06",
+      "record_index": 6,
+      "reset_output_evidence_sha256": "4bb78772d10f8a4fbcb62434e4a8a3b561bae7291bbb64b5751ba93e15b0538e",
+      "reset_outputs_counters_loss_and_trace_exact": true,
+      "reset_trace_sha256": "b5f5c9150700c5ce3bfa3abe8413b0c6a6f0508c9f147c34678042781bf07db8",
+      "selected_code_stream_sha256": "d06db1e8d03e58a60a210e54eda37ce9aa1e10690b69289ac5d6fc85903693c2",
+      "shard_file_sha256": "5e1dde85be1cad04289c51d4315920e9a0d3059940cd6a34ad23460fac397c5a",
+      "source_record_sha256": "a26fc441493c653d0e8878244cac3b7461968e0894b4f7bec7a1cba3ea07e4ac",
+      "trace_sha256": "b5f5c9150700c5ce3bfa3abe8413b0c6a6f0508c9f147c34678042781bf07db8"
+    },
+    {
+      "answer_cross_entropy": 1.3273429870605469,
+      "base_outputs_counters_and_loss_exact": true,
+      "counter_stream_sha256": "cd8aa3b6243a82ac084fba69136beefe0927256e5046713c035c4f493bf2e5bf",
+      "episodic_call_stream_sha256": "d0fad9dbc5af58d985303996099f3e16dd110ee9161e4c7cd94cfac1bbd0374c",
+      "hidden_sha256": "8a59449e30503bd1fb50deee94e20840b692ff584483c7bbdb6eff545609cc16",
+      "historical_output_evidence_sha256": "cad925a275ba13a05040ce4b670b25c4779d3d4ed6ca3b17f2223d526814cc38",
+      "historical_projected_tensor_sha256": {
+        "base_projected": "e1e45cc935ebe603d8dd9781a225925d3da4e7359a9c5a13738c28eabf214be5",
+        "target_residual": "4aef2f170cb6ab361adfdc273b6c206bb4e1d7d56027baaff99673c9ee4f3bdc"
+      },
+      "historical_projected_trace_exact": true,
+      "logits_sha256": "2ed0b315afa190a921861d9b2c2aa0b6f76e58ddc2866e446be5c354561bf7ea",
+      "observed_output_evidence_sha256": "cad925a275ba13a05040ce4b670b25c4779d3d4ed6ca3b17f2223d526814cc38",
+      "observed_projected_tensor_sha256": {
+        "base_projected": "e1e45cc935ebe603d8dd9781a225925d3da4e7359a9c5a13738c28eabf214be5",
+        "target_residual": "4aef2f170cb6ab361adfdc273b6c206bb4e1d7d56027baaff99673c9ee4f3bdc"
+      },
+      "record_id": "olmoe-retrieval-passkey-v1-train-07",
+      "record_index": 7,
+      "reset_output_evidence_sha256": "cad925a275ba13a05040ce4b670b25c4779d3d4ed6ca3b17f2223d526814cc38",
+      "reset_outputs_counters_loss_and_trace_exact": true,
+      "reset_trace_sha256": "5a79bd7bc793fd4366043ee699504fd8c7d77a0c97ab20cd008aa2e29bf8e999",
+      "selected_code_stream_sha256": "649e319c51374edd2a623011043baf1951ee1dd28a79d382bcfd39250c190fca",
+      "shard_file_sha256": "262b789ce2397fd722ab34cdf23f71498a791dcaab6041a74cb4f6d391c537b1",
+      "source_record_sha256": "21e4a9a20939bea60c037e28a74f678c877cf45739713e346dd7e7cb54fc77ed",
+      "trace_sha256": "5a79bd7bc793fd4366043ee699504fd8c7d77a0c97ab20cd008aa2e29bf8e999"
+    }
+  ],
+  "confirmation_split_opened": false,
+  "decision": {
+    "confirmation_authorized": false,
+    "development_authorized": false,
+    "failure_scope": "this exact fixed-K256 independent-head scheduled-source-mass matching grid only",
+    "native_causal_integration_authorized": false,
+    "next_step": "close the fixed-K256 independent-head scheduled-source-mass matching gamma grid",
+    "semantic_or_M3_gate_passed": false,
+    "train_head_mass_capacity_gate_passed": false,
+    "train_only_causal_predictor_experiment_authorized": false
+  },
+  "deterministic_replay": {
+    "checks": {
+      "oracle_metrics_exact": true,
+      "oracle_sha256_exact": true,
+      "passed": true,
+      "selected_codes_exact": true
+    },
+    "passed": true,
+    "recomputed_sha256": "82d72fd5d9cbd4aa6f388285225467140c8c3e43e5eb116297bb8beb3d775827",
+    "reference_sha256": "82d72fd5d9cbd4aa6f388285225467140c8c3e43e5eb116297bb8beb3d775827"
+  },
+  "experiment": "olmoe_q7_retrieval_episodic_head_mass_oracle_train_screen",
+  "oracle": {
+    "gamma_table": [
+      {
+        "beta_bits": null,
+        "beta_float32": null,
+        "code": 0,
+        "endpoint": "exact_zero_episodic_mass",
+        "gamma": 0.0,
+        "multiplier_float32": 0.0
+      },
+      {
+        "beta_bits": "0xc0051592",
+        "beta_float32": -2.079441547393799,
+        "code": 1,
+        "endpoint": null,
+        "gamma": 0.125,
+        "multiplier_float32": 0.125
+      },
+      {
+        "beta_bits": "0xbfb17218",
+        "beta_float32": -1.3862943649291992,
+        "code": 2,
+        "endpoint": null,
+        "gamma": 0.25,
+        "multiplier_float32": 0.25
+      },
+      {
+        "beta_bits": "0xbf317218",
+        "beta_float32": -0.6931471824645996,
+        "code": 3,
+        "endpoint": null,
+        "gamma": 0.5,
+        "multiplier_float32": 0.5
+      },
+      {
+        "beta_bits": "0x00000000",
+        "beta_float32": 0.0,
+        "code": 4,
+        "endpoint": null,
+        "gamma": 1.0,
+        "multiplier_float32": 1.0
+      },
+      {
+        "beta_bits": "0x3f317218",
+        "beta_float32": 0.6931471824645996,
+        "code": 5,
+        "endpoint": null,
+        "gamma": 2.0,
+        "multiplier_float32": 2.0
+      },
+      {
+        "beta_bits": "0x3fb17218",
+        "beta_float32": 1.3862943649291992,
+        "code": 6,
+        "endpoint": null,
+        "gamma": 4.0,
+        "multiplier_float32": 4.0
+      },
+      {
+        "beta_bits": "0x40051592",
+        "beta_float32": 2.079441547393799,
+        "code": 7,
+        "endpoint": null,
+        "gamma": 8.0,
+        "multiplier_float32": 8.0
+      }
+    ],
+    "metrics": {
+      "block_entry_positions": [
+        {
+          "error_ratio": 1.0410894131238626,
+          "error_squared_frobenius": 9.801978039852521,
+          "position": 96,
+          "recovery": -0.0838671661185888,
+          "target_squared_frobenius": 9.043523363618583
+        },
+        {
+          "error_ratio": 1.0651108228783501,
+          "error_squared_frobenius": 13.16895063937919,
+          "position": 104,
+          "recovery": -0.13446106501259614,
+          "target_squared_frobenius": 11.608111591941652
+        },
+        {
+          "error_ratio": 1.0130487363230476,
+          "error_squared_frobenius": 16.750044878145633,
+          "position": 112,
+          "recovery": -0.026267742165723584,
+          "target_squared_frobenius": 16.32132063587828
+        },
+        {
+          "error_ratio": 1.0337434763983995,
+          "error_squared_frobenius": 15.239813815227896,
+          "position": 120,
+          "recovery": -0.06862557499624833,
+          "target_squared_frobenius": 14.261135211256196
+        }
+      ],
+      "gate": {
+        "at_least_12_of_16_layers_positive_recovery": false,
+        "every_block_entry_recovery_at_least_0_25": false,
+        "every_sequence_recovery_at_least_0_25": false,
+        "finite": true,
+        "global_recovery_at_least_0_50": false,
+        "passed": false,
+        "selected_mass_never_worse_than_gamma_one": true
+      },
+      "global": {
+        "error_ratio": 1.0530491224393124,
+        "error_squared_frobenius": 342.372567716397,
+        "recovery": -0.10891245427020602,
+        "target_squared_frobenius": 308.74625530445337
+      },
+      "heldout_sequences": [
+        {
+          "error_ratio": 1.0642775512160683,
+          "error_squared_frobenius": 41.86906307225346,
+          "record_index": 0,
+          "recovery": -0.13268670602247057,
+          "target_squared_frobenius": 36.96438110347421
+        },
+        {
+          "error_ratio": 1.043478945443819,
+          "error_squared_frobenius": 42.37203175962867,
+          "record_index": 1,
+          "recovery": -0.08884830958454448,
+          "target_squared_frobenius": 38.9145406083203
+        },
+        {
+          "error_ratio": 1.0357259669232004,
+          "error_squared_frobenius": 41.350394019230095,
+          "record_index": 2,
+          "recovery": -0.07272827855899822,
+          "target_squared_frobenius": 38.54694133240927
+        },
+        {
+          "error_ratio": 1.0242823541015775,
+          "error_squared_frobenius": 40.02547496315964,
+          "record_index": 3,
+          "recovery": -0.04915434092386928,
+          "target_squared_frobenius": 38.15022575983798
+        },
+        {
+          "error_ratio": 1.0839200425886486,
+          "error_squared_frobenius": 47.40276512940079,
+          "record_index": 4,
+          "recovery": -0.17488265872537756,
+          "target_squared_frobenius": 40.34680806407317
+        },
+        {
+          "error_ratio": 1.066106777772097,
+          "error_squared_frobenius": 37.057765532217815,
+          "record_index": 5,
+          "recovery": -0.13658366161160318,
+          "target_squared_frobenius": 32.60452070872835
+        },
+        {
+          "error_ratio": 1.050470278168427,
+          "error_squared_frobenius": 45.519595418670534,
+          "record_index": 6,
+          "recovery": -0.10348780531525237,
+          "target_squared_frobenius": 41.25065560254757
+        },
+        {
+          "error_ratio": 1.0557207007241438,
+          "error_squared_frobenius": 46.77547782183599,
+          "record_index": 7,
+          "recovery": -0.11454619793747733,
+          "target_squared_frobenius": 41.968182125062484
+        }
+      ],
+      "layers": [
+        {
+          "error_ratio": 1.2203052038265592,
+          "error_squared_frobenius": 0.35708213947860945,
+          "layer": 0,
+          "recovery": -0.48914479048617987,
+          "target_squared_frobenius": 0.23979007398066937
+        },
+        {
+          "error_ratio": 1.0696758873460392,
+          "error_squared_frobenius": 0.8797537700858091,
+          "layer": 1,
+          "recovery": -0.1442065039695366,
+          "target_squared_frobenius": 0.7688767429950142
+        },
+        {
+          "error_ratio": 1.0629231900536933,
+          "error_squared_frobenius": 0.6236297300116693,
+          "layer": 2,
+          "recovery": -0.12980570795391966,
+          "target_squared_frobenius": 0.551979624125872
+        },
+        {
+          "error_ratio": 1.0587990973160446,
+          "error_squared_frobenius": 1.3327703059065112,
+          "layer": 3,
+          "recovery": -0.12105552847727075,
+          "target_squared_frobenius": 1.1888530693183528
+        },
+        {
+          "error_ratio": 1.0701462035909806,
+          "error_squared_frobenius": 0.9958915190419773,
+          "layer": 4,
+          "recovery": -0.14521289706018847,
+          "target_squared_frobenius": 0.869612559899102
+        },
+        {
+          "error_ratio": 1.048610729795035,
+          "error_squared_frobenius": 2.4925107166002984,
+          "layer": 5,
+          "recovery": -0.09958446264127563,
+          "target_squared_frobenius": 2.266775133047188
+        },
+        {
+          "error_ratio": 1.0794280037012278,
+          "error_squared_frobenius": 2.5450215929759485,
+          "layer": 6,
+          "recovery": -0.16516481517441806,
+          "target_squared_frobenius": 2.1842588789423534
+        },
+        {
+          "error_ratio": 1.1316630726595356,
+          "error_squared_frobenius": 4.073686347725169,
+          "layer": 7,
+          "recovery": -0.2806613100212214,
+          "target_squared_frobenius": 3.180924039672648
+        },
+        {
+          "error_ratio": 1.0503271474887705,
+          "error_squared_frobenius": 1.824371309294301,
+          "layer": 8,
+          "recovery": -0.10318711675189762,
+          "target_squared_frobenius": 1.6537278958312878
+        },
+        {
+          "error_ratio": 1.0522285683276533,
+          "error_squared_frobenius": 9.06742438147515,
+          "layer": 9,
+          "recovery": -0.1071849600048631,
+          "target_squared_frobenius": 8.189620261311463
+        },
+        {
+          "error_ratio": 1.1235898809406484,
+          "error_squared_frobenius": 6.993159848526416,
+          "layer": 10,
+          "recovery": -0.26245422055222023,
+          "target_squared_frobenius": 5.53933737531289
+        },
+        {
+          "error_ratio": 1.1830716831480534,
+          "error_squared_frobenius": 7.755670036594381,
+          "layer": 11,
+          "recovery": -0.39965860746676807,
+          "target_squared_frobenius": 5.5411155228997675
+        },
+        {
+          "error_ratio": 0.9844686325765654,
+          "error_squared_frobenius": 40.269549994429056,
+          "layer": 12,
+          "recovery": 0.030821511472827523,
+          "target_squared_frobenius": 41.55018964115198
+        },
+        {
+          "error_ratio": 1.0680036527129662,
+          "error_squared_frobenius": 77.59165088290932,
+          "layer": 13,
+          "recovery": -0.14063180220823823,
+          "target_squared_frobenius": 68.02515126502135
+        },
+        {
+          "error_ratio": 1.0812076040793897,
+          "error_squared_frobenius": 59.02075768964637,
+          "layer": 14,
+          "recovery": -0.16900988311909426,
+          "target_squared_frobenius": 50.48781754707677
+        },
+        {
+          "error_ratio": 1.0422026148742622,
+          "error_squared_frobenius": 126.54963745169601,
+          "layer": 15,
+          "recovery": -0.08618629045074999,
+          "target_squared_frobenius": 116.50822567386662
+        }
+      ],
+      "mass_selection": {
+        "coordinates": 65536,
+        "gamma_one_distance_max": 0.8572874069213867,
+        "gamma_one_distance_mean": 0.044512666203158135,
+        "selected_distance_max": 0.48010921478271484,
+        "selected_distance_mean": 0.008475460298260159
+      },
+      "passed": false,
+      "positive_recovery_layer_count": 1
+    },
+    "passed": false,
+    "projected_correction_sha256": "94b995364b41c8041cf2ccde287f6edfc0aee836f0280965cf6d89ae2cb013b0",
+    "selected_code_histogram": {
+      "0": 71,
+      "1": 2372,
+      "2": 8586,
+      "3": 24722,
+      "4": 29785,
+      "5": 0,
+      "6": 0,
+      "7": 0
+    },
+    "selected_code_stream_sha256": "bd0cf7116ef4bccdedca74654c4b40cd7312fb472d4c47586adaa251b89c7cf2",
+    "selected_mass_sha256": "fa47e5a2713797a75069e27e4d82916bde3904ba9998f720a1d7185eac044b7c",
+    "single_oracle_arm": true,
+    "tie_priority": [
+      4,
+      3,
+      5,
+      2,
+      6,
+      1,
+      7,
+      0
+    ]
+  },
+  "output_projection": {
+    "dtype": "authenticated_BF16_loaded_as_float32",
+    "orientation": "candidate_delta @ o_proj.weight.T",
+    "parity_tensor_sha256_exact": true,
+    "source": "/home/dean/repos/engram/work/olmoe_q7/package/transformer/non_mlp.safetensors",
+    "tensor_sha256": {
+      "model.layers.0.self_attn.o_proj.weight": "713f28304e77aa4a1b0b3a855cf5d3621eb877b5f3d143fdfc58f1e3efb0355e",
+      "model.layers.1.self_attn.o_proj.weight": "cd12b44bf6a0c10a16fa4a6f75e2b69f2cddb23c18eaed447bf83518fbdbd845",
+      "model.layers.10.self_attn.o_proj.weight": "96dcad962efc39eed5daf640a33c2febf2200224ea6b9869be8f49f76001dcc4",
+      "model.layers.11.self_attn.o_proj.weight": "750c064cacd22586000be8bb0045d54a90ba1f67a376203374a750d50b8f406c",
+      "model.layers.12.self_attn.o_proj.weight": "bf458e0d1d544df0b25338fa9338e924af33cb76799d2dcd9ac8d245c45a0a7b",
+      "model.layers.13.self_attn.o_proj.weight": "d0cdda96412dde6fc89549c11aa8603f073e46932db31172d8441fc9b595424b",
+      "model.layers.14.self_attn.o_proj.weight": "ebee83c0aa98367df6e2d21352f96c4b438c5641f10eb980fca4df8e39d0c01b",
+      "model.layers.15.self_attn.o_proj.weight": "3e4961a38a311966cbf66e266fa462ca2050a512e90f56137a57dc19428db1f3",
+      "model.layers.2.self_attn.o_proj.weight": "825b632c003a0340918c52e7e892faaa0d62e708eac22c7cfd9a3d859a81f92f",
+      "model.layers.3.self_attn.o_proj.weight": "912c8f916373aa11f2254bae3ddc153b826ceaf37f25ab6de57b7a8b0e6babbd",
+      "model.layers.4.self_attn.o_proj.weight": "11a42d3e819155730efa070087b43e45a8d1616c94dff441cdc2d27ec90422c9",
+      "model.layers.5.self_attn.o_proj.weight": "0eb89ca8301aa010f4e4ec3c8d451b1450ccc633d50020ea1fdb8af83a612717",
+      "model.layers.6.self_attn.o_proj.weight": "18d21b98611f4d77babf80dce8ae15c231fe90144d7945d2ffaf1c06fc9e23ea",
+      "model.layers.7.self_attn.o_proj.weight": "9263891eff7e90bf151aed8ac269a8ae04f1c214792f991ef1f952538e492f3e",
+      "model.layers.8.self_attn.o_proj.weight": "cf4568a74f1aad83c9804edd06b9747116f0a113dad69e9ed9153c181f0019f7",
+      "model.layers.9.self_attn.o_proj.weight": "8e161772c8f4ccddcf82aacecd39a73543e9dd99b58f62fa0f6dbc88bd43a84d"
+    }
+  },
+  "post_run_authentication": {
+    "attention_library": true,
+    "base_protocol": true,
+    "confirmation_not_opened": true,
+    "corpus_manifest": true,
+    "head_mass_parity": true,
+    "head_mass_protocol": true,
+    "head_mass_source_inventory": true,
+    "headwise_library": true,
+    "historical_K256_result": true,
+    "historical_capacity_manifest": true,
+    "historical_capacity_protocol": true,
+    "historical_capacity_result": true,
+    "historical_episodic_library": true,
+    "layered_library": true,
+    "logit_bias_library": true,
+    "logit_bias_protocol": true,
+    "logit_bias_result": true,
+    "mass_trace_library": true,
+    "package": true,
+    "rank_protocol": true,
+    "rank_result": true,
+    "source_config": true,
+    "source_index": true,
+    "source_shards": true,
+    "trace_library": true,
+    "train_split": true,
+    "training_checkpoint": true
+  },
+  "protocol": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_head_mass_oracle_2026-07-29_frozen/protocol.json",
+    "sha256": "fe09689452e6ae4f1a1b15332c61c1cc990cfc29b6a8b0d5a1758d9490a93af5"
+  },
+  "resource_contract": {
+    "fixed_attention_state_bytes": 10534912,
+    "fixed_combined_attention_and_episodic_traffic_bytes": 714866688,
+    "fixed_fraction_of_dense_full_context_KV": 0.33030523255813954,
+    "gamma_zero_earns_read_savings": false,
+    "oracle_shadow_trace_and_projection_evaluator_only": true,
+    "predictor_weights_features_and_execution_not_counted": true
+  },
+  "schema_version": 1,
+  "scope": {
+    "answer_cross_entropy_gate": false,
+    "causal_rollout": false,
+    "confirmation_split_opened": false,
+    "development_outcomes_used": false,
+    "positions_per_record": 128,
+    "records": 8,
+    "same_state_capacity_evidence_only": true,
+    "semantic_or_M3_gate_passed": false,
+    "split": "train",
+    "trace_positions_per_record": 32
+  },
+  "status": "train_episodic_head_mass_oracle_gate_failed",
+  "total_elapsed_seconds": 930.3772988540004,
+  "trace_manifest": {
+    "directory": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_head_mass_oracle_2026-07-29_frozen/trace_shards",
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_head_mass_oracle_2026-07-29_frozen/trace_shards/manifest.json",
+    "sha256": "93df0a554744b97e7436b9a8b4bb71473bc21fa9f6c90985431274859164e0b6",
+    "shard_count": 8,
+    "shards": [
+      {
+        "dtype": "float32",
+        "file": "train-00.safetensors",
+        "file_sha256": "082164c8738fd268f19dd14dd2f37e22facebb8551c8c888e11170d571ee8736",
+        "format": "safetensors",
+        "keys": [
+          "base_attention_output",
+          "regular_component",
+          "episodic_component",
+          "regular_mass",
+          "episodic_mass",
+          "shadow_scheduled_mass",
+          "base_projected",
+          "target_residual",
+          "positions"
+        ],
+        "mass_shape": [
+          32,
+          16,
+          16
+        ],
+        "output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+        "positions": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ],
+        "record_id": "olmoe-retrieval-passkey-v1-train-00",
+        "record_index": 0,
+        "reset_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+        "reset_trace_sha256": "4d67b0ab56aba553ca3b1f807ca265ab43294e0c85b66cd9bf89271fefee2d80",
+        "selected_code_stream_sha256": "b8bd68ac0f0d3b02bcb27218376d5bea31e183d06cfb33238a605ce34de860fc",
+        "source_record_sha256": "f768e132d581d13927d3e3e9316017ce702290b95e346bd03b939210bcd30435",
+        "tensor_sha256": {
+          "base_attention_output": "45bce467122694847c7e4f6a50926531f4feb31cd4df665169f0fe6d5bd9dba5",
+          "base_projected": "4d2b96b363268f448dfeef1957ac2e9e63b087187fab332059a957653d504184",
+          "episodic_component": "d5da283feb734b914d1b2cbe4e49986f10f5862368da33fd05254fdf97e12e29",
+          "episodic_mass": "e7cb421f291758ba848a566535971e3953a6ff7b1d092c7e1189b310d528bf3f",
+          "regular_component": "eb4bd91cd7cb0569f717036e02ec7f5bf34b8d5cc3fa03d3937a461101b75833",
+          "regular_mass": "3fa82fb2168cbacb6d8b8176b560aba19b480bd376057bc40725c966808ef841",
+          "shadow_scheduled_mass": "714436238725f18f1726da51f23a3a090119798b81cad16fd8b41b0ae7d10990",
+          "target_residual": "efd2d50e21c10ed6007f8ac0e22ce378755f79c90672b4496662cabe271ada1e"
+        },
+        "trace_sha256": "4d67b0ab56aba553ca3b1f807ca265ab43294e0c85b66cd9bf89271fefee2d80",
+        "value_shape": [
+          32,
+          16,
+          2048
+        ]
+      },
+      {
+        "dtype": "float32",
+        "file": "train-01.safetensors",
+        "file_sha256": "5e9daa2a9449849b632c50b3f942838611206ac66d84e8f03bba294879d157ab",
+        "format": "safetensors",
+        "keys": [
+          "base_attention_output",
+          "regular_component",
+          "episodic_component",
+          "regular_mass",
+          "episodic_mass",
+          "shadow_scheduled_mass",
+          "base_projected",
+          "target_residual",
+          "positions"
+        ],
+        "mass_shape": [
+          32,
+          16,
+          16
+        ],
+        "output_evidence_sha256": "04aa7f77859554fdbdd8d6ede1fe5c9f23b42d804460a6d180157efe6715f291",
+        "positions": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ],
+        "record_id": "olmoe-retrieval-passkey-v1-train-01",
+        "record_index": 1,
+        "reset_output_evidence_sha256": "04aa7f77859554fdbdd8d6ede1fe5c9f23b42d804460a6d180157efe6715f291",
+        "reset_trace_sha256": "b2c6e1795d1afc6256ec633f1243e4f1de3dcaddfc87a07941350e614367e749",
+        "selected_code_stream_sha256": "4781a9b0b1a93f4a94e608915bf381d854a86fbc391e1f77fb1571af0dfde056",
+        "source_record_sha256": "87ebe0dc116e3d1998272119bca12d5b2b68dd2427330b7378fbf6d55bde874f",
+        "tensor_sha256": {
+          "base_attention_output": "54d7c852a42c7a27f6f041ab37fa95d27c1e68bc1e72933d27969cb1199ee516",
+          "base_projected": "a13bb38139a07849a576897e6572575b827ab3e9f06ca57346b7733e3cfa1f62",
+          "episodic_component": "57ae6551abbed24107e65f62509abd2ff722f84623c362031df35d0d1375a7e0",
+          "episodic_mass": "16d058dd48df6e00031dbaf77007e504a767e24c5cda6c36804c8b50da737df4",
+          "regular_component": "e07eb90b7cc25420091eed9105c9e23e0bc12fdf2a2f22c7cc769727f9cf0cc1",
+          "regular_mass": "99838bbaf8fe4f7c51fce8c4358e0658fe548372f09a09de87cd2b02de2d12a1",
+          "shadow_scheduled_mass": "d9af9bfad96691f5573d1edc738bdcf962a7761a339e03a38f3d0b37fd216650",
+          "target_residual": "aa364fd757f2bf739937e0148dc7f4dcb30d5fc38d19d4b9e9576380622addaa"
+        },
+        "trace_sha256": "b2c6e1795d1afc6256ec633f1243e4f1de3dcaddfc87a07941350e614367e749",
+        "value_shape": [
+          32,
+          16,
+          2048
+        ]
+      },
+      {
+        "dtype": "float32",
+        "file": "train-02.safetensors",
+        "file_sha256": "8ca9c5cf8b01b41644cf9e124b2797ddc9bc33173c6ce0e2ed7f419749d180dc",
+        "format": "safetensors",
+        "keys": [
+          "base_attention_output",
+          "regular_component",
+          "episodic_component",
+          "regular_mass",
+          "episodic_mass",
+          "shadow_scheduled_mass",
+          "base_projected",
+          "target_residual",
+          "positions"
+        ],
+        "mass_shape": [
+          32,
+          16,
+          16
+        ],
+        "output_evidence_sha256": "01430f19b5f02a868126d3e2da98891b778179dc346e4e8f43e4cb97cc8ebdc4",
+        "positions": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ],
+        "record_id": "olmoe-retrieval-passkey-v1-train-02",
+        "record_index": 2,
+        "reset_output_evidence_sha256": "01430f19b5f02a868126d3e2da98891b778179dc346e4e8f43e4cb97cc8ebdc4",
+        "reset_trace_sha256": "c9e846c60ea10ec1f3af8505da6736c37a85b3d81634f20f6a1edd2300d84be6",
+        "selected_code_stream_sha256": "8f3b90dbacbdf4cefb5af7f3ad03e6d0131a8237247a7a356baa6b9e3b30cf59",
+        "source_record_sha256": "aad8003fb58143a002e52f17e0bcded43b6a11bc647afb7574bb6926e8aa82d9",
+        "tensor_sha256": {
+          "base_attention_output": "531c9fbb21a62df2435cc9b4844f22794c5453b94275a0dcc23945b40473e1fe",
+          "base_projected": "ce5b84ba08b0666ea452eba69d8c8745bdbf3aaaf4d59bea1229dfd52e46cb4a",
+          "episodic_component": "e2e187d49164b73d74fbd64fb538edf3e9dead87b403881e0d32a95208a39ebd",
+          "episodic_mass": "7a1783035541aa35a70e31f56f561415f43813116e26a6227a697972804997f7",
+          "regular_component": "b06fb05f5e35bb52ef0ba7781a90060d3db03231a95b5d49be64a0d600c3c121",
+          "regular_mass": "69546d3297d105fac7df7576d2f13bdd98727b3c4e9138b2d71a48a751b8b499",
+          "shadow_scheduled_mass": "c245f1cee5d8c07d70a5bc5d0334cc3743db0274c99de37b75b2632e02b40cad",
+          "target_residual": "1f89a571a83b3b03efd57935ac562a21ec8b4afbffda4f2ea91f101cd99e88a3"
+        },
+        "trace_sha256": "c9e846c60ea10ec1f3af8505da6736c37a85b3d81634f20f6a1edd2300d84be6",
+        "value_shape": [
+          32,
+          16,
+          2048
+        ]
+      },
+      {
+        "dtype": "float32",
+        "file": "train-03.safetensors",
+        "file_sha256": "022b055f916d91db533a35c365aee4a5bcc80ffc4b440065a8212fcf54aad953",
+        "format": "safetensors",
+        "keys": [
+          "base_attention_output",
+          "regular_component",
+          "episodic_component",
+          "regular_mass",
+          "episodic_mass",
+          "shadow_scheduled_mass",
+          "base_projected",
+          "target_residual",
+          "positions"
+        ],
+        "mass_shape": [
+          32,
+          16,
+          16
+        ],
+        "output_evidence_sha256": "d3e7606a86515688bd3d027f222e3e437bc5eead49079781a9824fc0636a1f61",
+        "positions": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ],
+        "record_id": "olmoe-retrieval-passkey-v1-train-03",
+        "record_index": 3,
+        "reset_output_evidence_sha256": "d3e7606a86515688bd3d027f222e3e437bc5eead49079781a9824fc0636a1f61",
+        "reset_trace_sha256": "e1aefc80d53432be10d8d68adce558d70d76fe363e63daf4be1fc6c3b727bdb0",
+        "selected_code_stream_sha256": "56527e05af1c58d22cb1919aa915b02cb3b267d46c8fa6efa40549ae95c343a4",
+        "source_record_sha256": "2b1376b347834536f3bf5305c4edd6733a761e126a999d8d44d8c9b7527865c7",
+        "tensor_sha256": {
+          "base_attention_output": "b22cca53ee03274e49e886d5dba4358122fd2759475c64ee8de1a15645f4d9e7",
+          "base_projected": "8a0a47e6ee9c5ef65df60b3e72af5fc349c24fda6dec8876f1d4eadd9c225684",
+          "episodic_component": "bbd91a0af971dbdb650d74e3115e66ec888738581604f8359955212154f4976e",
+          "episodic_mass": "979e921cb526a01f9a7330aeef9f3135eef7280e08186af87f2b50cfcc11199d",
+          "regular_component": "c4da05fdc52ea77bb958752abf67f235e5b3f8459687309c2ce0b82c2ed33644",
+          "regular_mass": "0a5b6e584c25bf287b034319adc928c811d4eda40dce25e8fdbc083b05ed6516",
+          "shadow_scheduled_mass": "61476325efe54cfd3d0d92f76ee2c945501513f05fee3d0bf75ba7dcbde02d58",
+          "target_residual": "6c634d23b5586348caf32a10d2006ca56b8992f9825abdcee53843eb8332fd6a"
+        },
+        "trace_sha256": "e1aefc80d53432be10d8d68adce558d70d76fe363e63daf4be1fc6c3b727bdb0",
+        "value_shape": [
+          32,
+          16,
+          2048
+        ]
+      },
+      {
+        "dtype": "float32",
+        "file": "train-04.safetensors",
+        "file_sha256": "137ef71a3e0ffdc1882bf555be5c366cf097df35f27fe71cef0c0b26a64ad527",
+        "format": "safetensors",
+        "keys": [
+          "base_attention_output",
+          "regular_component",
+          "episodic_component",
+          "regular_mass",
+          "episodic_mass",
+          "shadow_scheduled_mass",
+          "base_projected",
+          "target_residual",
+          "positions"
+        ],
+        "mass_shape": [
+          32,
+          16,
+          16
+        ],
+        "output_evidence_sha256": "21e3141de7cad305dc954ab321aa5f67af91eaba0ff1be9f8e4d2c63c7be2530",
+        "positions": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ],
+        "record_id": "olmoe-retrieval-passkey-v1-train-04",
+        "record_index": 4,
+        "reset_output_evidence_sha256": "21e3141de7cad305dc954ab321aa5f67af91eaba0ff1be9f8e4d2c63c7be2530",
+        "reset_trace_sha256": "8ab6a4154036675c96bab22939adfe7a1b36ee11c0acd6b7249d8f509eb08dda",
+        "selected_code_stream_sha256": "41a41a756e8ab248628581e8c132d18d077e7719a348eb102fadd94d7af1b948",
+        "source_record_sha256": "33b139cf3c4d564d38cb0af058e4c3d553f18293fa676098952267884115abbb",
+        "tensor_sha256": {
+          "base_attention_output": "da24b6ecb7fa6533ada849bbcddb652b448db93b4974b935137906dc8fab3905",
+          "base_projected": "75b827ef9548cfe09e9356a872a37db2ac12e33908a2c531afb1b401f6dfb7b4",
+          "episodic_component": "55947643cfa0dd1c68c9422b66b838e8209ca9417a2c7aa600d7fce954f032a3",
+          "episodic_mass": "26da77e4945668318a844af8bf4c13a66b82f23ea7197bf91481e40bc83f3f30",
+          "regular_component": "3bb97e812afd5285f7960f191df8f5d72b937a8e7ac2b70673fbe9c0daecb68f",
+          "regular_mass": "1adf26c752669ca049cff30124bda8b097bfa20c8a20e42552486a384b7014fe",
+          "shadow_scheduled_mass": "8d82aece4da7a07dfd944cda21278988d2ce37cfdc253d471f2888bc4bec82f5",
+          "target_residual": "e4b553d8937b44c44fd8a2574dfd4750149fbdefb47ca1df9fc31984b3c5c916"
+        },
+        "trace_sha256": "8ab6a4154036675c96bab22939adfe7a1b36ee11c0acd6b7249d8f509eb08dda",
+        "value_shape": [
+          32,
+          16,
+          2048
+        ]
+      },
+      {
+        "dtype": "float32",
+        "file": "train-05.safetensors",
+        "file_sha256": "aaa11f7c74303ad5bb4652d8a944e0cce49923381eacba0cce2a110e67fee068",
+        "format": "safetensors",
+        "keys": [
+          "base_attention_output",
+          "regular_component",
+          "episodic_component",
+          "regular_mass",
+          "episodic_mass",
+          "shadow_scheduled_mass",
+          "base_projected",
+          "target_residual",
+          "positions"
+        ],
+        "mass_shape": [
+          32,
+          16,
+          16
+        ],
+        "output_evidence_sha256": "a128fd9d55f8966699a31d11fbce139d5a12e624e1fde050bb5a41944f7aec33",
+        "positions": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ],
+        "record_id": "olmoe-retrieval-passkey-v1-train-05",
+        "record_index": 5,
+        "reset_output_evidence_sha256": "a128fd9d55f8966699a31d11fbce139d5a12e624e1fde050bb5a41944f7aec33",
+        "reset_trace_sha256": "5c5ac52b52ff829c6097e050524b0d32d29454c28692d58fa7bfa0c82edeabc0",
+        "selected_code_stream_sha256": "505e46f5b9e1164ed998a50f0286fb0654a81989fa9203c19fd2a4bf69d3a2aa",
+        "source_record_sha256": "c7208f31d27d1b33b35ed2ff2e4aaf09106f21388599c4378bffc81df3815a90",
+        "tensor_sha256": {
+          "base_attention_output": "b5bf52f9c6bfa5447d6263b8937cfb2bd1188008d2c6e1a4410847595f2ba6de",
+          "base_projected": "35128835d8ca851adb186599f5cf75d60eda29d044651e2478fee03019d312c5",
+          "episodic_component": "4c33d92b443f409d84a32c59a13ba03ab04314f69db2e47b386ecbfa019b9b66",
+          "episodic_mass": "fece01c499d90de52d407e19bb285d6790008c6c1c70bf092463d23c9bbb014c",
+          "regular_component": "ab22eb06d3f7ad74611b2099290cce4ef28ad916b2aa0063d9c645257fec4b14",
+          "regular_mass": "797c4a3840373de142d1b92bd798507118420c9347d37ef850cb4b173bd72e45",
+          "shadow_scheduled_mass": "d5ff35146317f801f7e99439ad324086825c6e193486e5a4bb852e0424ca64b0",
+          "target_residual": "16d677ec3a1a8c3d43325de9fe78eec292f2b0aaed62262f980b50cc8ac03e12"
+        },
+        "trace_sha256": "5c5ac52b52ff829c6097e050524b0d32d29454c28692d58fa7bfa0c82edeabc0",
+        "value_shape": [
+          32,
+          16,
+          2048
+        ]
+      },
+      {
+        "dtype": "float32",
+        "file": "train-06.safetensors",
+        "file_sha256": "5e1dde85be1cad04289c51d4315920e9a0d3059940cd6a34ad23460fac397c5a",
+        "format": "safetensors",
+        "keys": [
+          "base_attention_output",
+          "regular_component",
+          "episodic_component",
+          "regular_mass",
+          "episodic_mass",
+          "shadow_scheduled_mass",
+          "base_projected",
+          "target_residual",
+          "positions"
+        ],
+        "mass_shape": [
+          32,
+          16,
+          16
+        ],
+        "output_evidence_sha256": "4bb78772d10f8a4fbcb62434e4a8a3b561bae7291bbb64b5751ba93e15b0538e",
+        "positions": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ],
+        "record_id": "olmoe-retrieval-passkey-v1-train-06",
+        "record_index": 6,
+        "reset_output_evidence_sha256": "4bb78772d10f8a4fbcb62434e4a8a3b561bae7291bbb64b5751ba93e15b0538e",
+        "reset_trace_sha256": "b5f5c9150700c5ce3bfa3abe8413b0c6a6f0508c9f147c34678042781bf07db8",
+        "selected_code_stream_sha256": "d06db1e8d03e58a60a210e54eda37ce9aa1e10690b69289ac5d6fc85903693c2",
+        "source_record_sha256": "a26fc441493c653d0e8878244cac3b7461968e0894b4f7bec7a1cba3ea07e4ac",
+        "tensor_sha256": {
+          "base_attention_output": "425e0176d46a68cec415d210bc61dd37bf61724a059805afc4d70e940bdeff65",
+          "base_projected": "a089d88082b56f58437a9f4fb65ea408fa727da7d00e219bab5d13efe8248134",
+          "episodic_component": "5d54fc07b46f86193f3041f9ad50d0d466fe16e82f658136bc0664be8fc215f5",
+          "episodic_mass": "6da71d23f6d0b9ec45cba06217691ae34b1ad27c3d44c5e1b13ad25210846267",
+          "regular_component": "d36cf4d4661c95ad9a0fcbcf4315c05ca7a12d65188f859e95960c9c0a3dcc82",
+          "regular_mass": "d7c838bfe016da003085727b3a1541ebb2a5ac109cee8e6a1fad566625fd8143",
+          "shadow_scheduled_mass": "10196974339dcf698b83ee9053b680a793a651ea051c889cee72447d885e5d0c",
+          "target_residual": "3f5ec8f5e83384bd164789d4b97578e0b74aa083b363535086b1ab2329d990bc"
+        },
+        "trace_sha256": "b5f5c9150700c5ce3bfa3abe8413b0c6a6f0508c9f147c34678042781bf07db8",
+        "value_shape": [
+          32,
+          16,
+          2048
+        ]
+      },
+      {
+        "dtype": "float32",
+        "file": "train-07.safetensors",
+        "file_sha256": "262b789ce2397fd722ab34cdf23f71498a791dcaab6041a74cb4f6d391c537b1",
+        "format": "safetensors",
+        "keys": [
+          "base_attention_output",
+          "regular_component",
+          "episodic_component",
+          "regular_mass",
+          "episodic_mass",
+          "shadow_scheduled_mass",
+          "base_projected",
+          "target_residual",
+          "positions"
+        ],
+        "mass_shape": [
+          32,
+          16,
+          16
+        ],
+        "output_evidence_sha256": "cad925a275ba13a05040ce4b670b25c4779d3d4ed6ca3b17f2223d526814cc38",
+        "positions": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ],
+        "record_id": "olmoe-retrieval-passkey-v1-train-07",
+        "record_index": 7,
+        "reset_output_evidence_sha256": "cad925a275ba13a05040ce4b670b25c4779d3d4ed6ca3b17f2223d526814cc38",
+        "reset_trace_sha256": "5a79bd7bc793fd4366043ee699504fd8c7d77a0c97ab20cd008aa2e29bf8e999",
+        "selected_code_stream_sha256": "649e319c51374edd2a623011043baf1951ee1dd28a79d382bcfd39250c190fca",
+        "source_record_sha256": "21e4a9a20939bea60c037e28a74f678c877cf45739713e346dd7e7cb54fc77ed",
+        "tensor_sha256": {
+          "base_attention_output": "145fc0856ce1ad750401693ca8cfbaf72e228bedc63dbc16869cdffc2bdda530",
+          "base_projected": "e1e45cc935ebe603d8dd9781a225925d3da4e7359a9c5a13738c28eabf214be5",
+          "episodic_component": "cd5831a309b0608b971f6e37fcaa90362729b6f38b61d0e97009e9532af3d1f5",
+          "episodic_mass": "46e94a4b0832502cf59aaea2d7ead15514e1bcbfc87fb0259773b0fa5ba17a2e",
+          "regular_component": "07ea13daa4a6d1e1e2cb4a3f111f8d13ca30e00cf0098e6ecb6d151e29dd632d",
+          "regular_mass": "d206e1263ff48ecd53182ce46aea8355c0aeb14fcaaa26741ab03f7854bd0234",
+          "shadow_scheduled_mass": "4e3443ca94c9c111b491241e5a317c48621baad8ef8573132136735e646bcc53",
+          "target_residual": "4aef2f170cb6ab361adfdc273b6c206bb4e1d7d56027baaff99673c9ee4f3bdc"
+        },
+        "trace_sha256": "5a79bd7bc793fd4366043ee699504fd8c7d77a0c97ab20cd008aa2e29bf8e999",
+        "value_shape": [
+          32,
+          16,
+          2048
+        ]
+      }
+    ]
+  }
+}

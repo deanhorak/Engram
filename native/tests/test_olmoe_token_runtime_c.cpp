@@ -1,12 +1,15 @@
 #include "engram/olmoe_token_runtime_c.h"
 
+#include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -280,6 +283,178 @@ bool same_attention_metrics(
          left.older_selected_entries == right.older_selected_entries &&
          left.sink_insertions == right.sink_insertions &&
          left.heavy_hitter_updates == right.heavy_hitter_updates;
+}
+
+bool same_base_counters(const engram_olmoe_token_metrics& left,
+                        const engram_olmoe_token_metrics& right) {
+  // Wall-clock fields are observations, not deterministic work counters.
+  return left.positions_processed == right.positions_processed &&
+         left.attention_weight_bytes == right.attention_weight_bytes &&
+         left.q7_scheduled_bytes == right.q7_scheduled_bytes &&
+         left.attention_state_bytes == right.attention_state_bytes;
+}
+
+template <std::size_t Size>
+bool all_finite(const std::array<float, Size>& values) {
+  return std::all_of(values.begin(), values.end(),
+                     [](const float value) {
+                       return std::isfinite(value);
+                     });
+}
+
+float bf16_round_trip(const float value) {
+  std::uint32_t bits{};
+  std::memcpy(&bits, &value, sizeof(bits));
+  bits += 0x7FFFU + ((bits >> 16U) & 1U);
+  bits &= 0xFFFF0000U;
+  float result{};
+  std::memcpy(&result, &bits, sizeof(result));
+  return result;
+}
+
+std::array<float, 4> normalize_four(
+    const std::array<float, 4>& input, const float epsilon) {
+  float sum = 0.0F;
+  for (const float value : input) sum += value * value;
+  const float inverse = 1.0F / std::sqrt(sum / 4.0F + epsilon);
+  std::array<float, 4> result{};
+  for (std::size_t index = 0; index < result.size(); ++index) {
+    result[index] = input[index] * inverse;
+  }
+  return result;
+}
+
+std::array<float, 2> rotate_pair(
+    const std::array<float, 2>& input, const std::size_t position) {
+  const float angle = static_cast<float>(position);
+  const float cosine = std::cos(angle);
+  const float sine = std::sin(angle);
+  return {
+      input[0] * cosine - input[1] * sine,
+      input[1] * cosine + input[0] * sine,
+  };
+}
+
+float dot_pair(const std::array<float, 2>& left,
+               const std::array<float, 2>& right) {
+  float result = 0.0F;
+  result += left[0] * right[0];
+  result += left[1] * right[1];
+  return result;
+}
+
+template <std::size_t Size>
+std::array<float, 2> softmax_value(
+    const std::array<float, Size>& scores,
+    const std::array<std::array<float, 2>, Size>& values) {
+  float maximum = -std::numeric_limits<float>::infinity();
+  for (const float score : scores) maximum = std::max(maximum, score);
+  std::array<float, Size> weights{};
+  float denominator = 0.0F;
+  for (std::size_t index = 0; index < Size; ++index) {
+    weights[index] = std::exp(scores[index] - maximum);
+    denominator += weights[index];
+  }
+  std::array<float, 2> result{};
+  for (std::size_t index = 0; index < Size; ++index) {
+    const float weight = weights[index] / denominator;
+    result[0] += weight * values[index][0];
+    result[1] += weight * values[index][1];
+  }
+  return result;
+}
+
+std::array<float, 4> expected_first_read_layer_zero_target(
+    const float epsilon, const float episodic_logit_bias) {
+  const std::array<float, 4> token_one =
+      normalize_four({0.0F, 1.0F, 0.0F, 1.0F}, epsilon);
+  const std::array<float, 4> token_two =
+      normalize_four({1.0F, 1.0F, 1.0F, 1.0F}, epsilon);
+  const std::array<float, 4> query_one =
+      normalize_four(token_one, epsilon);
+  const std::array<float, 4> query_two =
+      normalize_four(token_two, epsilon);
+  const std::array<float, 2> query =
+      rotate_pair({query_one[0], query_one[1]}, 2);
+  const std::array<float, 2> key_zero =
+      rotate_pair({query_one[0], query_one[1]}, 0);
+  const std::array<float, 2> key_one =
+      rotate_pair({query_two[0], query_two[1]}, 1);
+  const std::array<float, 2> key_two = query;
+  const std::array<float, 2> value_zero = {
+      token_one[0], token_one[1]};
+  const std::array<float, 2> value_one = {
+      token_two[0], token_two[1]};
+  const std::array<float, 2> value_two = value_zero;
+  const float scale = 1.0F / std::sqrt(2.0F);
+
+  const std::array<float, 3> shadow_scores = {
+      dot_pair(query, key_zero) * scale,
+      dot_pair(query, key_one) * scale,
+      dot_pair(query, key_two) * scale,
+  };
+  const std::array<std::array<float, 2>, 3> shadow_values = {
+      value_zero, value_one, value_two};
+  const std::array<float, 2> shadow =
+      softmax_value(shadow_scores, shadow_values);
+
+  const std::array<float, 2> episodic_key_zero = {
+      bf16_round_trip(key_zero[0]), bf16_round_trip(key_zero[1])};
+  const std::array<float, 2> episodic_key_one = {
+      bf16_round_trip(key_one[0]), bf16_round_trip(key_one[1])};
+  const std::array<float, 2> episodic_value_zero = {
+      bf16_round_trip(value_zero[0]), bf16_round_trip(value_zero[1])};
+  const std::array<float, 2> episodic_value_one = {
+      bf16_round_trip(value_one[0]), bf16_round_trip(value_one[1])};
+  const std::array<float, 4> base_scores = {
+      dot_pair(query, key_one) * scale,
+      dot_pair(query, key_two) * scale,
+      dot_pair(query, episodic_key_zero) * scale +
+          episodic_logit_bias,
+      dot_pair(query, episodic_key_one) * scale +
+          episodic_logit_bias,
+  };
+  const std::array<std::array<float, 2>, 4> base_values = {
+      value_one, value_two, episodic_value_zero, episodic_value_one};
+  const std::array<float, 2> base =
+      softmax_value(base_scores, base_values);
+  return {
+      shadow[0] - base[0], shadow[1] - base[1],
+      shadow[0] - base[0], shadow[1] - base[1],
+  };
+}
+
+float expected_first_read_layer_zero_shadow_source_mass(
+    const float epsilon) {
+  const std::array<float, 4> token_one =
+      normalize_four({0.0F, 1.0F, 0.0F, 1.0F}, epsilon);
+  const std::array<float, 4> token_two =
+      normalize_four({1.0F, 1.0F, 1.0F, 1.0F}, epsilon);
+  const std::array<float, 4> query_one =
+      normalize_four(token_one, epsilon);
+  const std::array<float, 4> query_two =
+      normalize_four(token_two, epsilon);
+  const std::array<float, 2> query =
+      rotate_pair({query_one[0], query_one[1]}, 2);
+  const std::array<float, 2> key_zero =
+      rotate_pair({query_one[0], query_one[1]}, 0);
+  const std::array<float, 2> key_one =
+      rotate_pair({query_two[0], query_two[1]}, 1);
+  const std::array<float, 2> key_two = query;
+  const float scale = 1.0F / std::sqrt(2.0F);
+  std::array<float, 3> scores = {
+      dot_pair(query, key_zero) * scale,
+      dot_pair(query, key_one) * scale,
+      dot_pair(query, key_two) * scale,
+  };
+  const float maximum =
+      *std::max_element(scores.begin(), scores.end());
+  float denominator = 0.0F;
+  for (float& score : scores) {
+    score = std::exp(score - maximum);
+    denominator += score;
+  }
+  return (scores[0] + scores[1]) / denominator;
 }
 
 int forward_four(void* handle, std::int64_t& next,
@@ -623,5 +798,1443 @@ int main() {
     return fail("mixed head-wise reset did not clear cumulative counters");
   }
   engram_olmoe_token_close(mixed_headwise);
+
+  const engram_olmoe_episodic_policy_v1 episodic_policy{
+      .slots = 4,
+      .span_size = 2,
+  };
+  const engram_olmoe_episodic_policy_v1 invalid_episodic_policy{
+      .slots = 3,
+      .span_size = 2,
+  };
+  if (engram_olmoe_token_open_episodic_v1(
+          &config, nullptr, error, sizeof(error)) != nullptr ||
+      engram_olmoe_token_open_episodic_v1(
+          &config, &invalid_episodic_policy, error, sizeof(error)) !=
+          nullptr ||
+      std::string(error).find("policy") == std::string::npos) {
+    return fail("episodic open accepted an invalid policy");
+  }
+  void* read_before_write = engram_olmoe_token_open_episodic_v1(
+      &config, &episodic_policy, error, sizeof(error));
+  if (read_before_write == nullptr) {
+    return fail(std::string("episodic runtime open failed: ") + error);
+  }
+  const std::int32_t no_write = -1;
+  const std::int32_t read_first_span = 0;
+  std::int64_t invalid_next = -1;
+  if (engram_olmoe_token_forward_episodic_v1(
+          read_before_write, &token, 1, &no_write, &read_first_span,
+          &invalid_next, nullptr, error, sizeof(error)) == 0 ||
+      std::string(error).find("causal") == std::string::npos) {
+    engram_olmoe_token_close(read_before_write);
+    return fail("episodic runtime accepted a read before capture");
+  }
+  engram_olmoe_token_close(read_before_write);
+
+  void* rejected_batch = engram_olmoe_token_open_episodic_v1(
+      &config, &episodic_policy, error, sizeof(error));
+  void* rejection_reference = engram_olmoe_token_open_episodic_v1(
+      &config, &episodic_policy, error, sizeof(error));
+  if (rejected_batch == nullptr || rejection_reference == nullptr) {
+    engram_olmoe_token_close(rejected_batch);
+    engram_olmoe_token_close(rejection_reference);
+    return fail(std::string("episodic rejection runtime open failed: ") +
+                error);
+  }
+  const std::array<std::int64_t, 2> rejection_tokens = {1, 2};
+  const std::array<std::int32_t, 2> duplicate_writes = {0, 0};
+  const std::array<std::int32_t, 2> no_reads = {-1, -1};
+  engram_olmoe_token_metrics rejected_base{};
+  if (engram_olmoe_token_forward_episodic_v1(
+          rejected_batch, rejection_tokens.data(), rejection_tokens.size(),
+          duplicate_writes.data(), no_reads.data(), &invalid_next,
+          &rejected_base, error, sizeof(error)) == 0 ||
+      std::string(error).find("already active") == std::string::npos ||
+      engram_olmoe_token_position(rejected_batch) != 0) {
+    engram_olmoe_token_close(rejected_batch);
+    engram_olmoe_token_close(rejection_reference);
+    return fail("later-row episodic rejection mutated the public position");
+  }
+  engram_olmoe_episodic_metrics_v1 rejected_metrics{};
+  if (engram_olmoe_token_copy_episodic_metrics_v1(
+          rejected_batch, &rejected_metrics, error, sizeof(error)) != 0 ||
+      rejected_metrics.slots_written != 0 ||
+      rejected_metrics.read_events != 0 ||
+      rejected_metrics.active_slots != 0 ||
+      rejected_metrics.entries_read != 0 ||
+      rejected_metrics.write_bytes != 0 ||
+      rejected_metrics.key_read_bytes != 0 ||
+      rejected_metrics.value_read_bytes != 0 ||
+      rejected_metrics.duplicate_older_entries_suppressed != 0 ||
+      rejected_metrics.state_bytes != 0 ||
+      rejected_metrics.scratch_bytes != 0) {
+    engram_olmoe_token_close(rejected_batch);
+    engram_olmoe_token_close(rejection_reference);
+    return fail("later-row episodic rejection mutated counters");
+  }
+  const std::array<std::int32_t, 2> valid_writes = {0, 1};
+  std::int64_t rejected_recovery_next = -1;
+  std::int64_t rejection_reference_next = -1;
+  engram_olmoe_token_metrics rejection_reference_base{};
+  if (engram_olmoe_token_forward_episodic_v1(
+          rejected_batch, rejection_tokens.data(), rejection_tokens.size(),
+          valid_writes.data(), no_reads.data(), &rejected_recovery_next,
+          &rejected_base, error, sizeof(error)) != 0 ||
+      engram_olmoe_token_forward_episodic_v1(
+          rejection_reference, rejection_tokens.data(),
+          rejection_tokens.size(), valid_writes.data(), no_reads.data(),
+          &rejection_reference_next, &rejection_reference_base, error,
+          sizeof(error)) != 0) {
+    engram_olmoe_token_close(rejected_batch);
+    engram_olmoe_token_close(rejection_reference);
+    return fail(std::string("episodic rejection recovery failed: ") +
+                error);
+  }
+  std::array<float, 4> rejected_recovery_state{};
+  std::array<float, 4> rejection_reference_state{};
+  std::array<float, 3> rejected_recovery_logits{};
+  std::array<float, 3> rejection_reference_logits{};
+  engram_olmoe_episodic_metrics_v1 rejection_reference_metrics{};
+  if (copy_diagnostics(rejected_batch, rejected_recovery_state,
+                       rejected_recovery_logits, error, sizeof(error)) != 0 ||
+      copy_diagnostics(rejection_reference, rejection_reference_state,
+                       rejection_reference_logits, error,
+                       sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_episodic_metrics_v1(
+          rejected_batch, &rejected_metrics, error, sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_episodic_metrics_v1(
+          rejection_reference, &rejection_reference_metrics, error,
+          sizeof(error)) != 0 ||
+      rejected_recovery_next != rejection_reference_next ||
+      rejected_recovery_state != rejection_reference_state ||
+      rejected_recovery_logits != rejection_reference_logits ||
+      std::memcmp(&rejected_metrics, &rejection_reference_metrics,
+                  sizeof(rejected_metrics)) != 0) {
+    engram_olmoe_token_close(rejected_batch);
+    engram_olmoe_token_close(rejection_reference);
+    return fail("later-row rejection did not preserve recovery parity");
+  }
+  engram_olmoe_token_close(rejected_batch);
+  engram_olmoe_token_close(rejection_reference);
+
+  void* episodic_batch = engram_olmoe_token_open_episodic_v1(
+      &config, &episodic_policy, error, sizeof(error));
+  void* episodic_steps = engram_olmoe_token_open_episodic_v1(
+      &config, &episodic_policy, error, sizeof(error));
+  if (episodic_batch == nullptr || episodic_steps == nullptr) {
+    engram_olmoe_token_close(episodic_batch);
+    engram_olmoe_token_close(episodic_steps);
+    return fail(std::string("episodic runtime open failed: ") + error);
+  }
+  const std::array<std::int64_t, 4> episodic_tokens = {1, 2, 1, 2};
+  const std::array<std::int32_t, 4> episodic_writes = {0, 1, -1, -1};
+  const std::array<std::int32_t, 4> episodic_reads = {-1, -1, 0, 0};
+  std::int64_t episodic_batch_next = -1;
+  std::int64_t episodic_step_next = -1;
+  engram_olmoe_token_metrics episodic_batch_base{};
+  engram_olmoe_token_metrics episodic_step_base{};
+  if (engram_olmoe_token_forward_episodic_v1(
+          episodic_batch, episodic_tokens.data(), episodic_tokens.size(),
+          episodic_writes.data(), episodic_reads.data(),
+          &episodic_batch_next, &episodic_batch_base, error,
+          sizeof(error)) != 0) {
+    engram_olmoe_token_close(episodic_batch);
+    engram_olmoe_token_close(episodic_steps);
+    return fail(std::string("batched episodic forward failed: ") + error);
+  }
+  for (std::size_t row = 0; row < episodic_tokens.size(); ++row) {
+    if (engram_olmoe_token_forward_episodic_v1(
+            episodic_steps, &episodic_tokens[row], 1,
+            &episodic_writes[row], &episodic_reads[row],
+            &episodic_step_next, &episodic_step_base, error,
+            sizeof(error)) != 0) {
+      engram_olmoe_token_close(episodic_batch);
+      engram_olmoe_token_close(episodic_steps);
+      return fail(std::string("singleton episodic forward failed: ") +
+                  error);
+    }
+  }
+  engram_olmoe_episodic_metrics_v1 episodic_batch_metrics{};
+  engram_olmoe_episodic_metrics_v1 episodic_step_metrics{};
+  std::array<float, 4> episodic_batch_state{};
+  std::array<float, 4> episodic_step_state{};
+  std::array<float, 3> episodic_batch_logits{};
+  std::array<float, 3> episodic_step_logits{};
+  if (engram_olmoe_token_copy_episodic_metrics_v1(
+          episodic_batch, &episodic_batch_metrics, error,
+          sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_episodic_metrics_v1(
+          episodic_steps, &episodic_step_metrics, error,
+          sizeof(error)) != 0 ||
+      copy_diagnostics(episodic_batch, episodic_batch_state,
+                       episodic_batch_logits, error, sizeof(error)) != 0 ||
+      copy_diagnostics(episodic_steps, episodic_step_state,
+                       episodic_step_logits, error, sizeof(error)) != 0 ||
+      episodic_batch_next != episodic_step_next ||
+      episodic_batch_state != episodic_step_state ||
+      episodic_batch_logits != episodic_step_logits ||
+      std::memcmp(&episodic_batch_metrics, &episodic_step_metrics,
+                  sizeof(episodic_batch_metrics)) != 0 ||
+      episodic_batch_metrics.slots_written != 4 ||
+      episodic_batch_metrics.read_events != 4 ||
+      episodic_batch_metrics.active_slots != 4 ||
+      episodic_batch_metrics.entries_read != 16 ||
+      episodic_batch_metrics.write_bytes != 64 ||
+      episodic_batch_metrics.key_read_bytes != 64 ||
+      episodic_batch_metrics.value_read_bytes != 64 ||
+      episodic_batch_metrics.duplicate_older_entries_suppressed != 12 ||
+      episodic_batch_metrics.state_bytes != 616 ||
+      episodic_batch_metrics.scratch_bytes != 120) {
+    std::ostringstream detail;
+    detail << "episodic batch/singleton parity or counters failed: writes="
+           << episodic_batch_metrics.slots_written
+           << " reads=" << episodic_batch_metrics.read_events
+           << " active=" << episodic_batch_metrics.active_slots
+           << " entries=" << episodic_batch_metrics.entries_read
+           << " write_bytes=" << episodic_batch_metrics.write_bytes
+           << " key_bytes=" << episodic_batch_metrics.key_read_bytes
+           << " value_bytes=" << episodic_batch_metrics.value_read_bytes
+           << " dedup="
+           << episodic_batch_metrics
+                  .duplicate_older_entries_suppressed
+           << " state=" << episodic_batch_metrics.state_bytes
+           << " scratch=" << episodic_batch_metrics.scratch_bytes;
+    engram_olmoe_token_close(episodic_batch);
+    engram_olmoe_token_close(episodic_steps);
+    return fail(detail.str());
+  }
+  engram_olmoe_token_reset(episodic_batch);
+  const std::int32_t write_slot_zero = 0;
+  if (engram_olmoe_token_forward_episodic_v1(
+          episodic_batch, &token, 1, &write_slot_zero, &no_write,
+          &episodic_batch_next, &episodic_batch_base, error,
+          sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_episodic_metrics_v1(
+          episodic_batch, &episodic_batch_metrics, error,
+          sizeof(error)) != 0 ||
+      episodic_batch_metrics.slots_written != 2 ||
+      episodic_batch_metrics.read_events != 0 ||
+      episodic_batch_metrics.active_slots != 2 ||
+      episodic_batch_metrics.entries_read != 0 ||
+      episodic_batch_metrics.write_bytes != 32 ||
+      episodic_batch_metrics.key_read_bytes != 0 ||
+      episodic_batch_metrics.value_read_bytes != 0 ||
+      episodic_batch_metrics.duplicate_older_entries_suppressed != 0 ||
+      episodic_batch_metrics.state_bytes != 616 ||
+      episodic_batch_metrics.scratch_bytes != 120) {
+    engram_olmoe_token_close(episodic_batch);
+    engram_olmoe_token_close(episodic_steps);
+    return fail("episodic reset did not clear state and counters");
+  }
+  engram_olmoe_token_close(episodic_batch);
+  engram_olmoe_token_close(episodic_steps);
+
+  const std::array<std::uint8_t, 4> all_episodic_heads = {1, 1, 1, 1};
+  const std::array<std::uint8_t, 4> mixed_episodic_heads = {1, 0, 0, 0};
+  const std::array<std::uint8_t, 4> zero_episodic_heads = {0, 0, 0, 0};
+  const std::array<std::uint8_t, 4> invalid_episodic_heads = {1, 0, 2, 0};
+  if (engram_olmoe_token_open_episodic_headwise_v1(
+          &config, &episodic_policy, nullptr, all_episodic_heads.size(),
+          error, sizeof(error)) != nullptr ||
+      engram_olmoe_token_open_episodic_headwise_v1(
+          &config, &episodic_policy, all_episodic_heads.data(),
+          all_episodic_heads.size() - 1, error, sizeof(error)) != nullptr ||
+      engram_olmoe_token_open_episodic_headwise_v1(
+          &config, &episodic_policy, zero_episodic_heads.data(),
+          zero_episodic_heads.size(), error, sizeof(error)) != nullptr ||
+      engram_olmoe_token_open_episodic_headwise_v1(
+          &config, &episodic_policy, invalid_episodic_heads.data(),
+          invalid_episodic_heads.size(), error, sizeof(error)) != nullptr ||
+      std::string(error).find("mask") == std::string::npos) {
+    return fail("head-gated episodic open accepted an invalid mask");
+  }
+  for (const float invalid_bias :
+       {std::numeric_limits<float>::quiet_NaN(),
+        std::numeric_limits<float>::infinity(),
+        -std::numeric_limits<float>::infinity()}) {
+    if (engram_olmoe_token_open_episodic_headwise_v2(
+            &config, &episodic_policy, all_episodic_heads.data(),
+            all_episodic_heads.size(), invalid_bias, error,
+            sizeof(error)) != nullptr ||
+        std::string(error).find("bias") == std::string::npos) {
+      return fail("additive episodic open accepted a non-finite bias");
+    }
+  }
+  if (engram_olmoe_token_open_episodic_headwise_v2(
+          &config, &invalid_episodic_policy, all_episodic_heads.data(),
+          all_episodic_heads.size(), 0.0F, error, sizeof(error)) != nullptr ||
+      engram_olmoe_token_open_episodic_headwise_v2(
+          &config, &episodic_policy, invalid_episodic_heads.data(),
+          invalid_episodic_heads.size(), 0.0F, error,
+          sizeof(error)) != nullptr) {
+    return fail("additive episodic open accepted an invalid policy or mask");
+  }
+
+  void* legacy_all_heads = engram_olmoe_token_open_episodic_v1(
+      &config, &episodic_policy, error, sizeof(error));
+  void* explicit_all_heads =
+      engram_olmoe_token_open_episodic_headwise_v1(
+          &config, &episodic_policy, all_episodic_heads.data(),
+          all_episodic_heads.size(), error, sizeof(error));
+  void* mixed_heads = engram_olmoe_token_open_episodic_headwise_v1(
+      &config, &episodic_policy, mixed_episodic_heads.data(),
+      mixed_episodic_heads.size(), error, sizeof(error));
+  void* explicit_all_heads_v2_zero =
+      engram_olmoe_token_open_episodic_headwise_v2(
+          &config, &episodic_policy, all_episodic_heads.data(),
+          all_episodic_heads.size(), 0.0F, error, sizeof(error));
+  void* explicit_all_heads_v2_biased =
+      engram_olmoe_token_open_episodic_headwise_v2(
+          &config, &episodic_policy, all_episodic_heads.data(),
+          all_episodic_heads.size(), 1.25F, error, sizeof(error));
+  if (legacy_all_heads == nullptr || explicit_all_heads == nullptr ||
+      mixed_heads == nullptr || explicit_all_heads_v2_zero == nullptr ||
+      explicit_all_heads_v2_biased == nullptr) {
+    engram_olmoe_token_close(legacy_all_heads);
+    engram_olmoe_token_close(explicit_all_heads);
+    engram_olmoe_token_close(mixed_heads);
+    engram_olmoe_token_close(explicit_all_heads_v2_zero);
+    engram_olmoe_token_close(explicit_all_heads_v2_biased);
+    return fail(std::string("head-gated episodic open failed: ") + error);
+  }
+  std::int64_t legacy_all_next = -1;
+  std::int64_t explicit_all_next = -1;
+  std::int64_t gated_next = -1;
+  std::int64_t v2_zero_next = -1;
+  std::int64_t v2_biased_next = -1;
+  engram_olmoe_token_metrics legacy_all_base{};
+  engram_olmoe_token_metrics explicit_all_base{};
+  engram_olmoe_token_metrics mixed_base{};
+  engram_olmoe_token_metrics v2_zero_base{};
+  engram_olmoe_token_metrics v2_biased_base{};
+  if (engram_olmoe_token_forward_episodic_v1(
+          legacy_all_heads, episodic_tokens.data(), episodic_tokens.size(),
+          episodic_writes.data(), episodic_reads.data(), &legacy_all_next,
+          &legacy_all_base, error, sizeof(error)) != 0 ||
+      engram_olmoe_token_forward_episodic_v1(
+          explicit_all_heads, episodic_tokens.data(),
+          episodic_tokens.size(), episodic_writes.data(),
+          episodic_reads.data(), &explicit_all_next, &explicit_all_base,
+          error, sizeof(error)) != 0 ||
+      engram_olmoe_token_forward_episodic_v1(
+          mixed_heads, episodic_tokens.data(), episodic_tokens.size(),
+          episodic_writes.data(), episodic_reads.data(), &gated_next,
+          &mixed_base, error, sizeof(error)) != 0 ||
+      engram_olmoe_token_forward_episodic_v1(
+          explicit_all_heads_v2_zero, episodic_tokens.data(),
+          episodic_tokens.size(), episodic_writes.data(),
+          episodic_reads.data(), &v2_zero_next, &v2_zero_base, error,
+          sizeof(error)) != 0 ||
+      engram_olmoe_token_forward_episodic_v1(
+          explicit_all_heads_v2_biased, episodic_tokens.data(),
+          episodic_tokens.size(), episodic_writes.data(),
+          episodic_reads.data(), &v2_biased_next, &v2_biased_base, error,
+          sizeof(error)) != 0) {
+    engram_olmoe_token_close(legacy_all_heads);
+    engram_olmoe_token_close(explicit_all_heads);
+    engram_olmoe_token_close(mixed_heads);
+    engram_olmoe_token_close(explicit_all_heads_v2_zero);
+    engram_olmoe_token_close(explicit_all_heads_v2_biased);
+    return fail(std::string("head-gated episodic forward failed: ") + error);
+  }
+  engram_olmoe_episodic_metrics_v1 legacy_all_metrics{};
+  engram_olmoe_episodic_metrics_v1 explicit_all_metrics{};
+  engram_olmoe_episodic_metrics_v1 gated_metrics{};
+  engram_olmoe_episodic_metrics_v1 v2_zero_metrics{};
+  engram_olmoe_episodic_metrics_v1 v2_biased_metrics{};
+  engram_olmoe_attention_metrics_v1 explicit_all_attention{};
+  engram_olmoe_attention_metrics_v1 v2_zero_attention{};
+  std::array<float, 4> legacy_all_state{};
+  std::array<float, 4> explicit_all_state{};
+  std::array<float, 3> legacy_all_logits{};
+  std::array<float, 3> explicit_all_logits{};
+  std::array<float, 4> v2_zero_state{};
+  std::array<float, 4> v2_biased_state{};
+  std::array<float, 3> v2_zero_logits{};
+  std::array<float, 3> v2_biased_logits{};
+  if (engram_olmoe_token_copy_episodic_metrics_v1(
+          legacy_all_heads, &legacy_all_metrics, error, sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_episodic_metrics_v1(
+          explicit_all_heads, &explicit_all_metrics, error,
+          sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_episodic_metrics_v1(
+          mixed_heads, &gated_metrics, error, sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_episodic_metrics_v1(
+          explicit_all_heads_v2_zero, &v2_zero_metrics, error,
+          sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_episodic_metrics_v1(
+          explicit_all_heads_v2_biased, &v2_biased_metrics, error,
+          sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_attention_metrics_v1(
+          explicit_all_heads, &explicit_all_attention, error,
+          sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_attention_metrics_v1(
+          explicit_all_heads_v2_zero, &v2_zero_attention, error,
+          sizeof(error)) != 0 ||
+      copy_diagnostics(legacy_all_heads, legacy_all_state,
+                       legacy_all_logits, error, sizeof(error)) != 0 ||
+      copy_diagnostics(explicit_all_heads, explicit_all_state,
+                       explicit_all_logits, error, sizeof(error)) != 0 ||
+      copy_diagnostics(explicit_all_heads_v2_zero, v2_zero_state,
+                       v2_zero_logits, error, sizeof(error)) != 0 ||
+      copy_diagnostics(explicit_all_heads_v2_biased, v2_biased_state,
+                       v2_biased_logits, error, sizeof(error)) != 0 ||
+      legacy_all_next != explicit_all_next ||
+      legacy_all_state != explicit_all_state ||
+      legacy_all_logits != explicit_all_logits ||
+      explicit_all_next != v2_zero_next ||
+      explicit_all_state != v2_zero_state ||
+      explicit_all_logits != v2_zero_logits ||
+      std::memcmp(&legacy_all_metrics, &explicit_all_metrics,
+                  sizeof(legacy_all_metrics)) != 0 ||
+      std::memcmp(&explicit_all_metrics, &v2_zero_metrics,
+                  sizeof(explicit_all_metrics)) != 0 ||
+      !same_attention_metrics(explicit_all_attention,
+                              v2_zero_attention) ||
+      legacy_all_base.positions_processed !=
+          explicit_all_base.positions_processed ||
+      legacy_all_base.attention_weight_bytes !=
+          explicit_all_base.attention_weight_bytes ||
+      legacy_all_base.q7_scheduled_bytes !=
+          explicit_all_base.q7_scheduled_bytes ||
+      legacy_all_base.attention_state_bytes !=
+          explicit_all_base.attention_state_bytes ||
+      explicit_all_base.positions_processed !=
+          v2_zero_base.positions_processed ||
+      explicit_all_base.attention_weight_bytes !=
+          v2_zero_base.attention_weight_bytes ||
+      explicit_all_base.q7_scheduled_bytes !=
+          v2_zero_base.q7_scheduled_bytes ||
+      explicit_all_base.attention_state_bytes !=
+          v2_zero_base.attention_state_bytes) {
+    engram_olmoe_token_close(legacy_all_heads);
+    engram_olmoe_token_close(explicit_all_heads);
+    engram_olmoe_token_close(mixed_heads);
+    engram_olmoe_token_close(explicit_all_heads_v2_zero);
+    engram_olmoe_token_close(explicit_all_heads_v2_biased);
+    return fail("V1/V2 zero-bias episodic parity failed");
+  }
+  if ((v2_biased_state == v2_zero_state &&
+       v2_biased_logits == v2_zero_logits) ||
+      v2_biased_base.positions_processed !=
+          v2_zero_base.positions_processed ||
+      v2_biased_base.attention_weight_bytes !=
+          v2_zero_base.attention_weight_bytes ||
+      v2_biased_base.q7_scheduled_bytes !=
+          v2_zero_base.q7_scheduled_bytes ||
+      v2_biased_base.attention_state_bytes !=
+          v2_zero_base.attention_state_bytes ||
+      v2_biased_metrics.slots_written != v2_zero_metrics.slots_written ||
+      v2_biased_metrics.read_events != v2_zero_metrics.read_events ||
+      v2_biased_metrics.active_slots != v2_zero_metrics.active_slots ||
+      v2_biased_metrics.entries_read != v2_zero_metrics.entries_read ||
+      v2_biased_metrics.write_bytes != v2_zero_metrics.write_bytes ||
+      v2_biased_metrics.key_read_bytes != v2_zero_metrics.key_read_bytes ||
+      v2_biased_metrics.value_read_bytes !=
+          v2_zero_metrics.value_read_bytes ||
+      v2_biased_metrics.state_bytes != v2_zero_metrics.state_bytes ||
+      v2_biased_metrics.scratch_bytes != v2_zero_metrics.scratch_bytes) {
+    engram_olmoe_token_close(legacy_all_heads);
+    engram_olmoe_token_close(explicit_all_heads);
+    engram_olmoe_token_close(mixed_heads);
+    engram_olmoe_token_close(explicit_all_heads_v2_zero);
+    engram_olmoe_token_close(explicit_all_heads_v2_biased);
+    return fail("nonzero episodic bias did not preserve fixed resources");
+  }
+  engram_olmoe_token_reset(explicit_all_heads_v2_biased);
+  std::int64_t v2_biased_replay_next = -1;
+  engram_olmoe_token_metrics v2_biased_replay_base{};
+  engram_olmoe_episodic_metrics_v1 v2_biased_replay_metrics{};
+  std::array<float, 4> v2_biased_replay_state{};
+  std::array<float, 3> v2_biased_replay_logits{};
+  if (engram_olmoe_token_forward_episodic_v1(
+          explicit_all_heads_v2_biased, episodic_tokens.data(),
+          episodic_tokens.size(), episodic_writes.data(),
+          episodic_reads.data(), &v2_biased_replay_next,
+          &v2_biased_replay_base, error, sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_episodic_metrics_v1(
+          explicit_all_heads_v2_biased, &v2_biased_replay_metrics, error,
+          sizeof(error)) != 0 ||
+      copy_diagnostics(
+          explicit_all_heads_v2_biased, v2_biased_replay_state,
+          v2_biased_replay_logits, error, sizeof(error)) != 0 ||
+      v2_biased_replay_next != v2_biased_next ||
+      v2_biased_replay_state != v2_biased_state ||
+      v2_biased_replay_logits != v2_biased_logits ||
+      std::memcmp(&v2_biased_replay_metrics, &v2_biased_metrics,
+                  sizeof(v2_biased_metrics)) != 0 ||
+      v2_biased_replay_base.positions_processed !=
+          v2_biased_base.positions_processed ||
+      v2_biased_replay_base.attention_weight_bytes !=
+          v2_biased_base.attention_weight_bytes ||
+      v2_biased_replay_base.q7_scheduled_bytes !=
+          v2_biased_base.q7_scheduled_bytes ||
+      v2_biased_replay_base.attention_state_bytes !=
+          v2_biased_base.attention_state_bytes) {
+    engram_olmoe_token_close(legacy_all_heads);
+    engram_olmoe_token_close(explicit_all_heads);
+    engram_olmoe_token_close(mixed_heads);
+    engram_olmoe_token_close(explicit_all_heads_v2_zero);
+    engram_olmoe_token_close(explicit_all_heads_v2_biased);
+    return fail("additive episodic reset was not deterministic");
+  }
+  if (gated_metrics.slots_written != 2 ||
+      gated_metrics.read_events != 2 ||
+      gated_metrics.active_slots != 2 ||
+      gated_metrics.entries_read != 4 ||
+      gated_metrics.write_bytes != 32 ||
+      gated_metrics.key_read_bytes != 16 ||
+      gated_metrics.value_read_bytes != 16 ||
+      gated_metrics.duplicate_older_entries_suppressed != 3 ||
+      gated_metrics.state_bytes != 520 ||
+      gated_metrics.scratch_bytes != 104) {
+    engram_olmoe_token_close(legacy_all_heads);
+    engram_olmoe_token_close(explicit_all_heads);
+    engram_olmoe_token_close(mixed_heads);
+    engram_olmoe_token_close(explicit_all_heads_v2_zero);
+    engram_olmoe_token_close(explicit_all_heads_v2_biased);
+    return fail("mixed head-gated episodic counters are inexact");
+  }
+  engram_olmoe_token_reset(mixed_heads);
+  if (engram_olmoe_token_forward_episodic_v1(
+          mixed_heads, &token, 1, &write_slot_zero, &no_write,
+          &gated_next, &mixed_base, error, sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_episodic_metrics_v1(
+          mixed_heads, &gated_metrics, error, sizeof(error)) != 0 ||
+      gated_metrics.slots_written != 1 ||
+      gated_metrics.read_events != 0 ||
+      gated_metrics.active_slots != 1 ||
+      gated_metrics.entries_read != 0 ||
+      gated_metrics.write_bytes != 16 ||
+      gated_metrics.key_read_bytes != 0 ||
+      gated_metrics.value_read_bytes != 0 ||
+      gated_metrics.duplicate_older_entries_suppressed != 0 ||
+      gated_metrics.state_bytes != 520 ||
+      gated_metrics.scratch_bytes != 104) {
+    engram_olmoe_token_close(legacy_all_heads);
+    engram_olmoe_token_close(explicit_all_heads);
+    engram_olmoe_token_close(mixed_heads);
+    engram_olmoe_token_close(explicit_all_heads_v2_zero);
+    engram_olmoe_token_close(explicit_all_heads_v2_biased);
+    return fail("mixed head-gated episodic reset retained state");
+  }
+  engram_olmoe_token_close(legacy_all_heads);
+  engram_olmoe_token_close(explicit_all_heads);
+  engram_olmoe_token_close(mixed_heads);
+  engram_olmoe_token_close(explicit_all_heads_v2_zero);
+  engram_olmoe_token_close(explicit_all_heads_v2_biased);
+
+  const engram_olmoe_attention_policy_v1 shadow_policy{
+      .local_window = 4,
+      .older_candidates = 2,
+      .older_top_k = 1,
+      .sink_tokens = 1,
+  };
+  engram_olmoe_attention_policy_v1 invalid_shadow_policy =
+      shadow_policy;
+  invalid_shadow_policy.local_window = 0;
+  if (engram_olmoe_token_open_episodic_shadow_trace_v1(
+          &config, &episodic_policy, all_episodic_heads.data(),
+          all_episodic_heads.size(), 0.5F, nullptr, error,
+          sizeof(error)) != nullptr ||
+      std::string(error).find("shadow") == std::string::npos ||
+      engram_olmoe_token_open_episodic_shadow_trace_v1(
+          &config, &episodic_policy, all_episodic_heads.data(),
+          all_episodic_heads.size(), 0.5F, &invalid_shadow_policy,
+          error, sizeof(error)) != nullptr ||
+      std::string(error).find("shadow") == std::string::npos ||
+      engram_olmoe_token_open_episodic_shadow_trace_v1(
+          &config, &episodic_policy, nullptr,
+          all_episodic_heads.size(), 0.5F, &shadow_policy, error,
+          sizeof(error)) != nullptr ||
+      engram_olmoe_token_open_episodic_shadow_trace_v1(
+          &config, &episodic_policy, all_episodic_heads.data(),
+          all_episodic_heads.size(),
+          std::numeric_limits<float>::quiet_NaN(), &shadow_policy,
+          error, sizeof(error)) != nullptr) {
+    return fail("shadow trace open accepted invalid storage or policies");
+  }
+  auto short_shadow_policy = shadow_policy;
+  short_shadow_policy.local_window = 2;
+  void* short_shadow =
+      engram_olmoe_token_open_episodic_shadow_trace_v1(
+          &config, &episodic_policy, all_episodic_heads.data(),
+          all_episodic_heads.size(), 0.5F, &short_shadow_policy, error,
+          sizeof(error));
+  std::int64_t short_shadow_next = -1;
+  engram_olmoe_token_metrics short_shadow_metrics{};
+  if (short_shadow == nullptr ||
+      engram_olmoe_token_forward_episodic_v1(
+          short_shadow, episodic_tokens.data(), episodic_tokens.size(),
+          episodic_writes.data(), episodic_reads.data(),
+          &short_shadow_next, &short_shadow_metrics, error,
+          sizeof(error)) == 0 ||
+      std::string(error).find("local window") == std::string::npos ||
+      engram_olmoe_token_position(short_shadow) != 0) {
+    engram_olmoe_token_close(short_shadow);
+    return fail(
+        "short shadow local window did not reject the batched source ledger");
+  }
+  engram_olmoe_token_close(short_shadow);
+
+  void* shadow_reference =
+      engram_olmoe_token_open_episodic_headwise_v2(
+          &config, &episodic_policy, all_episodic_heads.data(),
+          all_episodic_heads.size(), 0.5F, error, sizeof(error));
+  void* shadow_trace =
+      engram_olmoe_token_open_episodic_shadow_trace_v1(
+          &config, &episodic_policy, all_episodic_heads.data(),
+          all_episodic_heads.size(), 0.5F, &shadow_policy, error,
+          sizeof(error));
+  if (shadow_reference == nullptr || shadow_trace == nullptr) {
+    engram_olmoe_token_close(shadow_reference);
+    engram_olmoe_token_close(shadow_trace);
+    return fail(std::string("shadow trace runtime open failed: ") + error);
+  }
+
+  constexpr std::size_t shadow_trace_count = 2 * 4;
+  std::array<float, shadow_trace_count> shadow_input{};
+  std::array<float, shadow_trace_count> shadow_base{};
+  std::array<float, shadow_trace_count> shadow_target{};
+  constexpr std::size_t shadow_mass_count = 2 * 2;
+  std::array<float, shadow_trace_count> mass_base_pre_wo{};
+  std::array<float, shadow_trace_count> mass_regular_component{};
+  std::array<float, shadow_trace_count> mass_episodic_component{};
+  std::array<float, shadow_mass_count> mass_regular{};
+  std::array<float, shadow_mass_count> mass_episodic{};
+  std::array<float, shadow_mass_count> mass_shadow_source{};
+  constexpr std::size_t episodic_slot_mass_count = 2 * 2 * 2;
+  constexpr std::size_t episodic_slot_value_count =
+      episodic_slot_mass_count * 2;
+  std::array<float, episodic_slot_mass_count> episodic_slot_mass{};
+  std::array<float, episodic_slot_value_count> episodic_slot_values{};
+  if (engram_olmoe_token_copy_last_shadow_trace_v1(
+          shadow_trace, shadow_input.data(), shadow_input.size(),
+          shadow_base.data(), shadow_base.size(), shadow_target.data(),
+          shadow_target.size(), error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_shadow_trace_v1(
+          shadow_reference, shadow_input.data(), shadow_input.size(),
+          shadow_base.data(), shadow_base.size(), shadow_target.data(),
+          shadow_target.size(), error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_episodic_mass_trace_v1(
+          shadow_trace, mass_base_pre_wo.data(),
+          mass_base_pre_wo.size(), mass_regular_component.data(),
+          mass_regular_component.size(),
+          mass_episodic_component.data(),
+          mass_episodic_component.size(), mass_regular.data(),
+          mass_regular.size(), mass_episodic.data(),
+          mass_episodic.size(), mass_shadow_source.data(),
+          mass_shadow_source.size(), error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_episodic_slot_trace_v1(
+          shadow_trace, episodic_slot_mass.data(),
+          episodic_slot_mass.size(), episodic_slot_values.data(),
+          episodic_slot_values.size(), error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_episodic_slot_trace_v1(
+          shadow_reference, episodic_slot_mass.data(),
+          episodic_slot_mass.size(), episodic_slot_values.data(),
+          episodic_slot_values.size(), error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_episodic_mass_trace_v1(
+          shadow_reference, mass_base_pre_wo.data(),
+          mass_base_pre_wo.size(), mass_regular_component.data(),
+          mass_regular_component.size(),
+          mass_episodic_component.data(),
+          mass_episodic_component.size(), mass_regular.data(),
+          mass_regular.size(), mass_episodic.data(),
+          mass_episodic.size(), mass_shadow_source.data(),
+          mass_shadow_source.size(), error, sizeof(error)) == 0) {
+    engram_olmoe_token_close(shadow_reference);
+    engram_olmoe_token_close(shadow_trace);
+    return fail("shadow trace copy succeeded before a trace was valid");
+  }
+
+  std::int64_t shadow_reference_next = -1;
+  std::int64_t shadow_trace_next = -1;
+  engram_olmoe_token_metrics shadow_reference_base{};
+  engram_olmoe_token_metrics shadow_trace_base{};
+  engram_olmoe_attention_metrics_v1 shadow_reference_attention{};
+  engram_olmoe_attention_metrics_v1 shadow_trace_attention{};
+  engram_olmoe_episodic_metrics_v1 shadow_reference_episodic{};
+  engram_olmoe_episodic_metrics_v1 shadow_trace_episodic{};
+  std::array<float, 4> shadow_reference_state{};
+  std::array<float, 4> shadow_trace_state{};
+  std::array<float, 3> shadow_reference_logits{};
+  std::array<float, 3> shadow_trace_logits{};
+  std::array<float, shadow_trace_count> before_read_target{};
+  std::array<float, shadow_trace_count> first_read_target{};
+  for (std::size_t row = 0; row < episodic_tokens.size(); ++row) {
+    int mass_trace_status = 1;
+    int slot_trace_status = 1;
+    if (engram_olmoe_token_forward_episodic_v1(
+            shadow_reference, &episodic_tokens[row], 1,
+            &episodic_writes[row], &episodic_reads[row],
+            &shadow_reference_next, &shadow_reference_base, error,
+            sizeof(error)) != 0 ||
+        engram_olmoe_token_forward_episodic_v1(
+            shadow_trace, &episodic_tokens[row], 1,
+            &episodic_writes[row], &episodic_reads[row],
+            &shadow_trace_next, &shadow_trace_base, error,
+            sizeof(error)) != 0 ||
+        engram_olmoe_token_copy_attention_metrics_v1(
+            shadow_reference, &shadow_reference_attention, error,
+            sizeof(error)) != 0 ||
+        engram_olmoe_token_copy_attention_metrics_v1(
+            shadow_trace, &shadow_trace_attention, error,
+            sizeof(error)) != 0 ||
+        engram_olmoe_token_copy_episodic_metrics_v1(
+            shadow_reference, &shadow_reference_episodic, error,
+            sizeof(error)) != 0 ||
+        engram_olmoe_token_copy_episodic_metrics_v1(
+            shadow_trace, &shadow_trace_episodic, error,
+            sizeof(error)) != 0 ||
+        copy_diagnostics(shadow_reference, shadow_reference_state,
+                         shadow_reference_logits, error,
+                         sizeof(error)) != 0 ||
+        copy_diagnostics(shadow_trace, shadow_trace_state,
+                         shadow_trace_logits, error, sizeof(error)) != 0 ||
+        engram_olmoe_token_copy_last_shadow_trace_v1(
+            shadow_trace, shadow_input.data(), shadow_input.size(),
+            shadow_base.data(), shadow_base.size(), shadow_target.data(),
+            shadow_target.size(), error, sizeof(error)) != 0 ||
+        ((mass_trace_status =
+              engram_olmoe_token_copy_last_episodic_mass_trace_v1(
+                  shadow_trace, mass_base_pre_wo.data(),
+                  mass_base_pre_wo.size(),
+                  mass_regular_component.data(),
+                  mass_regular_component.size(),
+                  mass_episodic_component.data(),
+                  mass_episodic_component.size(),
+                  mass_regular.data(), mass_regular.size(),
+                  mass_episodic.data(), mass_episodic.size(),
+                  mass_shadow_source.data(),
+                  mass_shadow_source.size(), error,
+                  sizeof(error))) == 0) !=
+            (episodic_reads[row] >= 0) ||
+        ((slot_trace_status =
+              engram_olmoe_token_copy_last_episodic_slot_trace_v1(
+                  shadow_trace, episodic_slot_mass.data(),
+                  episodic_slot_mass.size(),
+                  episodic_slot_values.data(),
+                  episodic_slot_values.size(), error,
+                  sizeof(error))) == 0) !=
+            (episodic_reads[row] >= 0) ||
+        shadow_reference_next != shadow_trace_next ||
+        shadow_reference_state != shadow_trace_state ||
+        shadow_reference_logits != shadow_trace_logits ||
+        !same_base_counters(shadow_reference_base, shadow_trace_base) ||
+        !same_attention_metrics(shadow_reference_attention,
+                                shadow_trace_attention) ||
+        std::memcmp(&shadow_reference_episodic, &shadow_trace_episodic,
+                    sizeof(shadow_reference_episodic)) != 0 ||
+        !all_finite(shadow_input) || !all_finite(shadow_base) ||
+        !all_finite(shadow_target) ||
+        (mass_trace_status == 0 &&
+         (!all_finite(mass_base_pre_wo) ||
+          !all_finite(mass_regular_component) ||
+          !all_finite(mass_episodic_component) ||
+          !all_finite(mass_regular) ||
+          !all_finite(mass_episodic) ||
+          !all_finite(mass_shadow_source))) ||
+        (slot_trace_status == 0 &&
+         (!all_finite(episodic_slot_mass) ||
+          !all_finite(episodic_slot_values)))) {
+      engram_olmoe_token_close(shadow_reference);
+      engram_olmoe_token_close(shadow_trace);
+      return fail("shadow trace changed base behavior or emitted bad data");
+    }
+    if (mass_trace_status == 0) {
+      for (std::size_t index = 0; index < shadow_trace_count;
+           ++index) {
+        if (std::abs(mass_regular_component[index] +
+                         mass_episodic_component[index] -
+                     mass_base_pre_wo[index]) >
+            2.0e-6F) {
+          engram_olmoe_token_close(shadow_reference);
+          engram_olmoe_token_close(shadow_trace);
+          return fail(
+              "episodic mass components do not reconstruct base pre-Wo");
+        }
+      }
+      for (std::size_t index = 0; index < shadow_mass_count;
+           ++index) {
+        if (std::abs(
+                mass_regular[index] + mass_episodic[index] - 1.0F) >
+                2.0e-6F ||
+            mass_regular[index] <= 0.0F ||
+            mass_episodic[index] <= 0.0F ||
+            mass_shadow_source[index] <= 0.0F ||
+            mass_shadow_source[index] >= 1.0F) {
+          engram_olmoe_token_close(shadow_reference);
+          engram_olmoe_token_close(shadow_trace);
+          return fail("episodic or shadow source masses are invalid");
+        }
+      }
+      for (std::size_t layer = 0; layer < 2; ++layer) {
+        for (std::size_t head = 0; head < 2; ++head) {
+          const std::size_t mass_index = layer * 2 + head;
+          const std::size_t slot_begin = mass_index * 2;
+          const float slot_mass_sum =
+              episodic_slot_mass[slot_begin] +
+              episodic_slot_mass[slot_begin + 1];
+          if (std::abs(slot_mass_sum -
+                       mass_episodic[mass_index]) > 2.0e-6F) {
+            engram_olmoe_token_close(shadow_reference);
+            engram_olmoe_token_close(shadow_trace);
+            return fail(
+                "episodic slot masses do not reconstruct episodic mass");
+          }
+          for (std::size_t dimension = 0; dimension < 2; ++dimension) {
+            float component = 0.0F;
+            for (std::size_t slot = 0; slot < 2; ++slot) {
+              const std::size_t slot_index = slot_begin + slot;
+              component +=
+                  episodic_slot_mass[slot_index] *
+                  episodic_slot_values[slot_index * 2 + dimension];
+            }
+            const std::size_t component_index =
+                layer * 4 + head * 2 + dimension;
+            if (std::abs(component -
+                         mass_episodic_component[component_index]) >
+                2.0e-6F) {
+              engram_olmoe_token_close(shadow_reference);
+              engram_olmoe_token_close(shadow_trace);
+              return fail(
+                  "episodic slot values do not reconstruct the component");
+            }
+          }
+        }
+      }
+    }
+    if (row == 1) before_read_target = shadow_target;
+    if (row == 2) {
+      first_read_target = shadow_target;
+      const float expected_source_mass =
+          expected_first_read_layer_zero_shadow_source_mass(
+              config.rms_norm_epsilon);
+      if (std::abs(mass_shadow_source[0] -
+                   expected_source_mass) > 2.0e-6F ||
+          shadow_target == before_read_target ||
+          std::none_of(
+              shadow_target.begin(), shadow_target.end(),
+              [](const float value) { return value != 0.0F; })) {
+        engram_olmoe_token_close(shadow_reference);
+        engram_olmoe_token_close(shadow_trace);
+        return fail(
+            "shadow target or scheduled-source mass is wrong on a read row");
+      }
+    }
+  }
+  const std::array<float, 4> expected_first_read =
+      expected_first_read_layer_zero_target(
+          config.rms_norm_epsilon, 0.5F);
+  for (std::size_t index = 0; index < expected_first_read.size();
+       ++index) {
+    if (std::abs(first_read_target[index] -
+                 expected_first_read[index]) > 1.0e-5F) {
+      engram_olmoe_token_close(shadow_reference);
+      engram_olmoe_token_close(shadow_trace);
+      return fail(
+          "shadow residual sign/order did not match the independent "
+          "layer-zero oracle");
+    }
+  }
+  const float expected_last_row_input =
+      1.0F / std::sqrt(1.0F + config.rms_norm_epsilon);
+  if (!std::all_of(
+          shadow_input.begin(), shadow_input.begin() + 4,
+          [expected_last_row_input](const float value) {
+            return std::abs(value - expected_last_row_input) <= 1.0e-6F;
+          })) {
+    engram_olmoe_token_close(shadow_reference);
+    engram_olmoe_token_close(shadow_trace);
+    return fail(
+        "shadow trace did not start with the last row's layer-zero input");
+  }
+
+  void* shadow_batch =
+      engram_olmoe_token_open_episodic_shadow_trace_v1(
+          &config, &episodic_policy, all_episodic_heads.data(),
+          all_episodic_heads.size(), 0.5F, &shadow_policy, error,
+          sizeof(error));
+  std::int64_t shadow_batch_next = -1;
+  engram_olmoe_token_metrics shadow_batch_base{};
+  engram_olmoe_attention_metrics_v1 shadow_batch_attention{};
+  engram_olmoe_episodic_metrics_v1 shadow_batch_episodic{};
+  std::array<float, 4> shadow_batch_state{};
+  std::array<float, 3> shadow_batch_logits{};
+  std::array<float, shadow_trace_count> shadow_batch_input{};
+  std::array<float, shadow_trace_count> shadow_batch_projected{};
+  std::array<float, shadow_trace_count> shadow_batch_target{};
+  std::array<float, shadow_trace_count> shadow_batch_mass_base{};
+  std::array<float, shadow_trace_count> shadow_batch_mass_regular_component{};
+  std::array<float, shadow_trace_count> shadow_batch_mass_episodic_component{};
+  std::array<float, shadow_mass_count> shadow_batch_mass_regular{};
+  std::array<float, shadow_mass_count> shadow_batch_mass_episodic{};
+  std::array<float, shadow_mass_count> shadow_batch_mass_source{};
+  std::array<float, episodic_slot_mass_count> shadow_batch_slot_mass{};
+  std::array<float, episodic_slot_value_count> shadow_batch_slot_values{};
+  if (shadow_batch == nullptr ||
+      engram_olmoe_token_forward_episodic_v1(
+          shadow_batch, episodic_tokens.data(), episodic_tokens.size(),
+          episodic_writes.data(), episodic_reads.data(),
+          &shadow_batch_next, &shadow_batch_base, error,
+          sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_attention_metrics_v1(
+          shadow_batch, &shadow_batch_attention, error,
+          sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_episodic_metrics_v1(
+          shadow_batch, &shadow_batch_episodic, error,
+          sizeof(error)) != 0 ||
+      copy_diagnostics(shadow_batch, shadow_batch_state,
+                       shadow_batch_logits, error, sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_last_shadow_trace_v1(
+          shadow_batch, shadow_batch_input.data(),
+          shadow_batch_input.size(), shadow_batch_projected.data(),
+          shadow_batch_projected.size(), shadow_batch_target.data(),
+          shadow_batch_target.size(), error, sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_last_episodic_mass_trace_v1(
+          shadow_batch, shadow_batch_mass_base.data(),
+          shadow_batch_mass_base.size(),
+          shadow_batch_mass_regular_component.data(),
+          shadow_batch_mass_regular_component.size(),
+          shadow_batch_mass_episodic_component.data(),
+          shadow_batch_mass_episodic_component.size(),
+          shadow_batch_mass_regular.data(),
+          shadow_batch_mass_regular.size(),
+          shadow_batch_mass_episodic.data(),
+          shadow_batch_mass_episodic.size(),
+          shadow_batch_mass_source.data(),
+          shadow_batch_mass_source.size(), error, sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_last_episodic_slot_trace_v1(
+          shadow_batch, shadow_batch_slot_mass.data(),
+          shadow_batch_slot_mass.size(),
+          shadow_batch_slot_values.data(),
+          shadow_batch_slot_values.size(), error, sizeof(error)) != 0 ||
+      shadow_batch_next != shadow_trace_next ||
+      shadow_batch_state != shadow_trace_state ||
+      shadow_batch_logits != shadow_trace_logits ||
+      !same_base_counters(shadow_batch_base, shadow_trace_base) ||
+      !same_attention_metrics(shadow_batch_attention,
+                              shadow_trace_attention) ||
+      std::memcmp(&shadow_batch_episodic, &shadow_trace_episodic,
+                  sizeof(shadow_batch_episodic)) != 0 ||
+      shadow_batch_input != shadow_input ||
+      shadow_batch_projected != shadow_base ||
+      shadow_batch_target != shadow_target ||
+      shadow_batch_mass_base != mass_base_pre_wo ||
+      shadow_batch_mass_regular_component !=
+          mass_regular_component ||
+      shadow_batch_mass_episodic_component !=
+          mass_episodic_component ||
+      shadow_batch_mass_regular != mass_regular ||
+      shadow_batch_mass_episodic != mass_episodic ||
+      shadow_batch_mass_source != mass_shadow_source ||
+      shadow_batch_slot_mass != episodic_slot_mass ||
+      shadow_batch_slot_values != episodic_slot_values) {
+    engram_olmoe_token_close(shadow_batch);
+    engram_olmoe_token_close(shadow_reference);
+    engram_olmoe_token_close(shadow_trace);
+    return fail(
+        "batched shadow trace did not match singleton last-row trace");
+  }
+  engram_olmoe_token_close(shadow_batch);
+
+  if (engram_olmoe_token_copy_last_shadow_trace_v1(
+          shadow_trace, nullptr, shadow_input.size(),
+          shadow_base.data(), shadow_base.size(), shadow_target.data(),
+          shadow_target.size(), error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_shadow_trace_v1(
+          shadow_trace, shadow_input.data(), shadow_input.size() - 1,
+          shadow_base.data(), shadow_base.size(), shadow_target.data(),
+          shadow_target.size(), error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_shadow_trace_v1(
+          shadow_trace, shadow_input.data(), shadow_input.size(), nullptr,
+          shadow_base.size(), shadow_target.data(), shadow_target.size(),
+          error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_shadow_trace_v1(
+          shadow_trace, shadow_input.data(), shadow_input.size(),
+          shadow_base.data(), shadow_base.size() - 1,
+          shadow_target.data(), shadow_target.size(), error,
+          sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_shadow_trace_v1(
+          shadow_trace, shadow_input.data(), shadow_input.size(),
+          shadow_base.data(), shadow_base.size(), nullptr,
+          shadow_target.size(), error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_shadow_trace_v1(
+          shadow_trace, shadow_input.data(), shadow_input.size(),
+          shadow_base.data(), shadow_base.size(), shadow_target.data(),
+          shadow_target.size() - 1, error, sizeof(error)) == 0) {
+    engram_olmoe_token_close(shadow_reference);
+    engram_olmoe_token_close(shadow_trace);
+    return fail("shadow trace copy accepted inexact output storage");
+  }
+  if (engram_olmoe_token_copy_last_episodic_mass_trace_v1(
+          shadow_trace, nullptr, mass_base_pre_wo.size(),
+          mass_regular_component.data(),
+          mass_regular_component.size(),
+          mass_episodic_component.data(),
+          mass_episodic_component.size(), mass_regular.data(),
+          mass_regular.size(), mass_episodic.data(),
+          mass_episodic.size(), mass_shadow_source.data(),
+          mass_shadow_source.size(), error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_episodic_mass_trace_v1(
+          shadow_trace, mass_base_pre_wo.data(),
+          mass_base_pre_wo.size() - 1,
+          mass_regular_component.data(),
+          mass_regular_component.size(),
+          mass_episodic_component.data(),
+          mass_episodic_component.size(), mass_regular.data(),
+          mass_regular.size(), mass_episodic.data(),
+          mass_episodic.size(), mass_shadow_source.data(),
+          mass_shadow_source.size(), error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_episodic_mass_trace_v1(
+          shadow_trace, mass_base_pre_wo.data(),
+          mass_base_pre_wo.size(), mass_regular_component.data(),
+          mass_regular_component.size() - 1,
+          mass_episodic_component.data(),
+          mass_episodic_component.size(), mass_regular.data(),
+          mass_regular.size(), mass_episodic.data(),
+          mass_episodic.size(), mass_shadow_source.data(),
+          mass_shadow_source.size(), error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_episodic_mass_trace_v1(
+          shadow_trace, mass_base_pre_wo.data(),
+          mass_base_pre_wo.size(), mass_regular_component.data(),
+          mass_regular_component.size(),
+          mass_episodic_component.data(),
+          mass_episodic_component.size() - 1,
+          mass_regular.data(), mass_regular.size(),
+          mass_episodic.data(), mass_episodic.size(),
+          mass_shadow_source.data(), mass_shadow_source.size(),
+          error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_episodic_mass_trace_v1(
+          shadow_trace, mass_base_pre_wo.data(),
+          mass_base_pre_wo.size(), mass_regular_component.data(),
+          mass_regular_component.size(),
+          mass_episodic_component.data(),
+          mass_episodic_component.size(), mass_regular.data(),
+          mass_regular.size() - 1, mass_episodic.data(),
+          mass_episodic.size(), mass_shadow_source.data(),
+          mass_shadow_source.size(), error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_episodic_mass_trace_v1(
+          shadow_trace, mass_base_pre_wo.data(),
+          mass_base_pre_wo.size(), mass_regular_component.data(),
+          mass_regular_component.size(),
+          mass_episodic_component.data(),
+          mass_episodic_component.size(), mass_regular.data(),
+          mass_regular.size(), mass_episodic.data(),
+          mass_episodic.size() - 1, mass_shadow_source.data(),
+          mass_shadow_source.size(), error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_episodic_mass_trace_v1(
+          shadow_trace, mass_base_pre_wo.data(),
+          mass_base_pre_wo.size(), mass_regular_component.data(),
+          mass_regular_component.size(),
+          mass_episodic_component.data(),
+          mass_episodic_component.size(), mass_regular.data(),
+          mass_regular.size(), mass_episodic.data(),
+          mass_episodic.size(), nullptr, mass_shadow_source.size(),
+          error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_episodic_mass_trace_v1(
+          shadow_trace, mass_base_pre_wo.data(),
+          mass_base_pre_wo.size(), mass_regular_component.data(),
+          mass_regular_component.size(),
+          mass_episodic_component.data(),
+          mass_episodic_component.size(), mass_regular.data(),
+          mass_regular.size(), mass_episodic.data(),
+          mass_episodic.size(), mass_shadow_source.data(),
+          mass_shadow_source.size() - 1, error, sizeof(error)) == 0) {
+    engram_olmoe_token_close(shadow_reference);
+    engram_olmoe_token_close(shadow_trace);
+    return fail(
+        "episodic mass trace copy accepted inexact output storage");
+  }
+  if (engram_olmoe_token_copy_last_episodic_slot_trace_v1(
+          shadow_trace, nullptr, episodic_slot_mass.size(),
+          episodic_slot_values.data(), episodic_slot_values.size(),
+          error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_episodic_slot_trace_v1(
+          shadow_trace, episodic_slot_mass.data(),
+          episodic_slot_mass.size() - 1, episodic_slot_values.data(),
+          episodic_slot_values.size(), error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_episodic_slot_trace_v1(
+          shadow_trace, episodic_slot_mass.data(),
+          episodic_slot_mass.size(), nullptr,
+          episodic_slot_values.size(), error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_episodic_slot_trace_v1(
+          shadow_trace, episodic_slot_mass.data(),
+          episodic_slot_mass.size(), episodic_slot_values.data(),
+          episodic_slot_values.size() - 1, error, sizeof(error)) == 0) {
+    engram_olmoe_token_close(shadow_reference);
+    engram_olmoe_token_close(shadow_trace);
+    return fail(
+        "episodic slot trace copy accepted inexact output storage");
+  }
+
+  const auto first_shadow_input = shadow_input;
+  const auto first_shadow_base = shadow_base;
+  const auto first_shadow_target = shadow_target;
+  const auto first_shadow_state = shadow_trace_state;
+  const auto first_shadow_logits = shadow_trace_logits;
+  const std::int64_t first_shadow_next = shadow_trace_next;
+  const auto first_shadow_base_counters = shadow_trace_base;
+  const auto first_shadow_attention = shadow_trace_attention;
+  const auto first_shadow_episodic = shadow_trace_episodic;
+  const auto first_mass_base_pre_wo = mass_base_pre_wo;
+  const auto first_mass_regular_component =
+      mass_regular_component;
+  const auto first_mass_episodic_component =
+      mass_episodic_component;
+  const auto first_mass_regular = mass_regular;
+  const auto first_mass_episodic = mass_episodic;
+  const auto first_mass_shadow_source = mass_shadow_source;
+  const auto first_slot_mass = episodic_slot_mass;
+  const auto first_slot_values = episodic_slot_values;
+
+  engram_olmoe_token_reset(shadow_reference);
+  engram_olmoe_token_reset(shadow_trace);
+  if (engram_olmoe_token_position(shadow_reference) != 0 ||
+      engram_olmoe_token_position(shadow_trace) != 0 ||
+      engram_olmoe_token_copy_last_shadow_trace_v1(
+          shadow_trace, shadow_input.data(), shadow_input.size(),
+          shadow_base.data(), shadow_base.size(), shadow_target.data(),
+          shadow_target.size(), error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_episodic_mass_trace_v1(
+          shadow_trace, mass_base_pre_wo.data(),
+          mass_base_pre_wo.size(), mass_regular_component.data(),
+          mass_regular_component.size(),
+          mass_episodic_component.data(),
+          mass_episodic_component.size(), mass_regular.data(),
+          mass_regular.size(), mass_episodic.data(),
+          mass_episodic.size(), mass_shadow_source.data(),
+          mass_shadow_source.size(), error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_episodic_slot_trace_v1(
+          shadow_trace, episodic_slot_mass.data(),
+          episodic_slot_mass.size(), episodic_slot_values.data(),
+          episodic_slot_values.size(), error, sizeof(error)) == 0) {
+    engram_olmoe_token_close(shadow_reference);
+    engram_olmoe_token_close(shadow_trace);
+    return fail("shadow reset did not invalidate the trace");
+  }
+
+  for (std::size_t row = 0; row < episodic_tokens.size(); ++row) {
+    if (engram_olmoe_token_forward_episodic_v1(
+            shadow_reference, &episodic_tokens[row], 1,
+            &episodic_writes[row], &episodic_reads[row],
+            &shadow_reference_next, &shadow_reference_base, error,
+            sizeof(error)) != 0 ||
+        engram_olmoe_token_forward_episodic_v1(
+            shadow_trace, &episodic_tokens[row], 1,
+            &episodic_writes[row], &episodic_reads[row],
+            &shadow_trace_next, &shadow_trace_base, error,
+            sizeof(error)) != 0) {
+      engram_olmoe_token_close(shadow_reference);
+      engram_olmoe_token_close(shadow_trace);
+      return fail(std::string("shadow reset replay failed: ") + error);
+    }
+  }
+  if (engram_olmoe_token_copy_attention_metrics_v1(
+          shadow_reference, &shadow_reference_attention, error,
+          sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_attention_metrics_v1(
+          shadow_trace, &shadow_trace_attention, error,
+          sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_episodic_metrics_v1(
+          shadow_reference, &shadow_reference_episodic, error,
+          sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_episodic_metrics_v1(
+          shadow_trace, &shadow_trace_episodic, error,
+          sizeof(error)) != 0 ||
+      copy_diagnostics(shadow_reference, shadow_reference_state,
+                       shadow_reference_logits, error,
+                       sizeof(error)) != 0 ||
+      copy_diagnostics(shadow_trace, shadow_trace_state,
+                       shadow_trace_logits, error, sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_last_shadow_trace_v1(
+          shadow_trace, shadow_input.data(), shadow_input.size(),
+          shadow_base.data(), shadow_base.size(), shadow_target.data(),
+          shadow_target.size(), error, sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_last_episodic_mass_trace_v1(
+          shadow_trace, mass_base_pre_wo.data(),
+          mass_base_pre_wo.size(), mass_regular_component.data(),
+          mass_regular_component.size(),
+          mass_episodic_component.data(),
+          mass_episodic_component.size(), mass_regular.data(),
+          mass_regular.size(), mass_episodic.data(),
+          mass_episodic.size(), mass_shadow_source.data(),
+          mass_shadow_source.size(), error, sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_last_episodic_slot_trace_v1(
+          shadow_trace, episodic_slot_mass.data(),
+          episodic_slot_mass.size(), episodic_slot_values.data(),
+          episodic_slot_values.size(), error, sizeof(error)) != 0 ||
+      shadow_reference_next != shadow_trace_next ||
+      shadow_trace_next != first_shadow_next ||
+      shadow_reference_state != shadow_trace_state ||
+      shadow_trace_state != first_shadow_state ||
+      shadow_reference_logits != shadow_trace_logits ||
+      shadow_trace_logits != first_shadow_logits ||
+      !same_base_counters(shadow_reference_base, shadow_trace_base) ||
+      !same_base_counters(shadow_trace_base,
+                          first_shadow_base_counters) ||
+      !same_attention_metrics(shadow_reference_attention,
+                              shadow_trace_attention) ||
+      !same_attention_metrics(shadow_trace_attention,
+                              first_shadow_attention) ||
+      std::memcmp(&shadow_reference_episodic, &shadow_trace_episodic,
+                  sizeof(shadow_reference_episodic)) != 0 ||
+      std::memcmp(&shadow_trace_episodic, &first_shadow_episodic,
+                  sizeof(shadow_trace_episodic)) != 0 ||
+      shadow_input != first_shadow_input ||
+      shadow_base != first_shadow_base ||
+      shadow_target != first_shadow_target ||
+      mass_base_pre_wo != first_mass_base_pre_wo ||
+      mass_regular_component != first_mass_regular_component ||
+      mass_episodic_component !=
+          first_mass_episodic_component ||
+      mass_regular != first_mass_regular ||
+      mass_episodic != first_mass_episodic ||
+      mass_shadow_source != first_mass_shadow_source ||
+      episodic_slot_mass != first_slot_mass ||
+      episodic_slot_values != first_slot_values) {
+    engram_olmoe_token_close(shadow_reference);
+    engram_olmoe_token_close(shadow_trace);
+    return fail("shadow trace reset replay was not exact");
+  }
+  engram_olmoe_token_close(shadow_reference);
+  engram_olmoe_token_close(shadow_trace);
+
+  auto regular_trace_config = config;
+  regular_trace_config.local_window =
+      ENGRAM_OLMOE_REGULAR_TRACE_LOCAL_ENTRIES_V1;
+  regular_trace_config.older_candidates = 8;
+  regular_trace_config.older_top_k =
+      ENGRAM_OLMOE_REGULAR_TRACE_OLDER_ENTRIES_V1;
+  regular_trace_config.sink_tokens = 2;
+  void* regular_trace_reference =
+      engram_olmoe_token_open_episodic_headwise_v2(
+          &regular_trace_config, &episodic_policy,
+          all_episodic_heads.data(), all_episodic_heads.size(), 0.5F,
+          error, sizeof(error));
+  void* regular_trace_runtime =
+      engram_olmoe_token_open_episodic_shadow_trace_v1(
+          &regular_trace_config, &episodic_policy,
+          all_episodic_heads.data(), all_episodic_heads.size(), 0.5F,
+          &shadow_policy, error, sizeof(error));
+  constexpr std::size_t regular_entry_count =
+      2 * 2 * ENGRAM_OLMOE_REGULAR_TRACE_ENTRIES_V1;
+  constexpr std::size_t regular_entry_value_count =
+      regular_entry_count * 2;
+  std::array<float, regular_entry_count> regular_entry_mass{};
+  std::array<float, regular_entry_value_count> regular_entry_values{};
+  std::array<std::uint8_t, regular_entry_count>
+      regular_entry_valid_kind{};
+  std::array<std::uint64_t, regular_entry_count>
+      regular_entry_positions{};
+  if (regular_trace_reference == nullptr ||
+      regular_trace_runtime == nullptr ||
+      engram_olmoe_token_copy_last_regular_entry_trace_v1(
+          regular_trace_runtime, regular_entry_mass.data(),
+          regular_entry_mass.size(), regular_entry_values.data(),
+          regular_entry_values.size(),
+          regular_entry_valid_kind.data(),
+          regular_entry_valid_kind.size(),
+          regular_entry_positions.data(), regular_entry_positions.size(),
+          error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_regular_entry_trace_v1(
+          regular_trace_reference, regular_entry_mass.data(),
+          regular_entry_mass.size(), regular_entry_values.data(),
+          regular_entry_values.size(),
+          regular_entry_valid_kind.data(),
+          regular_entry_valid_kind.size(),
+          regular_entry_positions.data(), regular_entry_positions.size(),
+          error, sizeof(error)) == 0) {
+    engram_olmoe_token_close(regular_trace_reference);
+    engram_olmoe_token_close(regular_trace_runtime);
+    return fail(
+        "regular-entry trace open or pre-forward validity was not fail-closed");
+  }
+  std::int64_t regular_trace_reference_next = -1;
+  std::int64_t regular_trace_next = -1;
+  engram_olmoe_token_metrics regular_trace_reference_base{};
+  engram_olmoe_token_metrics regular_trace_base{};
+  engram_olmoe_attention_metrics_v1 regular_trace_reference_attention{};
+  engram_olmoe_attention_metrics_v1 regular_trace_attention{};
+  engram_olmoe_episodic_metrics_v1 regular_trace_reference_episodic{};
+  engram_olmoe_episodic_metrics_v1 regular_trace_episodic{};
+  std::array<float, 4> regular_trace_reference_state{};
+  std::array<float, 4> regular_trace_state{};
+  std::array<float, 3> regular_trace_reference_logits{};
+  std::array<float, 3> regular_trace_logits{};
+  if (engram_olmoe_token_forward_episodic_v1(
+          regular_trace_reference, episodic_tokens.data(),
+          episodic_tokens.size(), episodic_writes.data(),
+          episodic_reads.data(), &regular_trace_reference_next,
+          &regular_trace_reference_base, error, sizeof(error)) != 0 ||
+      engram_olmoe_token_forward_episodic_v1(
+          regular_trace_runtime, episodic_tokens.data(),
+          episodic_tokens.size(), episodic_writes.data(),
+          episodic_reads.data(), &regular_trace_next,
+          &regular_trace_base, error, sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_attention_metrics_v1(
+          regular_trace_reference, &regular_trace_reference_attention,
+          error, sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_attention_metrics_v1(
+          regular_trace_runtime, &regular_trace_attention, error,
+          sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_episodic_metrics_v1(
+          regular_trace_reference, &regular_trace_reference_episodic,
+          error, sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_episodic_metrics_v1(
+          regular_trace_runtime, &regular_trace_episodic, error,
+          sizeof(error)) != 0 ||
+      copy_diagnostics(
+          regular_trace_reference, regular_trace_reference_state,
+          regular_trace_reference_logits, error, sizeof(error)) != 0 ||
+      copy_diagnostics(
+          regular_trace_runtime, regular_trace_state,
+          regular_trace_logits, error, sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_last_episodic_mass_trace_v1(
+          regular_trace_runtime, mass_base_pre_wo.data(),
+          mass_base_pre_wo.size(), mass_regular_component.data(),
+          mass_regular_component.size(),
+          mass_episodic_component.data(),
+          mass_episodic_component.size(), mass_regular.data(),
+          mass_regular.size(), mass_episodic.data(),
+          mass_episodic.size(), mass_shadow_source.data(),
+          mass_shadow_source.size(), error, sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_last_regular_entry_trace_v1(
+          regular_trace_runtime, regular_entry_mass.data(),
+          regular_entry_mass.size(), regular_entry_values.data(),
+          regular_entry_values.size(),
+          regular_entry_valid_kind.data(),
+          regular_entry_valid_kind.size(),
+          regular_entry_positions.data(), regular_entry_positions.size(),
+          error, sizeof(error)) != 0 ||
+      regular_trace_reference_next != regular_trace_next ||
+      regular_trace_reference_state != regular_trace_state ||
+      regular_trace_reference_logits != regular_trace_logits ||
+      !same_base_counters(regular_trace_reference_base,
+                          regular_trace_base) ||
+      !same_attention_metrics(regular_trace_reference_attention,
+                              regular_trace_attention) ||
+      std::memcmp(&regular_trace_reference_episodic,
+                  &regular_trace_episodic,
+                  sizeof(regular_trace_episodic)) != 0) {
+    engram_olmoe_token_close(regular_trace_reference);
+    engram_olmoe_token_close(regular_trace_runtime);
+    return fail(
+        "regular-entry runtime trace changed output, counters, or ABI");
+  }
+  for (std::size_t layer = 0; layer < 2; ++layer) {
+    for (std::size_t head = 0; head < 2; ++head) {
+      const std::size_t head_offset =
+          (layer * 2 + head) *
+          ENGRAM_OLMOE_REGULAR_TRACE_ENTRIES_V1;
+      float reconstructed_mass = 0.0F;
+      std::array<float, 2> reconstructed_component{};
+      for (std::size_t entry = 0;
+           entry < ENGRAM_OLMOE_REGULAR_TRACE_ENTRIES_V1; ++entry) {
+        const std::size_t flat = head_offset + entry;
+        if (entry < episodic_tokens.size()) {
+          if (regular_entry_valid_kind[flat] !=
+                  ENGRAM_OLMOE_REGULAR_TRACE_LOCAL_V1 ||
+              regular_entry_positions[flat] != entry ||
+              regular_entry_mass[flat] <= 0.0F) {
+            engram_olmoe_token_close(regular_trace_reference);
+            engram_olmoe_token_close(regular_trace_runtime);
+            return fail(
+                "regular-entry C trace local order is not chronological");
+          }
+        } else if (regular_entry_valid_kind[flat] !=
+                       ENGRAM_OLMOE_REGULAR_TRACE_INVALID_V1 ||
+                   regular_entry_positions[flat] !=
+                       std::numeric_limits<std::uint64_t>::max() ||
+                   regular_entry_mass[flat] != 0.0F ||
+                   regular_entry_values[flat * 2] != 0.0F ||
+                   regular_entry_values[flat * 2 + 1] != 0.0F) {
+          engram_olmoe_token_close(regular_trace_reference);
+          engram_olmoe_token_close(regular_trace_runtime);
+          return fail(
+              "regular-entry C trace padding is not canonical");
+        }
+        reconstructed_mass += regular_entry_mass[flat];
+        reconstructed_component[0] +=
+            regular_entry_mass[flat] *
+            regular_entry_values[flat * 2];
+        reconstructed_component[1] +=
+            regular_entry_mass[flat] *
+            regular_entry_values[flat * 2 + 1];
+      }
+      const std::size_t mass_index = layer * 2 + head;
+      const std::size_t component_index = layer * 4 + head * 2;
+      if (std::abs(reconstructed_mass - mass_regular[mass_index]) >
+              2.0e-6F ||
+          std::abs(reconstructed_component[0] -
+                   mass_regular_component[component_index]) > 2.0e-6F ||
+          std::abs(reconstructed_component[1] -
+                   mass_regular_component[component_index + 1]) >
+              2.0e-6F) {
+        engram_olmoe_token_close(regular_trace_reference);
+        engram_olmoe_token_close(regular_trace_runtime);
+        return fail(
+            "regular-entry C trace did not reconstruct regular attention");
+      }
+    }
+  }
+  if (engram_olmoe_token_copy_last_regular_entry_trace_v1(
+          regular_trace_runtime, regular_entry_mass.data(),
+          regular_entry_mass.size() - 1, regular_entry_values.data(),
+          regular_entry_values.size(),
+          regular_entry_valid_kind.data(),
+          regular_entry_valid_kind.size(),
+          regular_entry_positions.data(), regular_entry_positions.size(),
+          error, sizeof(error)) == 0 ||
+      engram_olmoe_token_copy_last_regular_entry_trace_v1(
+          regular_trace_runtime, nullptr, regular_entry_mass.size(),
+          regular_entry_values.data(), regular_entry_values.size(),
+          regular_entry_valid_kind.data(),
+          regular_entry_valid_kind.size(),
+          regular_entry_positions.data(), regular_entry_positions.size(),
+          error, sizeof(error)) == 0) {
+    engram_olmoe_token_close(regular_trace_reference);
+    engram_olmoe_token_close(regular_trace_runtime);
+    return fail(
+        "regular-entry C trace accepted inexact or null storage");
+  }
+  const auto first_regular_entry_mass = regular_entry_mass;
+  const auto first_regular_entry_values = regular_entry_values;
+  const auto first_regular_entry_valid_kind =
+      regular_entry_valid_kind;
+  const auto first_regular_entry_positions = regular_entry_positions;
+  engram_olmoe_token_reset(regular_trace_runtime);
+  if (engram_olmoe_token_copy_last_regular_entry_trace_v1(
+          regular_trace_runtime, regular_entry_mass.data(),
+          regular_entry_mass.size(), regular_entry_values.data(),
+          regular_entry_values.size(),
+          regular_entry_valid_kind.data(),
+          regular_entry_valid_kind.size(),
+          regular_entry_positions.data(), regular_entry_positions.size(),
+          error, sizeof(error)) == 0 ||
+      engram_olmoe_token_forward_episodic_v1(
+          regular_trace_runtime, episodic_tokens.data(),
+          episodic_tokens.size(), episodic_writes.data(),
+          episodic_reads.data(), &regular_trace_next,
+          &regular_trace_base, error, sizeof(error)) != 0 ||
+      engram_olmoe_token_copy_last_regular_entry_trace_v1(
+          regular_trace_runtime, regular_entry_mass.data(),
+          regular_entry_mass.size(), regular_entry_values.data(),
+          regular_entry_values.size(),
+          regular_entry_valid_kind.data(),
+          regular_entry_valid_kind.size(),
+          regular_entry_positions.data(), regular_entry_positions.size(),
+          error, sizeof(error)) != 0 ||
+      regular_entry_mass != first_regular_entry_mass ||
+      regular_entry_values != first_regular_entry_values ||
+      regular_entry_valid_kind != first_regular_entry_valid_kind ||
+      regular_entry_positions != first_regular_entry_positions) {
+    engram_olmoe_token_close(regular_trace_reference);
+    engram_olmoe_token_close(regular_trace_runtime);
+    return fail("regular-entry C trace reset replay was not exact");
+  }
+  engram_olmoe_token_close(regular_trace_reference);
+  engram_olmoe_token_close(regular_trace_runtime);
   return 0;
 }

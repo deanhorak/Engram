@@ -1839,3 +1839,499 @@
   Milestone 3. The next semantic experiment remains Q7-aware synthetic
   retrieval-targeted selection with an answer-position objective and reserved
   holdout.
+
+## 2026-07-29: synthetic retrieval-targeted selector protocol freezes
+
+- Added a separate, fail-closed retrieval-head selector rather than extending
+  the consumed natural-prose causal/value fit. Its deterministic synthetic
+  passkey corpus has 8 training, 8 development, and 8 sealed-confirmation
+  records. Each record has 129 token IDs and 128 causal predictions; training
+  scores only the 32 ground-truth answer targets at logit rows 96–127.
+- Each record contains four eight-token passkeys at four balanced source
+  depths. The generator assigns 768 globally unique numeric singleton
+  tokenizer IDs across the 24 records. Record identities and passkey IDs are
+  disjoint among splits, and every sequence must round-trip through the
+  packaged tokenizer exactly.
+- The answer-only cross-entropy value comes from the complete packaged native
+  Q7 forward. A straight-through gradient path uses frozen BF16 source
+  weights and exact native attention, with the qualified frozen-expert
+  backward proxy dispatching expert backwards across 12 workers. No model
+  parameter is trainable.
+- Froze two iterative-hard-thresholding steps `M0 → M1 → M2`. Each learned
+  mask is projected to exactly 51 of 256 layer-head pairs. The selection rule
+  gates worst and mean per-record answer cross-entropy and forbids any
+  training-record regression.
+- Preserved the exact systems boundary: 51 heads read 973,384,704 logical
+  attention bytes per sequence, or 44.9753872184% of full causal attention,
+  with 12,284,864 bytes of state. A 52-head mask would read 45.2437999637%
+  and is inadmissible. Q7 scheduling remains 22.7864583333% of all-expert
+  ideal Q4.
+- A training-qualified mask must pass a full-W128 packaged-Q7 control and the
+  exact-51 packaged-Q7 candidate on development, both overall and at each of
+  the four source depths. The fit path cannot open or hash confirmation; even
+  a development pass can only authorize a separately implemented one-shot
+  confirmation.
+- Frozen protocol:
+  `work/olmoe_q7/retrieval_selector_2026-07-29_frozen/protocol.json`, SHA-256
+  `f6961ec6bffadb306a75ae8aaa8c400d1282cbb096876532d75e22a295660580`.
+- The complete fit/development screen then ran for 14,025.138 seconds.
+  Training selected `M2`: mean answer cross-entropy improved from 7.647114 to
+  1.005444 and no record regressed.
+- The dense teacher retrieval check and full-W128 packaged-Q7 control passed.
+  The control measured KL 0.002000, top-1 0.984375, NLL delta 0.004333, and
+  hidden relative L2 0.048957.
+- The static exact-51 candidate failed development. It measured KL 0.186610,
+  top-1 0.929688, NLL delta 0.283658, and hidden relative L2 0.335103. All
+  resource, reset/replay, proxy-lifecycle, and post-run authentication checks
+  passed, isolating the failure to semantic quality.
+- A complete training checkpoint was written and reread before development;
+  SHA-256
+  `9edf4fe7e7a1340c6f34bfe4d04544525947935116d662e94d98ccea4c282aa4`.
+  Result SHA-256:
+  `66c9c03d04e191865c4acc783c9fa73679a40f602777fb7a8aa56ccb9b61e4a6`.
+- Confirmation remained unopened and unauthorized. Decision: close this
+  static retrieval selector and proceed to a causally valid prefix- or
+  phase-conditioned allocator. Milestone 3 remains blocked.
+
+## 2026-07-29: two-prototype prefix allocator fails its train-only screen
+
+- Reused the SHA-authenticated `M2` training checkpoint and evaluated a
+  complete 8-record × 2-prototype transfer matrix without repeating the
+  expensive surrogate backwards.
+- The causal selector used only the observed prefix fact order to choose
+  between an earlier-half and later-half source-depth prototype. Both
+  prototypes retained the exact 51-head and 44.9753872184% logical-read
+  contract.
+- Assigned mean answer cross-entropy was 1.046825, a regression of 0.041381
+  from global `M2`. The worst result improved by only 0.002955, five of eight
+  records regressed, and the later-half cluster regressed in both mean and
+  worst loss.
+- All native counter, resource, artifact-authentication, and split-separation
+  checks passed. Confirmation remained unopened. Result SHA-256:
+  `dacb3f37886d1207bc6b9a5717b3015174c4edc4947b89dd12ef35ff67ae8814`.
+- Decision: reject this two-prototype allocator before development. Additional
+  mask clustering has shown diminishing value; test whether an exact causal
+  episodic span can supply the missing information before fitting another
+  selector.
+
+## 2026-07-29: payload-only episodic oracle fails semantic capacity
+
+- Added an optional native per-layer BF16 episodic K/V bank with a versioned
+  additive C ABI and Python binding. The legacy token-step path remains
+  bit-exact. Whole-plan preflight rejects invalid multi-token schedules before
+  state mutation; reset clears cache state, directive shadow state, and all
+  counters.
+- The capacity experiment removed selection error entirely. A causal oracle
+  wrote the four eight-token source payloads into 32 canonical slots and read
+  the correct eight-token span into the joint attention softmax at every
+  corresponding answer row. The base remained `W16/C8/K4/S2`.
+- The full-`W128` packaged-Q7 control passed all semantic checks:
+  KL 0.001892, top-1 1.0, NLL delta -0.002330, and hidden relative L2
+  0.047297. The oracle episodic candidate passed all systems and resource
+  checks but failed semantic quality: KL 0.446656, top-1 0.921875, NLL delta
+  +0.557528, and hidden relative L2 0.428062.
+- Candidate answer cross-entropy was 1.224460 mean and 1.327343 worst, worse
+  than global `M2` at 1.005444 and 1.227907; seven of eight records regressed.
+- Failure is concentrated at retrieval initiation. The first row of each
+  eight-token answer block measured mean KL 1.974513, NLL delta +2.750141,
+  hidden relative L2 0.638946, and top-1 0.4375. The remaining rows retained
+  top-1 0.991071. Block-entry rows account for 55.26% of total KL and 62.12%
+  of positive NLL regression.
+- The cache scheduled at most 710,672,384 logical read bytes and 714,866,688
+  total read-plus-write bytes per sequence, with 10,534,912 bytes of state.
+  It therefore failed on representation, not the 45% systems boundary.
+- Protocol SHA-256:
+  `1e7b89e5b376430b82456bf306e50a0fb7c0cb9ed75b0d4e400ad7950b517cce`.
+  Result SHA-256:
+  `b2daa5eff271b6f030c01e8a4854a602f7b2907f7af487d38ab750468bbc42cc`.
+  Confirmation remained unopened and unauthorized.
+- Decision: do not train a selector for a payload-only cache. The next cheap
+  capacity screen stores each source label token immediately before its eight
+  payload tokens (36 slots, four nine-token spans). This directly tests the
+  missing identity cue at 33.25% upper-bound total attention traffic.
+
+## 2026-07-29: label-plus-payload oracle also fails semantic capacity
+
+- Executed the frozen train-only diagnostic proposed by the payload screen.
+  The causal oracle stored the label token immediately before each known
+  eight-token payload, yielding four nine-token spans and 36 canonical slots,
+  then exposed the matching span at every answer row.
+- Adding the identity cue did not improve the representation. Candidate
+  answer cross-entropy was 1.231254 mean and 1.321619 worst, compared with
+  1.005444 and 1.227907 for global full-context `M2`. The mean regressed by
+  0.225811, the worst by 0.093712, and seven of eight records regressed.
+- Every counter, duplicate-suppression, reset/replay, resource, and post-run
+  authentication check passed. The analytic upper bounds were 714,866,688
+  logical read bytes and 719,585,280 read-plus-write bytes per sequence
+  (33.2485% of dense full-context K/V), with 11,059,712 state bytes and 4,992
+  scratch bytes.
+- No dense-teacher forward ran; neither development nor confirmation was
+  opened. Frozen protocol SHA-256:
+  `1812a6ba72afe0c5f32e459867c29f3d8dbd609a3d0ddf59ac52ae6859ce4d3d`.
+  Result SHA-256:
+  `e1ec5a2bde8b9ce7198fe1571a7670c45a3bc7a712cdf9a856f869b6429fe69d`.
+- Decision: reject the all-head label-plus-payload posting. Because all-head
+  exposure may contaminate non-retrieval heads, isolate that hypothesis with
+  a native head-gated episodic ABI before changing the stored representation
+  again.
+
+## 2026-07-29: head-gated episodic ABI qualifies; fixed K51 fails
+
+- Added the versioned
+  `engram_olmoe_token_open_episodic_headwise_v1` C ABI and the Python
+  `episodic_head_mask` binding. Inactive layers execute the exact legacy
+  attention path and allocate no episodic bank. Active layers write complete
+  causal BF16 K/V rows, but only selected query heads deduplicate, score,
+  normalize against, and read episodic entries.
+- The implementation fails closed for missing, malformed, or all-zero masks.
+  All-ones head masks have exact parity with the existing all-head episodic
+  ABI. Reset, counter streams, legacy behavior, and deterministic replay all
+  passed their native and Python tests.
+- Froze a train-only attribution screen using the existing `M2` mask without
+  refitting. Its 51 selected layer-head pairs span 14 active layers with
+  per-layer counts `[3,3,1,4,0,7,7,4,1,6,4,1,5,3,2,0]`; mask SHA-256:
+  `49802a2d37abd44e4015e87633c9a321e333315b9400f6a69d4713ec2270b446`.
+- K51 failed the strict progression gate. Mean answer CE was 1.400569, a
+  0.395125 regression from `M2`; worst CE was 1.694034, a 0.466127
+  regression; only one of eight records improved.
+- All systems checks passed. The screen used at most 683,802,624 logical read
+  bytes and 687,472,640 total bytes (31.7648% of dense), with 10,010,112 state
+  bytes and 4,736 scratch bytes. Development and confirmation remained
+  unopened.
+- Frozen protocol SHA-256:
+  `38ceb03c5ab8a18038aea57728bdca9f405ec46cd5311a0ba8569059843a5fd6`.
+  Result SHA-256:
+  `18bc2ec7ee55712f85d237ab0159ff160add37dc840dfcea3028b216f0062852`.
+- Decision: reject direct transfer of the old K51 cardinality. The old 45%
+  full-context read constraint produced 51; the cheaper episodic cache can
+  test larger ranked prefixes while remaining well inside the same ceiling.
+
+## 2026-07-29: ranked K64/K96/K128/K165 episodic screen fails
+
+- Froze a distinct train-only protocol before candidate execution. It binds
+  the failed K51 prerequisite, historical all-head payload evidence, the
+  native head-gated library, source/package/checkpoint roots, and the complete
+  `M2` projected-score ordering. Protocol SHA-256:
+  `e238b5cfc4359422abc96c227f4010ade747ff161c946b2edae14c171a7bf04c`.
+- Candidate order is exactly K64, K96, K128, K165. The corresponding
+  upper-bound total traffic is 689,176,576; 693,633,024; 698,089,472; and
+  702,939,136 bytes, all below 32.48% of dense full-context K/V.
+- Each candidate must execute all eight training records before the strict
+  mean-improvement, worst-improvement, and no-record-regression gate. The
+  evaluator stops at the smallest passing prefix. If none passes, its
+  diagnostic selection order is worst CE, then mean CE, then K; such a
+  selection is not a promotion.
+- All four candidates executed and failed. Mean/worst answer CE was
+  1.379699/1.639418 at K64, 1.328848/1.618843 at K96,
+  1.337958/1.621764 at K128, and 1.331006/1.608617 at K165. Every candidate
+  improved only one of eight records relative to `M2`.
+- The frozen total-failure key retained K165 because it had the lowest worst
+  CE. Its deterministic reset replay passed exactly; all resource,
+  counter-stream, and post-run authentication checks also passed. This is
+  diagnostic retention, not promotion.
+- Result SHA-256:
+  `a6fb045bbad526411b8318e7de2412ea56d69b3f2be0d977ca6819635c0718da`.
+  No development run was authorized and confirmation remained unopened.
+- Decision: close larger cardinalities under the transferred `M2` ranking.
+  Do not carry K165 into the next mechanism merely because it won the
+  within-sweep failure key: the authenticated K256 all-head payload result
+  dominates it at 1.224460/1.327343 mean/worst CE for 33.0305% versus
+  32.4794% upper-bound traffic.
+- Next: fix K256, its exact payload, and its oracle schedule, then freeze a
+  native logit-mass calibration screen. Adding `log(gamma)` to episodic
+  scores before the joint softmax isolates missing-partition
+  over-normalization without changing cache state or logical traffic.
+
+## 2026-07-29: fixed-K256 V2 logit-bias screen fails all candidates
+
+- The V2 ABI first passed exact `beta=0` parity with the V1 all-head episodic
+  path across four native sequence forwards and 512 token steps. Outputs,
+  counters, and reset behavior matched exactly. Parity SHA-256:
+  `8e3c75de7fbb156a6d1e2f4f8053ae6bd4dccd35b73995dec810f3dc75911234`.
+- The frozen train-only protocol held K256, its exact all-head payload, the
+  oracle write/read schedule, and `W16/C8/K4/S2` fixed. It tested
+  `gamma=1/2,1/4,3/16,1/8` in that order by adding
+  `float32(log(gamma))` to episodic logits. The bias changes no key, value,
+  cache state, scratch, or logical traffic. Protocol SHA-256:
+  `025ff45e41966faf033338ffcac0c3fc1f93b40ed7676c36f189ba57485e8be7`.
+- All four candidates executed all eight training records and failed the
+  strict mean-improvement, worst-improvement, and no-record-regression gate.
+  Mean/worst answer CE was 1.461414/1.669250 at `gamma=1/2`,
+  1.883818/2.288258 at `gamma=1/4`, 2.161750/2.595642 at
+  `gamma=3/16`, and 2.725091/3.430532 at `gamma=1/8`. The reference `M2`
+  values were 1.005444/1.227907.
+- Every arm passed the resource and counter contracts at 714,866,688
+  upper-bound total traffic bytes (33.030523% of dense full-context K/V),
+  10,534,912 state bytes, and 4,864 scratch bytes. All post-run artifact
+  authentication checks passed.
+- The total-failure key retained `gamma=1/2` only for diagnostic reset replay;
+  the replay was exact. It is not a promoted policy. Historical `beta=0`
+  remained substantially better at 1.224460 mean and 1.327343 worst CE.
+- No dense-teacher forward ran. Development was not authorized, and the
+  reserved confirmation split remained unopened. Result SHA-256:
+  `19d08ce9eb4b673d423e9781a491e25ec03bdec09467a43e7be1881874ef2287`.
+  Evaluator SHA-256:
+  `8ab1ec4aaab30a8e218a33f52f81637e22918e3cc9f0773988a97d09936b2802`.
+  Frozen native DSO SHA-256:
+  `612f1d5c2b86f20574285039a1e2110638ceaa16337b6ad8c0f00913b0add383`.
+- The active V2 parity, protocol, and result were archived byte-for-byte under
+  `reports/olmoe_q7_retrieval_episodic_logit_bias_2026-07-29/`.
+- Decision: close shared scalar logit-mass calibration. The next train-only
+  experiment is a same-state W128-shadow residual capacity screen with
+  `beta=0` fixed prospectively as the K256 base. Measure the post-`W_o`
+  output-subspace ceiling before fitting or integrating any low-rank
+  correction. `gamma=1/2` is rejected as worse and remains diagnostic-only;
+  it does not receive a second trace. Only a small, resource-bounded
+  recoverable subspace can justify the later native artifact/kernel and causal
+  gate.
+
+## 2026-07-29: same-state residual-capacity ceiling misses global gate
+
+- A versioned non-intervening W128 shadow consumed the exact same post-RoPE
+  Q/K/V as the fixed `beta=0` K256 base at every layer and token. Native
+  trace parity passed before the screen was frozen. Parity SHA-256:
+  `56e4b730dc7580895e952a5746d105f5ca01ec36d83f6b37044c5f331061f8dd`.
+  Protocol SHA-256:
+  `584302d17a3224cda1b61dfe1f62685497fa5a0dc335cfc0a074439456ee1606`.
+- The train-only screen captured 32 answer rows from each of eight records.
+  For every leave-one-sequence-out fold, it learned one output basis per layer
+  from the other seven records and used oracle projection coefficients for
+  the held-out residual. This is an optimistic output-subspace ceiling, not a
+  causal coefficient-prediction result.
+- Rank 2 recovered 0.4004695221 globally, with 0.3157818897 minimum
+  held-out-sequence recovery, 0.2520495994 minimum answer-block-entry
+  recovery, and 16 positive layers. Rank 4 reached
+  0.4286862133/0.3469467122/0.3253174554/16. Rank 8 reached
+  0.4692526182/0.3874984380/0.4439671669/16.
+- Every rank passed the finite, every-sequence, every-block-entry, and at
+  least 12-positive-layer conditions. All failed solely because global
+  recovery was below the frozen 0.50 threshold. No rank was promoted and no
+  causal coefficient fit was authorized.
+- Reset replay and all post-run authentication checks passed. The reserved
+  confirmation split remained unopened. Result SHA-256:
+  `c636ad124d570f3675a36f0a23b276ba2e4cd4f5efc23dbf98cc10cd2cfd8e33`.
+  Compact trace-manifest SHA-256:
+  `1f255a59a20089abe4d6805c625a119c167b71153bc21f5edbfcf0fd8050f461`.
+  The eight approximately 12 MiB local trace shards remain ignored working
+  data; the archived manifest binds their identities and shapes.
+- Decision: close only rank-at-most-8 global per-layer output subspaces with
+  oracle held-out coefficients. Milestone 2 remains passed and Milestone 3
+  remains blocked. The next train-only capacity experiment is a dynamic
+  per-head episodic logit-mass oracle under the existing state and
+  logical-read ceilings. A pass would authorize a causal predictor screen,
+  not package promotion.
+
+## 2026-07-29: dynamic per-head episodic-mass oracle fails
+
+- Froze a train-only, same-state capacity experiment with the authenticated
+  K256 representation, all-head payload, oracle schedule, cache state, and
+  logical-read contract unchanged. It selected one of
+  `gamma={0,1/8,1/4,1/2,1,2,4,8}` independently for every
+  record/read-row/layer/head coordinate to match the W128 teacher's
+  probability mass on the eight scheduled source positions.
+- The selection objective worked: mean absolute mass error fell from
+  0.0445126662 at the gamma-one base to 0.0084754603 and never regressed at
+  any coordinate. Projecting the selected value counterfactual through the
+  authenticated BF16 `W_o` nevertheless made residual recovery worse.
+- Global recovery was -0.1089124543. All eight sequence recoveries were
+  negative. Position-96/104/112/120 block recoveries were
+  -0.0838671661/-0.1344610650/-0.0262677422/-0.0686255750, and only 1/16
+  layers had positive recovery. The frozen requirements were 0.50 globally,
+  0.25 on every sequence and every block entry, and at least 12/16 positive
+  layers.
+- All eight base outputs and counters matched their historical references;
+  trace tensors, reset replay, metric/code replay, and post-run
+  authentication passed exactly. Direct real-model gamma qualification is
+  layer-zero-only because changing that layer causally changes later input
+  states. On the identical layer-zero input, analytic mass/output/projected
+  values agreed within about `1.2e-7`; the shared native kernel has separate
+  full-grid unit coverage.
+- Authenticated SHA-256 roots are parity
+  `569218dbb3ba8667c15ff932e0f9dffe5575774418080cc4e4239062fe2c6d01`,
+  protocol
+  `fe09689452e6ae4f1a1b15332c61c1cc990cfc29b6a8b0d5a1758d9490a93af5`,
+  result
+  `f7060e7373c5faf8f154891e93efad35659723d8e3f04d83638b62fa9cf72596`,
+  trace manifest
+  `93df0a554744b97e7436b9a8b4bb71473bc21fa9f6c90985431274859164e0b6`,
+  and immutable trace DSO
+  `6c466bb75a508bd7f8b9173667e7bd9d8433d91c3be818db25f01a495be6d2da`.
+- Decision: close only this exact independent-head scheduled-source-mass
+  grid. Confirmation remained unopened. No gamma predictor, causal
+  integration, package promotion, or Milestone 3 progression was authorized.
+  The next justified cached boundary was a joint output-targeted oracle that
+  accounted for cross-head coupling through `W_o`.
+
+## 2026-07-30: joint output-targeted gamma oracle fails its optimistic bound
+
+- Reused the authenticated head-mass traces in a cached, train-only,
+  same-state experiment. For each head it formed
+  `q=R/mr-B` and `d=E/me-R/mr`; every non-base gamma code produced
+  `q+p_gamma*d`, while code 4 was the exact native base. All 16 heads were
+  optimized jointly after BF16 `W_o`, including cross-head Gram terms.
+- The frozen continuous box relaxation is an optimistic superset of every
+  discrete gamma choice. It recovered only 0.22738059544921096 globally:
+  1/8 sequences and 0/4 position-96/104/112/120 block entries reached 0.25,
+  although all 16 layers were positive. Its sequence recoveries were
+  `0.218541,0.222868,0.245852,0.263555,0.221380,0.235512,0.208633,0.207381`;
+  block recoveries were `0.187912,0.165185,0.184378,0.186928`.
+- Its maximum relative objective-gap certificate was `3.010281e-08` and the
+  summed absolute bound was `7.465143e-07`, so numerical uncertainty cannot
+  bridge the frozen 0.50 global or every-sequence/every-block thresholds.
+  Gram asymmetry was zero and the minimum normalized eigenvalue was
+  `-7.069599e-16`, consistent with roundoff around the explicitly
+  factor-constructed positive-semidefinite matrix.
+- The deterministic eight-code solver recovered
+  0.1997680396822742 through the direct float32 projection path: 0/8
+  sequences and 0/4 block entries reached 0.25, with 16/16 positive layers.
+  Its sequence recoveries were
+  `0.181123,0.200645,0.224646,0.227986,0.189272,0.207653,0.186098,0.184277`;
+  block recoveries were `0.171932,0.150288,0.170368,0.163029`.
+- Discrete replay, code-4 non-regression, and exhaustive one-/two-head local
+  optimality passed. Maximum q/d pre-`W_o` discrepancy was
+  `6.199955e-08`, mixed-code projected discrepancy was `1.409902e-07`, and
+  quadratic versus direct global recovery differed by `4.147716e-11`. Every
+  post-run authentication check passed.
+- Frozen protocol SHA-256:
+  `aa03a71e3dd9e1fbb413a7773d57189c41029c26b2f4372b2fb7a26744305d24`.
+  Result SHA-256:
+  `1329a51bac71cb81f44494c8ef70cb23a631eacebac5540b39e2e98ed5e30ea5`.
+  Inherited trace-manifest/parity roots are
+  `93df0a554744b97e7436b9a8b4bb71473bc21fa9f6c90985431274859164e0b6`
+  and
+  `569218dbb3ba8667c15ff932e0f9dffe5575774418080cc4e4239062fe2c6d01`;
+  solver/evaluator source roots are
+  `5c6bf5c4680349b8127ed9dca1bb1ad2f92f3691110eb2025e812cd84c235395`
+  and
+  `084e513d78ab4a9c996e351a0927685bd7fbe02ffe2a4f3f08ebff91ba9e094e`.
+- Decision: because even the continuous superset fails, further discrete
+  scalar-mass optimization is scientifically unjustified. This closes only
+  the fixed-K256 bounded affine per-head `(q,d)` family. Confirmation remained
+  unopened, and no predictor, native causal integration, Milestone 3 pass, or
+  end-to-end substitution was authorized. The next attention experiment must
+  introduce new value directions or a different memory mechanism.
+
+## 2026-07-30: exact per-slot value simplex also fails decisively
+
+- Added a native non-intervening trace for the eight exact BF16 episodic
+  values and their normalized masses at every train read row, layer, and
+  query head. Native output/counter parity, inherited trace parity, reset
+  replay, exact BF16 decode, and value/mass reconstruction passed.
+- The native rollout completed all eight records before the original scalar
+  product-simplex solver proved too slow. The 259 MiB shard set was preserved
+  and independently reauthenticated. A distinct cached handoff bound the V1
+  protocol, parity report, both trace manifests, train identities, historical
+  outputs, output projections, and every shard/tensor digest. Capture-report
+  SHA-256 is
+  `18218d3a7dbcae731ae42b85cefc09a20ab738ad15531bae3be74c17368d8258`.
+- Replaced the inner row loop with a vectorized reference implementation and
+  added a deterministic bulk active-set KKT accelerator. Feasibility plus the
+  recomputed full product-simplex Frank-Wolfe gap is the only authority;
+  singular, cycling, or uncertified rows fall back to the unchanged 512-sweep
+  pairwise block solver. Eight forked CPU workers solve independent
+  layer/arm tasks, with exact full replay.
+- The constructible arm gave every head a simplex over the regular-cache
+  conditional mean plus eight exact episodic values. It recovered
+  0.3844378107 globally; all 8/8 sequences, 4/4 block entries, and 16/16
+  layers passed their local thresholds, but the frozen global requirement was
+  0.50.
+- The decisive optimistic hull added the exact native head output. It
+  recovered only 0.3844378142 globally. Its maximum per-row objective-gap
+  bound was `5.90e-11`; the exact anchor improved recovery by only about
+  `3.49e-9`. Numerical uncertainty therefore cannot change the decision.
+- Direct/quadratic parity, non-regression, exact deterministic replay, every
+  final artifact/source hash, and confirmation blindness passed. Cached
+  protocol SHA-256 is
+  `f3be957ec0c13d0f49c85a2fa149611307de756f2be82165098a43263bb78ce3`;
+  result SHA-256 is
+  `2e8e9b7d5f33d33c0e8c642a50359da785d0690d8260ed9f65837b14cd93a5bf`.
+  The full solve and replay took 91.59 seconds.
+- Decision: close same-state reweighting over the current regular aggregate
+  plus eight episodic values. Do not fit a per-slot selector. The next
+  capacity experiment must expose additional values that K256 already reads
+  separately, add new retrieved values, or change the bounded memory. No
+  Milestone 3 progression, package change, development run, or confirmation
+  access was authorized.
+
+## 2026-07-30: full-visible C28 passes the train-only capacity gate
+
+- Added a non-intervening native trace for all regular value rows already read
+  by the bounded attention kernel. At each layer and query head it exposes 16
+  local values in chronological order and up to four selected-older values in
+  native score order. Combined with the eight existing episodic values, this
+  gives a constructible C28 simplex without adding deployed KV state or reads.
+  Optimistic C29 adds the exact native head output as an extra anchor.
+- The prospectively frozen run used eight training sequences, 32 evaluated
+  read positions per sequence, 16 layers, and 16 query heads. The
+  constructible C28 arm recovered **0.6653937751** globally. Its minimum
+  sequence recovery was **0.6447006551**, minimum block-entry recovery was
+  **0.6306278392**, and all 16/16 layers had positive recovery. It passed
+  every frozen capacity condition.
+- The exact-native-anchor C29 arm recovered **0.6653865288** globally and
+  also passed its optimistic qualification. Nested C10 and C16 top-mass
+  diagnostics recovered 0.5335805245 and 0.6021187653, but the frozen
+  protocol assigned them no progression authority.
+- Qualification, deterministic replay, solver-certificate checks, projection
+  authentication, source and manifest authentication, and every post-solve
+  check passed. Fixed attention state remained 10,534,912 bytes and combined
+  logical attention/episodic traffic remained 714,866,688 bytes, or
+  33.0305% of dense full-context KV. No new KV read was introduced.
+- Result SHA-256:
+  `a8711f07fdcbe48b16ebe962aae1962e4613873640eba20bc7fa88238216aee1`.
+  The frozen evidence is archived under
+  `reports/olmoe_q7_retrieval_episodic_full_visible_simplex_oracle_2026-07-30/`.
+  The reserved confirmation split remained sealed.
+- Decision: the train-only same-state value-capacity gate passes and
+  authorizes a causal 28-logit selector trained from inference-available
+  state. It does not demonstrate native causal learnability, authorize
+  development or confirmation, promote a package policy, or pass Milestone 3.
+
+## 2026-07-30: rank-4 query-content selector fails the train-only OOF gate
+
+- Reconstructed the authenticated packaged post-QNorm, pre-RoPE queries and
+  fit a rank-4 content projection jointly with the inference-available
+  source-mass branch against exact C28 oracle membership.
+- The prospectively frozen out-of-fold screen completed all eight training
+  records. FP32/BF16 global recovery was
+  **0.2542615526/0.25422074198**. BF16 minimum sequence and minimum block-entry
+  recovery were **0.23161600085/0.18371154473**, while all 16/16 layers remained
+  positive.
+- Conservative total logical traffic was 36.8096% of dense. Resource,
+  finite-value, simplex/masking, zero-model, coefficient/output parity,
+  deterministic BF16 replay, record authentication, and post-fit
+  authentication checks passed.
+- Frozen protocol SHA-256:
+  `0a58ba3a59d2f0f816046ca28aac304baf7663ef890a6b298f0cc7277613d051`.
+  Result SHA-256:
+  `9ea504f83a487584cb9ae2127565674a8e341ca58f6777a03514b0c9a281995c`.
+- Decision: reject this query-content-plus-mass feature/model class. This is
+  train-only model selection on an exposed corpus, not independent
+  generalization evidence. No native integration, development, confirmation,
+  package promotion, or Milestone 3 progression was authorized.
+
+## 2026-07-30: phase-conditioned mass selector also fails
+
+- Added an eight-step schedule-relative table to the smaller learned
+  source-mass selector. The table is active only during the episodic read
+  schedule and is equivariant to an eight-position schedule shift.
+- The frozen out-of-fold screen completed all eight training records.
+  FP32/BF16 global recovery was
+  **0.2618976463/0.2618728353**. BF16 minimum sequence and minimum block-entry
+  recovery were **0.2405241062/0.2244750908**. The four block-entry
+  recoveries were 0.314588398, 0.228395562, 0.261696236, and 0.224475091;
+  all 16/16 layers remained positive.
+- The BF16 deployment artifact has 82,944 parameters and occupies 165,888
+  bytes. Conservative total logical traffic is 736,100,352 bytes per
+  128-token sequence, or 34.0116% of dense. Every systems, resource, masking,
+  zero-model, schedule-shift, deterministic replay, parity, and authentication
+  check passed.
+- Frozen protocol SHA-256:
+  `8cb1c7b0e9a6bc2d23839cdbf4de973e66616cccc86e980e6a151d4f2b773987`.
+  Result SHA-256:
+  `52360cf47cb2eeab52e595961f436e4c1e7b79db6cdaa339b7f699d3290883ed`.
+- Decision: phase improves the preceding mass-only BF16 result by only
+  **0.0040699** and remains far below the 0.50 global gate. Close both
+  query-content and phase-on-mass model classes. These remain train-only
+  model-selection outcomes; no native integration, development,
+  confirmation, package promotion, or Milestone 3 progression was
+  authorized. The next directional class is a blockwise-QK feature controller.

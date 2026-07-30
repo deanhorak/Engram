@@ -1,0 +1,271 @@
+{
+  "attention_policies": {
+    "base": {
+      "local_window": 16,
+      "older_candidates": 8,
+      "older_top_k": 4,
+      "sink_tokens": 2
+    },
+    "rescued": {
+      "local_window": 128,
+      "older_candidates": 8,
+      "older_top_k": 4,
+      "sink_tokens": 2
+    }
+  },
+  "budget": {
+    "candidate_attention_expectations_per_sequence": {
+      "attention_candidate_key_bytes": 91105280,
+      "attention_eviction_events": 22960,
+      "attention_heavy_hitter_updates_maximum": 22550,
+      "attention_heavy_hitter_updates_minimum": 1230,
+      "attention_local_kv_bytes": 835887104,
+      "attention_logical_read_bytes": 973384704,
+      "attention_logical_read_fraction": 0.44975387218386625,
+      "attention_older_candidate_entries_scored": 177940,
+      "attention_older_selected_entries": 90610,
+      "attention_scratch_bytes": 107136,
+      "attention_selected_value_bytes": 46392320,
+      "attention_sink_insertions": 410,
+      "attention_state_bytes": 12284864,
+      "dense_full_context_logical_kv_bytes": 2164260864,
+      "positions_processed": 128
+    },
+    "full_control_attention_expectations_per_sequence": {
+      "attention_candidate_key_bytes": 0,
+      "attention_eviction_events": 0,
+      "attention_heavy_hitter_updates_maximum": 0,
+      "attention_heavy_hitter_updates_minimum": 0,
+      "attention_local_kv_bytes": 2164260864,
+      "attention_logical_read_bytes": 2164260864,
+      "attention_logical_read_fraction": 1.0,
+      "attention_older_candidate_entries_scored": 0,
+      "attention_older_selected_entries": 0,
+      "attention_scratch_bytes": 290816,
+      "attention_selected_value_bytes": 0,
+      "attention_sink_insertions": 0,
+      "attention_state_bytes": 36071424,
+      "dense_full_context_logical_kv_bytes": 2164260864,
+      "positions_processed": 128
+    },
+    "maximum_attention_logical_read_fraction": 0.45,
+    "maximum_q7_traffic_fraction": 0.45,
+    "next_head_boundary": {
+      "attention_logical_read_fraction": 0.4524379996366279,
+      "selected_head_count": 52,
+      "within_budget": false
+    },
+    "q7_traffic_contract_per_sequence": {
+      "all_expert_ideal_q4_bytes_per_sequence": 412316860416,
+      "q7_fraction_of_all_expert_ideal_q4": 0.22786458333333334,
+      "q7_scheduled_bytes_per_sequence": 93952409600
+    },
+    "selected_head_count": 51
+  },
+  "corpus": {
+    "manifest_file": "corpus_manifest.json",
+    "manifest_sha256": "476676c90cbdd64e595b6554cd1b168a568b4e3158188d4d16c2d18c93b3095e",
+    "splits": {
+      "confirmation": {
+        "answer_prediction_positions_per_record": 32,
+        "file": "confirmation.jsonl",
+        "prediction_positions_per_record": 128,
+        "record_identity_sha256": "b507767ea68c015fdb9347313921c59a0dbefc0c61a47883ade1fa837fc4e844",
+        "records": 8,
+        "sha256": "c74aa6532e94bfa4dd10bbc1e13c27a06c35f79edbc9bc921a4219409f903baa",
+        "tokens_per_record": 129
+      },
+      "development": {
+        "answer_prediction_positions_per_record": 32,
+        "file": "development.jsonl",
+        "prediction_positions_per_record": 128,
+        "record_identity_sha256": "9408db643a9d500e4b9f9bb6737a352e55b11c26d3880b0f52deca3ea85b806d",
+        "records": 8,
+        "sha256": "0f45b6848ced22b42b27995577691398214697b58018537acd6fe5037cd0072f",
+        "tokens_per_record": 129
+      },
+      "train": {
+        "answer_prediction_positions_per_record": 32,
+        "file": "train.jsonl",
+        "prediction_positions_per_record": 128,
+        "record_identity_sha256": "ead052a706c236ad8dd4a1347bafb5f55bea2d76a7dd4e086c8683c8dfd0c10b",
+        "records": 8,
+        "sha256": "9f09a9f573bd7c33de9699ee4be5f5394dcc54d2595e3210d8bb923712e19b55",
+        "tokens_per_record": 129
+      }
+    }
+  },
+  "decision_rule": {
+    "development_pass": "authorize a separately frozen confirmation protocol only",
+    "evidence_failure": "stop and diagnose before any semantic decision",
+    "semantic_failure": "stop the static retrieval-targeted selector without opening confirmation; move next to prefix-conditioned allocation"
+  },
+  "development_screen": {
+    "answer_positions_per_record": 32,
+    "candidate_and_each_depth_must_pass": true,
+    "confirmation_must_remain_unopened": true,
+    "full_W128_control_required": true,
+    "records": 8,
+    "source_depth_strata": [
+      "earliest",
+      "early",
+      "middle",
+      "late"
+    ],
+    "teacher_retrieval_minimum_log_probability_advantage": 0.0,
+    "thresholds": {
+      "maximum_hidden_relative_l2": 0.1,
+      "maximum_mean_kl": 0.05,
+      "maximum_target_nll_delta": 0.05,
+      "minimum_top1_agreement": 0.9
+    }
+  },
+  "experiment": "olmoe_q7_retrieval_head_selector_protocol",
+  "expert_proxy_qualifier": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/sustained_2026-07-28/causal_head_gate_proxy_record.json",
+    "result_expert_proxy_source_sha256": "65015130e12204666963ce0b41c1763ee5f9972d657f6567c8988148d81ff3b0",
+    "sha256": "837d4cadb793c191844eac1bc3f4495530cd8e98437804e719fa9375a89f4960",
+    "transformers_expert_dispatch_contract": {
+      "transformers_modeling_utils_path": "/home/dean/anaconda3/lib/python3.11/site-packages/transformers/modeling_utils.py",
+      "transformers_modeling_utils_sha256": "b8467e1ada952862d2e4d76632475ac2f9fa198121d0e1ce64fa393ea3773e16",
+      "transformers_moe_path": "/home/dean/anaconda3/lib/python3.11/site-packages/transformers/integrations/moe.py",
+      "transformers_moe_sha256": "abcdb5dc859c6a17be2a3caeb09f7ad609eeb340610d03280099099423e1ae97"
+    },
+    "workers": 12
+  },
+  "framework_contract": {
+    "torch_version": "2.5.1+cu121",
+    "transformers_olmoe_modeling_path": "/home/dean/anaconda3/lib/python3.11/site-packages/transformers/models/olmoe/modeling_olmoe.py",
+    "transformers_olmoe_modeling_sha256": "6438176bf2f96320e38ee5afea14659bd1be66fc29363ff7f5a052b5823f3d3e",
+    "transformers_version": "5.5.4"
+  },
+  "libraries": {
+    "attention": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/libengram_attention.causal-gate-153e91d9.so",
+      "sha256": "153e91d9d1fdb964b678eec0f22498d397888781edfe2d531eda8933c3fe87c5"
+    },
+    "headwise": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/libengram_olmoe_token_runtime.headwise-cb72b31e.so",
+      "sha256": "cb72b31e7afbf9b9986f1ed107ca2b0d893947aac2c96b58b95298e2bfc12d36"
+    },
+    "layered": {
+      "path": "/home/dean/repos/engram/work/olmoe_q7/libengram_olmoe_token_runtime.layered-fe4dfdcc.so",
+      "sha256": "fe4dfdcc7e87a3cd5e36074e07d297f838ba345c37e939eeb0d796cb39cce409"
+    }
+  },
+  "limitations": [
+    "The corpus is synthetic token-level passkey retrieval, not natural prose.",
+    "The confirmation split is sealed but this module implements no confirmation command.",
+    "Training loss values execute the complete packaged Q7 runtime; gradients use the frozen BF16 model as a straight-through surrogate.",
+    "Logical byte counters are algorithmic traffic, not measured DRAM traffic."
+  ],
+  "package": {
+    "manifest_sha256": "861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db",
+    "model": {
+      "experts": 64,
+      "head_dimension": 128,
+      "hidden_size": 2048,
+      "intermediate_size": 1024,
+      "key_value_heads": 16,
+      "layers": 16,
+      "q7_group_size": 64,
+      "query_heads": 16,
+      "top_k": 8,
+      "vocab_size": 50304
+    },
+    "path": "/home/dean/repos/engram/work/olmoe_q7/package",
+    "q7_expectations_per_sequence": {
+      "artifact_bytes": 5842733184,
+      "router_bytes_per_layer_position": 262144,
+      "scheduled_bytes_per_layer_position": 45875200,
+      "scheduled_bytes_per_position": 734003200,
+      "scheduled_bytes_per_sequence": 93952409600,
+      "selected_expert_bytes_per_layer_position": 45613056
+    },
+    "tokenizer_sha256": "ff3f2a2fc3b88f6f8504650e2ebb8e018bc4206a90eb41f1a9ff351e02e44ff9"
+  },
+  "schema_version": 1,
+  "seed": 20260728,
+  "source_model": {
+    "config_sha256": "21dc57233d4664eccd9734f5d46563a3716ff88dea5be0d33483fc2df9ce1482",
+    "index_sha256": "0c1713a6cd423db918a95ec64e2145444d86b19b979075f8326129401ed1cb80",
+    "path": "/home/dean/repos/engram/work/huggingface/models--allenai--OLMoE-1B-7B-0125/snapshots/9b0c1aa87e34a20052389dce1f0cf01da783f654",
+    "revision": "9b0c1aa87e34a20052389dce1f0cf01da783f654",
+    "shard_sha256": {
+      "model-00001-of-00006.safetensors": "df5a700fa91fd94e9d1a7ae523c5ae055f5879778a02ea19758edd37089da1ca",
+      "model-00002-of-00006.safetensors": "5f299f21e6de71f5334e937fd51a083bab8cffe55682488219e4082d9558fdba",
+      "model-00003-of-00006.safetensors": "4491eb552fd917a6777260f75c88e714f3174fbba7dd69d44b97c4124ddcd56b",
+      "model-00004-of-00006.safetensors": "7aeea413752cd17a8e7c343aa436594a8158d279817e4993aa5df4b7c7cfdf22",
+      "model-00005-of-00006.safetensors": "18c7f749af753359e10c33a9c5deec688b7155f7c01052937806cd351c52cc38",
+      "model-00006-of-00006.safetensors": "299009ba118f5e918de33573a316ad3d3b9236651986fb1a14dc894f55269e67"
+    }
+  },
+  "source_sha256": {
+    "src/engram/compiler/olmoe_native.py": "e1a1bf19ce836b2e7f362e3ba170be42cce7e9791ae711895e1fe5a1e38ecbb1",
+    "src/engram/evaluation/olmoe_causal_head_gate.py": "442169060860257e78bbc0068bfdf9e5cf6edd93ff2b392c75ed333687765590",
+    "src/engram/evaluation/olmoe_causal_head_gate_proxy_record.py": "1e563ec54d6115029a39848f2cd59da724046f49dd17b1d4975d94ea86e99f43",
+    "src/engram/evaluation/olmoe_expert_proxy.py": "65015130e12204666963ce0b41c1763ee5f9972d657f6567c8988148d81ff3b0",
+    "src/engram/evaluation/olmoe_native_causal.py": "a7bd8f300d2149cab8375e8ea9703c099145bd620e7b509c636716be256eb961",
+    "src/engram/evaluation/olmoe_native_headwise.py": "303862d4f2151f6c554fd3605c46100603fb9d37de44537bf866d1e892a9fe00",
+    "src/engram/evaluation/olmoe_native_layer_rescue.py": "77dafe8fc1fb6ca317ad7b99d5d86122e26b94b477f5befcf6184ce14080dff0",
+    "src/engram/evaluation/olmoe_native_sustained.py": "019c6cf4fd74a77b5ffe992908c4d885f8ca7efb386e20c906695454dfbee520",
+    "src/engram/evaluation/olmoe_retrieval_head_selector.py": "0f7f80952b6c6b4b7511e999345c2d50ddc057014d5a336d5d50b6d50291cf4e",
+    "src/engram/runtime/native_attention.py": "75be1156fa799f4234af85b9444cc1aac3daa5d2496660f62637c805c6284930",
+    "src/engram/runtime/olmoe_native.py": "ce17a63f7521e3169bb9993a67df7492917a7f60c54f87c34de232ed064ad803"
+  },
+  "status": "frozen_before_retrieval_teacher_or_candidate_execution",
+  "training": {
+    "answer_prediction_positions": [
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127
+    ],
+    "device": "cpu",
+    "iht_steps": 2,
+    "loss": {
+      "backward_surrogate": "frozen_BF16_shell_with_exact_native_attention_and_qualified_expert_parallel_backward",
+      "forward_values": "complete_packaged_native_Q7_runtime",
+      "name": "mean_ground_truth_answer_cross_entropy",
+      "position_scope": "answer_positions_96_127_only",
+      "record_weighting": "equal",
+      "straight_through_boundary": "native_forward_surrogate_backward",
+      "target_tokens_per_record": 32
+    },
+    "masks": [
+      "M0",
+      "M1",
+      "M2"
+    ],
+    "selection_rule": "among M1 and M2 minimize worst train-record objective, then mean objective, then prefer M1; require strict worst and mean improvement versus M0 and no train-record regression",
+    "workers": 12
+  }
+}

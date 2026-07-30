@@ -205,11 +205,74 @@ overall threshold, so the mask was not promoted and no fresh confirmation was
 run. A later two-record natural-prose causal/value-sensitive selector also
 failed the complete native Q7 screen, at
 KL/top-1/NLL-delta/hidden-L2
-0.079132/0.864583/+0.081199/0.182647. The next experiment changes the
-supervision: a Q7-aware retrieval-head selector trained on a new synthetic
-retrieval corpus with loss concentrated on answer positions. It must pass
-development and then fresh confirmation before a package-format change is
-justified; prefix-conditioned allocation is the fallback if it cannot pass.
+0.079132/0.864583/+0.081199/0.182647.
+
+The later Q7-aware retrieval-targeted selector used a new 8/8/8 synthetic
+passkey corpus and answer-only loss. Its exact-51 `M2` mask passed the
+training-selection rule, but failed development KL, NLL-delta, and
+hidden-state gates while the matched W128 control passed. The sealed
+confirmation split was not opened. Train-only causal K2, exact episodic
+payload, label-plus-payload, K51, and ranked K64/K96/K128/K165 follow-ups
+then failed strict answer-loss progression while remaining within their
+native systems budgets.
+
+The final experiment in that scalar/cache branch fixed the stronger K256
+all-head payload and added only `beta=float32(log(gamma))` to episodic logits.
+Exact V1/V2 `beta=0` parity passed. All four nonzero candidates
+`gamma={1/2,1/4,3/16,1/8}` failed the eight-record train gate; the best failed
+nonzero candidate, `gamma=1/2`, measured mean/worst answer CE
+1.461414/1.669250 and remained worse than the historical `beta=0` result
+1.224460/1.327343. The
+[archived V2 result](../reports/olmoe_q7_retrieval_episodic_logit_bias_2026-07-29/summary.md)
+has SHA-256
+`19d08ce9eb4b673d423e9781a491e25ec03bdec09467a43e7be1881874ef2287`.
+No candidate was promoted.
+
+The same-state shadow residual prerequisite has now completed and failed. It
+fixed `beta=0` as the K256 base and ran a non-intervening train-only W128
+shadow from identical candidate-produced Q/K/V. Ranks 2/4/8 recovered
+40.05%/42.87%/46.93% of the post-`W_o` residual globally with oracle held-out
+coefficients, below the frozen 50% gate. All other capacity conditions passed.
+This closes only rank-at-most-8 global per-layer output subspaces; no
+correction artifact or causal coefficient fit was authorized.
+
+The two dynamic per-head follow-ups have also completed without authorizing a
+conversion artifact. Matching exact scheduled-source probability mass reduced
+mean scalar error from 0.04451 to 0.00848 but worsened post-`W_o` residual
+recovery to -10.89%. A joint output-targeted solver then included all
+cross-head projection terms; its certified continuous optimistic bound
+recovered 22.74% globally and its direct discrete arm recovered 19.98%, both
+below the frozen 50% gate. The result closes only scalar reweighting in the
+fixed-K256 affine `(q,d)` family.
+
+The later exact per-slot simplex exposed all eight episodic values separately
+and raised the certified ceiling to 38.44%, with every non-global condition
+passing. Its exact-native-anchor optimistic superset remained at 38.44% and
+failed the 50% global gate with negligible numerical uncertainty. This closes
+the current regular aggregate plus eight episodic directions, so it still
+does not authorize a serialized selector.
+
+The frozen full-visible successor then exposed the 16 local and four
+selected-older values separately alongside the eight episodic values.
+Constructible C28 recovered 0.6653937751 globally, with minimum
+sequence/block recovery of 0.6447006551/0.6306278392 and 16/16 positive
+layers. Optimistic C29 recovered 0.6653865288. All frozen qualification,
+gate, replay, and post-authentication checks passed while state stayed at
+10,534,912 bytes and traffic stayed at 714,866,688 bytes (33.0305% of dense);
+no new KV reads were added.
+
+This passes the train-only same-state capacity prerequisite and authorizes a
+causal 28-logit selector. It does not yet justify a package-format revision:
+the selector has not demonstrated native causal learnability, train
+progression, development, or independent confirmation. The current version-1
+package remains unchanged. See the
+[archived residual-capacity result](../reports/olmoe_q7_retrieval_episodic_residual_capacity_2026-07-29/summary.md)
+and the
+[joint-gamma capacity result](../reports/olmoe_q7_retrieval_episodic_joint_gamma_oracle_2026-07-30/summary.md),
+followed by the
+[per-slot value result](../reports/olmoe_q7_retrieval_episodic_slot_simplex_oracle_2026-07-30/summary.md)
+and the
+[full-visible capacity result](../reports/olmoe_q7_retrieval_episodic_full_visible_simplex_oracle_2026-07-30/README.md).
 
 The first command below is the historical sealed-reference reproduction, so
 it explicitly retains the original serial sequence policy:

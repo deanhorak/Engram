@@ -1,0 +1,213 @@
+{
+  "confirmation_split_opened": false,
+  "experiment": "olmoe_q7_retrieval_episodic_slot_simplex_trace_parity",
+  "joint_gamma_protocol": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_joint_gamma_oracle_2026-07-30_v3_frozen/protocol.json",
+    "sha256": "aa03a71e3dd9e1fbb413a7773d57189c41029c26b2f4372b2fb7a26744305d24"
+  },
+  "joint_gamma_result": {
+    "authenticated_failure": {
+      "confirmation_split_opened": false,
+      "continuous_optimistic_global_recovery": 0.22738059544921096,
+      "discrete_direct_global_recovery": 0.1997680396822742,
+      "status": "train_episodic_joint_gamma_oracle_gate_failed"
+    },
+    "path": "/home/dean/repos/engram/work/olmoe_q7/retrieval_episodic_joint_gamma_oracle_2026-07-30_v3_frozen/train_screen.json",
+    "sha256": "1329a51bac71cb81f44494c8ef70cb23a631eacebac5540b39e2e98ed5e30ea5"
+  },
+  "parity": {
+    "checks": {
+      "historical_base_outputs_counters_and_loss_exact": true,
+      "inherited_mass_and_projected_trace_exact": true,
+      "passed": true,
+      "reset_outputs_counters_and_loss_exact": true,
+      "reset_trace_exact": true,
+      "slot_mass_reconstructs_episodic_mass": true,
+      "slot_values_exact_bf16_decodes": true,
+      "slot_values_reconstruct_episodic_component": true
+    },
+    "first_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+    "first_trace": {
+      "base_component_reconstruction_max_abs": 5.960464477539063e-08,
+      "dtype": "float32",
+      "episodic_component_reconstruction_max_abs": 0.0,
+      "layout": "position_layer_query_head_span_dimension",
+      "mass_partition_max_abs": 4.76837158203125e-07,
+      "mass_shape": [
+        32,
+        16,
+        16
+      ],
+      "positions": [
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125,
+        126,
+        127
+      ],
+      "slot_mass_reconstruction_max_abs": 1.7881393432617188e-07,
+      "slot_mass_shape": [
+        32,
+        16,
+        16,
+        8
+      ],
+      "slot_value_shape": [
+        32,
+        16,
+        16,
+        8,
+        128
+      ],
+      "slot_values_exact_bf16_decodes": true,
+      "tensor_sha256": {
+        "base_attention_output": "45bce467122694847c7e4f6a50926531f4feb31cd4df665169f0fe6d5bd9dba5",
+        "base_projected": "4d2b96b363268f448dfeef1957ac2e9e63b087187fab332059a957653d504184",
+        "episodic_component": "d5da283feb734b914d1b2cbe4e49986f10f5862368da33fd05254fdf97e12e29",
+        "episodic_mass": "e7cb421f291758ba848a566535971e3953a6ff7b1d092c7e1189b310d528bf3f",
+        "regular_component": "eb4bd91cd7cb0569f717036e02ec7f5bf34b8d5cc3fa03d3937a461101b75833",
+        "regular_mass": "3fa82fb2168cbacb6d8b8176b560aba19b480bd376057bc40725c966808ef841",
+        "slot_mass": "dae9d71f42cf9f6b327e83c0edbeab22a201d7884488011daa95476a08931b14",
+        "slot_values": "528c1b8d99852d4c5c34a8c8c2d68f1d3f5a9d860b3534d49e71408a1b1a9e39",
+        "target_residual": "efd2d50e21c10ed6007f8ac0e22ce378755f79c90672b4496662cabe271ada1e"
+      },
+      "trace_sha256": "24a5867c299fb0bc4967afb950c2a70512780f5f2b06cf74f70709ba4894c796",
+      "value_shape": [
+        32,
+        16,
+        2048
+      ]
+    },
+    "inherited_trace_sha256": "4d67b0ab56aba553ca3b1f807ca265ab43294e0c85b66cd9bf89271fefee2d80",
+    "native_sequence_forwards": 2,
+    "native_token_steps": 256,
+    "passed": true,
+    "record_index": 0,
+    "reset_output_evidence_sha256": "3d0eab26cfaaf45af1477a1b72a698506ceda1348cc10ba145e94726862cb986",
+    "reset_trace": {
+      "base_component_reconstruction_max_abs": 5.960464477539063e-08,
+      "dtype": "float32",
+      "episodic_component_reconstruction_max_abs": 0.0,
+      "layout": "position_layer_query_head_span_dimension",
+      "mass_partition_max_abs": 4.76837158203125e-07,
+      "mass_shape": [
+        32,
+        16,
+        16
+      ],
+      "positions": [
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125,
+        126,
+        127
+      ],
+      "slot_mass_reconstruction_max_abs": 1.7881393432617188e-07,
+      "slot_mass_shape": [
+        32,
+        16,
+        16,
+        8
+      ],
+      "slot_value_shape": [
+        32,
+        16,
+        16,
+        8,
+        128
+      ],
+      "slot_values_exact_bf16_decodes": true,
+      "tensor_sha256": {
+        "base_attention_output": "45bce467122694847c7e4f6a50926531f4feb31cd4df665169f0fe6d5bd9dba5",
+        "base_projected": "4d2b96b363268f448dfeef1957ac2e9e63b087187fab332059a957653d504184",
+        "episodic_component": "d5da283feb734b914d1b2cbe4e49986f10f5862368da33fd05254fdf97e12e29",
+        "episodic_mass": "e7cb421f291758ba848a566535971e3953a6ff7b1d092c7e1189b310d528bf3f",
+        "regular_component": "eb4bd91cd7cb0569f717036e02ec7f5bf34b8d5cc3fa03d3937a461101b75833",
+        "regular_mass": "3fa82fb2168cbacb6d8b8176b560aba19b480bd376057bc40725c966808ef841",
+        "slot_mass": "dae9d71f42cf9f6b327e83c0edbeab22a201d7884488011daa95476a08931b14",
+        "slot_values": "528c1b8d99852d4c5c34a8c8c2d68f1d3f5a9d860b3534d49e71408a1b1a9e39",
+        "target_residual": "efd2d50e21c10ed6007f8ac0e22ce378755f79c90672b4496662cabe271ada1e"
+      },
+      "trace_sha256": "24a5867c299fb0bc4967afb950c2a70512780f5f2b06cf74f70709ba4894c796",
+      "value_shape": [
+        32,
+        16,
+        2048
+      ]
+    },
+    "schedule_rows_sha256": "f2200d9ca229d28d87c25b78a59c77007ce24185a03bc75966362a85d620b15d"
+  },
+  "post_run_authentication": {
+    "confirmation_not_opened": true,
+    "head_mass_manifest": true,
+    "joint_gamma_protocol": true,
+    "joint_gamma_result": true,
+    "slot_trace_library": true
+  },
+  "schema_version": 1,
+  "status": "per_slot_trace_parity_passed",
+  "trace_library": {
+    "path": "/home/dean/repos/engram/work/olmoe_q7/libengram_olmoe_token_runtime.slot-simplex-deeee538.so",
+    "required_symbols": [
+      "engram_olmoe_token_open_episodic_shadow_trace_v1",
+      "engram_olmoe_token_copy_last_shadow_trace_v1",
+      "engram_olmoe_token_copy_last_episodic_mass_trace_v1",
+      "engram_olmoe_token_copy_last_episodic_slot_trace_v1"
+    ],
+    "sha256": "deeee538cbf651793aff8a003b35dca9b64b39796454830b6fb7d57954938f96"
+  }
+}
