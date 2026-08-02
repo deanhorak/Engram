@@ -131,6 +131,46 @@ void* engram_olmoe_token_open_episodic_shadow_trace_v1(
     float episodic_logit_bias,
     const engram_olmoe_attention_policy_v1* shadow_policy,
     char* error, size_t error_capacity);
+// Additive evaluator-only extension of the shadow trace. In addition to the
+// existing mass/value traces, this captures eight RoPE-closed partial Q/K
+// dot-product bands for the 28 visible C28 entries.
+void* engram_olmoe_token_open_episodic_shadow_qk_trace_v1(
+    const engram_olmoe_token_config* config,
+    const engram_olmoe_episodic_policy_v1* policy,
+    const uint8_t* head_mask, size_t mask_count,
+    float episodic_logit_bias,
+    const engram_olmoe_attention_policy_v1* shadow_policy,
+    char* error, size_t error_capacity);
+// Additive evaluator-only extension of the QK trace. The copied candidate
+// tensor is layer-major [layers, query_heads, older_candidates, 8] and records
+// every active older candidate before native top-K truncation.
+void* engram_olmoe_token_open_episodic_shadow_qk_candidates_v1(
+    const engram_olmoe_token_config* config,
+    const engram_olmoe_episodic_policy_v1* policy,
+    const uint8_t* head_mask, size_t mask_count,
+    float episodic_logit_bias,
+    const engram_olmoe_attention_policy_v1* shadow_policy,
+    char* error, size_t error_capacity);
+// Additive evaluator-only key-side trace. The copied tensor is layer-major
+// [layers, query_heads, older_candidates, head_dimension] and records exact
+// post-RoPE candidate keys before native top-K truncation.
+void* engram_olmoe_token_open_episodic_shadow_qk_candidate_keys_v1(
+    const engram_olmoe_token_config* config,
+    const engram_olmoe_episodic_policy_v1* policy,
+    const uint8_t* head_mask, size_t mask_count,
+    float episodic_logit_bias,
+    const engram_olmoe_attention_policy_v1* shadow_policy,
+    char* error, size_t error_capacity);
+// Additive evaluator-only value-side trace. The copied tensor is layer-major
+// [layers, query_heads, older_candidates, head_dimension] and is paired with
+// the exact candidate keys in native older-cache slot order.
+void* engram_olmoe_token_open_episodic_shadow_qk_candidate_values_v1(
+    const engram_olmoe_token_config* config,
+    const engram_olmoe_episodic_policy_v1* policy,
+    const uint8_t* head_mask, size_t mask_count,
+    float episodic_logit_bias,
+    const engram_olmoe_attention_policy_v1* shadow_policy,
+    char* error, size_t error_capacity);
 void engram_olmoe_token_close(void* handle);
 void engram_olmoe_token_reset(void* handle);
 size_t engram_olmoe_token_vocabulary_size(const void* handle);
@@ -142,6 +182,15 @@ int engram_olmoe_token_forward(void* handle, const int64_t* token_ids,
 int engram_olmoe_token_forward_episodic_v1(
     void* handle, const int64_t* token_ids, size_t length,
     const int32_t* write_slots, const int32_t* read_spans,
+    int64_t* next_token, engram_olmoe_token_metrics* metrics, char* error,
+    size_t error_capacity);
+// Evaluator-only extension of the episodic forward ABI. Candidate masks are
+// row-major [length, layers, query_heads, older_candidates] and are applied
+// before exact native top-K selection. Existing V1 behavior is unchanged.
+int engram_olmoe_token_forward_episodic_masked_v1(
+    void* handle, const int64_t* token_ids, size_t length,
+    const int32_t* write_slots, const int32_t* read_spans,
+    const uint8_t* candidate_masks, size_t candidate_mask_count,
     int64_t* next_token, engram_olmoe_token_metrics* metrics, char* error,
     size_t error_capacity);
 int engram_olmoe_token_copy_last_diagnostics(
@@ -205,6 +254,20 @@ int engram_olmoe_token_copy_last_regular_entry_trace_v1(
     float* entry_values, size_t entry_value_count,
     uint8_t* valid_kind, size_t valid_kind_count,
     uint64_t* positions, size_t position_count,
+    char* error, size_t error_capacity);
+// Copies layer-major [layers, query_heads, 28, 8] raw Q/K partials. The
+// partials include the ordinary attention scale but exclude episodic bias.
+int engram_olmoe_token_copy_last_c28_qk_partial_trace_v1(
+    const void* handle, float* qk_partials, size_t qk_partial_count,
+    char* error, size_t error_capacity);
+int engram_olmoe_token_copy_last_c28_qk_candidate_trace_v1(
+    const void* handle, float* qk_candidates, size_t qk_candidate_count,
+    char* error, size_t error_capacity);
+int engram_olmoe_token_copy_last_c28_qk_candidate_keys_v1(
+    const void* handle, float* candidate_keys, size_t candidate_key_count,
+    char* error, size_t error_capacity);
+int engram_olmoe_token_copy_last_c28_qk_candidate_values_v1(
+    const void* handle, float* candidate_values, size_t candidate_value_count,
     char* error, size_t error_capacity);
 
 #ifdef __cplusplus

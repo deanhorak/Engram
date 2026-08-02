@@ -305,11 +305,36 @@ def _authenticate_predecessor_inputs(
 
 
 def _open_full_visible_runtime(context: Mapping[str, Any]) -> Any:
-    return slot._open_slot_trace_runtime(context)
+    return slot._open_slot_trace_runtime(
+        context,
+        c28_qk_partial_trace=bool(context.get("c28_qk_partial_trace", False)),
+        c28_qk_candidate_trace=bool(context.get("c28_qk_candidate_trace", False)),
+        c28_qk_candidate_key_trace=bool(
+            context.get("c28_qk_candidate_key_trace", False)
+        ),
+        c28_qk_candidate_value_trace=bool(
+            context.get("c28_qk_candidate_value_trace", False)
+        ),
+    )
 
 
 def _validate_runtime_route(runtime: Any) -> None:
-    slot._validate_runtime_route(runtime)
+    slot._validate_runtime_route(
+        runtime,
+        allow_c28_qk=(
+            getattr(runtime, "c28_qk_partial_trace_available", False) is True
+        ),
+        allow_c28_qk_candidates=(
+            getattr(runtime, "c28_qk_candidate_trace_available", False) is True
+        ),
+        allow_c28_qk_candidate_keys=(
+            getattr(runtime, "c28_qk_candidate_key_trace_available", False) is True
+        ),
+        allow_c28_qk_candidate_values=(
+            getattr(runtime, "c28_qk_candidate_value_trace_available", False)
+            is True
+        ),
+    )
     if runtime.regular_entry_trace_available is not True or not callable(
         getattr(runtime, "last_regular_entry_trace", None)
     ):
@@ -363,6 +388,44 @@ def _execute_record_pair(
         progress_label=f"{progress_prefix} first",
     )
     first_summary = full._trace_summary(arrays, positions)
+    qk_capture = (
+        getattr(trace, "qk_captured", None)
+        if getattr(trace, "c28_qk_partial_trace_available", False) is True
+        else None
+    )
+    first_qk = (
+        np.ascontiguousarray(qk_capture()) if callable(qk_capture) else None
+    )
+    qk_candidate_capture = (
+        getattr(trace, "qk_candidates_captured", None)
+        if getattr(trace, "c28_qk_candidate_trace_available", False) is True
+        else None
+    )
+    first_qk_candidates = (
+        np.ascontiguousarray(qk_candidate_capture())
+        if callable(qk_candidate_capture)
+        else None
+    )
+    qk_candidate_key_capture = (
+        getattr(trace, "qk_candidate_keys_captured", None)
+        if getattr(trace, "c28_qk_candidate_key_trace_available", False) is True
+        else None
+    )
+    first_qk_candidate_keys = (
+        np.ascontiguousarray(qk_candidate_key_capture())
+        if callable(qk_candidate_key_capture)
+        else None
+    )
+    qk_candidate_value_capture = (
+        getattr(trace, "qk_candidate_values_captured", None)
+        if getattr(trace, "c28_qk_candidate_value_trace_available", False) is True
+        else None
+    )
+    first_qk_candidate_values = (
+        np.ascontiguousarray(qk_candidate_value_capture())
+        if callable(qk_candidate_value_capture)
+        else None
+    )
     trace.reset()
     replay, replay_arrays, replay_positions = slot._execute_record(
         trace,
@@ -373,6 +436,24 @@ def _execute_record_pair(
         progress_label=f"{progress_prefix} reset",
     )
     replay_summary = full._trace_summary(replay_arrays, replay_positions)
+    reset_qk = (
+        np.ascontiguousarray(qk_capture()) if callable(qk_capture) else None
+    )
+    reset_qk_candidates = (
+        np.ascontiguousarray(qk_candidate_capture())
+        if callable(qk_candidate_capture)
+        else None
+    )
+    reset_qk_candidate_keys = (
+        np.ascontiguousarray(qk_candidate_key_capture())
+        if callable(qk_candidate_key_capture)
+        else None
+    )
+    reset_qk_candidate_values = (
+        np.ascontiguousarray(qk_candidate_value_capture())
+        if callable(qk_candidate_value_capture)
+        else None
+    )
 
     source_sha256 = sha256_json(record)
     first_output_sha256 = sha256_json(slot.mass.capacity._without_elapsed(first))
@@ -411,6 +492,57 @@ def _execute_record_pair(
             replay_summary["trace_sha256"] == first_summary["trace_sha256"]
         ),
     }
+    if first_qk is not None or reset_qk is not None:
+        if first_qk is None or reset_qk is None:
+            raise ValueError("full-visible blockwise-QK capture was incomplete")
+        first_qk_summary = full._qk_trace_summary(first_qk, positions)
+        reset_qk_summary = full._qk_trace_summary(reset_qk, replay_positions)
+        checks["first_reset_qk_trace_exact"] = bool(
+            np.array_equal(first_qk, reset_qk)
+            and first_qk_summary["trace_sha256"] == reset_qk_summary["trace_sha256"]
+        )
+    if first_qk_candidates is not None or reset_qk_candidates is not None:
+        if first_qk_candidates is None or reset_qk_candidates is None:
+            raise ValueError("full-visible QK candidate capture was incomplete")
+        first_qk_candidate_summary = full._qk_candidate_trace_summary(
+            first_qk_candidates, positions
+        )
+        reset_qk_candidate_summary = full._qk_candidate_trace_summary(
+            reset_qk_candidates, replay_positions
+        )
+        checks["first_reset_qk_candidate_trace_exact"] = bool(
+            np.array_equal(first_qk_candidates, reset_qk_candidates)
+            and first_qk_candidate_summary["trace_sha256"]
+            == reset_qk_candidate_summary["trace_sha256"]
+        )
+    if first_qk_candidate_keys is not None or reset_qk_candidate_keys is not None:
+        if first_qk_candidate_keys is None or reset_qk_candidate_keys is None:
+            raise ValueError("full-visible QK candidate-key capture was incomplete")
+        first_key_summary = full._qk_candidate_key_trace_summary(
+            first_qk_candidate_keys, positions
+        )
+        reset_key_summary = full._qk_candidate_key_trace_summary(
+            reset_qk_candidate_keys, replay_positions
+        )
+        checks["first_reset_qk_candidate_key_trace_exact"] = bool(
+            np.array_equal(first_qk_candidate_keys, reset_qk_candidate_keys)
+            and first_key_summary["trace_sha256"]
+            == reset_key_summary["trace_sha256"]
+        )
+    if first_qk_candidate_values is not None or reset_qk_candidate_values is not None:
+        if first_qk_candidate_values is None or reset_qk_candidate_values is None:
+            raise ValueError("full-visible QK candidate-value capture was incomplete")
+        first_value_summary = full._qk_candidate_value_trace_summary(
+            first_qk_candidate_values, positions
+        )
+        reset_value_summary = full._qk_candidate_value_trace_summary(
+            reset_qk_candidate_values, replay_positions
+        )
+        checks["first_reset_qk_candidate_value_trace_exact"] = bool(
+            np.array_equal(first_qk_candidate_values, reset_qk_candidate_values)
+            and first_value_summary["trace_sha256"]
+            == reset_value_summary["trace_sha256"]
+        )
     checks["passed"] = all(checks.values())
     if checks["passed"] is not True:
         raise ValueError(f"full-visible record {record_index} parity failed")
@@ -426,6 +558,60 @@ def _execute_record_pair(
         "arrays": arrays,
         "query_positions": positions,
         "checks": checks,
+        **(
+            {
+                "qk_partials": first_qk,
+                "reset_qk_partials": reset_qk,
+                "first_qk_trace": full._qk_trace_summary(first_qk, positions),
+                "reset_qk_trace": full._qk_trace_summary(reset_qk, replay_positions),
+            }
+            if first_qk is not None and reset_qk is not None
+            else {}
+        ),
+        **(
+            {
+                "qk_candidate_keys": first_qk_candidate_keys,
+                "reset_qk_candidate_keys": reset_qk_candidate_keys,
+                "first_qk_candidate_key_trace": full._qk_candidate_key_trace_summary(
+                    first_qk_candidate_keys, positions
+                ),
+                "reset_qk_candidate_key_trace": full._qk_candidate_key_trace_summary(
+                    reset_qk_candidate_keys, replay_positions
+                ),
+            }
+            if first_qk_candidate_keys is not None
+            and reset_qk_candidate_keys is not None
+            else {}
+        ),
+        **(
+            {
+                "qk_candidates": first_qk_candidates,
+                "reset_qk_candidates": reset_qk_candidates,
+                "first_qk_candidate_trace": full._qk_candidate_trace_summary(
+                    first_qk_candidates, positions
+                ),
+                "reset_qk_candidate_trace": full._qk_candidate_trace_summary(
+                    reset_qk_candidates, replay_positions
+                ),
+            }
+            if first_qk_candidates is not None and reset_qk_candidates is not None
+            else {}
+        ),
+        **(
+            {
+                "qk_candidate_values": first_qk_candidate_values,
+                "reset_qk_candidate_values": reset_qk_candidate_values,
+                "first_qk_candidate_value_trace": full._qk_candidate_value_trace_summary(
+                    first_qk_candidate_values, positions
+                ),
+                "reset_qk_candidate_value_trace": full._qk_candidate_value_trace_summary(
+                    reset_qk_candidate_values, replay_positions
+                ),
+            }
+            if first_qk_candidate_values is not None
+            and reset_qk_candidate_values is not None
+            else {}
+        ),
     }
 
 
@@ -899,6 +1085,485 @@ def capture_full_visible_train_traces(
     }
 
 
+def capture_full_visible_train_qk_traces(
+    *,
+    protocol: str | Path,
+    protocol_sha256: str,
+    shard_directory: str | Path,
+    runtime_factory: Callable[[Mapping[str, Any]], Any] = (_open_full_visible_runtime),
+) -> dict[str, Any]:
+    """Capture reset-proven C28 blockwise-QK features for the train split.
+
+    This deliberately reuses the authenticated full-visible execution pair.
+    The ordinary value trace is still checked against its historical roots on
+    every record, while the QK tensor is written to a separate manifest so it
+    cannot alter the existing causal value-basis solver.
+    """
+
+    _guard_paths(
+        (
+            ("full-visible protocol", protocol),
+            ("blockwise-QK shard directory", shard_directory),
+        )
+    )
+    context = _authenticate_frozen_capture_context(
+        protocol=protocol,
+        protocol_sha256=protocol_sha256,
+    )
+    qk_context = dict(context)
+    qk_context["c28_qk_partial_trace"] = True
+    directory = full._prepare_shard_directory(shard_directory)
+    raw = runtime_factory(qk_context)
+    trace = full._FullVisibleTraceCaptureRuntime(raw)
+    descriptors: list[dict[str, Any]] = []
+    capture_rows: list[dict[str, Any]] = []
+    try:
+        _validate_runtime_route(raw)
+        if getattr(raw, "c28_qk_partial_trace_available", False) is not True:
+            raise ValueError("full-visible native runtime lacks C28 QK trace route")
+        for record_index in range(full._RECORDS):
+            if trace.position != 0:
+                trace.reset()
+            _progress(
+                f"capturing train blockwise-QK record "
+                f"{record_index + 1}/{full._RECORDS}"
+            )
+            evidence = _execute_record_pair(
+                trace,
+                context=context,
+                record_index=record_index,
+                progress_prefix=f"full-visible blockwise-QK train {record_index}",
+            )
+            if "qk_partials" not in evidence or "reset_qk_partials" not in evidence:
+                raise ValueError("full-visible blockwise-QK capture was unavailable")
+            descriptor = full.write_full_visible_qk_trace_shard(
+                directory,
+                record_index=record_index,
+                record_id=evidence["record_id"],
+                qk_partials=evidence["qk_partials"],
+                reset_qk_partials=evidence["reset_qk_partials"],
+                query_positions=evidence["query_positions"],
+                source_record_sha256=evidence["source_record_sha256"],
+                output_evidence_sha256=evidence["first_output_evidence_sha256"],
+                reset_output_evidence_sha256=evidence["reset_output_evidence_sha256"],
+                schedule_rows_sha256=evidence["schedule_rows_sha256"],
+            )
+            descriptors.append(descriptor)
+            capture_rows.append(
+                {
+                    name: evidence[name]
+                    for name in (
+                        "record_index",
+                        "record_id",
+                        "schedule_rows_sha256",
+                        "source_record_sha256",
+                        "first_output_evidence_sha256",
+                        "reset_output_evidence_sha256",
+                        "checks",
+                        "first_qk_trace",
+                        "reset_qk_trace",
+                    )
+                }
+            )
+    finally:
+        trace.close()
+    protocol_binding = _binding(
+        context["full_visible_protocol_path"],
+        context["full_visible_protocol_sha256"],
+    )
+    manifest = full.write_full_visible_qk_trace_manifest(
+        directory,
+        protocol=protocol_binding,
+        shards=descriptors,
+    )
+    manifest_path = Path(manifest["path"])
+    full.load_stacked_full_visible_qk_trace(
+        manifest_path,
+        manifest["sha256"],
+        protocol=protocol_binding,
+    )
+    post = _post_run_authentication(context)
+    post.update(
+        {
+            "blockwise_qk_manifest": (
+                sha256_file(manifest_path) == manifest["sha256"]
+            ),
+            "blockwise_qk_source_inventory": (
+                context["full_visible_protocol"]["source_sha256"]
+                == full._source_inventory()
+            ),
+        }
+    )
+    if not all(post.values()):
+        raise ValueError("full-visible blockwise-QK capture post-run authentication failed")
+    _progress(f"blockwise-QK capture manifest written to {manifest_path}")
+    return {
+        **manifest,
+        "capture_rows": capture_rows,
+        "capture_rows_sha256": sha256_json(capture_rows),
+        "post_run_authentication": post,
+        "confirmation_split_opened": False,
+    }
+
+
+def capture_full_visible_train_qk_candidate_traces(
+    *,
+    protocol: str | Path,
+    protocol_sha256: str,
+    shard_directory: str | Path,
+    runtime_factory: Callable[[Mapping[str, Any]], Any] = (_open_full_visible_runtime),
+) -> dict[str, Any]:
+    """Capture every older candidate score before native top-K selection."""
+
+    _guard_paths(
+        (
+            ("full-visible protocol", protocol),
+            ("QK candidate shard directory", shard_directory),
+        )
+    )
+    context = _authenticate_frozen_capture_context(
+        protocol=protocol,
+        protocol_sha256=protocol_sha256,
+    )
+    candidate_context = dict(context)
+    candidate_context["c28_qk_candidate_trace"] = True
+    directory = full._prepare_shard_directory(shard_directory)
+    raw = runtime_factory(candidate_context)
+    trace = full._FullVisibleTraceCaptureRuntime(raw)
+    descriptors: list[dict[str, Any]] = []
+    capture_rows: list[dict[str, Any]] = []
+    try:
+        _validate_runtime_route(raw)
+        if getattr(raw, "c28_qk_candidate_trace_available", False) is not True:
+            raise ValueError("full-visible native runtime lacks QK candidate route")
+        for record_index in range(full._RECORDS):
+            if trace.position != 0:
+                trace.reset()
+            _progress(
+                f"capturing train QK candidates record "
+                f"{record_index + 1}/{full._RECORDS}"
+            )
+            evidence = _execute_record_pair(
+                trace,
+                context=context,
+                record_index=record_index,
+                progress_prefix=f"full-visible QK candidate train {record_index}",
+            )
+            if (
+                "qk_candidates" not in evidence
+                or "reset_qk_candidates" not in evidence
+            ):
+                raise ValueError("full-visible QK candidate capture was unavailable")
+            descriptor = full.write_full_visible_qk_candidate_trace_shard(
+                directory,
+                record_index=record_index,
+                record_id=evidence["record_id"],
+                qk_candidates=evidence["qk_candidates"],
+                reset_qk_candidates=evidence["reset_qk_candidates"],
+                query_positions=evidence["query_positions"],
+                source_record_sha256=evidence["source_record_sha256"],
+                output_evidence_sha256=evidence["first_output_evidence_sha256"],
+                reset_output_evidence_sha256=evidence["reset_output_evidence_sha256"],
+                schedule_rows_sha256=evidence["schedule_rows_sha256"],
+            )
+            descriptors.append(descriptor)
+            capture_rows.append(
+                {
+                    name: evidence[name]
+                    for name in (
+                        "record_index",
+                        "record_id",
+                        "schedule_rows_sha256",
+                        "source_record_sha256",
+                        "first_output_evidence_sha256",
+                        "reset_output_evidence_sha256",
+                        "checks",
+                        "first_qk_candidate_trace",
+                        "reset_qk_candidate_trace",
+                    )
+                }
+            )
+    finally:
+        trace.close()
+    protocol_binding = _binding(
+        context["full_visible_protocol_path"],
+        context["full_visible_protocol_sha256"],
+    )
+    manifest = full.write_full_visible_qk_candidate_trace_manifest(
+        directory,
+        protocol=protocol_binding,
+        shards=descriptors,
+    )
+    manifest_path = Path(manifest["path"])
+    full.load_stacked_full_visible_qk_candidate_trace(
+        manifest_path,
+        manifest["sha256"],
+        protocol=protocol_binding,
+    )
+    post = _post_run_authentication(context)
+    post.update(
+        {
+            "qk_candidate_manifest": (
+                sha256_file(manifest_path) == manifest["sha256"]
+            ),
+            "qk_candidate_source_inventory": (
+                context["full_visible_protocol"]["source_sha256"]
+                == full._source_inventory()
+            ),
+        }
+    )
+    if not all(post.values()):
+        raise ValueError("full-visible QK candidate capture authentication failed")
+    _progress(f"QK candidate capture manifest written to {manifest_path}")
+    return {
+        **manifest,
+        "capture_rows": capture_rows,
+        "capture_rows_sha256": sha256_json(capture_rows),
+        "post_run_authentication": post,
+        "confirmation_split_opened": False,
+    }
+
+
+def capture_full_visible_train_qk_candidate_key_traces(
+    *,
+    protocol: str | Path,
+    protocol_sha256: str,
+    shard_directory: str | Path,
+    runtime_factory: Callable[[Mapping[str, Any]], Any] = (_open_full_visible_runtime),
+) -> dict[str, Any]:
+    """Capture exact post-RoPE keys for every older candidate slot."""
+
+    _guard_paths(
+        (
+            ("full-visible protocol", protocol),
+            ("QK candidate-key shard directory", shard_directory),
+        )
+    )
+    context = _authenticate_frozen_capture_context(
+        protocol=protocol,
+        protocol_sha256=protocol_sha256,
+    )
+    key_context = dict(context)
+    key_context["c28_qk_candidate_key_trace"] = True
+    directory = full._prepare_shard_directory(shard_directory)
+    raw = runtime_factory(key_context)
+    trace = full._FullVisibleTraceCaptureRuntime(raw)
+    descriptors: list[dict[str, Any]] = []
+    capture_rows: list[dict[str, Any]] = []
+    try:
+        _validate_runtime_route(raw)
+        if getattr(raw, "c28_qk_candidate_key_trace_available", False) is not True:
+            raise ValueError("full-visible native runtime lacks QK candidate-key route")
+        for record_index in range(full._RECORDS):
+            if trace.position != 0:
+                trace.reset()
+            _progress(
+                f"capturing train QK candidate keys record "
+                f"{record_index + 1}/{full._RECORDS}"
+            )
+            evidence = _execute_record_pair(
+                trace,
+                context=context,
+                record_index=record_index,
+                progress_prefix=f"full-visible QK candidate-key train {record_index}",
+            )
+            if (
+                "qk_candidate_keys" not in evidence
+                or "reset_qk_candidate_keys" not in evidence
+            ):
+                raise ValueError("full-visible QK candidate-key capture was unavailable")
+            descriptor = full.write_full_visible_qk_candidate_key_trace_shard(
+                directory,
+                record_index=record_index,
+                record_id=evidence["record_id"],
+                candidate_keys=evidence["qk_candidate_keys"],
+                reset_candidate_keys=evidence["reset_qk_candidate_keys"],
+                query_positions=evidence["query_positions"],
+                source_record_sha256=evidence["source_record_sha256"],
+                output_evidence_sha256=evidence["first_output_evidence_sha256"],
+                reset_output_evidence_sha256=evidence["reset_output_evidence_sha256"],
+                schedule_rows_sha256=evidence["schedule_rows_sha256"],
+            )
+            descriptors.append(descriptor)
+            capture_rows.append(
+                {
+                    name: evidence[name]
+                    for name in (
+                        "record_index",
+                        "record_id",
+                        "schedule_rows_sha256",
+                        "source_record_sha256",
+                        "first_output_evidence_sha256",
+                        "reset_output_evidence_sha256",
+                        "checks",
+                        "first_qk_candidate_key_trace",
+                        "reset_qk_candidate_key_trace",
+                    )
+                }
+            )
+    finally:
+        trace.close()
+    protocol_binding = _binding(
+        context["full_visible_protocol_path"],
+        context["full_visible_protocol_sha256"],
+    )
+    manifest = full.write_full_visible_qk_candidate_key_trace_manifest(
+        directory,
+        protocol=protocol_binding,
+        shards=descriptors,
+    )
+    manifest_path = Path(manifest["path"])
+    full.load_stacked_full_visible_qk_candidate_key_trace(
+        manifest_path,
+        manifest["sha256"],
+        protocol=protocol_binding,
+    )
+    post = _post_run_authentication(context)
+    post.update(
+        {
+            "qk_candidate_key_manifest": (
+                sha256_file(manifest_path) == manifest["sha256"]
+            ),
+            "qk_candidate_key_source_inventory": (
+                context["full_visible_protocol"]["source_sha256"]
+                == full._source_inventory()
+            ),
+        }
+    )
+    if not all(post.values()):
+        raise ValueError(
+            "full-visible QK candidate-key capture post-run authentication failed"
+        )
+    _progress(f"QK candidate-key capture manifest written to {manifest_path}")
+    return {
+        **manifest,
+        "capture_rows": capture_rows,
+        "capture_rows_sha256": sha256_json(capture_rows),
+        "post_run_authentication": post,
+        "confirmation_split_opened": False,
+    }
+
+
+def capture_full_visible_train_qk_candidate_value_traces(
+    *,
+    protocol: str | Path,
+    protocol_sha256: str,
+    shard_directory: str | Path,
+    runtime_factory: Callable[[Mapping[str, Any]], Any] = (_open_full_visible_runtime),
+) -> dict[str, Any]:
+    """Capture exact older-candidate values for causal replay."""
+
+    _guard_paths(
+        (
+            ("full-visible protocol", protocol),
+            ("QK candidate-value shard directory", shard_directory),
+        )
+    )
+    context = _authenticate_frozen_capture_context(
+        protocol=protocol,
+        protocol_sha256=protocol_sha256,
+    )
+    value_context = dict(context)
+    value_context["c28_qk_candidate_value_trace"] = True
+    directory = full._prepare_shard_directory(shard_directory)
+    raw = runtime_factory(value_context)
+    trace = full._FullVisibleTraceCaptureRuntime(raw)
+    descriptors: list[dict[str, Any]] = []
+    capture_rows: list[dict[str, Any]] = []
+    try:
+        _validate_runtime_route(raw)
+        if getattr(raw, "c28_qk_candidate_value_trace_available", False) is not True:
+            raise ValueError("full-visible native runtime lacks QK candidate-value route")
+        for record_index in range(full._RECORDS):
+            if trace.position != 0:
+                trace.reset()
+            _progress(
+                f"capturing train QK candidate values record "
+                f"{record_index + 1}/{full._RECORDS}"
+            )
+            evidence = _execute_record_pair(
+                trace,
+                context=context,
+                record_index=record_index,
+                progress_prefix=f"full-visible QK candidate-value train {record_index}",
+            )
+            if (
+                "qk_candidate_values" not in evidence
+                or "reset_qk_candidate_values" not in evidence
+            ):
+                raise ValueError("full-visible QK candidate-value capture was unavailable")
+            descriptor = full.write_full_visible_qk_candidate_value_trace_shard(
+                directory,
+                record_index=record_index,
+                record_id=evidence["record_id"],
+                candidate_values=evidence["qk_candidate_values"],
+                reset_candidate_values=evidence["reset_qk_candidate_values"],
+                query_positions=evidence["query_positions"],
+                source_record_sha256=evidence["source_record_sha256"],
+                output_evidence_sha256=evidence["first_output_evidence_sha256"],
+                reset_output_evidence_sha256=evidence["reset_output_evidence_sha256"],
+                schedule_rows_sha256=evidence["schedule_rows_sha256"],
+            )
+            descriptors.append(descriptor)
+            capture_rows.append(
+                {
+                    name: evidence[name]
+                    for name in (
+                        "record_index",
+                        "record_id",
+                        "schedule_rows_sha256",
+                        "source_record_sha256",
+                        "first_output_evidence_sha256",
+                        "reset_output_evidence_sha256",
+                        "checks",
+                        "first_qk_candidate_value_trace",
+                        "reset_qk_candidate_value_trace",
+                    )
+                }
+            )
+    finally:
+        trace.close()
+    protocol_binding = _binding(
+        context["full_visible_protocol_path"],
+        context["full_visible_protocol_sha256"],
+    )
+    manifest = full.write_full_visible_qk_candidate_value_trace_manifest(
+        directory,
+        protocol=protocol_binding,
+        shards=descriptors,
+    )
+    manifest_path = Path(manifest["path"])
+    full.load_stacked_full_visible_qk_candidate_value_trace(
+        manifest_path,
+        manifest["sha256"],
+        protocol=protocol_binding,
+    )
+    post = _post_run_authentication(context)
+    post.update(
+        {
+            "qk_candidate_value_manifest": (
+                sha256_file(manifest_path) == manifest["sha256"]
+            ),
+            "qk_candidate_value_source_inventory": (
+                context["full_visible_protocol"]["source_sha256"]
+                == full._source_inventory()
+            ),
+        }
+    )
+    if not all(post.values()):
+        raise ValueError(
+            "full-visible QK candidate-value capture post-run authentication failed"
+        )
+    _progress(f"QK candidate-value capture manifest written to {manifest_path}")
+    return {
+        **manifest,
+        "capture_rows": capture_rows,
+        "capture_rows_sha256": sha256_json(capture_rows),
+        "post_run_authentication": post,
+        "confirmation_split_opened": False,
+    }
+
+
 def _authenticate_manifest_provenance(
     context: Mapping[str, Any],
     *,
@@ -1103,6 +1768,28 @@ def _build_parser() -> argparse.ArgumentParser:
     capture.add_argument("--protocol-sha256", required=True)
     capture.add_argument("--shard-directory", required=True)
 
+    qk_capture = commands.add_parser("capture-qk")
+    qk_capture.add_argument("--protocol", required=True)
+    qk_capture.add_argument("--protocol-sha256", required=True)
+    qk_capture.add_argument("--shard-directory", required=True)
+
+    qk_candidate_capture = commands.add_parser("capture-qk-candidates")
+    qk_candidate_capture.add_argument("--protocol", required=True)
+    qk_candidate_capture.add_argument("--protocol-sha256", required=True)
+    qk_candidate_capture.add_argument("--shard-directory", required=True)
+
+    qk_candidate_key_capture = commands.add_parser("capture-qk-candidate-keys")
+    qk_candidate_key_capture.add_argument("--protocol", required=True)
+    qk_candidate_key_capture.add_argument("--protocol-sha256", required=True)
+    qk_candidate_key_capture.add_argument("--shard-directory", required=True)
+
+    qk_candidate_value_capture = commands.add_parser(
+        "capture-qk-candidate-values"
+    )
+    qk_candidate_value_capture.add_argument("--protocol", required=True)
+    qk_candidate_value_capture.add_argument("--protocol-sha256", required=True)
+    qk_candidate_value_capture.add_argument("--shard-directory", required=True)
+
     solve = commands.add_parser("solve")
     solve.add_argument("--protocol", required=True)
     solve.add_argument("--protocol-sha256", required=True)
@@ -1147,6 +1834,30 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     elif args.command == "capture":
         capture_full_visible_train_traces(
+            protocol=args.protocol,
+            protocol_sha256=args.protocol_sha256,
+            shard_directory=args.shard_directory,
+        )
+    elif args.command == "capture-qk":
+        capture_full_visible_train_qk_traces(
+            protocol=args.protocol,
+            protocol_sha256=args.protocol_sha256,
+            shard_directory=args.shard_directory,
+        )
+    elif args.command == "capture-qk-candidates":
+        capture_full_visible_train_qk_candidate_traces(
+            protocol=args.protocol,
+            protocol_sha256=args.protocol_sha256,
+            shard_directory=args.shard_directory,
+        )
+    elif args.command == "capture-qk-candidate-keys":
+        capture_full_visible_train_qk_candidate_key_traces(
+            protocol=args.protocol,
+            protocol_sha256=args.protocol_sha256,
+            shard_directory=args.shard_directory,
+        )
+    elif args.command == "capture-qk-candidate-values":
+        capture_full_visible_train_qk_candidate_value_traces(
             protocol=args.protocol,
             protocol_sha256=args.protocol_sha256,
             shard_directory=args.shard_directory,

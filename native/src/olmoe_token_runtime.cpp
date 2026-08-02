@@ -123,6 +123,49 @@ std::size_t checked_c28_qk_partial_trace_count(
   return head_count * entries * bands;
 }
 
+std::size_t checked_c28_qk_candidate_trace_count(
+    const std::size_t layers, const std::size_t heads,
+    const std::size_t older_candidates) {
+  const std::size_t head_count = checked_policy_count(layers, heads);
+  constexpr std::size_t bands = StreamingAttention::kQKPartialBands;
+  if ((head_count != 0 &&
+       older_candidates > std::numeric_limits<std::size_t>::max() /
+                              head_count) ||
+      (head_count * older_candidates != 0 &&
+       bands > std::numeric_limits<std::size_t>::max() /
+                   (head_count * older_candidates))) {
+    throw std::invalid_argument(
+        "native OLMoE C28 QK candidate trace storage overflows");
+  }
+  return head_count * older_candidates * bands;
+}
+
+std::size_t checked_c28_qk_candidate_key_trace_count(
+    const std::size_t layers, const std::size_t heads,
+    const std::size_t older_candidates, const std::size_t head_dimension) {
+  const std::size_t head_count = checked_policy_count(layers, heads);
+  if (head_count != 0 &&
+      older_candidates > std::numeric_limits<std::size_t>::max() / head_count) {
+    throw std::invalid_argument(
+        "native OLMoE C28 candidate-key trace storage overflows");
+  }
+  const std::size_t candidate_count = head_count * older_candidates;
+  if (candidate_count != 0 &&
+      head_dimension >
+          std::numeric_limits<std::size_t>::max() / candidate_count) {
+    throw std::invalid_argument(
+        "native OLMoE C28 candidate-key trace storage overflows");
+  }
+  return candidate_count * head_dimension;
+}
+
+std::size_t checked_c28_qk_candidate_value_trace_count(
+    const std::size_t layers, const std::size_t heads,
+    const std::size_t older_candidates, const std::size_t head_dimension) {
+  return checked_c28_qk_candidate_key_trace_count(
+      layers, heads, older_candidates, head_dimension);
+}
+
 }  // namespace
 
 OLMoETokenRuntime::OLMoETokenRuntime(OLMoETokenConfig config)
@@ -211,6 +254,45 @@ OLMoETokenRuntime::OLMoETokenRuntime(OLMoETokenConfig config)
            StreamingAttention::kC28TraceEpisodicEntries)) {
     throw std::invalid_argument(
         "native OLMoE C28 QK partial trace configuration is invalid");
+  }
+  if (config_.c28_qk_candidate_trace &&
+      (!config_.shadow_attention_policy.has_value() ||
+       config_.head_dimension !=
+           StreamingAttention::kQKTraceHeadDimension ||
+       scalar_policy.local_window !=
+           StreamingAttention::kRegularTraceLocalEntries ||
+       scalar_policy.older_top_k !=
+           StreamingAttention::kRegularTraceOlderEntries ||
+       config_.episodic_policy.span_size !=
+           StreamingAttention::kC28TraceEpisodicEntries)) {
+    throw std::invalid_argument(
+        "native OLMoE C28 QK candidate trace configuration is invalid");
+  }
+  if (config_.c28_qk_candidate_key_trace &&
+      (!config_.shadow_attention_policy.has_value() ||
+       config_.head_dimension !=
+           StreamingAttention::kQKTraceHeadDimension ||
+       scalar_policy.local_window !=
+           StreamingAttention::kRegularTraceLocalEntries ||
+       scalar_policy.older_top_k !=
+           StreamingAttention::kRegularTraceOlderEntries ||
+       config_.episodic_policy.span_size !=
+           StreamingAttention::kC28TraceEpisodicEntries)) {
+    throw std::invalid_argument(
+        "native OLMoE C28 candidate-key trace configuration is invalid");
+  }
+  if (config_.c28_qk_candidate_value_trace &&
+      (!config_.shadow_attention_policy.has_value() ||
+       config_.head_dimension !=
+           StreamingAttention::kQKTraceHeadDimension ||
+       scalar_policy.local_window !=
+           StreamingAttention::kRegularTraceLocalEntries ||
+       scalar_policy.older_top_k !=
+           StreamingAttention::kRegularTraceOlderEntries ||
+       config_.episodic_policy.span_size !=
+           StreamingAttention::kC28TraceEpisodicEntries)) {
+    throw std::invalid_argument(
+        "native OLMoE C28 candidate-value trace configuration is invalid");
   }
   if ((config_.attention_policies.empty() &&
        config_.head_attention_policies.empty() &&
@@ -387,6 +469,24 @@ OLMoETokenRuntime::OLMoETokenRuntime(OLMoETokenConfig config)
           checked_c28_qk_partial_trace_count(
               config_.layers, config_.query_heads));
     }
+    if (config_.c28_qk_candidate_trace) {
+      last_c28_qk_candidates_.resize(
+          checked_c28_qk_candidate_trace_count(
+              config_.layers, config_.query_heads,
+              scalar_policy.older_candidates));
+    }
+    if (config_.c28_qk_candidate_key_trace) {
+      last_c28_qk_candidate_keys_.resize(
+          checked_c28_qk_candidate_key_trace_count(
+              config_.layers, config_.query_heads,
+              scalar_policy.older_candidates, config_.head_dimension));
+    }
+    if (config_.c28_qk_candidate_value_trace) {
+      last_c28_qk_candidate_values_.resize(
+          checked_c28_qk_candidate_value_trace_count(
+              config_.layers, config_.query_heads,
+              scalar_policy.older_candidates, config_.head_dimension));
+    }
   }
 }
 
@@ -474,6 +574,14 @@ std::int64_t OLMoETokenRuntime::forward_episodic(
     const std::span<const std::int64_t> token_ids,
     const std::span<const std::int32_t> write_slots,
     const std::span<const std::int32_t> read_spans) {
+  return forward_episodic_masked(token_ids, write_slots, read_spans, {});
+}
+
+std::int64_t OLMoETokenRuntime::forward_episodic_masked(
+    const std::span<const std::int64_t> token_ids,
+    const std::span<const std::int32_t> write_slots,
+    const std::span<const std::int32_t> read_spans,
+    const std::span<const std::uint8_t> candidate_masks) {
   if (config_.episodic_policy.slots == 0 ||
       write_slots.size() != token_ids.size() ||
       read_spans.size() != token_ids.size()) {
@@ -482,6 +590,16 @@ std::int64_t OLMoETokenRuntime::forward_episodic(
   }
   const std::size_t span_count =
       config_.episodic_policy.slots / config_.episodic_policy.span_size;
+  const std::size_t masks_per_row = config_.layers * config_.query_heads *
+                                    config_.older_candidates;
+  if (!candidate_masks.empty() &&
+      (candidate_masks.size() != token_ids.size() * masks_per_row ||
+       !std::all_of(candidate_masks.begin(), candidate_masks.end(),
+                    [](const std::uint8_t value) { return value <= 1; }) ||
+       !config_.head_attention_policies.empty())) {
+    throw std::invalid_argument(
+        "native OLMoE candidate masks are invalid for this route");
+  }
   if (token_ids.size() >
       std::numeric_limits<std::uint64_t>::max() - position_) {
     throw std::invalid_argument(
@@ -538,7 +656,7 @@ std::int64_t OLMoETokenRuntime::forward_episodic(
   }
   const std::int64_t next_token =
       forward_impl(token_ids, write_slots, read_spans,
-                   read_source_positions);
+                   read_source_positions, candidate_masks);
   episodic_slot_positions_ = std::move(next_slot_positions);
   return next_token;
 }
@@ -547,7 +665,8 @@ std::int64_t OLMoETokenRuntime::forward_impl(
     const std::span<const std::int64_t> token_ids,
     const std::span<const std::int32_t> write_slots,
     const std::span<const std::int32_t> read_spans,
-    const std::span<const std::uint64_t> read_source_positions) {
+    const std::span<const std::uint64_t> read_source_positions,
+    const std::span<const std::uint8_t> candidate_masks) {
   if (token_ids.empty()) {
     throw std::invalid_argument("native OLMoE token input must not be empty");
   }
@@ -601,7 +720,13 @@ std::int64_t OLMoETokenRuntime::forward_impl(
       config_.older_top_k ==
           StreamingAttention::kRegularTraceOlderEntries;
   const bool capture_c28_qk_partial_trace =
-      config_.c28_qk_partial_trace;
+      config_.c28_qk_partial_trace || config_.c28_qk_candidate_trace;
+  const bool capture_c28_qk_candidate_trace =
+      config_.c28_qk_candidate_trace;
+  const bool capture_c28_qk_candidate_key_trace =
+      config_.c28_qk_candidate_key_trace;
+  const bool capture_c28_qk_candidate_value_trace =
+      config_.c28_qk_candidate_value_trace;
   if (capture_episodic_mass_trace) {
     const std::uint64_t absolute_position =
         static_cast<std::uint64_t>(position_ + rows - 1);
@@ -633,6 +758,23 @@ std::int64_t OLMoETokenRuntime::forward_impl(
   std::vector<std::uint8_t> next_regular_entry_valid_kind;
   std::vector<std::uint64_t> next_regular_entry_positions;
   std::vector<float> next_c28_qk_partials;
+  std::vector<float> next_c28_qk_candidate_keys;
+  std::vector<float> next_c28_qk_candidate_values;
+  const std::size_t qk_partial_count =
+      checked_c28_qk_partial_trace_count(
+          config_.layers, config_.query_heads);
+  const std::size_t qk_candidate_count =
+      checked_c28_qk_candidate_trace_count(
+          config_.layers, config_.query_heads,
+          config_.older_candidates);
+  const std::size_t qk_candidate_key_count =
+      checked_c28_qk_candidate_key_trace_count(
+          config_.layers, config_.query_heads,
+          config_.older_candidates, config_.head_dimension);
+  const std::size_t qk_candidate_value_count =
+      checked_c28_qk_candidate_value_trace_count(
+          config_.layers, config_.query_heads,
+          config_.older_candidates, config_.head_dimension);
   if (!shadow_attention_.empty()) {
     shadow_attention_output.resize(rows * hidden_width);
     shadow_projected.resize(rows * hidden_width);
@@ -675,8 +817,14 @@ std::int64_t OLMoETokenRuntime::forward_impl(
   }
   if (capture_c28_qk_partial_trace) {
     next_c28_qk_partials.resize(
-        checked_c28_qk_partial_trace_count(
-            config_.layers, config_.query_heads));
+        qk_partial_count +
+        (capture_c28_qk_candidate_trace ? qk_candidate_count : 0));
+  }
+  if (capture_c28_qk_candidate_key_trace) {
+    next_c28_qk_candidate_keys.resize(qk_candidate_key_count);
+  }
+  if (capture_c28_qk_candidate_value_trace) {
+    next_c28_qk_candidate_values.resize(qk_candidate_value_count);
   }
   std::vector<float> semantic_input(rows * hidden_width);
   std::vector<float> semantic_output(rows * hidden_width);
@@ -762,6 +910,63 @@ std::int64_t OLMoETokenRuntime::forward_impl(
             attention_output.data() + row * hidden_width, hidden_width);
         const bool capture_row =
             capture_episodic_mass_trace && row + 1 == rows;
+        const bool capture_qk_row =
+            capture_c28_qk_partial_trace && row + 1 == rows;
+        const bool capture_qk_candidate_key_row =
+            capture_c28_qk_candidate_key_trace && row + 1 == rows;
+        const bool capture_qk_candidate_value_row =
+            capture_c28_qk_candidate_value_trace && row + 1 == rows;
+        const std::size_t qk_layer_partial_count =
+            config_.query_heads * StreamingAttention::kC28TraceEntries *
+            StreamingAttention::kQKPartialBands;
+        const std::size_t qk_layer_candidate_count =
+            config_.query_heads * config_.older_candidates *
+            StreamingAttention::kQKPartialBands;
+        const std::size_t qk_offset =
+            layer * (qk_layer_partial_count +
+                     (capture_c28_qk_candidate_trace
+                          ? qk_layer_candidate_count
+                          : 0));
+        const auto qk_trace = [&]() {
+          return capture_qk_row
+                     ? std::span<float>(
+                           next_c28_qk_partials.data() + qk_offset,
+                           qk_layer_partial_count +
+                               (capture_c28_qk_candidate_trace
+                                    ? qk_layer_candidate_count
+                                    : 0))
+                     : std::span<float>{};
+        };
+        const std::size_t qk_candidate_key_layer_count =
+            config_.query_heads * config_.older_candidates *
+            config_.head_dimension;
+        const auto qk_candidate_key_trace = [&]() {
+          return capture_qk_candidate_key_row
+                     ? std::span<float>(
+                           next_c28_qk_candidate_keys.data() +
+                               layer * qk_candidate_key_layer_count,
+                           qk_candidate_key_layer_count)
+                     : std::span<float>{};
+        };
+        const std::size_t qk_candidate_value_layer_count =
+            config_.query_heads * config_.older_candidates *
+            config_.head_dimension;
+        const auto qk_candidate_value_trace = [&]() {
+          return capture_qk_candidate_value_row
+                     ? std::span<float>(
+                           next_c28_qk_candidate_values.data() +
+                               layer * qk_candidate_value_layer_count,
+                           qk_candidate_value_layer_count)
+                     : std::span<float>{};
+        };
+        const auto candidate_mask =
+            candidate_masks.empty()
+                ? std::span<const std::uint8_t>{}
+                : std::span<const std::uint8_t>(
+                      candidate_masks.data() +
+                          (row * config_.layers + layer) *
+                              config_.query_heads * config_.older_candidates,
+                      config_.query_heads * config_.older_candidates);
         const bool use_episodic =
             !write_slots.empty() && episodic_layer_active_[layer] != 0;
         StreamingAttentionMetrics attention_metrics{};
@@ -776,8 +981,31 @@ std::int64_t OLMoETokenRuntime::forward_impl(
                   StreamingAttention::kRegularTraceEntries;
               const std::size_t entry_value_offset =
                   entry_offset * config_.head_dimension;
-              attention_metrics =
-                  attention_[layer]->step_regular_entries_traced(
+              attention_metrics = capture_qk_row
+                  ? attention_[layer]->step_regular_entries_qk_traced(
+                      query_row, key_row, value_row, output_row,
+                      std::span<float>(
+                          next_regular_entry_mass.data() + entry_offset,
+                          config_.query_heads *
+                              StreamingAttention::kRegularTraceEntries),
+                      std::span<float>(
+                          next_regular_entry_values.data() +
+                              entry_value_offset,
+                          config_.query_heads *
+                              StreamingAttention::kRegularTraceEntries *
+                              config_.head_dimension),
+                      std::span<std::uint8_t>(
+                          next_regular_entry_valid_kind.data() +
+                              entry_offset,
+                          config_.query_heads *
+                              StreamingAttention::kRegularTraceEntries),
+                      std::span<std::uint64_t>(
+                          next_regular_entry_positions.data() +
+                              entry_offset,
+                          config_.query_heads *
+                              StreamingAttention::kRegularTraceEntries),
+                      qk_trace())
+                  : attention_[layer]->step_regular_entries_traced(
                       query_row, key_row, value_row, output_row,
                       std::span<float>(
                           next_regular_entry_mass.data() + entry_offset,
@@ -835,6 +1063,18 @@ std::int64_t OLMoETokenRuntime::forward_impl(
                 config_.query_heads * config_.episodic_policy.span_size *
                     config_.head_dimension,
                 0.0F);
+          } else if (capture_qk_row) {
+            attention_metrics = attention_[layer]->step_c28_qk_traced(
+                query_row, key_row, value_row,
+                StreamingAttention::kNoEpisodicDirective,
+                StreamingAttention::kNoEpisodicDirective, output_row,
+                qk_trace());
+          } else if (!candidate_mask.empty()) {
+            attention_metrics = attention_[layer]->step_episodic_masked(
+                query_row, key_row, value_row,
+                StreamingAttention::kNoEpisodicDirective,
+                StreamingAttention::kNoEpisodicDirective, output_row,
+                candidate_mask);
           } else {
             attention_metrics = attention_[layer]->step(
                 query_row, key_row, value_row, output_row);
@@ -863,57 +1103,68 @@ std::int64_t OLMoETokenRuntime::forward_impl(
                   StreamingAttention::kRegularTraceEntries;
               const std::size_t entry_value_offset =
                   entry_offset * config_.head_dimension;
+              const auto regular_component_trace = std::span<float>(
+                  next_episodic_mass_regular_component.data() + trace_offset,
+                  hidden_width);
+              const auto episodic_component_trace = std::span<float>(
+                  next_episodic_mass_episodic_component.data() + trace_offset,
+                  hidden_width);
+              const auto regular_mass_trace = std::span<float>(
+                  next_episodic_mass_regular_mass.data() + mass_offset,
+                  config_.query_heads);
+              const auto episodic_mass_trace = std::span<float>(
+                  next_episodic_mass_episodic_mass.data() + mass_offset,
+                  config_.query_heads);
+              const auto slot_mass_trace = std::span<float>(
+                  next_episodic_slot_mass.data() + slot_mass_offset,
+                  config_.query_heads * config_.episodic_policy.span_size);
+              const auto slot_value_trace = std::span<float>(
+                  next_episodic_slot_values.data() + slot_value_offset,
+                  config_.query_heads * config_.episodic_policy.span_size *
+                      config_.head_dimension);
+              const auto entry_mass_trace = std::span<float>(
+                  next_regular_entry_mass.data() + entry_offset,
+                  config_.query_heads *
+                      StreamingAttention::kRegularTraceEntries);
+              const auto entry_value_trace = std::span<float>(
+                  next_regular_entry_values.data() + entry_value_offset,
+                  config_.query_heads *
+                      StreamingAttention::kRegularTraceEntries *
+                      config_.head_dimension);
+              const auto entry_kind_trace = std::span<std::uint8_t>(
+                  next_regular_entry_valid_kind.data() + entry_offset,
+                  config_.query_heads *
+                      StreamingAttention::kRegularTraceEntries);
+              const auto entry_position_trace = std::span<std::uint64_t>(
+                  next_regular_entry_positions.data() + entry_offset,
+                  config_.query_heads *
+                      StreamingAttention::kRegularTraceEntries);
               attention_metrics =
-                  attention_[layer]->step_episodic_full_traced(
-                      query_row, key_row, value_row, write_slot,
-                      read_span, output_row,
-                      std::span<float>(
-                          next_episodic_mass_regular_component.data() +
-                              trace_offset,
-                          hidden_width),
-                      std::span<float>(
-                          next_episodic_mass_episodic_component.data() +
-                              trace_offset,
-                          hidden_width),
-                      std::span<float>(
-                          next_episodic_mass_regular_mass.data() +
-                              mass_offset,
-                          config_.query_heads),
-                      std::span<float>(
-                          next_episodic_mass_episodic_mass.data() +
-                              mass_offset,
-                          config_.query_heads),
-                      std::span<float>(
-                          next_episodic_slot_mass.data() +
-                              slot_mass_offset,
-                          config_.query_heads *
-                              config_.episodic_policy.span_size),
-                      std::span<float>(
-                          next_episodic_slot_values.data() +
-                              slot_value_offset,
-                          config_.query_heads *
-                              config_.episodic_policy.span_size *
-                              config_.head_dimension),
-                      std::span<float>(
-                          next_regular_entry_mass.data() + entry_offset,
-                          config_.query_heads *
-                              StreamingAttention::kRegularTraceEntries),
-                      std::span<float>(
-                          next_regular_entry_values.data() +
-                              entry_value_offset,
-                          config_.query_heads *
-                              StreamingAttention::kRegularTraceEntries *
-                              config_.head_dimension),
-                      std::span<std::uint8_t>(
-                          next_regular_entry_valid_kind.data() +
-                              entry_offset,
-                          config_.query_heads *
-                              StreamingAttention::kRegularTraceEntries),
-                      std::span<std::uint64_t>(
-                          next_regular_entry_positions.data() +
-                              entry_offset,
-                          config_.query_heads *
-                              StreamingAttention::kRegularTraceEntries));
+                  (capture_qk_row || capture_qk_candidate_key_row)
+                  ? attention_[layer]->step_episodic_full_key_candidates_traced(
+                        query_row, key_row, value_row, write_slot, read_span,
+                        output_row, regular_component_trace,
+                        episodic_component_trace, regular_mass_trace,
+                        episodic_mass_trace, slot_mass_trace,
+                        slot_value_trace, entry_mass_trace, entry_value_trace,
+                        entry_kind_trace, entry_position_trace, qk_trace(),
+                        qk_candidate_key_trace())
+                  : capture_qk_candidate_value_row
+                  ? attention_[layer]->step_episodic_full_candidate_values_traced(
+                        query_row, key_row, value_row, write_slot, read_span,
+                        output_row, regular_component_trace,
+                        episodic_component_trace, regular_mass_trace,
+                        episodic_mass_trace, slot_mass_trace,
+                        slot_value_trace, entry_mass_trace, entry_value_trace,
+                        entry_kind_trace, entry_position_trace,
+                        qk_candidate_value_trace())
+                  : attention_[layer]->step_episodic_full_traced(
+                        query_row, key_row, value_row, write_slot, read_span,
+                        output_row, regular_component_trace,
+                        episodic_component_trace, regular_mass_trace,
+                        episodic_mass_trace, slot_mass_trace,
+                        slot_value_trace, entry_mass_trace, entry_value_trace,
+                        entry_kind_trace, entry_position_trace);
             } else {
               attention_metrics =
                   attention_[layer]->step_episodic_slots_traced(
@@ -947,6 +1198,14 @@ std::int64_t OLMoETokenRuntime::forward_impl(
                             config_.episodic_policy.span_size *
                             config_.head_dimension));
             }
+          } else if (capture_qk_row) {
+            attention_metrics = attention_[layer]->step_c28_qk_traced(
+                query_row, key_row, value_row, write_slot, read_span,
+                output_row, qk_trace());
+          } else if (!candidate_mask.empty()) {
+            attention_metrics = attention_[layer]->step_episodic_masked(
+                query_row, key_row, value_row, write_slot, read_span,
+                output_row, candidate_mask);
           } else {
             attention_metrics = attention_[layer]->step_episodic(
                 query_row, key_row, value_row, write_slot, read_span,
@@ -1097,6 +1356,51 @@ std::int64_t OLMoETokenRuntime::forward_impl(
     episodic_slot_trace_valid_ = false;
     regular_entry_trace_valid_ = false;
   }
+  if (capture_c28_qk_partial_trace) {
+    if (capture_c28_qk_candidate_trace) {
+      const std::size_t layer_partial_count =
+          config_.query_heads * StreamingAttention::kC28TraceEntries *
+          StreamingAttention::kQKPartialBands;
+      const std::size_t layer_candidate_count =
+          config_.query_heads * config_.older_candidates *
+          StreamingAttention::kQKPartialBands;
+      last_c28_qk_partials_.resize(qk_partial_count);
+      last_c28_qk_candidates_.resize(qk_candidate_count);
+      for (std::size_t layer = 0; layer < config_.layers; ++layer) {
+        const std::size_t source =
+            layer * (layer_partial_count + layer_candidate_count);
+        std::copy_n(next_c28_qk_partials.data() + source,
+                    layer_partial_count,
+                    last_c28_qk_partials_.data() +
+                        layer * layer_partial_count);
+        std::copy_n(next_c28_qk_partials.data() + source +
+                        layer_partial_count,
+                    layer_candidate_count,
+                    last_c28_qk_candidates_.data() +
+                        layer * layer_candidate_count);
+      }
+      c28_qk_candidate_trace_valid_ = true;
+    } else {
+      last_c28_qk_partials_ = std::move(next_c28_qk_partials);
+      c28_qk_candidate_trace_valid_ = false;
+    }
+    c28_qk_partial_trace_valid_ = true;
+  } else {
+    c28_qk_partial_trace_valid_ = false;
+    c28_qk_candidate_trace_valid_ = false;
+  }
+  if (capture_c28_qk_candidate_key_trace) {
+    last_c28_qk_candidate_keys_ = std::move(next_c28_qk_candidate_keys);
+    c28_qk_candidate_key_trace_valid_ = true;
+  } else {
+    c28_qk_candidate_key_trace_valid_ = false;
+  }
+  if (capture_c28_qk_candidate_value_trace) {
+    last_c28_qk_candidate_values_ = std::move(next_c28_qk_candidate_values);
+    c28_qk_candidate_value_trace_valid_ = true;
+  } else {
+    c28_qk_candidate_value_trace_valid_ = false;
+  }
   position_ += rows;
   metrics_.positions_processed += rows;
   metrics_.episodic_active_slots = std::accumulate(
@@ -1140,6 +1444,10 @@ void OLMoETokenRuntime::reset() {
   episodic_mass_trace_valid_ = false;
   episodic_slot_trace_valid_ = false;
   regular_entry_trace_valid_ = false;
+  c28_qk_partial_trace_valid_ = false;
+  c28_qk_candidate_trace_valid_ = false;
+  c28_qk_candidate_key_trace_valid_ = false;
+  c28_qk_candidate_value_trace_valid_ = false;
 }
 
 bool OLMoETokenRuntime::is_eos(const std::int64_t token) const {

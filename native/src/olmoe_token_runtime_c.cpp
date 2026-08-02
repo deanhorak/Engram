@@ -30,7 +30,11 @@ engram::OLMoETokenConfig native_config(
     const engram_olmoe_episodic_policy_v1* episodic_policy,
     const std::span<const std::uint8_t> episodic_head_mask,
     const float episodic_logit_bias = 0.0F,
-    const engram_olmoe_attention_policy_v1* shadow_policy = nullptr) {
+    const engram_olmoe_attention_policy_v1* shadow_policy = nullptr,
+    const bool c28_qk_partial_trace = false,
+    const bool c28_qk_candidate_trace = false,
+    const bool c28_qk_candidate_key_trace = false,
+    const bool c28_qk_candidate_value_trace = false) {
   if (config == nullptr || config->non_mlp_safetensors == nullptr ||
       config->q7_artifact == nullptr) {
     throw std::invalid_argument("native OLMoE token config is null");
@@ -89,6 +93,10 @@ engram::OLMoETokenConfig native_config(
                         .older_top_k = shadow_policy->older_top_k,
                         .sink_tokens = shadow_policy->sink_tokens,
                     }),
+      .c28_qk_partial_trace = c28_qk_partial_trace,
+      .c28_qk_candidate_trace = c28_qk_candidate_trace,
+      .c28_qk_candidate_key_trace = c28_qk_candidate_key_trace,
+      .c28_qk_candidate_value_trace = c28_qk_candidate_value_trace,
   };
 }
 
@@ -116,7 +124,11 @@ void* open_episodic_headwise(
     const engram_olmoe_episodic_policy_v1* policy,
     const std::uint8_t* head_mask, const std::size_t mask_count,
     const float episodic_logit_bias,
-    const engram_olmoe_attention_policy_v1* shadow_policy = nullptr) {
+    const engram_olmoe_attention_policy_v1* shadow_policy = nullptr,
+    const bool c28_qk_partial_trace = false,
+    const bool c28_qk_candidate_trace = false,
+    const bool c28_qk_candidate_key_trace = false,
+    const bool c28_qk_candidate_value_trace = false) {
   if (!std::isfinite(episodic_logit_bias)) {
     throw std::invalid_argument(
         "native OLMoE episodic logit bias is invalid");
@@ -147,7 +159,8 @@ void* open_episodic_headwise(
   }
   return new engram::OLMoETokenRuntime(native_config(
       config, {}, {}, policy, mask, episodic_logit_bias,
-      shadow_policy));
+      shadow_policy, c28_qk_partial_trace, c28_qk_candidate_trace,
+      c28_qk_candidate_key_trace, c28_qk_candidate_value_trace));
 }
 
 void copy_forward_metrics(const engram::OLMoETokenMetrics& source,
@@ -333,6 +346,110 @@ void* engram_olmoe_token_open_episodic_shadow_trace_v1(
   }
 }
 
+void* engram_olmoe_token_open_episodic_shadow_qk_trace_v1(
+    const engram_olmoe_token_config* config,
+    const engram_olmoe_episodic_policy_v1* policy,
+    const std::uint8_t* head_mask, const std::size_t mask_count,
+    const float episodic_logit_bias,
+    const engram_olmoe_attention_policy_v1* shadow_policy, char* error,
+    const std::size_t error_capacity) {
+  try {
+    if (shadow_policy == nullptr) {
+      throw std::invalid_argument(
+          "native OLMoE QK shadow attention policy is null");
+    }
+    return open_episodic_headwise(
+        config, policy, head_mask, mask_count, episodic_logit_bias,
+        shadow_policy, true);
+  } catch (const std::exception& exception) {
+    error_text(error, error_capacity, exception.what());
+    return nullptr;
+  } catch (...) {
+    error_text(
+        error, error_capacity,
+        "unknown native OLMoE episodic QK shadow trace open failure");
+    return nullptr;
+  }
+}
+
+void* engram_olmoe_token_open_episodic_shadow_qk_candidates_v1(
+    const engram_olmoe_token_config* config,
+    const engram_olmoe_episodic_policy_v1* policy,
+    const std::uint8_t* head_mask, const std::size_t mask_count,
+    const float episodic_logit_bias,
+    const engram_olmoe_attention_policy_v1* shadow_policy, char* error,
+    const std::size_t error_capacity) {
+  try {
+    if (shadow_policy == nullptr) {
+      throw std::invalid_argument(
+          "native OLMoE QK candidate shadow attention policy is null");
+    }
+    return open_episodic_headwise(
+        config, policy, head_mask, mask_count, episodic_logit_bias,
+        shadow_policy, false, true);
+  } catch (const std::exception& exception) {
+    error_text(error, error_capacity, exception.what());
+    return nullptr;
+  } catch (...) {
+    error_text(
+        error, error_capacity,
+        "unknown native OLMoE QK candidate shadow trace open failure");
+    return nullptr;
+  }
+}
+
+void* engram_olmoe_token_open_episodic_shadow_qk_candidate_keys_v1(
+    const engram_olmoe_token_config* config,
+    const engram_olmoe_episodic_policy_v1* policy,
+    const std::uint8_t* head_mask, const std::size_t mask_count,
+    const float episodic_logit_bias,
+    const engram_olmoe_attention_policy_v1* shadow_policy, char* error,
+    const std::size_t error_capacity) {
+  try {
+    if (shadow_policy == nullptr) {
+      throw std::invalid_argument(
+          "native OLMoE candidate-key shadow attention policy is null");
+    }
+    return open_episodic_headwise(
+        config, policy, head_mask, mask_count, episodic_logit_bias,
+        shadow_policy, false, false, true);
+  } catch (const std::exception& exception) {
+    error_text(error, error_capacity, exception.what());
+    return nullptr;
+  } catch (...) {
+    error_text(
+        error, error_capacity,
+        "unknown native OLMoE candidate-key shadow trace open failure");
+    return nullptr;
+  }
+}
+
+void* engram_olmoe_token_open_episodic_shadow_qk_candidate_values_v1(
+    const engram_olmoe_token_config* config,
+    const engram_olmoe_episodic_policy_v1* policy,
+    const std::uint8_t* head_mask, const std::size_t mask_count,
+    const float episodic_logit_bias,
+    const engram_olmoe_attention_policy_v1* shadow_policy, char* error,
+    const std::size_t error_capacity) {
+  try {
+    if (shadow_policy == nullptr) {
+      throw std::invalid_argument(
+          "native OLMoE candidate-value shadow attention policy is null");
+    }
+    return open_episodic_headwise(
+        config, policy, head_mask, mask_count, episodic_logit_bias,
+        shadow_policy, false, false, false, true);
+  } catch (const std::exception& exception) {
+    error_text(error, error_capacity, exception.what());
+    return nullptr;
+  } catch (...) {
+    error_text(
+        error, error_capacity,
+        "unknown native OLMoE candidate-value shadow trace open failure");
+    return nullptr;
+  }
+}
+
 void engram_olmoe_token_close(void* handle) {
   delete static_cast<engram::OLMoETokenRuntime*>(handle);
 }
@@ -404,6 +521,38 @@ int engram_olmoe_token_forward_episodic_v1(
   } catch (...) {
     error_text(error, error_capacity,
                "unknown native OLMoE episodic forward failure");
+    return 1;
+  }
+}
+
+int engram_olmoe_token_forward_episodic_masked_v1(
+    void* handle, const int64_t* token_ids, const std::size_t length,
+    const int32_t* write_slots, const int32_t* read_spans,
+    const std::uint8_t* candidate_masks,
+    const std::size_t candidate_mask_count, int64_t* next_token,
+    engram_olmoe_token_metrics* metrics, char* error,
+    const std::size_t error_capacity) {
+  try {
+    auto* runtime = static_cast<engram::OLMoETokenRuntime*>(handle);
+    if (runtime == nullptr || token_ids == nullptr ||
+        write_slots == nullptr || read_spans == nullptr ||
+        candidate_masks == nullptr || next_token == nullptr || length == 0) {
+      throw std::invalid_argument(
+          "native OLMoE masked episodic forward storage is invalid");
+    }
+    *next_token = runtime->forward_episodic_masked(
+        std::span<const std::int64_t>(token_ids, length),
+        std::span<const std::int32_t>(write_slots, length),
+        std::span<const std::int32_t>(read_spans, length),
+        std::span<const std::uint8_t>(candidate_masks, candidate_mask_count));
+    copy_forward_metrics(runtime->metrics(), metrics);
+    return 0;
+  } catch (const std::exception& exception) {
+    error_text(error, error_capacity, exception.what());
+    return 1;
+  } catch (...) {
+    error_text(error, error_capacity,
+               "unknown native OLMoE masked episodic forward failure");
     return 1;
   }
 }
@@ -677,6 +826,114 @@ int engram_olmoe_token_copy_last_regular_entry_trace_v1(
   } catch (...) {
     error_text(error, error_capacity,
                "unknown native OLMoE regular-entry trace copy failure");
+    return 1;
+  }
+}
+
+int engram_olmoe_token_copy_last_c28_qk_partial_trace_v1(
+    const void* handle, float* qk_partials,
+    const std::size_t qk_partial_count, char* error,
+    const std::size_t error_capacity) {
+  try {
+    const auto* runtime =
+        static_cast<const engram::OLMoETokenRuntime*>(handle);
+    if (runtime == nullptr || !runtime->has_c28_qk_partial_trace() ||
+        qk_partials == nullptr ||
+        qk_partial_count != runtime->last_c28_qk_partials().size()) {
+      throw std::invalid_argument(
+          "native OLMoE C28 QK partial trace storage is invalid");
+    }
+    std::copy(runtime->last_c28_qk_partials().begin(),
+              runtime->last_c28_qk_partials().end(), qk_partials);
+    return 0;
+  } catch (const std::exception& exception) {
+    error_text(error, error_capacity, exception.what());
+    return 1;
+  } catch (...) {
+    error_text(
+        error, error_capacity,
+        "unknown native OLMoE C28 QK partial trace copy failure");
+    return 1;
+  }
+}
+
+int engram_olmoe_token_copy_last_c28_qk_candidate_trace_v1(
+    const void* handle, float* qk_candidates,
+    const std::size_t qk_candidate_count, char* error,
+    const std::size_t error_capacity) {
+  try {
+    const auto* runtime =
+        static_cast<const engram::OLMoETokenRuntime*>(handle);
+    if (runtime == nullptr || !runtime->has_c28_qk_candidate_trace() ||
+        qk_candidates == nullptr ||
+        qk_candidate_count != runtime->last_c28_qk_candidates().size()) {
+      throw std::invalid_argument(
+          "native OLMoE C28 QK candidate trace storage is invalid");
+    }
+    std::copy(runtime->last_c28_qk_candidates().begin(),
+              runtime->last_c28_qk_candidates().end(), qk_candidates);
+    return 0;
+  } catch (const std::exception& exception) {
+    error_text(error, error_capacity, exception.what());
+    return 1;
+  } catch (...) {
+    error_text(
+        error, error_capacity,
+        "unknown native OLMoE C28 QK candidate trace copy failure");
+    return 1;
+  }
+}
+
+int engram_olmoe_token_copy_last_c28_qk_candidate_keys_v1(
+    const void* handle, float* candidate_keys,
+    const std::size_t candidate_key_count, char* error,
+    const std::size_t error_capacity) {
+  try {
+    const auto* runtime =
+        static_cast<const engram::OLMoETokenRuntime*>(handle);
+    if (runtime == nullptr || !runtime->has_c28_qk_candidate_key_trace() ||
+        candidate_keys == nullptr ||
+        candidate_key_count != runtime->last_c28_qk_candidate_keys().size()) {
+      throw std::invalid_argument(
+          "native OLMoE C28 candidate-key trace storage is invalid");
+    }
+    std::copy(runtime->last_c28_qk_candidate_keys().begin(),
+              runtime->last_c28_qk_candidate_keys().end(), candidate_keys);
+    return 0;
+  } catch (const std::exception& exception) {
+    error_text(error, error_capacity, exception.what());
+    return 1;
+  } catch (...) {
+    error_text(
+        error, error_capacity,
+        "unknown native OLMoE C28 candidate-key trace copy failure");
+    return 1;
+  }
+}
+
+int engram_olmoe_token_copy_last_c28_qk_candidate_values_v1(
+    const void* handle, float* candidate_values,
+    const std::size_t candidate_value_count, char* error,
+    const std::size_t error_capacity) {
+  try {
+    const auto* runtime =
+        static_cast<const engram::OLMoETokenRuntime*>(handle);
+    if (runtime == nullptr || !runtime->has_c28_qk_candidate_value_trace() ||
+        candidate_values == nullptr ||
+        candidate_value_count != runtime->last_c28_qk_candidate_values().size()) {
+      throw std::invalid_argument(
+          "native OLMoE C28 candidate-value trace storage is invalid");
+    }
+    std::copy(runtime->last_c28_qk_candidate_values().begin(),
+              runtime->last_c28_qk_candidate_values().end(), candidate_values);
+    return 0;
+  } catch (const std::exception& exception) {
+    error_text(error, error_capacity, exception.what());
+    return 1;
+  } catch (...) {
+    error_text(
+        error, error_capacity,
+        "unknown native OLMoE C28 candidate-value trace copy failure");
     return 1;
   }
 }

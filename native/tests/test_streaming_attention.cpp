@@ -251,6 +251,93 @@ int main() {
     return fail("streaming attention reset failed");
   }
 
+  // The blockwise-QK trace must be observationally inert and its eight
+  // RoPE-closed bands must reconstruct every visible native score.
+  constexpr std::size_t kQKWidth = 128;
+  constexpr std::size_t kQKHeads = 1;
+  constexpr std::size_t kQKLength = 28;
+  const engram::StreamingAttentionConfig qk_config{
+      .query_heads = kQKHeads,
+      .key_value_heads = kQKHeads,
+      .head_dimension = kQKWidth,
+      .local_window = 16,
+      .older_candidates = 8,
+      .older_top_k = 4,
+      .sink_tokens = 2,
+      .scale = 1.0F / std::sqrt(static_cast<float>(kQKWidth)),
+  };
+  engram::StreamingAttention qk_plain(qk_config);
+  engram::StreamingAttention qk_traced(qk_config);
+  std::vector<float> qk_query(kQKWidth);
+  std::vector<float> qk_key(kQKWidth);
+  std::vector<float> qk_value(kQKWidth);
+  std::vector<std::vector<float>> qk_keys;
+  qk_keys.reserve(kQKLength);
+  for (std::size_t position = 0; position < kQKLength; ++position) {
+    for (std::size_t dimension = 0; dimension < kQKWidth; ++dimension) {
+      qk_query[dimension] =
+          std::sin(static_cast<float>((position + 1) * (dimension + 3)) *
+                   0.017F);
+      qk_key[dimension] =
+          std::cos(static_cast<float>((position + 2) * (dimension + 5)) *
+                   0.013F);
+      qk_value[dimension] =
+          std::sin(static_cast<float>((position + 4) * (dimension + 7)) *
+                   0.011F);
+    }
+    qk_keys.push_back(qk_key);
+    std::vector<float> plain_output(kQKWidth);
+    std::vector<float> traced_output(kQKWidth);
+    const auto plain_metrics = qk_plain.step(qk_query, qk_key, qk_value,
+                                              plain_output);
+    std::vector<float> partials(
+        kQKHeads * engram::StreamingAttention::kC28TraceEntries *
+        engram::StreamingAttention::kQKPartialBands);
+    const auto traced_metrics = qk_traced.step_c28_qk_traced(
+        qk_query, qk_key, qk_value,
+        engram::StreamingAttention::kNoEpisodicDirective,
+        engram::StreamingAttention::kNoEpisodicDirective, traced_output,
+        partials);
+    if (plain_output != traced_output ||
+        !same_metrics(plain_metrics, traced_metrics)) {
+      return fail("blockwise QK tracing changed attention output or metrics");
+    }
+    for (std::size_t entry = 0;
+         entry < engram::StreamingAttention::kC28TraceEntries; ++entry) {
+      float reconstructed = 0.0F;
+      for (std::size_t band = 0;
+           band < engram::StreamingAttention::kQKPartialBands; ++band) {
+        reconstructed += partials[
+            entry * engram::StreamingAttention::kQKPartialBands + band];
+      }
+      const std::size_t local_count = std::min(
+          position + 1, engram::StreamingAttention::kRegularTraceLocalEntries);
+      if (entry < local_count) {
+        const std::size_t first_local = position + 1 - local_count;
+        const float expected =
+            dot(qk_query.data(), qk_keys[first_local + entry].data(),
+                kQKWidth) * qk_config.scale;
+        if (!std::isfinite(reconstructed) ||
+            std::abs(reconstructed - expected) > 2.0e-5F) {
+          return fail("blockwise QK trace failed local score reconstruction");
+        }
+      } else if (entry <
+                 engram::StreamingAttention::kRegularTraceEntries) {
+        if (!std::isfinite(reconstructed)) {
+          return fail("blockwise QK trace produced a non-finite older score");
+        }
+      } else {
+        for (std::size_t band = 0;
+             band < engram::StreamingAttention::kQKPartialBands; ++band) {
+          if (partials[entry * engram::StreamingAttention::kQKPartialBands +
+                       band] != 0.0F) {
+            return fail("blockwise QK trace populated an invalid entry");
+          }
+        }
+      }
+    }
+  }
+
   bool rejected = false;
   try {
     const engram::StreamingAttention invalid({

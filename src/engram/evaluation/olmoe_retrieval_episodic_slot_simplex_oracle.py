@@ -941,7 +941,14 @@ def _authenticate_joint_inputs(
     return context, training, failure
 
 
-def _open_slot_trace_runtime(context: Mapping[str, Any]) -> Any:
+def _open_slot_trace_runtime(
+    context: Mapping[str, Any],
+    *,
+    c28_qk_partial_trace: bool = False,
+    c28_qk_candidate_trace: bool = False,
+    c28_qk_candidate_key_trace: bool = False,
+    c28_qk_candidate_value_trace: bool = False,
+) -> Any:
     return OLMoENativeTokenRuntime(
         context["config_path"],
         context["non_mlp_path"],
@@ -953,16 +960,37 @@ def _open_slot_trace_runtime(context: Mapping[str, Any]) -> Any:
         episodic_head_mask=mass.capacity.bias._all_ones_mask(),
         episodic_logit_bias=0.0,
         shadow_attention_policy=mass._SHADOW_POLICY,
+        c28_qk_partial_trace=c28_qk_partial_trace,
+        c28_qk_candidate_trace=c28_qk_candidate_trace,
+        c28_qk_candidate_key_trace=c28_qk_candidate_key_trace,
+        c28_qk_candidate_value_trace=c28_qk_candidate_value_trace,
     )
 
 
-def _validate_runtime_route(runtime: Any) -> None:
+def _validate_runtime_route(
+    runtime: Any,
+    *,
+    allow_c28_qk: bool = False,
+    allow_c28_qk_candidates: bool = False,
+    allow_c28_qk_candidate_keys: bool = False,
+    allow_c28_qk_candidate_values: bool = False,
+) -> None:
+    if allow_c28_qk_candidate_keys:
+        expected_open_abi = "shadow_qk_candidate_keys_v1"
+    elif allow_c28_qk_candidate_values:
+        expected_open_abi = "shadow_qk_candidate_values_v1"
+    elif allow_c28_qk_candidates:
+        expected_open_abi = "shadow_qk_candidates_v1"
+    else:
+        expected_open_abi = (
+            "shadow_qk_trace_v1" if allow_c28_qk else "shadow_trace_v1"
+        )
     if (
         runtime.position != 0
         or not runtime.attention_metrics_available
         or not runtime.episodic_metrics_available
         or runtime.episodic_policy != mass._EPISODIC_POLICY
-        or runtime.episodic_open_abi != "shadow_trace_v1"
+        or runtime.episodic_open_abi != expected_open_abi
         or runtime.shadow_trace_available is not True
         or runtime.episodic_mass_trace_available is not True
         or runtime.episodic_slot_trace_available is not True

@@ -512,6 +512,55 @@ def test_trace_shard_and_manifest_round_trip(
     assert stacked["base_attention_output"].shape == (1, 1, 1, 4)
 
 
+def test_blockwise_qk_shard_and_manifest_round_trip(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    _patch_small_solver_contract(monkeypatch)
+    qk = np.arange(
+        1 * 1 * 2 * full._C28_QK_TRACE_ENTRIES * full._QK_PARTIAL_BANDS,
+        dtype=np.float32,
+    ).reshape(
+        1,
+        1,
+        2,
+        full._C28_QK_TRACE_ENTRIES,
+        full._QK_PARTIAL_BANDS,
+    )
+    shard_dir = full._prepare_shard_directory(tmp_path / "qk-capture")
+    digest = "b" * 64
+    descriptor = full.write_full_visible_qk_trace_shard(
+        shard_dir,
+        record_index=0,
+        record_id="train-00",
+        qk_partials=qk,
+        reset_qk_partials=qk.copy(),
+        query_positions=[96],
+        source_record_sha256=digest,
+        output_evidence_sha256=digest,
+        reset_output_evidence_sha256=digest,
+        schedule_rows_sha256=digest,
+    )
+    loaded = full.validate_full_visible_qk_trace_shard(
+        shard_dir / descriptor["file"],
+        descriptor,
+    )
+    np.testing.assert_array_equal(loaded, qk)
+    protocol = {"path": "/tmp/protocol.json", "sha256": "c" * 64}
+    manifest = full.write_full_visible_qk_trace_manifest(
+        shard_dir,
+        protocol=protocol,
+        shards=[descriptor],
+    )
+    stacked, manifest_value = full.load_stacked_full_visible_qk_trace(
+        manifest["path"],
+        manifest["sha256"],
+        protocol=protocol,
+    )
+    assert manifest_value["confirmation_split_opened"] is False
+    np.testing.assert_array_equal(stacked, qk[None])
+
+
 def test_qualification_failure_is_inconclusive_not_decisive(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

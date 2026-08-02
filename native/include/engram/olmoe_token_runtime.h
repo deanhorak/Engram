@@ -67,6 +67,18 @@ struct OLMoETokenConfig {
   // Additive evaluator-only capture of the production C28 RoPE-closed Q/K
   // band trace. This is enabled only by the versioned shadow-trace V2 C ABI.
   bool c28_qk_partial_trace{};
+  // Additive evaluator-only capture of every active older-candidate Q/K band
+  // before the native top-K truncation. This is separate from the visible
+  // C28 trace and is enabled only by its versioned candidate-trace ABI.
+  bool c28_qk_candidate_trace{};
+  // Additive evaluator-only capture of the exact post-RoPE older candidate
+  // keys in native candidate-slot order. This is a source trace for fitting
+  // compact key/group sidecars; it is never part of inference metrics.
+  bool c28_qk_candidate_key_trace{};
+  // Additive evaluator-only capture of the exact older-candidate values
+  // paired with the key trace. Values are copied before top-K truncation and
+  // never affect inference.
+  bool c28_qk_candidate_value_trace{};
 };
 
 struct OLMoETokenMetrics {
@@ -108,6 +120,14 @@ class OLMoETokenRuntime {
       std::span<const std::int64_t> token_ids,
       std::span<const std::int32_t> write_slots,
       std::span<const std::int32_t> read_spans);
+  // Evaluator-only dynamic older-candidate masks. Layout is
+  // [rows, layers, query_heads, older_candidates], with one allow-list per
+  // token row. The mask changes only which older keys are exact-reranked.
+  [[nodiscard]] std::int64_t forward_episodic_masked(
+      std::span<const std::int64_t> token_ids,
+      std::span<const std::int32_t> write_slots,
+      std::span<const std::int32_t> read_spans,
+      std::span<const std::uint8_t> candidate_masks);
   [[nodiscard]] std::vector<std::int64_t> generate(
       std::span<const std::int64_t> prompt, std::size_t max_new_tokens);
   void reset();
@@ -208,6 +228,27 @@ class OLMoETokenRuntime {
   last_c28_qk_partials() const noexcept {
     return last_c28_qk_partials_;
   }
+  [[nodiscard]] bool has_c28_qk_candidate_trace() const noexcept {
+    return c28_qk_candidate_trace_valid_;
+  }
+  [[nodiscard]] std::span<const float>
+  last_c28_qk_candidates() const noexcept {
+    return last_c28_qk_candidates_;
+  }
+  [[nodiscard]] bool has_c28_qk_candidate_key_trace() const noexcept {
+    return c28_qk_candidate_key_trace_valid_;
+  }
+  [[nodiscard]] std::span<const float>
+  last_c28_qk_candidate_keys() const noexcept {
+    return last_c28_qk_candidate_keys_;
+  }
+  [[nodiscard]] bool has_c28_qk_candidate_value_trace() const noexcept {
+    return c28_qk_candidate_value_trace_valid_;
+  }
+  [[nodiscard]] std::span<const float>
+  last_c28_qk_candidate_values() const noexcept {
+    return last_c28_qk_candidate_values_;
+  }
 
  private:
   void project(std::span<const float> input,
@@ -224,7 +265,8 @@ class OLMoETokenRuntime {
       std::span<const std::int64_t> token_ids,
       std::span<const std::int32_t> write_slots,
       std::span<const std::int32_t> read_spans,
-      std::span<const std::uint64_t> read_source_positions);
+      std::span<const std::uint64_t> read_source_positions,
+      std::span<const std::uint8_t> candidate_masks = {});
 
   OLMoETokenConfig config_;
   OLMoEWeights weights_;
@@ -255,11 +297,17 @@ class OLMoETokenRuntime {
   std::vector<std::uint8_t> last_regular_entry_valid_kind_;
   std::vector<std::uint64_t> last_regular_entry_positions_;
   std::vector<float> last_c28_qk_partials_;
+  std::vector<float> last_c28_qk_candidates_;
+  std::vector<float> last_c28_qk_candidate_keys_;
+  std::vector<float> last_c28_qk_candidate_values_;
   bool shadow_trace_valid_{};
   bool episodic_mass_trace_valid_{};
   bool episodic_slot_trace_valid_{};
   bool regular_entry_trace_valid_{};
   bool c28_qk_partial_trace_valid_{};
+  bool c28_qk_candidate_trace_valid_{};
+  bool c28_qk_candidate_key_trace_valid_{};
+  bool c28_qk_candidate_value_trace_valid_{};
   std::size_t position_{};
   std::uint64_t attention_state_capacity_bytes_{};
   std::uint64_t attention_scratch_capacity_bytes_{};

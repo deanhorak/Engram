@@ -317,7 +317,26 @@ StreamingAttentionMetrics StreamingAttention::step_episodic(
     const std::span<float> output) {
   return step_episodic_impl(
       query, key, value, episodic_write_slot, episodic_read_span, output,
-      {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
+      {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
+}
+
+StreamingAttentionMetrics StreamingAttention::step_episodic_masked(
+    const std::span<const float> query, const std::span<const float> key,
+    const std::span<const float> value, const std::size_t write_slot,
+    const std::size_t read_span, const std::span<float> output,
+    const std::span<const std::uint8_t> candidate_mask) {
+  const std::size_t mask_count =
+      config_.query_heads * config_.older_candidates;
+  if (candidate_mask.size() != mask_count ||
+      !std::all_of(candidate_mask.begin(), candidate_mask.end(),
+                   [](const std::uint8_t value) { return value <= 1; }) ||
+      std::none_of(candidate_mask.begin(), candidate_mask.end(),
+                   [](const std::uint8_t value) { return value != 0; })) {
+    throw std::invalid_argument("streaming candidate mask shape is invalid");
+  }
+  return step_episodic_impl(
+      query, key, value, write_slot, read_span, output, {}, {}, {}, {}, {},
+      {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, candidate_mask);
 }
 
 StreamingAttentionMetrics StreamingAttention::step_episodic_traced(
@@ -342,7 +361,7 @@ StreamingAttentionMetrics StreamingAttention::step_episodic_traced(
   return step_episodic_impl(
       query, key, value, episodic_write_slot, episodic_read_span, output,
       regular_component, episodic_component, regular_mass, episodic_mass,
-      {}, {}, {}, {}, {}, {}, {}, {}, {});
+      {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
 }
 
 StreamingAttentionMetrics StreamingAttention::step_episodic_slots_traced(
@@ -376,7 +395,7 @@ StreamingAttentionMetrics StreamingAttention::step_episodic_slots_traced(
   return step_episodic_impl(
       query, key, value, episodic_write_slot, episodic_read_span, output,
       regular_component, episodic_component, regular_mass, episodic_mass,
-      {}, {}, slot_mass, slot_values, {}, {}, {}, {}, {});
+      {}, {}, slot_mass, slot_values, {}, {}, {}, {}, {}, {}, {});
 }
 
 StreamingAttentionMetrics StreamingAttention::step_regular_entries_traced(
@@ -389,7 +408,7 @@ StreamingAttentionMetrics StreamingAttention::step_regular_entries_traced(
   return step_episodic_impl(
       query, key, value, kNoEpisodicDirective, kNoEpisodicDirective,
       output, {}, {}, {}, {}, {}, {}, {}, {}, entry_mass, entry_values,
-      valid_kind, positions, {});
+      valid_kind, positions, {}, {}, {});
 }
 
 StreamingAttentionMetrics
@@ -404,7 +423,7 @@ StreamingAttention::step_regular_entries_qk_traced(
   return step_episodic_impl(
       query, key, value, kNoEpisodicDirective, kNoEpisodicDirective,
       output, {}, {}, {}, {}, {}, {}, {}, {}, entry_mass, entry_values,
-      valid_kind, positions, qk_partials);
+      valid_kind, positions, qk_partials, {}, {});
 }
 
 StreamingAttentionMetrics StreamingAttention::step_c28_qk_traced(
@@ -416,7 +435,7 @@ StreamingAttentionMetrics StreamingAttention::step_c28_qk_traced(
     const std::span<float> qk_partials) {
   return step_episodic_impl(
       query, key, value, episodic_write_slot, episodic_read_span, output,
-      {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, qk_partials);
+      {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, qk_partials, {}, {});
 }
 
 StreamingAttentionMetrics StreamingAttention::step_episodic_full_traced(
@@ -456,7 +475,7 @@ StreamingAttentionMetrics StreamingAttention::step_episodic_full_traced(
       regular_component, episodic_component, regular_mass, episodic_mass,
       {}, {}, slot_mass, slot_values, regular_entry_mass,
       regular_entry_values, regular_entry_valid_kind,
-      regular_entry_positions, {});
+      regular_entry_positions, {}, {}, {});
 }
 
 StreamingAttentionMetrics
@@ -482,7 +501,86 @@ StreamingAttention::step_episodic_full_qk_traced(
       regular_component, episodic_component, regular_mass, episodic_mass,
       {}, {}, slot_mass, slot_values, regular_entry_mass,
       regular_entry_values, regular_entry_valid_kind,
-      regular_entry_positions, qk_partials);
+      regular_entry_positions, qk_partials, {}, {});
+}
+
+StreamingAttentionMetrics
+StreamingAttention::step_episodic_full_qk_candidates_traced(
+    const std::span<const float> query, const std::span<const float> key,
+    const std::span<const float> value,
+    const std::size_t episodic_write_slot,
+    const std::size_t episodic_read_span,
+    const std::span<float> output,
+    const std::span<float> regular_component,
+    const std::span<float> episodic_component,
+    const std::span<float> regular_mass,
+    const std::span<float> episodic_mass,
+    const std::span<float> slot_mass,
+    const std::span<float> slot_values,
+    const std::span<float> regular_entry_mass,
+    const std::span<float> regular_entry_values,
+    const std::span<std::uint8_t> regular_entry_valid_kind,
+    const std::span<std::uint64_t> regular_entry_positions,
+    const std::span<float> qk_partials) {
+  return step_episodic_impl(
+      query, key, value, episodic_write_slot, episodic_read_span, output,
+      regular_component, episodic_component, regular_mass, episodic_mass,
+      {}, {}, slot_mass, slot_values, regular_entry_mass,
+      regular_entry_values, regular_entry_valid_kind,
+      regular_entry_positions, qk_partials, {}, {});
+}
+
+StreamingAttentionMetrics
+StreamingAttention::step_episodic_full_key_candidates_traced(
+    const std::span<const float> query, const std::span<const float> key,
+    const std::span<const float> value,
+    const std::size_t episodic_write_slot,
+    const std::size_t episodic_read_span,
+    const std::span<float> output,
+    const std::span<float> regular_component,
+    const std::span<float> episodic_component,
+    const std::span<float> regular_mass,
+    const std::span<float> episodic_mass,
+    const std::span<float> slot_mass,
+    const std::span<float> slot_values,
+    const std::span<float> regular_entry_mass,
+    const std::span<float> regular_entry_values,
+    const std::span<std::uint8_t> regular_entry_valid_kind,
+    const std::span<std::uint64_t> regular_entry_positions,
+    const std::span<float> qk_partials,
+    const std::span<float> candidate_keys) {
+  return step_episodic_impl(
+      query, key, value, episodic_write_slot, episodic_read_span, output,
+      regular_component, episodic_component, regular_mass, episodic_mass,
+      {}, {}, slot_mass, slot_values, regular_entry_mass,
+      regular_entry_values, regular_entry_valid_kind,
+      regular_entry_positions, qk_partials, candidate_keys, {});
+}
+
+StreamingAttentionMetrics
+StreamingAttention::step_episodic_full_candidate_values_traced(
+    const std::span<const float> query, const std::span<const float> key,
+    const std::span<const float> value,
+    const std::size_t episodic_write_slot,
+    const std::size_t episodic_read_span,
+    const std::span<float> output,
+    const std::span<float> regular_component,
+    const std::span<float> episodic_component,
+    const std::span<float> regular_mass,
+    const std::span<float> episodic_mass,
+    const std::span<float> slot_mass,
+    const std::span<float> slot_values,
+    const std::span<float> regular_entry_mass,
+    const std::span<float> regular_entry_values,
+    const std::span<std::uint8_t> regular_entry_valid_kind,
+    const std::span<std::uint64_t> regular_entry_positions,
+    const std::span<float> candidate_values) {
+  return step_episodic_impl(
+      query, key, value, episodic_write_slot, episodic_read_span, output,
+      regular_component, episodic_component, regular_mass, episodic_mass,
+      {}, {}, slot_mass, slot_values, regular_entry_mass,
+      regular_entry_values, regular_entry_valid_kind,
+      regular_entry_positions, {}, {}, candidate_values);
 }
 
 StreamingAttentionMetrics StreamingAttention::step_tracked_positions(
@@ -499,7 +597,7 @@ StreamingAttentionMetrics StreamingAttention::step_tracked_positions(
   return step_episodic_impl(
       query, key, value, kNoEpisodicDirective, kNoEpisodicDirective,
       output, {}, {}, {}, {}, tracked_positions, tracked_mass, {}, {}, {},
-      {}, {}, {}, {});
+      {}, {}, {}, {}, {}, {});
 }
 
 StreamingAttentionMetrics StreamingAttention::step_episodic_impl(
@@ -520,7 +618,10 @@ StreamingAttentionMetrics StreamingAttention::step_episodic_impl(
     const std::span<float> regular_entry_values,
     const std::span<std::uint8_t> regular_entry_valid_kind,
     const std::span<std::uint64_t> regular_entry_positions,
-    const std::span<float> qk_partials) {
+    const std::span<float> qk_partials,
+    const std::span<float> candidate_keys,
+    const std::span<float> candidate_values,
+    const std::span<const std::uint8_t> candidate_mask) {
   validate_inputs(query, key, value, output);
   const bool trace_partitions = !regular_component.empty();
   const bool trace_positions = !tracked_positions.empty();
@@ -541,6 +642,25 @@ StreamingAttentionMetrics StreamingAttention::step_episodic_impl(
       checked_product(config_.query_heads, kC28TraceEntries,
                       "streaming C28 QK trace shape overflows"),
       kQKPartialBands, "streaming C28 QK trace shape overflows");
+  const std::size_t qk_candidate_count = checked_product(
+      checked_product(config_.query_heads, config_.older_candidates,
+                      "streaming QK candidate trace shape overflows"),
+      kQKPartialBands, "streaming QK candidate trace shape overflows");
+  const std::size_t candidate_key_count = checked_product(
+      checked_product(config_.query_heads, config_.older_candidates,
+                      "streaming candidate-key trace shape overflows"),
+      config_.head_dimension,
+      "streaming candidate-key trace shape overflows");
+  const std::size_t candidate_value_count = candidate_key_count;
+  const bool trace_qk_candidates =
+      !qk_partials.empty() && qk_partials.size() ==
+                                   qk_partial_count + qk_candidate_count;
+  const bool trace_candidate_keys = !candidate_keys.empty();
+  const bool trace_candidate_values = !candidate_values.empty();
+  const std::size_t candidate_mask_count = checked_product(
+      config_.query_heads, config_.older_candidates,
+      "streaming candidate mask shape overflows");
+  const bool trace_candidate_mask = !candidate_mask.empty();
   if ((!trace_partitions &&
        (!episodic_component.empty() || !regular_mass.empty() ||
         !episodic_mass.empty())) ||
@@ -575,18 +695,41 @@ StreamingAttentionMetrics StreamingAttention::step_episodic_impl(
         config_.older_top_k != kRegularTraceOlderEntries ||
         (config_.episodic_span_size != 0 &&
          config_.episodic_span_size != kC28TraceEpisodicEntries) ||
-        qk_partials.size() != qk_partial_count)) ||
+        (qk_partials.size() != qk_partial_count &&
+         qk_partials.size() != qk_partial_count + qk_candidate_count))) ||
+      (trace_candidate_keys &&
+       (config_.head_dimension != kQKTraceHeadDimension ||
+        config_.local_window != kRegularTraceLocalEntries ||
+        config_.older_top_k != kRegularTraceOlderEntries ||
+        candidate_keys.size() != candidate_key_count)) ||
+      (trace_candidate_values &&
+       (config_.head_dimension != kQKTraceHeadDimension ||
+        config_.local_window != kRegularTraceLocalEntries ||
+        config_.older_top_k != kRegularTraceOlderEntries ||
+        candidate_values.size() != candidate_value_count)) ||
+      (trace_candidate_mask &&
+       (candidate_mask.size() != candidate_mask_count ||
+        std::none_of(candidate_mask.begin(), candidate_mask.end(),
+                     [](const std::uint8_t value) { return value != 0; }) ||
+        !std::all_of(candidate_mask.begin(), candidate_mask.end(),
+                     [](const std::uint8_t value) { return value <= 1; }))) ||
       (trace_partitions && trace_positions) ||
       (trace_episodic_slots && trace_positions)) {
     throw std::invalid_argument(
         "streaming attention trace shape mismatch");
   }
-  std::vector<float> candidate_qk_partials;
+  std::vector<float> candidate_qk_scratch;
   if (trace_qk_partials) {
-    candidate_qk_partials.resize(checked_product(
+    candidate_qk_scratch.resize(checked_product(
         config_.older_candidates, kQKPartialBands,
         "streaming C28 QK candidate scratch overflows"));
     std::fill(qk_partials.begin(), qk_partials.end(), 0.0F);
+  }
+  if (trace_candidate_keys) {
+    std::fill(candidate_keys.begin(), candidate_keys.end(), 0.0F);
+  }
+  if (trace_candidate_values) {
+    std::fill(candidate_values.begin(), candidate_values.end(), 0.0F);
   }
   if (trace_positions) {
     for (std::size_t index = 0; index < tracked_positions.size();
@@ -725,11 +868,18 @@ StreamingAttentionMetrics StreamingAttention::step_episodic_impl(
               (head * kC28TraceEntries + entry) * kQKPartialBands,
           kQKPartialBands);
     };
+    const auto qk_candidate_entry = [&](const std::size_t slot) {
+      return std::span<float>(
+          qk_partials.data() + qk_partial_count +
+              (head * config_.older_candidates + slot) * kQKPartialBands,
+          kQKPartialBands);
+    };
     std::vector<std::size_t> candidates;
     candidates.reserve(config_.older_candidates);
     for (std::size_t slot = 0; slot < config_.older_candidates; ++slot) {
       const std::size_t index = head * config_.older_candidates + slot;
       if (older_active_[index] == 0) continue;
+      if (trace_candidate_mask && candidate_mask[index] == 0) continue;
       candidates.push_back(slot);
       const float raw_score =
           trace_qk_partials
@@ -738,13 +888,34 @@ StreamingAttentionMetrics StreamingAttention::step_episodic_impl(
                     older_keys_.data() + older_offset(head, slot),
                     config_.head_dimension, config_.scale,
                     std::span<float>(
-                        candidate_qk_partials.data() +
+                        candidate_qk_scratch.data() +
                             slot * kQKPartialBands,
                         kQKPartialBands))
               : dot(query_row,
                     older_keys_.data() + older_offset(head, slot),
                     config_.head_dimension);
       candidate_score_scratch_[slot] = raw_score * config_.scale;
+      if (trace_qk_candidates) {
+        std::copy_n(
+            candidate_qk_scratch.data() + slot * kQKPartialBands,
+            kQKPartialBands, qk_candidate_entry(slot).data());
+      }
+      if (trace_candidate_keys) {
+        std::copy_n(
+            older_keys_.data() + older_offset(head, slot),
+            config_.head_dimension,
+            candidate_keys.data() +
+                (head * config_.older_candidates + slot) *
+                    config_.head_dimension);
+      }
+      if (trace_candidate_values) {
+        std::copy_n(
+            older_values_.data() + older_offset(head, slot),
+            config_.head_dimension,
+            candidate_values.data() +
+                (head * config_.older_candidates + slot) *
+                    config_.head_dimension);
+      }
     }
     active_older += candidates.size();
     older_candidate_entries_scored += candidates.size();
@@ -787,7 +958,7 @@ StreamingAttentionMetrics StreamingAttention::step_episodic_impl(
       if (trace_qk_partials) {
         const std::size_t slot = candidates[index];
         std::copy_n(
-            candidate_qk_partials.data() + slot * kQKPartialBands,
+            candidate_qk_scratch.data() + slot * kQKPartialBands,
             kQKPartialBands,
             qk_entry(kRegularTraceLocalEntries + index).data());
       }

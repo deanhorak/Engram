@@ -531,6 +531,30 @@ promotion was authorized. Query-content and phase-on-mass are closed; the
 next directional boundary is a blockwise-QK feature controller. Milestone 2
 remains passed; Milestone 3 remains blocked.
 
+### Blockwise-QK feature capture (train-only, 2026-07-31)
+
+The next boundary is now implemented and captured against a refreshed,
+source-bound full-visible protocol. The native evaluator can optionally emit
+eight scaled Q/K partial dot-product bands for each of the 28 entries already
+visible to the C28 attention step. The feature path has its own C ABI,
+Python binding, reset-proven safetensor shards, authenticated manifest, and a
+reusable train-only audit. It is evaluator-only; production generation does
+not enable it.
+
+The eight-record, 32-layer, 16-head, 32-read capture has shape
+`[8, 32, 16, 16, 28, 8]`. Summing the bands reconstructs the authenticated
+native masses with maximum absolute error `1.90735e-6`, mean absolute error
+`1.36212e-8`, and 99th-percentile error `2.08616e-7`. Score ordering agrees
+with native mass ordering on 65,529 of 65,536 rows (99.9893%). These are
+feature-fidelity results, not a causal quality or Milestone 3 pass.
+
+The score-ranked mass-retention screen is still too weak to authorize a
+bounded selector: top-20 retains 96.26% mean mass but only 91.20% at the
+10th percentile, while top-24 reaches 96.52% at that percentile. The QK
+trace is therefore a viable compatibility feature for a new locality model,
+not evidence that a cheaper candidate policy already exists. The confirmation
+split remains sealed.
+
 ### Native-BitNet package integration and evidence caveat
 
 The qualification is not a pristine runner pass. After the evaluator
@@ -1380,3 +1404,140 @@ inference mechanism are CPU-native. Repeating IVF, candidate-count,
 regularization, prototype-density, small residual, post-hoc bit allocation,
 loss-reweighting, or short grouped-ternary continuation sweeps is no longer
 supported by the accumulated evidence.
+
+## Current OLMoE candidate locality boundary
+
+The evaluator-only native shadow now records all eight older-cache candidate
+Q/K score bands before native top-K truncation. The reset-proven train tensor
+has shape `[8, 32, 16, 16, 8, 8]` (records, reads, layers, query heads,
+candidates, bands), and is stored under
+`work/olmoe_q7/retrieval_episodic_blockwise_qk_candidates_2026-07-31/` with a
+separate authenticated manifest. Candidate score-ranked top-4 retains 92.27%
+mean candidate softmax mass (77.85% p10); the selected older scores map into
+candidate top-4 95.74% of the time. These are train-only locality features,
+not causal recall or native slot-membership proof. The next experiment is a
+fresh-development candidate/group selector with exact reranking and measured
+traffic. Milestone 3 remains blocked.
+
+A record-held-out rank-16 ridge negative-control is now recorded beside the
+candidate capture.  It predicts candidate scores from pre-attention hidden
+head slices only and reaches 68.93% membership recall (50.0% p10; 13.52% exact
+top-4).  Query state alone is insufficient for a pre-read selector, so the
+next implementation must add stable key/group side information or a learned
+residual key summary before any causal reranking attempt.
+
+The next evaluator primitive is now present: the native shadow route can emit
+the exact post-RoPE key vectors for all eight older candidate slots, without
+changing attention output or traffic.  The reset-proven train tensor has shape
+`[8, 32, 16, 16, 8, 128]` and is stored in the separate
+`retrieval_episodic_blockwise_qk_candidate_keys_2026-07-31` artifact.  The
+candidate-key manifest is authenticated and the native route replays exactly
+after reset; the capture remains train-only and the confirmation split is
+closed.  The key manifest SHA-256 is
+`9df57182d3e537b241a19b4aa1917f981b0ac5aded128c866a3ec17c207f8620`.
+
+A per-layer/head centered-PCA audit gives the first memory-traffic boundary.
+Rank 16 has 2.07% centered reconstruction MSE, 0.99% mean normalized key MSE,
+4.50% p95 normalized MSE, and an estimated 6.69% of dense key traffic under a
+cached float16-basis/coefficients model.  Rank 32 reduces mean normalized MSE
+to 0.14% at 13.33% estimated traffic; rank 64 is effectively lossless on this
+corpus.  These are key-fidelity and traffic proxies, not score recall or a
+causal gate, because query vectors are not exposed by this evaluator ABI.  The
+next boundary is a held-out query/key compatibility selector (with exact
+reranking inside selected groups), followed by a fresh causal run only if its
+feature recall is strong.
+
+The first held-out query/key compatibility screen is now complete.  A cheap
+rank-8 diagonal bilinear router combines centered pre-attention hidden
+coordinates with the captured post-RoPE candidate keys and predicts the
+pre-top-K scores.  It reaches only 51.13% mean candidate membership recall
+(25.0% p10; 6.32% exact top-4) and 51.52% mean oracle-mass retention.  The
+exact-score ceiling is 100%, so key availability alone does not repair the
+query representation.  This is a reproducible feature-only negative result;
+no causal policy changed.  The next justified experiment must expose or learn
+the actual per-head query projection (or a distillation target for it) before
+another selector claim.
+
+Using the existing authenticated per-head query-feature artifact fixes the
+representation problem for a feature-only rank sweep.  After native RoPE,
+record-held-out PCA reconstruction of the candidate keys reaches 87.19%,
+92.88%, **95.17%**, 96.25%, and 97.17% mean candidate membership recall at
+ranks 4, 8, 16, 32, and 64 respectively.  Rank 16 has 81.10% exact-top-4
+rows, 75.0% p10 recall, and 92.11% mean oracle-mass retention; dense
+query/key scoring is 100% recall.  Rank 16 therefore crosses the 95% mean
+feature threshold but is not yet a causal pass: tail recall and exact-row
+coverage remain weak, and exact reranking inside selected groups has not been
+implemented.  The next boundary is a rank-16 grouped selector with exact
+reranking and a fresh development causal replay.
+
+The compression audit SHA-256 is
+`ca301b74277b064d84b86ce412af1cc22dafecfbc011f868ae1ab5db318607f1`; the
+query/key screen SHA-256 is
+`3fec2173f637c54a02e9203c9d03d6aee51637f3e9b2ce60be19284372455c3e`.
+
+The authenticated rank-recall report is
+`actual_query_key_rank_recall.json` (SHA-256
+`332df4670167a6ca351201419c53906bd8bbed7d3dcfa8bb343e00a610c4b4cd`).
+
+The value-side companion trace is now captured and authenticated.  It has
+shape `[8, 32, 16, 16, 8, 128]`, exact first/reset parity, and manifest SHA-256
+`8c13a25f1070fc0fba2b032fc7e84a24229aaecbb3fb35c55c51a20414865a1d`.  Values
+are copied from the same older-cache candidate slots as the key trace and are
+available for an offline causal replay; the trace route remains evaluator-only.
+
+The research-guided query-aware selector then uses rank-16 PCA scores for
+candidate generation and exact native Q/K scores for reranking.  With a pool
+of six candidates it reaches 99.804% mean membership recall, 100% p10 recall,
+99.220% exact-top-4 rows, and 92.266% mean candidate-mass retention.  Pool
+eight is the exact-score ceiling at 100% recall.  The authenticated report is
+`query_key_exact_rerank_v2.json` (SHA-256
+`6567ec5ec272c8d18ff7f661f5f917aae307780ab668e27507cc27e73e0d86e1`).  This
+passes the candidate-locality boundary but not the semantic gate: the
+remaining 0.78% non-exact rows still need native intervention replay with
+complete hidden-state/logit measurements.
+
+The native intervention boundary is now exercised.  The evaluator-only
+`forward_episodic_masked` ABI converts each rank-16/pool-6 group into an
+older-candidate allow-list, while the native kernel still performs its exact
+top-4 Q/K rerank and reads the corresponding cached values.  On all eight
+record-held-out train sequences, CPU replay against the identical unmasked
+native runtime gives 99.6094% answer-position top-1 agreement, 99.9023% over
+all positions, mean answer hidden relative L2 **0.013111**, mean logit relative
+L2 **0.006376**, and mean answer NLL delta **+0.002404** (maximum +0.018012).
+Every record passes the declared 10% hidden/logit, 0.05 NLL, and 90% top-1
+thresholds.  The authenticated report is
+`work/olmoe_q7/retrieval_episodic_native_masked_replay_rank16_pool6.json`
+(SHA-256
+`2e6e017fc507e915cc96948deb53de0112062c208834b899643e04abe587baa7`).
+
+This is the first complete causal replay for the selector, but it is still a
+train-only result: the independent development split has not been opened and
+the selector remains evaluator-only.  Thus the semantic gate is materially
+strengthened, not promoted to a generalization or production claim.  The next
+defensible step is a newly authenticated development replay with the same
+rank/pool, then measured traffic and long-context scaling if it passes.
+
+The independent development replay now passes as well.  The development
+capture was made after the selector was frozen, and PCA bases were fit only on
+the train candidate-key/query artifacts.  On all eight development sequences,
+the rank-16/pool-6 mask retains **99.8192%** of exact candidate top-4
+membership (100% p10); native exact reranking inside the pool has the same
+recall.  Full CPU replay reaches **100% answer top-1 agreement**, mean hidden
+relative L2 **0.013236**, mean logit relative L2 **0.006520**, and mean answer
+NLL delta **−0.003980** (maximum +0.000574).  Every record passes the causal
+thresholds.  The development report is
+`work/olmoe_q7/retrieval_episodic_development_replay_rank16_pool6.json`
+(SHA-256
+`0c5cb2273f63b930148c78070da68ae57bb821969a68e2a6a038ee7ac5d04bb6`).
+
+This closes the train-to-development semantic gate for the bounded selector.
+It still does not promote the evaluator-only mask to the packaged runtime:
+the remaining boundary is measured end-to-end traffic/latency at longer
+contexts, followed by a separately authorized protected evaluation.
+
+The same development replay now records native counters.  Mean logical
+attention reads fall from **710,667,264** bytes unmasked to **702,166,336**
+bytes masked (**98.8038%** retained, **1.1962%** reduction); older candidate
+entries scored fall from **222,208** to **205,824** (**7.3733%** reduction).
+This confirms that the semantic win is not yet a large end-to-end traffic win:
+episodic value reads and the dominant local/projection work are unchanged.

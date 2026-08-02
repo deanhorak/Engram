@@ -58,6 +58,29 @@ _CONSTRUCTIBLE_COMPONENTS = _VISIBLE_ENTRIES
 _OPTIMISTIC_COMPONENTS = _VISIBLE_ENTRIES + 1
 _NESTED_DIAGNOSTIC_COMPONENTS = (10, 16)
 
+# The blockwise-QK artifact is intentionally separate from the value trace
+# shards.  It is a selector feature, not a constructible value basis, and its
+# presence must not silently change the authenticated full-visible solver.
+_C28_QK_TRACE_ENTRIES = 28
+_C28_QK_CANDIDATE_ENTRIES = 8
+_QK_PARTIAL_BANDS = 8
+_C28_QK_TRACE_KEY = "c28_qk_partials"
+_C28_QK_CANDIDATE_TRACE_KEY = "c28_qk_candidates"
+_C28_QK_CANDIDATE_KEY_TRACE_KEY = "c28_qk_candidate_keys"
+_C28_QK_CANDIDATE_VALUE_TRACE_KEY = "c28_qk_candidate_values"
+_QK_CAPTURE_EXPERIMENT = (
+    "olmoe_q7_retrieval_episodic_full_visible_blockwise_qk_capture"
+)
+_QK_CANDIDATE_CAPTURE_EXPERIMENT = (
+    "olmoe_q7_retrieval_episodic_full_visible_blockwise_qk_candidate_capture"
+)
+_QK_CANDIDATE_KEY_CAPTURE_EXPERIMENT = (
+    "olmoe_q7_retrieval_episodic_full_visible_blockwise_qk_candidate_key_capture"
+)
+_QK_CANDIDATE_VALUE_CAPTURE_EXPERIMENT = (
+    "olmoe_q7_retrieval_episodic_full_visible_blockwise_qk_candidate_value_capture"
+)
+
 _INVALID_KIND = np.uint8(0)
 _LOCAL_KIND = np.uint8(1)
 _OLDER_KIND = np.uint8(2)
@@ -1364,6 +1387,10 @@ class _FullVisibleTraceCaptureRuntime:
         self._rows: dict[str, list[np.ndarray]] = {
             name: [] for name in _CAPTURE_TRACE_KEYS
         }
+        self._qk_rows: list[np.ndarray] = []
+        self._qk_candidate_rows: list[np.ndarray] = []
+        self._qk_candidate_key_rows: list[np.ndarray] = []
+        self._qk_candidate_value_rows: list[np.ndarray] = []
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self._runtime, name)
@@ -1412,6 +1439,32 @@ class _FullVisibleTraceCaptureRuntime:
             partition = self._runtime.last_episodic_mass_trace()
             slots = self._runtime.last_episodic_slot_trace()
             regular = self._regular_adapter.capture(self._runtime)
+            qk_trace = None
+            if getattr(
+                self._runtime, "c28_qk_partial_trace_available", False
+            ):
+                qk_trace = self._runtime.last_c28_qk_partial_trace().qk_partials
+            qk_candidate_trace = None
+            if getattr(
+                self._runtime, "c28_qk_candidate_trace_available", False
+            ):
+                qk_candidate_trace = (
+                    self._runtime.last_c28_qk_candidate_trace().qk_candidates
+                )
+            qk_candidate_key_trace = None
+            if getattr(
+                self._runtime, "c28_qk_candidate_key_trace_available", False
+            ):
+                qk_candidate_key_trace = (
+                    self._runtime.last_c28_qk_candidate_key_trace().candidate_keys
+                )
+            qk_candidate_value_trace = None
+            if getattr(
+                self._runtime, "c28_qk_candidate_value_trace_available", False
+            ):
+                qk_candidate_value_trace = (
+                    self._runtime.last_c28_qk_candidate_value_trace().candidate_values
+                )
             row = {
                 "base_attention_output": partition.base_attention_output,
                 "regular_component": partition.regular_component,
@@ -1429,6 +1482,20 @@ class _FullVisibleTraceCaptureRuntime:
             for name in _CAPTURE_TRACE_KEYS:
                 value = np.ascontiguousarray(row[name])
                 self._rows[name].append(value)
+            if qk_trace is not None:
+                self._qk_rows.append(np.ascontiguousarray(qk_trace))
+            if qk_candidate_trace is not None:
+                self._qk_candidate_rows.append(
+                    np.ascontiguousarray(qk_candidate_trace)
+                )
+            if qk_candidate_key_trace is not None:
+                self._qk_candidate_key_rows.append(
+                    np.ascontiguousarray(qk_candidate_key_trace)
+                )
+            if qk_candidate_value_trace is not None:
+                self._qk_candidate_value_rows.append(
+                    np.ascontiguousarray(qk_candidate_value_trace)
+                )
         self._slot_positions = next_positions
         return result
 
@@ -1442,12 +1509,44 @@ class _FullVisibleTraceCaptureRuntime:
         _trace_summary(arrays, self._query_positions)
         return arrays, list(self._query_positions)
 
+    def qk_captured(self) -> np.ndarray:
+        """Return optional [reads, layers, heads, 28, 8] Q/K partials."""
+
+        if not self._qk_rows:
+            raise ValueError("full-visible QK trace capture is unavailable")
+        return np.ascontiguousarray(np.stack(self._qk_rows))
+
+    def qk_candidates_captured(self) -> np.ndarray:
+        """Return optional [reads, layers, heads, candidates, 8] Q/K bands."""
+
+        if not self._qk_candidate_rows:
+            raise ValueError("full-visible QK candidate trace is unavailable")
+        return np.ascontiguousarray(np.stack(self._qk_candidate_rows))
+
+    def qk_candidate_keys_captured(self) -> np.ndarray:
+        """Return optional [reads, layers, heads, candidates, head-dim] keys."""
+
+        if not self._qk_candidate_key_rows:
+            raise ValueError("full-visible QK candidate-key trace is unavailable")
+        return np.ascontiguousarray(np.stack(self._qk_candidate_key_rows))
+
+    def qk_candidate_values_captured(self) -> np.ndarray:
+        """Return optional [reads, layers, heads, candidates, head-dim] values."""
+
+        if not self._qk_candidate_value_rows:
+            raise ValueError("full-visible QK candidate-value trace is unavailable")
+        return np.ascontiguousarray(np.stack(self._qk_candidate_value_rows))
+
     def reset(self) -> None:
         self._runtime.reset()
         self._slot_positions.fill(_INVALID_POSITION)
         self._query_positions.clear()
         for rows in self._rows.values():
             rows.clear()
+        self._qk_rows.clear()
+        self._qk_candidate_rows.clear()
+        self._qk_candidate_key_rows.clear()
+        self._qk_candidate_value_rows.clear()
 
     def close(self) -> None:
         self._runtime.close()
@@ -2021,6 +2120,1004 @@ def validate_full_visible_trace_shard(
     ):
         raise ValueError("full-visible trace shard tensor changed")
     return loaded
+
+
+def _qk_trace_digest(qk_partials: np.ndarray) -> str:
+    value = np.ascontiguousarray(qk_partials)
+    digest = hashlib.sha256()
+    digest.update(_C28_QK_TRACE_KEY.encode("ascii"))
+    digest.update(str(value.dtype).encode("ascii"))
+    digest.update(json.dumps(list(value.shape), separators=(",", ":")).encode())
+    digest.update(value.tobytes(order="C"))
+    return digest.hexdigest()
+
+
+def _qk_trace_summary(
+    qk_partials: np.ndarray,
+    query_positions: Sequence[int],
+) -> dict[str, Any]:
+    """Validate one blockwise-QK capture and return immutable tensor evidence."""
+
+    value = np.ascontiguousarray(qk_partials)
+    expected_shape = (
+        len(_READ_POSITIONS),
+        _LAYERS,
+        _QUERY_HEADS,
+        _C28_QK_TRACE_ENTRIES,
+        _QK_PARTIAL_BANDS,
+    )
+    if (
+        list(query_positions) != list(_READ_POSITIONS)
+        or value.dtype != np.float32
+        or value.shape != expected_shape
+        or not value.flags.c_contiguous
+        or not np.isfinite(value).all()
+    ):
+        raise ValueError("full-visible blockwise-QK trace shape or values changed")
+    tensor_sha256 = hashlib.sha256(value.tobytes(order="C")).hexdigest()
+    return {
+        "query_positions": list(query_positions),
+        "shape": list(value.shape),
+        "dtype": str(value.dtype),
+        "tensor_sha256": tensor_sha256,
+        "trace_sha256": _qk_trace_digest(value),
+        "entries": _C28_QK_TRACE_ENTRIES,
+        "partial_bands": _QK_PARTIAL_BANDS,
+        "attention_scale_included": True,
+        "episodic_bias_included": False,
+    }
+
+
+def write_full_visible_qk_trace_shard(
+    directory: str | Path,
+    *,
+    record_index: int,
+    record_id: str,
+    qk_partials: np.ndarray,
+    reset_qk_partials: np.ndarray,
+    query_positions: Sequence[int],
+    source_record_sha256: str,
+    output_evidence_sha256: str,
+    reset_output_evidence_sha256: str,
+    schedule_rows_sha256: str,
+) -> dict[str, Any]:
+    """Persist one authenticated, reset-proven blockwise-QK feature shard."""
+
+    root = _checked_directory(directory, "full-visible blockwise-QK shard directory")
+    if (
+        isinstance(record_index, bool)
+        or not isinstance(record_index, int)
+        or not 0 <= record_index < _RECORDS
+        or not isinstance(record_id, str)
+        or not record_id
+        or not all(
+            _is_sha256(value)
+            for value in (
+                source_record_sha256,
+                output_evidence_sha256,
+                reset_output_evidence_sha256,
+                schedule_rows_sha256,
+            )
+        )
+    ):
+        raise ValueError("full-visible blockwise-QK shard metadata is invalid")
+    first = np.ascontiguousarray(qk_partials)
+    reset = np.ascontiguousarray(reset_qk_partials)
+    summary = _qk_trace_summary(first, query_positions)
+    reset_summary = _qk_trace_summary(reset, query_positions)
+    if summary["trace_sha256"] != reset_summary["trace_sha256"]:
+        raise ValueError("full-visible blockwise-QK reset trace is not exact")
+    filename = f"qk-train-{record_index:02d}.safetensors"
+    path = root / filename
+    if path.exists() or path.is_symlink():
+        raise ValueError("full-visible blockwise-QK trace shard already exists")
+    try:
+        from safetensors.numpy import save_file
+    except ImportError as error:  # pragma: no cover - required dependency
+        raise RuntimeError("blockwise-QK trace shards require safetensors") from error
+    temporary = root / f".{filename}.tmp-{os.getpid()}"
+    save_file({_C28_QK_TRACE_KEY: first}, str(temporary))
+    temporary.replace(path)
+    descriptor = {
+        "record_index": record_index,
+        "record_id": record_id,
+        "file": filename,
+        "file_sha256": sha256_file(path),
+        "format": "safetensors",
+        "keys": [_C28_QK_TRACE_KEY],
+        "query_positions": list(query_positions),
+        "tensor_sha256": summary["tensor_sha256"],
+        "trace_sha256": summary["trace_sha256"],
+        "reset_trace_sha256": reset_summary["trace_sha256"],
+        "source_record_sha256": source_record_sha256,
+        "output_evidence_sha256": output_evidence_sha256,
+        "reset_output_evidence_sha256": reset_output_evidence_sha256,
+        "schedule_rows_sha256": schedule_rows_sha256,
+        "shape": summary["shape"],
+        "attention_scale_included": True,
+        "episodic_bias_included": False,
+    }
+    validate_full_visible_qk_trace_shard(path, descriptor)
+    return descriptor
+
+
+def validate_full_visible_qk_trace_shard(
+    path: str | Path,
+    descriptor: Mapping[str, Any],
+) -> np.ndarray:
+    """Authenticate and revalidate one persisted blockwise-QK shard."""
+
+    file_sha256 = descriptor.get("file_sha256")
+    if not _is_sha256(file_sha256):
+        raise ValueError("full-visible blockwise-QK shard descriptor is invalid")
+    source = _checked_file(path, file_sha256, "full-visible blockwise-QK trace shard")
+    if (
+        source.name != descriptor.get("file")
+        or descriptor.get("format") != "safetensors"
+        or descriptor.get("keys") != [_C28_QK_TRACE_KEY]
+        or descriptor.get("query_positions") != list(_READ_POSITIONS)
+        or not _is_sha256(descriptor.get("tensor_sha256"))
+        or not _is_sha256(descriptor.get("trace_sha256"))
+        or descriptor.get("trace_sha256") != descriptor.get("reset_trace_sha256")
+        or not all(
+            _is_sha256(descriptor.get(name))
+            for name in (
+                "source_record_sha256",
+                "output_evidence_sha256",
+                "reset_output_evidence_sha256",
+                "schedule_rows_sha256",
+            )
+        )
+        or descriptor.get("attention_scale_included") is not True
+        or descriptor.get("episodic_bias_included") is not False
+    ):
+        raise ValueError("full-visible blockwise-QK shard descriptor is invalid")
+    try:
+        from safetensors import safe_open
+        from safetensors.numpy import load_file
+    except ImportError as error:  # pragma: no cover - required dependency
+        raise RuntimeError("blockwise-QK trace shards require safetensors") from error
+    with safe_open(source, framework="numpy") as handle:
+        if list(handle.keys()) != [_C28_QK_TRACE_KEY]:
+            raise ValueError("full-visible blockwise-QK shard keys changed")
+    loaded = np.ascontiguousarray(load_file(source)[_C28_QK_TRACE_KEY])
+    summary = _qk_trace_summary(loaded, _READ_POSITIONS)
+    if (
+        summary["tensor_sha256"] != descriptor["tensor_sha256"]
+        or summary["trace_sha256"] != descriptor["trace_sha256"]
+        or summary["shape"] != descriptor.get("shape")
+    ):
+        raise ValueError("full-visible blockwise-QK shard tensor changed")
+    return loaded
+
+
+def write_full_visible_qk_trace_manifest(
+    directory: str | Path,
+    *,
+    protocol: Mapping[str, str],
+    shards: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Write the immutable train-only blockwise-QK capture manifest."""
+
+    root = _checked_directory(
+        directory,
+        "full-visible blockwise-QK shard directory",
+    )
+    if (
+        set(protocol) != {"path", "sha256"}
+        or not _is_sha256(protocol["sha256"])
+        or len(shards) != _RECORDS
+        or [row.get("record_index") for row in shards] != list(range(_RECORDS))
+    ):
+        raise ValueError("full-visible blockwise-QK manifest inputs are invalid")
+    for descriptor in shards:
+        validate_full_visible_qk_trace_shard(
+            root / str(descriptor.get("file", "")),
+            descriptor,
+        )
+    manifest = {
+        "schema_version": _SCHEMA_VERSION,
+        "experiment": _QK_CAPTURE_EXPERIMENT,
+        "protocol": dict(protocol),
+        "format": "safetensors",
+        "stored_tensors": [_C28_QK_TRACE_KEY],
+        "record_order": list(range(_RECORDS)),
+        "shards": [dict(row) for row in shards],
+        "confirmation_split_opened": False,
+    }
+    path = root / "qk-manifest.json"
+    if path.exists() or path.is_symlink():
+        raise ValueError("full-visible blockwise-QK manifest already exists")
+    atomic_json(path, manifest)
+    return {
+        "path": str(path),
+        "sha256": sha256_file(path),
+        "manifest": manifest,
+    }
+
+
+def load_stacked_full_visible_qk_trace(
+    manifest: str | Path,
+    manifest_sha256: str,
+    *,
+    protocol: Mapping[str, str] | None = None,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    """Load and authenticate all train blockwise-QK feature shards."""
+
+    manifest_path = _checked_file(
+        manifest,
+        manifest_sha256,
+        "full-visible blockwise-QK trace manifest",
+    )
+    value = json.loads(manifest_path.read_text(encoding="utf-8"))
+    shards = value.get("shards")
+    if (
+        value.get("schema_version") != _SCHEMA_VERSION
+        or value.get("experiment") != _QK_CAPTURE_EXPERIMENT
+        or value.get("format") != "safetensors"
+        or value.get("stored_tensors") != [_C28_QK_TRACE_KEY]
+        or value.get("record_order") != list(range(_RECORDS))
+        or value.get("confirmation_split_opened") is not False
+        or (protocol is not None and value.get("protocol") != protocol)
+        or not isinstance(shards, list)
+        or len(shards) != _RECORDS
+    ):
+        raise ValueError("full-visible blockwise-QK manifest contract changed")
+    rows = [
+        validate_full_visible_qk_trace_shard(
+            manifest_path.parent / str(descriptor.get("file", "")),
+            descriptor,
+        )
+        for descriptor in shards
+    ]
+    return np.ascontiguousarray(np.stack(rows)), value
+
+
+def _qk_candidate_trace_digest(qk_candidates: np.ndarray) -> str:
+    value = np.ascontiguousarray(qk_candidates)
+    digest = hashlib.sha256()
+    digest.update(_C28_QK_CANDIDATE_TRACE_KEY.encode("ascii"))
+    digest.update(str(value.dtype).encode("ascii"))
+    digest.update(json.dumps(list(value.shape), separators=(",", ":")).encode())
+    digest.update(value.tobytes(order="C"))
+    return digest.hexdigest()
+
+
+def _qk_candidate_trace_summary(
+    qk_candidates: np.ndarray,
+    query_positions: Sequence[int],
+) -> dict[str, Any]:
+    """Validate one pre-top-K candidate-QK capture."""
+
+    value = np.ascontiguousarray(qk_candidates)
+    expected_shape = (
+        len(_READ_POSITIONS),
+        _LAYERS,
+        _QUERY_HEADS,
+        _C28_QK_CANDIDATE_ENTRIES,
+        _QK_PARTIAL_BANDS,
+    )
+    if (
+        list(query_positions) != list(_READ_POSITIONS)
+        or value.dtype != np.float32
+        or value.shape != expected_shape
+        or not value.flags.c_contiguous
+        or not np.isfinite(value).all()
+    ):
+        raise ValueError("full-visible QK candidate trace shape or values changed")
+    tensor_sha256 = hashlib.sha256(value.tobytes(order="C")).hexdigest()
+    return {
+        "query_positions": list(query_positions),
+        "shape": list(value.shape),
+        "dtype": str(value.dtype),
+        "tensor_sha256": tensor_sha256,
+        "trace_sha256": _qk_candidate_trace_digest(value),
+        "older_candidates": _C28_QK_CANDIDATE_ENTRIES,
+        "partial_bands": _QK_PARTIAL_BANDS,
+        "attention_scale_included": True,
+        "episodic_bias_included": False,
+        "pre_top_k": True,
+    }
+
+
+def write_full_visible_qk_candidate_trace_shard(
+    directory: str | Path,
+    *,
+    record_index: int,
+    record_id: str,
+    qk_candidates: np.ndarray,
+    reset_qk_candidates: np.ndarray,
+    query_positions: Sequence[int],
+    source_record_sha256: str,
+    output_evidence_sha256: str,
+    reset_output_evidence_sha256: str,
+    schedule_rows_sha256: str,
+) -> dict[str, Any]:
+    """Persist one authenticated pre-top-K candidate-QK shard."""
+
+    root = _checked_directory(
+        directory,
+        "full-visible QK candidate shard directory",
+    )
+    if (
+        isinstance(record_index, bool)
+        or not isinstance(record_index, int)
+        or not 0 <= record_index < _RECORDS
+        or not isinstance(record_id, str)
+        or not record_id
+        or not all(
+            _is_sha256(value)
+            for value in (
+                source_record_sha256,
+                output_evidence_sha256,
+                reset_output_evidence_sha256,
+                schedule_rows_sha256,
+            )
+        )
+    ):
+        raise ValueError("full-visible QK candidate shard metadata is invalid")
+    first = np.ascontiguousarray(qk_candidates)
+    reset = np.ascontiguousarray(reset_qk_candidates)
+    summary = _qk_candidate_trace_summary(first, query_positions)
+    reset_summary = _qk_candidate_trace_summary(reset, query_positions)
+    if summary["trace_sha256"] != reset_summary["trace_sha256"]:
+        raise ValueError("full-visible QK candidate reset trace is not exact")
+    filename = f"qk-candidate-train-{record_index:02d}.safetensors"
+    path = root / filename
+    if path.exists() or path.is_symlink():
+        raise ValueError("full-visible QK candidate shard already exists")
+    try:
+        from safetensors.numpy import save_file
+    except ImportError as error:  # pragma: no cover
+        raise RuntimeError("QK candidate shards require safetensors") from error
+    temporary = root / f".{filename}.tmp-{os.getpid()}"
+    save_file({_C28_QK_CANDIDATE_TRACE_KEY: first}, str(temporary))
+    temporary.replace(path)
+    descriptor = {
+        "record_index": record_index,
+        "record_id": record_id,
+        "file": filename,
+        "file_sha256": sha256_file(path),
+        "format": "safetensors",
+        "keys": [_C28_QK_CANDIDATE_TRACE_KEY],
+        "query_positions": list(query_positions),
+        "tensor_sha256": summary["tensor_sha256"],
+        "trace_sha256": summary["trace_sha256"],
+        "reset_trace_sha256": reset_summary["trace_sha256"],
+        "source_record_sha256": source_record_sha256,
+        "output_evidence_sha256": output_evidence_sha256,
+        "reset_output_evidence_sha256": reset_output_evidence_sha256,
+        "schedule_rows_sha256": schedule_rows_sha256,
+        "shape": summary["shape"],
+        "attention_scale_included": True,
+        "episodic_bias_included": False,
+        "pre_top_k": True,
+    }
+    validate_full_visible_qk_candidate_trace_shard(path, descriptor)
+    return descriptor
+
+
+def validate_full_visible_qk_candidate_trace_shard(
+    path: str | Path,
+    descriptor: Mapping[str, Any],
+) -> np.ndarray:
+    """Authenticate and revalidate one candidate-QK shard."""
+
+    file_sha256 = descriptor.get("file_sha256")
+    if not _is_sha256(file_sha256):
+        raise ValueError("full-visible QK candidate descriptor is invalid")
+    source = _checked_file(path, file_sha256, "full-visible QK candidate shard")
+    if (
+        source.name != descriptor.get("file")
+        or descriptor.get("format") != "safetensors"
+        or descriptor.get("keys") != [_C28_QK_CANDIDATE_TRACE_KEY]
+        or descriptor.get("query_positions") != list(_READ_POSITIONS)
+        or not _is_sha256(descriptor.get("tensor_sha256"))
+        or not _is_sha256(descriptor.get("trace_sha256"))
+        or descriptor.get("trace_sha256") != descriptor.get("reset_trace_sha256")
+        or not all(
+            _is_sha256(descriptor.get(name))
+            for name in (
+                "source_record_sha256",
+                "output_evidence_sha256",
+                "reset_output_evidence_sha256",
+                "schedule_rows_sha256",
+            )
+        )
+        or descriptor.get("attention_scale_included") is not True
+        or descriptor.get("episodic_bias_included") is not False
+        or descriptor.get("pre_top_k") is not True
+    ):
+        raise ValueError("full-visible QK candidate descriptor is invalid")
+    try:
+        from safetensors import safe_open
+        from safetensors.numpy import load_file
+    except ImportError as error:  # pragma: no cover
+        raise RuntimeError("QK candidate shards require safetensors") from error
+    with safe_open(source, framework="numpy") as handle:
+        if list(handle.keys()) != [_C28_QK_CANDIDATE_TRACE_KEY]:
+            raise ValueError("full-visible QK candidate keys changed")
+    loaded = np.ascontiguousarray(load_file(source)[_C28_QK_CANDIDATE_TRACE_KEY])
+    summary = _qk_candidate_trace_summary(loaded, _READ_POSITIONS)
+    if (
+        summary["tensor_sha256"] != descriptor["tensor_sha256"]
+        or summary["trace_sha256"] != descriptor["trace_sha256"]
+        or summary["shape"] != descriptor.get("shape")
+    ):
+        raise ValueError("full-visible QK candidate tensor changed")
+    return loaded
+
+
+def write_full_visible_qk_candidate_trace_manifest(
+    directory: str | Path,
+    *,
+    protocol: Mapping[str, str],
+    shards: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Write the immutable train-only candidate-QK manifest."""
+
+    root = _checked_directory(directory, "full-visible QK candidate shard directory")
+    if (
+        set(protocol) != {"path", "sha256"}
+        or not _is_sha256(protocol["sha256"])
+        or len(shards) != _RECORDS
+        or [row.get("record_index") for row in shards] != list(range(_RECORDS))
+    ):
+        raise ValueError("full-visible QK candidate manifest inputs are invalid")
+    for descriptor in shards:
+        validate_full_visible_qk_candidate_trace_shard(
+            root / str(descriptor.get("file", "")), descriptor
+        )
+    manifest = {
+        "schema_version": _SCHEMA_VERSION,
+        "experiment": _QK_CANDIDATE_CAPTURE_EXPERIMENT,
+        "protocol": dict(protocol),
+        "format": "safetensors",
+        "stored_tensors": [_C28_QK_CANDIDATE_TRACE_KEY],
+        "record_order": list(range(_RECORDS)),
+        "older_candidates": _C28_QK_CANDIDATE_ENTRIES,
+        "confirmation_split_opened": False,
+        "shards": [dict(row) for row in shards],
+    }
+    path = root / "qk-candidate-manifest.json"
+    if path.exists() or path.is_symlink():
+        raise ValueError("full-visible QK candidate manifest already exists")
+    atomic_json(path, manifest)
+    return {"path": str(path), "sha256": sha256_file(path), "manifest": manifest}
+
+
+def load_stacked_full_visible_qk_candidate_trace(
+    manifest: str | Path,
+    manifest_sha256: str,
+    *,
+    protocol: Mapping[str, str] | None = None,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    """Load and authenticate all train candidate-QK shards."""
+
+    manifest_path = _checked_file(
+        manifest, manifest_sha256, "full-visible QK candidate manifest"
+    )
+    value = json.loads(manifest_path.read_text(encoding="utf-8"))
+    shards = value.get("shards")
+    if (
+        value.get("schema_version") != _SCHEMA_VERSION
+        or value.get("experiment") != _QK_CANDIDATE_CAPTURE_EXPERIMENT
+        or value.get("format") != "safetensors"
+        or value.get("stored_tensors") != [_C28_QK_CANDIDATE_TRACE_KEY]
+        or value.get("record_order") != list(range(_RECORDS))
+        or value.get("older_candidates") != _C28_QK_CANDIDATE_ENTRIES
+        or value.get("confirmation_split_opened") is not False
+        or (protocol is not None and value.get("protocol") != protocol)
+        or not isinstance(shards, list)
+        or len(shards) != _RECORDS
+    ):
+        raise ValueError("full-visible QK candidate manifest contract changed")
+    rows = [
+        validate_full_visible_qk_candidate_trace_shard(
+            manifest_path.parent / str(descriptor.get("file", "")), descriptor
+        )
+        for descriptor in shards
+    ]
+    return np.ascontiguousarray(np.stack(rows)), value
+
+
+def _qk_candidate_key_trace_digest(candidate_keys: np.ndarray) -> str:
+    value = np.ascontiguousarray(candidate_keys)
+    digest = hashlib.sha256()
+    digest.update(_C28_QK_CANDIDATE_KEY_TRACE_KEY.encode("ascii"))
+    digest.update(str(value.dtype).encode("ascii"))
+    digest.update(json.dumps(list(value.shape), separators=(",", ":")).encode())
+    digest.update(value.tobytes(order="C"))
+    return digest.hexdigest()
+
+
+def _qk_candidate_key_trace_summary(
+    candidate_keys: np.ndarray,
+    query_positions: Sequence[int],
+) -> dict[str, Any]:
+    """Validate one exact post-RoPE older-candidate key capture."""
+
+    value = np.ascontiguousarray(candidate_keys)
+    expected_shape = (
+        len(_READ_POSITIONS),
+        _LAYERS,
+        _QUERY_HEADS,
+        _C28_QK_CANDIDATE_ENTRIES,
+        _HEAD_DIMENSION,
+    )
+    if (
+        list(query_positions) != list(_READ_POSITIONS)
+        or value.dtype != np.float32
+        or value.shape != expected_shape
+        or not value.flags.c_contiguous
+        or not np.isfinite(value).all()
+    ):
+        raise ValueError("full-visible QK candidate-key trace shape or values changed")
+    tensor_sha256 = hashlib.sha256(value.tobytes(order="C")).hexdigest()
+    return {
+        "query_positions": list(query_positions),
+        "shape": list(value.shape),
+        "dtype": str(value.dtype),
+        "tensor_sha256": tensor_sha256,
+        "trace_sha256": _qk_candidate_key_trace_digest(value),
+        "older_candidates": _C28_QK_CANDIDATE_ENTRIES,
+        "head_dimension": _HEAD_DIMENSION,
+        "post_rope": True,
+        "inactive_slots_zero": True,
+    }
+
+
+def write_full_visible_qk_candidate_key_trace_shard(
+    directory: str | Path,
+    *,
+    record_index: int,
+    record_id: str,
+    candidate_keys: np.ndarray,
+    reset_candidate_keys: np.ndarray,
+    query_positions: Sequence[int],
+    source_record_sha256: str,
+    output_evidence_sha256: str,
+    reset_output_evidence_sha256: str,
+    schedule_rows_sha256: str,
+) -> dict[str, Any]:
+    """Persist one authenticated post-RoPE candidate-key shard."""
+
+    root = _checked_directory(
+        directory, "full-visible QK candidate-key shard directory"
+    )
+    if (
+        isinstance(record_index, bool)
+        or not isinstance(record_index, int)
+        or not 0 <= record_index < _RECORDS
+        or not isinstance(record_id, str)
+        or not record_id
+        or not all(
+            _is_sha256(value)
+            for value in (
+                source_record_sha256,
+                output_evidence_sha256,
+                reset_output_evidence_sha256,
+                schedule_rows_sha256,
+            )
+        )
+    ):
+        raise ValueError("full-visible QK candidate-key shard metadata is invalid")
+    first = np.ascontiguousarray(candidate_keys)
+    reset = np.ascontiguousarray(reset_candidate_keys)
+    summary = _qk_candidate_key_trace_summary(first, query_positions)
+    reset_summary = _qk_candidate_key_trace_summary(reset, query_positions)
+    if summary["trace_sha256"] != reset_summary["trace_sha256"]:
+        raise ValueError("full-visible QK candidate-key reset trace is not exact")
+    filename = f"qk-candidate-key-train-{record_index:02d}.safetensors"
+    path = root / filename
+    if path.exists() or path.is_symlink():
+        raise ValueError("full-visible QK candidate-key shard already exists")
+    try:
+        from safetensors.numpy import save_file
+    except ImportError as error:  # pragma: no cover
+        raise RuntimeError("QK candidate-key shards require safetensors") from error
+    temporary = root / f".{filename}.tmp-{os.getpid()}"
+    save_file({_C28_QK_CANDIDATE_KEY_TRACE_KEY: first}, str(temporary))
+    temporary.replace(path)
+    descriptor = {
+        "record_index": record_index,
+        "record_id": record_id,
+        "file": filename,
+        "file_sha256": sha256_file(path),
+        "format": "safetensors",
+        "keys": [_C28_QK_CANDIDATE_KEY_TRACE_KEY],
+        "query_positions": list(query_positions),
+        "tensor_sha256": summary["tensor_sha256"],
+        "trace_sha256": summary["trace_sha256"],
+        "reset_trace_sha256": reset_summary["trace_sha256"],
+        "source_record_sha256": source_record_sha256,
+        "output_evidence_sha256": output_evidence_sha256,
+        "reset_output_evidence_sha256": reset_output_evidence_sha256,
+        "schedule_rows_sha256": schedule_rows_sha256,
+        "shape": summary["shape"],
+        "head_dimension": _HEAD_DIMENSION,
+        "post_rope": True,
+        "inactive_slots_zero": True,
+    }
+    validate_full_visible_qk_candidate_key_trace_shard(path, descriptor)
+    return descriptor
+
+
+def validate_full_visible_qk_candidate_key_trace_shard(
+    path: str | Path,
+    descriptor: Mapping[str, Any],
+) -> np.ndarray:
+    """Authenticate and revalidate one candidate-key shard."""
+
+    file_sha256 = descriptor.get("file_sha256")
+    if not _is_sha256(file_sha256):
+        raise ValueError("full-visible QK candidate-key descriptor is invalid")
+    source = _checked_file(path, file_sha256, "full-visible QK candidate-key shard")
+    if (
+        source.name != descriptor.get("file")
+        or descriptor.get("format") != "safetensors"
+        or descriptor.get("keys") != [_C28_QK_CANDIDATE_KEY_TRACE_KEY]
+        or descriptor.get("query_positions") != list(_READ_POSITIONS)
+        or not _is_sha256(descriptor.get("tensor_sha256"))
+        or not _is_sha256(descriptor.get("trace_sha256"))
+        or descriptor.get("trace_sha256") != descriptor.get("reset_trace_sha256")
+        or not all(
+            _is_sha256(descriptor.get(name))
+            for name in (
+                "source_record_sha256",
+                "output_evidence_sha256",
+                "reset_output_evidence_sha256",
+                "schedule_rows_sha256",
+            )
+        )
+        or descriptor.get("post_rope") is not True
+        or descriptor.get("inactive_slots_zero") is not True
+    ):
+        raise ValueError("full-visible QK candidate-key descriptor is invalid")
+    try:
+        from safetensors import safe_open
+        from safetensors.numpy import load_file
+    except ImportError as error:  # pragma: no cover
+        raise RuntimeError("QK candidate-key shards require safetensors") from error
+    with safe_open(source, framework="numpy") as handle:
+        if list(handle.keys()) != [_C28_QK_CANDIDATE_KEY_TRACE_KEY]:
+            raise ValueError("full-visible QK candidate-key keys changed")
+    loaded = np.ascontiguousarray(
+        load_file(source)[_C28_QK_CANDIDATE_KEY_TRACE_KEY]
+    )
+    summary = _qk_candidate_key_trace_summary(loaded, _READ_POSITIONS)
+    if (
+        summary["tensor_sha256"] != descriptor["tensor_sha256"]
+        or summary["trace_sha256"] != descriptor["trace_sha256"]
+        or summary["shape"] != descriptor.get("shape")
+    ):
+        raise ValueError("full-visible QK candidate-key tensor changed")
+    return loaded
+
+
+def write_full_visible_qk_candidate_key_trace_manifest(
+    directory: str | Path,
+    *,
+    protocol: Mapping[str, str],
+    shards: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Write the immutable train-only candidate-key manifest."""
+
+    root = _checked_directory(
+        directory, "full-visible QK candidate-key shard directory"
+    )
+    if (
+        set(protocol) != {"path", "sha256"}
+        or not _is_sha256(protocol["sha256"])
+        or len(shards) != _RECORDS
+        or [row.get("record_index") for row in shards] != list(range(_RECORDS))
+    ):
+        raise ValueError("full-visible QK candidate-key manifest inputs are invalid")
+    for descriptor in shards:
+        validate_full_visible_qk_candidate_key_trace_shard(
+            root / str(descriptor.get("file", "")), descriptor
+        )
+    manifest = {
+        "schema_version": _SCHEMA_VERSION,
+        "experiment": _QK_CANDIDATE_KEY_CAPTURE_EXPERIMENT,
+        "protocol": dict(protocol),
+        "format": "safetensors",
+        "stored_tensors": [_C28_QK_CANDIDATE_KEY_TRACE_KEY],
+        "record_order": list(range(_RECORDS)),
+        "older_candidates": _C28_QK_CANDIDATE_ENTRIES,
+        "head_dimension": _HEAD_DIMENSION,
+        "confirmation_split_opened": False,
+        "shards": [dict(row) for row in shards],
+    }
+    path = root / "qk-candidate-key-manifest.json"
+    if path.exists() or path.is_symlink():
+        raise ValueError("full-visible QK candidate-key manifest already exists")
+    atomic_json(path, manifest)
+    return {"path": str(path), "sha256": sha256_file(path), "manifest": manifest}
+
+
+def load_stacked_full_visible_qk_candidate_key_trace(
+    manifest: str | Path,
+    manifest_sha256: str,
+    *,
+    protocol: Mapping[str, str] | None = None,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    """Load and authenticate all train candidate-key shards."""
+
+    manifest_path = _checked_file(
+        manifest, manifest_sha256, "full-visible QK candidate-key manifest"
+    )
+    value = json.loads(manifest_path.read_text(encoding="utf-8"))
+    shards = value.get("shards")
+    if (
+        value.get("schema_version") != _SCHEMA_VERSION
+        or value.get("experiment") != _QK_CANDIDATE_KEY_CAPTURE_EXPERIMENT
+        or value.get("format") != "safetensors"
+        or value.get("stored_tensors") != [_C28_QK_CANDIDATE_KEY_TRACE_KEY]
+        or value.get("record_order") != list(range(_RECORDS))
+        or value.get("older_candidates") != _C28_QK_CANDIDATE_ENTRIES
+        or value.get("head_dimension") != _HEAD_DIMENSION
+        or value.get("confirmation_split_opened") is not False
+        or (protocol is not None and value.get("protocol") != protocol)
+        or not isinstance(shards, list)
+        or len(shards) != _RECORDS
+    ):
+        raise ValueError("full-visible QK candidate-key manifest contract changed")
+    rows = [
+        validate_full_visible_qk_candidate_key_trace_shard(
+            manifest_path.parent / str(descriptor.get("file", "")), descriptor
+        )
+        for descriptor in shards
+    ]
+    return np.ascontiguousarray(np.stack(rows)), value
+
+
+def _qk_candidate_value_trace_digest(candidate_values: np.ndarray) -> str:
+    value = np.ascontiguousarray(candidate_values)
+    digest = hashlib.sha256()
+    digest.update(_C28_QK_CANDIDATE_VALUE_TRACE_KEY.encode("ascii"))
+    digest.update(str(value.dtype).encode("ascii"))
+    digest.update(json.dumps(list(value.shape), separators=(",", ":")).encode())
+    digest.update(value.tobytes(order="C"))
+    return digest.hexdigest()
+
+
+def _qk_candidate_value_trace_summary(
+    candidate_values: np.ndarray,
+    query_positions: Sequence[int],
+) -> dict[str, Any]:
+    """Validate one exact older-candidate value capture."""
+
+    value = np.ascontiguousarray(candidate_values)
+    expected_shape = (
+        len(_READ_POSITIONS),
+        _LAYERS,
+        _QUERY_HEADS,
+        _C28_QK_CANDIDATE_ENTRIES,
+        _HEAD_DIMENSION,
+    )
+    if (
+        list(query_positions) != list(_READ_POSITIONS)
+        or value.dtype != np.float32
+        or value.shape != expected_shape
+        or not value.flags.c_contiguous
+        or not np.isfinite(value).all()
+    ):
+        raise ValueError("full-visible QK candidate-value trace shape or values changed")
+    tensor_sha256 = hashlib.sha256(value.tobytes(order="C")).hexdigest()
+    return {
+        "query_positions": list(query_positions),
+        "shape": list(value.shape),
+        "dtype": str(value.dtype),
+        "tensor_sha256": tensor_sha256,
+        "trace_sha256": _qk_candidate_value_trace_digest(value),
+        "older_candidates": _C28_QK_CANDIDATE_ENTRIES,
+        "head_dimension": _HEAD_DIMENSION,
+        "post_rope": False,
+        "inactive_slots_zero": True,
+    }
+
+
+def write_full_visible_qk_candidate_value_trace_shard(
+    directory: str | Path,
+    *,
+    record_index: int,
+    record_id: str,
+    candidate_values: np.ndarray,
+    reset_candidate_values: np.ndarray,
+    query_positions: Sequence[int],
+    source_record_sha256: str,
+    output_evidence_sha256: str,
+    reset_output_evidence_sha256: str,
+    schedule_rows_sha256: str,
+) -> dict[str, Any]:
+    """Persist one authenticated older-candidate value shard."""
+
+    root = _checked_directory(directory, "full-visible QK candidate-value shard directory")
+    if (
+        isinstance(record_index, bool)
+        or not isinstance(record_index, int)
+        or not 0 <= record_index < _RECORDS
+        or not isinstance(record_id, str)
+        or not record_id
+        or not all(
+            _is_sha256(value)
+            for value in (
+                source_record_sha256,
+                output_evidence_sha256,
+                reset_output_evidence_sha256,
+                schedule_rows_sha256,
+            )
+        )
+    ):
+        raise ValueError("full-visible QK candidate-value shard metadata is invalid")
+    first = np.ascontiguousarray(candidate_values)
+    reset = np.ascontiguousarray(reset_candidate_values)
+    summary = _qk_candidate_value_trace_summary(first, query_positions)
+    reset_summary = _qk_candidate_value_trace_summary(reset, query_positions)
+    if summary["trace_sha256"] != reset_summary["trace_sha256"]:
+        raise ValueError("full-visible QK candidate-value reset trace is not exact")
+    filename = f"qk-candidate-value-train-{record_index:02d}.safetensors"
+    path = root / filename
+    if path.exists() or path.is_symlink():
+        raise ValueError("full-visible QK candidate-value shard already exists")
+    try:
+        from safetensors.numpy import save_file
+    except ImportError as error:  # pragma: no cover
+        raise RuntimeError("QK candidate-value shards require safetensors") from error
+    temporary = root / f".{filename}.tmp-{os.getpid()}"
+    save_file({_C28_QK_CANDIDATE_VALUE_TRACE_KEY: first}, str(temporary))
+    temporary.replace(path)
+    descriptor = {
+        "record_index": record_index,
+        "record_id": record_id,
+        "file": filename,
+        "file_sha256": sha256_file(path),
+        "format": "safetensors",
+        "keys": [_C28_QK_CANDIDATE_VALUE_TRACE_KEY],
+        "query_positions": list(query_positions),
+        "tensor_sha256": summary["tensor_sha256"],
+        "trace_sha256": summary["trace_sha256"],
+        "reset_trace_sha256": reset_summary["trace_sha256"],
+        "source_record_sha256": source_record_sha256,
+        "output_evidence_sha256": output_evidence_sha256,
+        "reset_output_evidence_sha256": reset_output_evidence_sha256,
+        "schedule_rows_sha256": schedule_rows_sha256,
+        "shape": summary["shape"],
+        "head_dimension": _HEAD_DIMENSION,
+        "post_rope": False,
+        "inactive_slots_zero": True,
+    }
+    validate_full_visible_qk_candidate_value_trace_shard(path, descriptor)
+    return descriptor
+
+
+def validate_full_visible_qk_candidate_value_trace_shard(
+    path: str | Path, descriptor: Mapping[str, Any]
+) -> np.ndarray:
+    """Authenticate and revalidate one candidate-value shard."""
+
+    file_sha256 = descriptor.get("file_sha256")
+    if not _is_sha256(file_sha256):
+        raise ValueError("full-visible QK candidate-value descriptor is invalid")
+    source = _checked_file(path, file_sha256, "full-visible QK candidate-value shard")
+    if (
+        source.name != descriptor.get("file")
+        or descriptor.get("format") != "safetensors"
+        or descriptor.get("keys") != [_C28_QK_CANDIDATE_VALUE_TRACE_KEY]
+        or descriptor.get("query_positions") != list(_READ_POSITIONS)
+        or not _is_sha256(descriptor.get("tensor_sha256"))
+        or not _is_sha256(descriptor.get("trace_sha256"))
+        or descriptor.get("trace_sha256") != descriptor.get("reset_trace_sha256")
+        or not all(
+            _is_sha256(descriptor.get(name))
+            for name in (
+                "source_record_sha256",
+                "output_evidence_sha256",
+                "reset_output_evidence_sha256",
+                "schedule_rows_sha256",
+            )
+        )
+        or descriptor.get("post_rope") is not False
+        or descriptor.get("inactive_slots_zero") is not True
+    ):
+        raise ValueError("full-visible QK candidate-value descriptor is invalid")
+    try:
+        from safetensors import safe_open
+        from safetensors.numpy import load_file
+    except ImportError as error:  # pragma: no cover
+        raise RuntimeError("QK candidate-value shards require safetensors") from error
+    with safe_open(source, framework="numpy") as handle:
+        if list(handle.keys()) != [_C28_QK_CANDIDATE_VALUE_TRACE_KEY]:
+            raise ValueError("full-visible QK candidate-value keys changed")
+    loaded = np.ascontiguousarray(
+        load_file(source)[_C28_QK_CANDIDATE_VALUE_TRACE_KEY]
+    )
+    summary = _qk_candidate_value_trace_summary(loaded, _READ_POSITIONS)
+    if (
+        summary["tensor_sha256"] != descriptor["tensor_sha256"]
+        or summary["trace_sha256"] != descriptor["trace_sha256"]
+        or summary["shape"] != descriptor.get("shape")
+    ):
+        raise ValueError("full-visible QK candidate-value tensor changed")
+    return loaded
+
+
+def write_full_visible_qk_candidate_value_trace_manifest(
+    directory: str | Path,
+    *,
+    protocol: Mapping[str, str],
+    shards: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Write the immutable train-only candidate-value manifest."""
+
+    root = _checked_directory(directory, "full-visible QK candidate-value shard directory")
+    if (
+        set(protocol) != {"path", "sha256"}
+        or not _is_sha256(protocol["sha256"])
+        or len(shards) != _RECORDS
+        or [row.get("record_index") for row in shards] != list(range(_RECORDS))
+    ):
+        raise ValueError("full-visible QK candidate-value manifest inputs are invalid")
+    for descriptor in shards:
+        validate_full_visible_qk_candidate_value_trace_shard(
+            root / str(descriptor.get("file", "")), descriptor
+        )
+    manifest = {
+        "schema_version": _SCHEMA_VERSION,
+        "experiment": _QK_CANDIDATE_VALUE_CAPTURE_EXPERIMENT,
+        "protocol": dict(protocol),
+        "format": "safetensors",
+        "stored_tensors": [_C28_QK_CANDIDATE_VALUE_TRACE_KEY],
+        "record_order": list(range(_RECORDS)),
+        "older_candidates": _C28_QK_CANDIDATE_ENTRIES,
+        "head_dimension": _HEAD_DIMENSION,
+        "post_rope": False,
+        "confirmation_split_opened": False,
+        "shards": [dict(row) for row in shards],
+    }
+    path = root / "qk-candidate-value-manifest.json"
+    if path.exists() or path.is_symlink():
+        raise ValueError("full-visible QK candidate-value manifest already exists")
+    atomic_json(path, manifest)
+    return {"path": str(path), "sha256": sha256_file(path), "manifest": manifest}
+
+
+def load_stacked_full_visible_qk_candidate_value_trace(
+    manifest: str | Path,
+    manifest_sha256: str,
+    *,
+    protocol: Mapping[str, str] | None = None,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    """Load and authenticate all train candidate-value shards."""
+
+    manifest_path = _checked_file(
+        manifest, manifest_sha256, "full-visible QK candidate-value manifest"
+    )
+    value = json.loads(manifest_path.read_text(encoding="utf-8"))
+    shards = value.get("shards")
+    if (
+        value.get("schema_version") != _SCHEMA_VERSION
+        or value.get("experiment") != _QK_CANDIDATE_VALUE_CAPTURE_EXPERIMENT
+        or value.get("format") != "safetensors"
+        or value.get("stored_tensors") != [_C28_QK_CANDIDATE_VALUE_TRACE_KEY]
+        or value.get("record_order") != list(range(_RECORDS))
+        or value.get("older_candidates") != _C28_QK_CANDIDATE_ENTRIES
+        or value.get("head_dimension") != _HEAD_DIMENSION
+        or value.get("post_rope") is not False
+        or value.get("confirmation_split_opened") is not False
+        or (protocol is not None and value.get("protocol") != protocol)
+        or not isinstance(shards, list)
+        or len(shards) != _RECORDS
+    ):
+        raise ValueError("full-visible QK candidate-value manifest contract changed")
+    rows = [
+        validate_full_visible_qk_candidate_value_trace_shard(
+            manifest_path.parent / str(descriptor.get("file", "")), descriptor
+        )
+        for descriptor in shards
+    ]
+    return np.ascontiguousarray(np.stack(rows)), value
 
 
 def write_full_visible_trace_manifest(

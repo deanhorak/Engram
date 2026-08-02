@@ -36,6 +36,8 @@ OLMOE_REGULAR_TRACE_ENTRIES = (
 OLMOE_REGULAR_TRACE_INVALID = 0
 OLMOE_REGULAR_TRACE_LOCAL = 1
 OLMOE_REGULAR_TRACE_OLDER = 2
+OLMOE_C28_TRACE_ENTRIES = 28
+OLMOE_QK_PARTIAL_BANDS = 8
 
 
 class _Config(ctypes.Structure):
@@ -151,9 +153,52 @@ class OLMoENativeRegularEntryTrace:
     positions: np.ndarray
 
 
+@dataclass(frozen=True)
+class OLMoENativeC28QKPartialTrace:
+    """Last-row [layer, head, C28-entry, QK-band] trace."""
+
+    qk_partials: np.ndarray
+
+
+@dataclass(frozen=True)
+class OLMoENativeC28QKCandidateTrace:
+    """Last-row [layer, head, older-candidate, QK-band] trace."""
+
+    qk_candidates: np.ndarray
+
+
+@dataclass(frozen=True)
+class OLMoENativeC28QKCandidateKeyTrace:
+    """Last-row [layer, head, older-candidate, head-dimension] keys."""
+
+    candidate_keys: np.ndarray
+
+
+@dataclass(frozen=True)
+class OLMoENativeC28QKCandidateValueTrace:
+    """Last-row [layer, head, older-candidate, head-dimension] values."""
+
+    candidate_values: np.ndarray
+
+
 def _configure(
     library: ctypes.CDLL,
-) -> tuple[bool, bool, bool, bool, bool, bool, bool, bool, bool, bool]:
+) -> tuple[
+    bool,
+    bool,
+    bool,
+    bool,
+    bool,
+    bool,
+    bool,
+    bool,
+    bool,
+    bool,
+    bool,
+    bool,
+    bool,
+    bool,
+]:
     library.engram_olmoe_token_open.argtypes = [
         ctypes.POINTER(_Config),
         ctypes.c_char_p,
@@ -250,6 +295,24 @@ def _configure(
             ctypes.c_size_t,
         ]
         library.engram_olmoe_token_copy_episodic_metrics_v1.restype = ctypes.c_int
+    has_episodic_masked = hasattr(
+        library, "engram_olmoe_token_forward_episodic_masked_v1"
+    )
+    if has_episodic_masked:
+        library.engram_olmoe_token_forward_episodic_masked_v1.argtypes = [
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_int64),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_int32),
+            ctypes.POINTER(ctypes.c_int32),
+            ctypes.POINTER(ctypes.c_uint8),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_int64),
+            ctypes.POINTER(_Metrics),
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        library.engram_olmoe_token_forward_episodic_masked_v1.restype = ctypes.c_int
     has_episodic_headwise = hasattr(
         library, "engram_olmoe_token_open_episodic_headwise_v1"
     )
@@ -371,6 +434,130 @@ def _configure(
         library.engram_olmoe_token_copy_last_regular_entry_trace_v1.restype = (
             ctypes.c_int
         )
+    has_c28_qk_trace = all(
+        hasattr(library, name)
+        for name in (
+            "engram_olmoe_token_open_episodic_shadow_qk_trace_v1",
+            "engram_olmoe_token_copy_last_c28_qk_partial_trace_v1",
+        )
+    )
+    if has_c28_qk_trace:
+        library.engram_olmoe_token_open_episodic_shadow_qk_trace_v1.argtypes = [
+            ctypes.POINTER(_Config),
+            ctypes.POINTER(_EpisodicPolicyV1),
+            ctypes.POINTER(ctypes.c_uint8),
+            ctypes.c_size_t,
+            ctypes.c_float,
+            ctypes.POINTER(_AttentionPolicyV1),
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        library.engram_olmoe_token_open_episodic_shadow_qk_trace_v1.restype = (
+            ctypes.c_void_p
+        )
+        library.engram_olmoe_token_copy_last_c28_qk_partial_trace_v1.argtypes = [
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_float),
+            ctypes.c_size_t,
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        library.engram_olmoe_token_copy_last_c28_qk_partial_trace_v1.restype = (
+            ctypes.c_int
+        )
+    has_c28_qk_candidate_trace = all(
+        hasattr(library, name)
+        for name in (
+            "engram_olmoe_token_open_episodic_shadow_qk_candidates_v1",
+            "engram_olmoe_token_copy_last_c28_qk_candidate_trace_v1",
+        )
+    )
+    if has_c28_qk_candidate_trace:
+        library.engram_olmoe_token_open_episodic_shadow_qk_candidates_v1.argtypes = [
+            ctypes.POINTER(_Config),
+            ctypes.POINTER(_EpisodicPolicyV1),
+            ctypes.POINTER(ctypes.c_uint8),
+            ctypes.c_size_t,
+            ctypes.c_float,
+            ctypes.POINTER(_AttentionPolicyV1),
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        library.engram_olmoe_token_open_episodic_shadow_qk_candidates_v1.restype = (
+            ctypes.c_void_p
+        )
+        library.engram_olmoe_token_copy_last_c28_qk_candidate_trace_v1.argtypes = [
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_float),
+            ctypes.c_size_t,
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        library.engram_olmoe_token_copy_last_c28_qk_candidate_trace_v1.restype = (
+            ctypes.c_int
+        )
+    has_c28_qk_candidate_key_trace = all(
+        hasattr(library, name)
+        for name in (
+            "engram_olmoe_token_open_episodic_shadow_qk_candidate_keys_v1",
+            "engram_olmoe_token_copy_last_c28_qk_candidate_keys_v1",
+        )
+    )
+    if has_c28_qk_candidate_key_trace:
+        library.engram_olmoe_token_open_episodic_shadow_qk_candidate_keys_v1.argtypes = [
+            ctypes.POINTER(_Config),
+            ctypes.POINTER(_EpisodicPolicyV1),
+            ctypes.POINTER(ctypes.c_uint8),
+            ctypes.c_size_t,
+            ctypes.c_float,
+            ctypes.POINTER(_AttentionPolicyV1),
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        library.engram_olmoe_token_open_episodic_shadow_qk_candidate_keys_v1.restype = (
+            ctypes.c_void_p
+        )
+        library.engram_olmoe_token_copy_last_c28_qk_candidate_keys_v1.argtypes = [
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_float),
+            ctypes.c_size_t,
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        library.engram_olmoe_token_copy_last_c28_qk_candidate_keys_v1.restype = (
+            ctypes.c_int
+        )
+    has_c28_qk_candidate_value_trace = all(
+        hasattr(library, name)
+        for name in (
+            "engram_olmoe_token_open_episodic_shadow_qk_candidate_values_v1",
+            "engram_olmoe_token_copy_last_c28_qk_candidate_values_v1",
+        )
+    )
+    if has_c28_qk_candidate_value_trace:
+        library.engram_olmoe_token_open_episodic_shadow_qk_candidate_values_v1.argtypes = [
+            ctypes.POINTER(_Config),
+            ctypes.POINTER(_EpisodicPolicyV1),
+            ctypes.POINTER(ctypes.c_uint8),
+            ctypes.c_size_t,
+            ctypes.c_float,
+            ctypes.POINTER(_AttentionPolicyV1),
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        library.engram_olmoe_token_open_episodic_shadow_qk_candidate_values_v1.restype = (
+            ctypes.c_void_p
+        )
+        library.engram_olmoe_token_copy_last_c28_qk_candidate_values_v1.argtypes = [
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_float),
+            ctypes.c_size_t,
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        library.engram_olmoe_token_copy_last_c28_qk_candidate_values_v1.restype = (
+            ctypes.c_int
+        )
     return (
         has_attention_metrics,
         has_layered_open,
@@ -382,6 +569,10 @@ def _configure(
         has_episodic_mass_trace,
         has_episodic_slot_trace,
         has_regular_entry_trace,
+        has_c28_qk_trace,
+        has_c28_qk_candidate_trace,
+        has_c28_qk_candidate_key_trace,
+        has_c28_qk_candidate_value_trace,
     )
 
 
@@ -574,6 +765,10 @@ class OLMoENativeTokenRuntime:
         episodic_head_mask: ArrayLike | None = None,
         episodic_logit_bias: float | None = None,
         shadow_attention_policy: Mapping[str, int] | None = None,
+        c28_qk_partial_trace: bool = False,
+        c28_qk_candidate_trace: bool = False,
+        c28_qk_candidate_key_trace: bool = False,
+        c28_qk_candidate_value_trace: bool = False,
     ):
         config_path = Path(model_config)
         config_value = json.loads(config_path.read_text(encoding="utf-8"))
@@ -584,6 +779,15 @@ class OLMoENativeTokenRuntime:
             raise ValueError("OLMoE hidden size is not divisible by heads")
         layers = int(config_value["num_hidden_layers"])
         self._library = ctypes.CDLL(str(Path(library).resolve()))
+        configured = _configure(self._library)
+        if len(configured) == 10:
+            configured = (*configured, False, False, False, False)
+        elif len(configured) == 11:
+            configured = (*configured, False, False, False)
+        elif len(configured) == 12:
+            configured = (*configured, False, False)
+        elif len(configured) == 13:
+            configured = (*configured, False)
         (
             self._has_attention_metrics,
             has_layered_open,
@@ -595,8 +799,15 @@ class OLMoENativeTokenRuntime:
             has_episodic_mass_trace,
             has_episodic_slot_trace,
             has_regular_entry_trace,
-        ) = _configure(self._library)
+            has_c28_qk_trace,
+            has_c28_qk_candidate_trace,
+            has_c28_qk_candidate_key_trace,
+            has_c28_qk_candidate_value_trace,
+        ) = configured
         self._has_episodic_metrics = has_episodic
+        self.masked_episodic_available = hasattr(
+            self._library, "engram_olmoe_token_forward_episodic_masked_v1"
+        )
         non_mlp_bytes = str(Path(non_mlp_safetensors).resolve()).encode()
         q7_bytes = str(Path(q7_artifact).resolve()).encode()
         scalar_values = (
@@ -680,6 +891,10 @@ class OLMoENativeTokenRuntime:
         self.episodic_mass_trace_available = False
         self.episodic_slot_trace_available = False
         self.regular_entry_trace_available = False
+        self.c28_qk_partial_trace_available = False
+        self.c28_qk_candidate_trace_available = False
+        self.c28_qk_candidate_key_trace_available = False
+        self.c28_qk_candidate_value_trace_available = False
         if episodic_policy is not None:
             normalized_episodic = _normalize_episodic_policy(episodic_policy)
             if not has_episodic:
@@ -710,6 +925,28 @@ class OLMoENativeTokenRuntime:
                         raise OLMoENativeRuntimeError(
                             "native OLMoE library has no same-state shadow-trace ABI"
                         )
+                    if c28_qk_partial_trace and not has_c28_qk_trace:
+                        raise OLMoENativeRuntimeError(
+                            "native OLMoE library has no C28 QK shadow-trace ABI"
+                        )
+                    if c28_qk_candidate_trace and not has_c28_qk_candidate_trace:
+                        raise OLMoENativeRuntimeError(
+                            "native OLMoE library has no C28 QK candidate ABI"
+                        )
+                    if (
+                        c28_qk_candidate_key_trace
+                        and not has_c28_qk_candidate_key_trace
+                    ):
+                        raise OLMoENativeRuntimeError(
+                            "native OLMoE library has no C28 QK candidate-key ABI"
+                        )
+                    if (
+                        c28_qk_candidate_value_trace
+                        and not has_c28_qk_candidate_value_trace
+                    ):
+                        raise OLMoENativeRuntimeError(
+                            "native OLMoE library has no C28 QK candidate-value ABI"
+                        )
                     normalized_shadow = _normalize_attention_policy(
                         shadow_attention_policy,
                         coordinate="same-state shadow",
@@ -720,21 +957,58 @@ class OLMoENativeTokenRuntime:
                         normalized_shadow["older_top_k"],
                         normalized_shadow["sink_tokens"],
                     )
-                    self._handle = (
-                        self._library.engram_olmoe_token_open_episodic_shadow_trace_v1(
-                            ctypes.byref(native_config),
-                            ctypes.byref(native_episodic),
-                            flattened_mask.ctypes.data_as(
-                                ctypes.POINTER(ctypes.c_uint8)
-                            ),
-                            flattened_mask.size,
-                            normalized_episodic_bias,
-                            ctypes.byref(native_shadow),
-                            error,
-                            len(error),
+                    if c28_qk_candidate_key_trace:
+                        open_shadow = (
+                            self._library
+                            .engram_olmoe_token_open_episodic_shadow_qk_candidate_keys_v1
+                        )
+                    elif c28_qk_candidate_value_trace:
+                        open_shadow = (
+                            self._library
+                            .engram_olmoe_token_open_episodic_shadow_qk_candidate_values_v1
+                        )
+                    elif c28_qk_candidate_trace:
+                        open_shadow = (
+                            self._library
+                            .engram_olmoe_token_open_episodic_shadow_qk_candidates_v1
+                        )
+                    elif c28_qk_partial_trace:
+                        open_shadow = (
+                            self._library
+                            .engram_olmoe_token_open_episodic_shadow_qk_trace_v1
+                        )
+                    else:
+                        open_shadow = (
+                            self._library
+                            .engram_olmoe_token_open_episodic_shadow_trace_v1
+                        )
+                    self._handle = open_shadow(
+                        ctypes.byref(native_config),
+                        ctypes.byref(native_episodic),
+                        flattened_mask.ctypes.data_as(
+                            ctypes.POINTER(ctypes.c_uint8)
+                        ),
+                        flattened_mask.size,
+                        normalized_episodic_bias,
+                        ctypes.byref(native_shadow),
+                        error,
+                        len(error),
+                    )
+                    self.episodic_open_abi = (
+                        "shadow_qk_candidate_keys_v1"
+                        if c28_qk_candidate_key_trace
+                        else (
+                            "shadow_qk_candidate_values_v1"
+                            if c28_qk_candidate_value_trace
+                            else (
+                                "shadow_qk_candidates_v1"
+                                if c28_qk_candidate_trace
+                                else "shadow_trace_v1"
+                                if not c28_qk_partial_trace
+                                else "shadow_qk_trace_v1"
+                            )
                         )
                     )
-                    self.episodic_open_abi = "shadow_trace_v1"
                     self.shadow_attention_policy = normalized_shadow
                     self.shadow_trace_available = True
                     self.episodic_mass_trace_available = has_episodic_mass_trace
@@ -745,6 +1019,19 @@ class OLMoENativeTokenRuntime:
                         == OLMOE_REGULAR_TRACE_LOCAL_ENTRIES
                         and scalar_policy["older_top_k"]
                         == OLMOE_REGULAR_TRACE_OLDER_ENTRIES
+                    )
+                    self.c28_qk_partial_trace_available = (
+                        c28_qk_partial_trace and not c28_qk_candidate_key_trace
+                    )
+                    self.c28_qk_candidate_trace_available = (
+                        c28_qk_candidate_trace and not c28_qk_candidate_key_trace
+                    )
+                    self.c28_qk_candidate_key_trace_available = (
+                        c28_qk_candidate_key_trace
+                    )
+                    self.c28_qk_candidate_value_trace_available = (
+                        c28_qk_candidate_value_trace
+                        and not c28_qk_candidate_key_trace
                     )
                 elif not additive_episodic_open:
                     if not has_episodic_headwise:
@@ -881,6 +1168,7 @@ class OLMoENativeTokenRuntime:
         self.hidden_size = hidden
         self.query_heads = heads
         self.head_dimension = hidden // heads
+        self.older_candidates = scalar_policy["older_candidates"]
         self.vocabulary_size = int(
             self._library.engram_olmoe_token_vocabulary_size(self._handle)
         )
@@ -1018,6 +1306,72 @@ class OLMoENativeTokenRuntime:
                 error,
                 include_episodic=True,
             ),
+        )
+        self.last_result = result
+        return result
+
+    def forward_episodic_masked(
+        self,
+        token_ids: ArrayLike,
+        write_slots: ArrayLike,
+        read_spans: ArrayLike,
+        candidate_masks: ArrayLike,
+    ) -> OLMoENativeTokenResult:
+        """Evaluator-only episodic forward with dynamic older-slot masks."""
+
+        if not self.masked_episodic_available:
+            raise OLMoENativeRuntimeError(
+                "native OLMoE library has no masked episodic ABI"
+            )
+        if self.episodic_policy is None or self.episodic_spans is None:
+            raise OLMoENativeRuntimeError(
+                "native OLMoE runtime was not opened with an episodic policy"
+            )
+        tokens = np.ascontiguousarray(token_ids, dtype=np.int64).reshape(-1)
+        if not tokens.size:
+            raise ValueError("native OLMoE token input must not be empty")
+        writes = _normalize_episodic_plan(
+            write_slots,
+            length=tokens.size,
+            upper_bound=self.episodic_policy["slots"],
+            name="write slots",
+        )
+        reads = _normalize_episodic_plan(
+            read_spans,
+            length=tokens.size,
+            upper_bound=self.episodic_spans,
+            name="read spans",
+        )
+        masks = np.ascontiguousarray(candidate_masks, dtype=np.uint8)
+        expected = (
+            tokens.size,
+            self.layers,
+            self.query_heads,
+            self.older_candidates,
+        )
+        if masks.shape != expected or not np.all((masks == 0) | (masks == 1)):
+            raise ValueError("native OLMoE candidate mask shape or values changed")
+        next_token = ctypes.c_int64()
+        metrics = _Metrics()
+        error = ctypes.create_string_buffer(1024)
+        status = self._library.engram_olmoe_token_forward_episodic_masked_v1(
+            self._handle,
+            tokens.ctypes.data_as(ctypes.POINTER(ctypes.c_int64)),
+            tokens.size,
+            writes.ctypes.data_as(ctypes.POINTER(ctypes.c_int32)),
+            reads.ctypes.data_as(ctypes.POINTER(ctypes.c_int32)),
+            masks.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8)),
+            masks.size,
+            ctypes.byref(next_token),
+            ctypes.byref(metrics),
+            error,
+            len(error),
+        )
+        if status:
+            raise OLMoENativeRuntimeError(error.value.decode(errors="replace"))
+        result = OLMoENativeTokenResult(
+            next_token=int(next_token.value),
+            metrics=self._metric_values(metrics, error, include_episodic=True),
         )
         self.last_result = result
         return result
@@ -1181,6 +1535,116 @@ class OLMoENativeTokenRuntime:
             entry_values=entry_values,
             valid_kind=valid_kind,
             positions=positions,
+        )
+
+    def last_c28_qk_partial_trace(self) -> OLMoENativeC28QKPartialTrace:
+        """Copy the last-row blockwise query-key partials."""
+
+        if not self.c28_qk_partial_trace_available:
+            raise OLMoENativeRuntimeError(
+                "native OLMoE runtime has no C28 QK partial trace"
+            )
+        shape = (
+            self.layers,
+            self.query_heads,
+            OLMOE_C28_TRACE_ENTRIES,
+            OLMOE_QK_PARTIAL_BANDS,
+        )
+        qk_partials = np.empty(shape, dtype=np.float32)
+        error = ctypes.create_string_buffer(1024)
+        status = self._library.engram_olmoe_token_copy_last_c28_qk_partial_trace_v1(
+            self._handle,
+            qk_partials.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+            qk_partials.size,
+            error,
+            len(error),
+        )
+        if status:
+            raise OLMoENativeRuntimeError(error.value.decode(errors="replace"))
+        return OLMoENativeC28QKPartialTrace(qk_partials=qk_partials)
+
+    def last_c28_qk_candidate_trace(self) -> OLMoENativeC28QKCandidateTrace:
+        """Copy all active older-candidate Q/K partials before top-K."""
+
+        if not self.c28_qk_candidate_trace_available:
+            raise OLMoENativeRuntimeError(
+                "native OLMoE runtime has no C28 QK candidate trace"
+            )
+        shape = (
+            self.layers,
+            self.query_heads,
+            self.older_candidates,
+            OLMOE_QK_PARTIAL_BANDS,
+        )
+        qk_candidates = np.empty(shape, dtype=np.float32)
+        error = ctypes.create_string_buffer(1024)
+        status = self._library.engram_olmoe_token_copy_last_c28_qk_candidate_trace_v1(
+            self._handle,
+            qk_candidates.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+            qk_candidates.size,
+            error,
+            len(error),
+        )
+        if status:
+            raise OLMoENativeRuntimeError(error.value.decode(errors="replace"))
+        return OLMoENativeC28QKCandidateTrace(qk_candidates=qk_candidates)
+
+    def last_c28_qk_candidate_key_trace(
+        self,
+    ) -> OLMoENativeC28QKCandidateKeyTrace:
+        """Copy all active older-candidate post-RoPE keys."""
+
+        if not self.c28_qk_candidate_key_trace_available:
+            raise OLMoENativeRuntimeError(
+                "native OLMoE runtime has no C28 QK candidate-key trace"
+            )
+        shape = (
+            self.layers,
+            self.query_heads,
+            self.older_candidates,
+            self.head_dimension,
+        )
+        candidate_keys = np.empty(shape, dtype=np.float32)
+        error = ctypes.create_string_buffer(1024)
+        status = self._library.engram_olmoe_token_copy_last_c28_qk_candidate_keys_v1(
+            self._handle,
+            candidate_keys.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+            candidate_keys.size,
+            error,
+            len(error),
+        )
+        if status:
+            raise OLMoENativeRuntimeError(error.value.decode(errors="replace"))
+        return OLMoENativeC28QKCandidateKeyTrace(candidate_keys=candidate_keys)
+
+    def last_c28_qk_candidate_value_trace(
+        self,
+    ) -> OLMoENativeC28QKCandidateValueTrace:
+        """Copy all active older-candidate values paired with candidate keys."""
+
+        if not self.c28_qk_candidate_value_trace_available:
+            raise OLMoENativeRuntimeError(
+                "native OLMoE runtime has no C28 QK candidate-value trace"
+            )
+        shape = (
+            self.layers,
+            self.query_heads,
+            self.older_candidates,
+            self.head_dimension,
+        )
+        candidate_values = np.empty(shape, dtype=np.float32)
+        error = ctypes.create_string_buffer(1024)
+        status = self._library.engram_olmoe_token_copy_last_c28_qk_candidate_values_v1(
+            self._handle,
+            candidate_values.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+            candidate_values.size,
+            error,
+            len(error),
+        )
+        if status:
+            raise OLMoENativeRuntimeError(error.value.decode(errors="replace"))
+        return OLMoENativeC28QKCandidateValueTrace(
+            candidate_values=candidate_values
         )
 
     def reset(self) -> None:

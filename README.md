@@ -707,6 +707,38 @@ class is a directional blockwise-QK feature controller that can represent
 query-to-key compatibility rather than only source mass, query content, or
 schedule phase. Milestone 2 remains passed; Milestone 3 remains blocked.
 
+The blockwise-QK feature boundary is now implemented as an evaluator-only
+trace. On the eight-record train capture, its `[8, 32, 16, 16, 28, 8]`
+partial tensor reconstructs native attention masses with max error
+`1.90735e-6` and recovers their ordering on 65,529/65,536 rows. A score-ranked
+top-20 subset retains 96.26% mean mass but only 91.20% at p10, so this is a
+validated compatibility feature—not yet a cheaper causal attention policy.
+The reusable train-only audit is
+`engram.evaluation.olmoe_retrieval_episodic_blockwise_qk`; the confirmation
+split remains sealed.
+
+The next locality boundary is also implemented: the native shadow can now
+copy all eight older-cache candidate Q/K scores before the native four-entry
+top-K decision.  This is a separate evaluator-only ABI and manifest, so the
+existing C28 visible-entry artifact remains unchanged.  The authenticated
+candidate capture is
+`work/olmoe_q7/retrieval_episodic_blockwise_qk_candidates_2026-07-31`, with
+tensor shape `[8, 32, 16, 16, 8, 8]` (records, reads, layers, heads,
+candidates, bands).  On train-only data, score-ranked candidate top-4 retains
+92.27% of candidate softmax mass (p10 77.85%); the selected older-entry scores
+fall in the candidate top four 95.74% of the time.  These are locality
+features, not native slot-membership or causal recall proof.  The next
+experiment is a learned candidate/group selector on a fresh development split,
+followed by exact reranking and traffic accounting; Milestone 3 remains
+blocked.
+
+A cheap record-held-out negative-control fit is also recorded in
+`query_only_router_screen.json`.  A rank-16 ridge map from pre-attention
+hidden head slices to the eight candidate scores reaches only 68.93%
+candidate-membership recall (p10 50.0%; exact top-4 13.52%).  Query state alone
+is therefore not a defensible pre-read selector; the next model must add
+stable key/group side information or a learned residual key summary.
+
 Python owns packaged tokenization and prompt text handling. From token IDs
 through recurrent state, Q7 routing/expert execution, final logits, and
 argmax, this confirmation uses the native runtime without a Transformers
@@ -1771,8 +1803,112 @@ coordinates and 896 candidates. Experimental serialization and a native kernel n
 kernel fails its isolated latency gate and remains outside the compiled runtime. There is still no
 trained controller or trained-package Gate 5 result.
 
+### Key-side candidate trace (train-only)
+
+The native C28 evaluator can now record the exact post-RoPE keys for each of
+the eight older candidates before native top-K truncation.  The authenticated
+tensor is `[8, 32, 16, 16, 8, 128]` and lives in the separate
+`work/olmoe_q7/retrieval_episodic_blockwise_qk_candidate_keys_2026-07-31/`
+artifact.  It is a shadow trace only: normal attention output and traffic are
+unchanged, reset replay is exact, and the protected confirmation split remains
+closed.
+
+An offline per-layer/head PCA audit gives a concrete compression boundary:
+rank 16 has 0.99% mean normalized key error (4.50% p95) with 6.69% modeled
+dense-key traffic, while rank 32 has 0.14% mean error at 13.33% modeled
+traffic.  These figures measure key reconstruction, not routing recall.  The
+next experiment must combine the compressed key summaries with held-out query
+features and exact reranking inside selected groups before a causal policy is
+considered.
+
+The first held-out query/key compatibility screen is deliberately recorded as
+a negative control.  A rank-8 diagonal bilinear router reaches 51.13% mean
+candidate membership recall (25.0% p10; 6.32% exact top-4) and 51.52% mean
+oracle-mass retention, while the exact-score ceiling is 100%.  Capturing keys
+without the actual per-head query projection is not enough; the next selector
+experiment must expose or distill query vectors before any causal change.
+
+With the authenticated per-head query features (including the native RoPE
+convention), record-held-out key reconstruction reaches 87.19%, 92.88%,
+**95.17%**, 96.25%, and 97.17% mean candidate membership recall at ranks 4,
+8, 16, 32, and 64.  Rank 16 still has 75.0% p10 recall and 81.10%
+exact-top-4 rows, so it is a promising feature boundary rather than a causal
+pass.  The next implementation is rank-16 group selection followed by exact
+reranking only inside selected groups.
+
+### Query-aware exact reranking (train-only)
+
+The next research-guided experiment is now complete.  It follows the
+retrieval pattern used by recent query-aware KV-cache work: a compressed
+query/key representation proposes a small candidate pool, then the original
+query/key scores perform exact reranking inside that pool.  The native shadow
+ABI also captured the corresponding older-candidate value vectors, so the
+selected slots are bound to the values that a causal replay would read.
+
+The authenticated value tensor is `[8, 32, 16, 16, 8, 128]` and its manifest is
+`work/olmoe_q7/retrieval_episodic_full_visible_value_trace_2026-07-31/value_shards/qk-candidate-value-manifest.json`
+(SHA-256 `8c13a25f1070fc0fba2b032fc7e84a24229aaecbb3fb35c55c51a20414865a1d`).
+It is an evaluator artifact only; it does not alter production attention.
+
+On record-held-out folds, rank-16 compressed scoring followed by exact
+reranking in a six-candidate pool reaches **99.804% mean candidate membership
+recall**, 100% p10 recall, 99.220% exact-top-4 rows, and 92.266% mean oracle
+candidate mass retention.  A pool of eight is the exact-score ceiling (100%
+recall).  The v2 report is
+`work/olmoe_q7/retrieval_episodic_blockwise_qk_candidate_keys_2026-07-31/query_key_exact_rerank_v2.json`
+(SHA-256 `6567ec5ec272c8d18ff7f661f5f917aae307780ab668e27507cc27e73e0d86e1`).
+
+This is a strong candidate-locality result, not yet a full semantic gate:
+the 0.78% non-exact rows still require a native intervention replay measuring
+the complete hidden-state/logit trajectory.  The defensible next boundary is
+to make the six-pool selector an explicit evaluator policy, replay it through
+the native attention path, and fail closed on any output divergence.
+
+The native replay has now been completed on all eight train records.  The
+evaluator-only `forward_episodic_masked` ABI applies the rank-16/pool-6
+allow-list, and the CPU kernel exact-reranks Q/K scores inside the pool before
+reading cached values.  Compared with the identical unmasked native runtime,
+the intervention reaches **99.6094% answer top-1 agreement**, **0.013111 mean
+hidden relative L2**, **0.006376 mean logit relative L2**, and **+0.002404 mean
+answer NLL delta** (maximum +0.018012).  All eight records pass the 10% hidden
+and logit, 0.05 NLL, and 90% top-1 thresholds.  The report is
+`work/olmoe_q7/retrieval_episodic_native_masked_replay_rank16_pool6.json`
+(SHA-256
+`2e6e017fc507e915cc96948deb53de0112062c208834b899643e04abe587baa7`).
+
+This is a causal train-screen pass, not yet a generalization or production
+claim.  The independent development split, traffic measurement, and
+long-context scaling remain before the Milestone 2 semantic gate can be
+promoted.
+
+### Independent development replay
+
+The selector has now been evaluated on a separately captured development
+split.  The rank-16 PCA basis was fit only on the train artifacts; development
+queries, keys, and Q/K bands were captured afterward by the native CPU shadow
+route.  The six-slot pool achieves **99.8192%** candidate-pool and exact-
+rerank membership recall (100% p10).  Full native masked replay reaches
+**100% answer top-1 agreement**, **0.013236 mean hidden relative L2**,
+**0.006520 mean logit relative L2**, and **−0.003980 mean answer NLL delta**
+(maximum +0.000574) across all eight development records.  The authenticated
+report is
+`work/olmoe_q7/retrieval_episodic_development_replay_rank16_pool6.json`
+(SHA-256
+`0c5cb2273f63b930148c78070da68ae57bb821969a68e2a6a038ee7ac5d04bb6`).
+
+This closes the train-to-development semantic gate for the bounded selector.
+The selector remains evaluator-only until long-context traffic and latency
+are measured and a protected evaluation is separately authorized.
+
+The replay's native counters show the current tradeoff: mean logical
+attention reads fall from 710,667,264 to 702,166,336 bytes (1.1962%), while
+older candidate entries scored fall 7.3733%.  Episodic value reads and the
+dominant local/projection/MLP work are unchanged, so this is not yet a claimed
+end-to-end speedup.
+
 ## Documentation
 
+- [Milestone and gate report](docs/milestone_report.md)
 - [Current project and milestone status](docs/status.md)
 - [Architecture](docs/architecture.md)
 - [How Engram works](docs/how_engram_works.md)

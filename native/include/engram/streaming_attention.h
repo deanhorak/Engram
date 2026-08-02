@@ -72,6 +72,8 @@ class StreamingAttention {
   static constexpr std::size_t kQKPartialBandHalfWidth = 8;
   static constexpr std::size_t kQKPartialBandDimensions =
       2 * kQKPartialBandHalfWidth;
+  // The candidate trace appends one block-vector for every configured older
+  // candidate after the visible C28 block-vectors.
   static constexpr std::uint8_t kRegularTraceInvalid = 0;
   static constexpr std::uint8_t kRegularTraceLocal = 1;
   static constexpr std::uint8_t kRegularTraceOlder = 2;
@@ -90,6 +92,14 @@ class StreamingAttention {
       std::span<const float> query, std::span<const float> key,
       std::span<const float> value, std::size_t write_slot,
       std::size_t read_span, std::span<float> output);
+  // Evaluator-only dynamic older-candidate allow-list. The mask is
+  // query-head-major/older-slot-minor and is applied before exact top-K.
+  // Empty preserves the production candidate policy.
+  StreamingAttentionMetrics step_episodic_masked(
+      std::span<const float> query, std::span<const float> key,
+      std::span<const float> value, std::size_t write_slot,
+      std::size_t read_span, std::span<float> output,
+      std::span<const std::uint8_t> candidate_mask);
   // Evaluator-only view of the exact joint episodic softmax. The regular and
   // episodic value components are weighted by the joint denominator, so their
   // sum reconstructs the ordinary output up to floating-point regrouping.
@@ -193,6 +203,64 @@ class StreamingAttention {
       std::span<std::uint8_t> regular_entry_valid_kind,
       std::span<std::uint64_t> regular_entry_positions,
       std::span<float> qk_partials);
+  // Additive candidate extension. The qk span uses the same C28 prefix as
+  // step_episodic_full_qk_traced and appends
+  // [query_heads, older_candidates, QKPartialBands] candidate blocks in
+  // native older-cache slot order. Candidate blocks are captured before
+  // episodic duplicate suppression and top-K truncation.
+  StreamingAttentionMetrics step_episodic_full_qk_candidates_traced(
+      std::span<const float> query, std::span<const float> key,
+      std::span<const float> value, std::size_t write_slot,
+      std::size_t read_span, std::span<float> output,
+      std::span<float> regular_component,
+      std::span<float> episodic_component,
+      std::span<float> regular_mass,
+      std::span<float> episodic_mass,
+      std::span<float> slot_mass,
+      std::span<float> slot_values,
+      std::span<float> regular_entry_mass,
+      std::span<float> regular_entry_values,
+      std::span<std::uint8_t> regular_entry_valid_kind,
+      std::span<std::uint64_t> regular_entry_positions,
+      std::span<float> qk_partials);
+  // Additive evaluator-only key-side trace. The optional qk span uses the
+  // same C28 prefix/candidate layout as the method above; candidate_keys is
+  // layer-local query-head-major/slot-major/dimension-minor storage of the
+  // exact post-RoPE older keys considered before top-K. Inactive slots are
+  // canonical zero. This trace never changes attention output or traffic.
+  StreamingAttentionMetrics step_episodic_full_key_candidates_traced(
+      std::span<const float> query, std::span<const float> key,
+      std::span<const float> value, std::size_t write_slot,
+      std::size_t read_span, std::span<float> output,
+      std::span<float> regular_component,
+      std::span<float> episodic_component,
+      std::span<float> regular_mass,
+      std::span<float> episodic_mass,
+      std::span<float> slot_mass,
+      std::span<float> slot_values,
+      std::span<float> regular_entry_mass,
+      std::span<float> regular_entry_values,
+      std::span<std::uint8_t> regular_entry_valid_kind,
+      std::span<std::uint64_t> regular_entry_positions,
+      std::span<float> qk_partials,
+      std::span<float> candidate_keys);
+  // Evaluator-only value-side companion. Candidate values use the same
+  // layer-local query-head-major/slot-major/dimension-minor layout as keys.
+  StreamingAttentionMetrics step_episodic_full_candidate_values_traced(
+      std::span<const float> query, std::span<const float> key,
+      std::span<const float> value, std::size_t write_slot,
+      std::size_t read_span, std::span<float> output,
+      std::span<float> regular_component,
+      std::span<float> episodic_component,
+      std::span<float> regular_mass,
+      std::span<float> episodic_mass,
+      std::span<float> slot_mass,
+      std::span<float> slot_values,
+      std::span<float> regular_entry_mass,
+      std::span<float> regular_entry_values,
+      std::span<std::uint8_t> regular_entry_valid_kind,
+      std::span<std::uint64_t> regular_entry_positions,
+      std::span<float> candidate_values);
   // Evaluator-only mass of a fixed set of strictly earlier positions. All
   // tracked positions must still be in the exact local window before the
   // current row is inserted. This keeps validation fail-closed and is the
@@ -242,7 +310,10 @@ class StreamingAttention {
       std::span<float> regular_entry_values,
       std::span<std::uint8_t> regular_entry_valid_kind,
       std::span<std::uint64_t> regular_entry_positions,
-      std::span<float> qk_partials);
+      std::span<float> qk_partials,
+      std::span<float> candidate_keys,
+      std::span<float> candidate_values,
+      std::span<const std::uint8_t> candidate_mask = {});
 
   StreamingAttentionConfig config_;
   std::size_t groups_{};
