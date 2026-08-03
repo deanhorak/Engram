@@ -141,7 +141,8 @@ terminal normalized MSE from **0.2536094** (8-sequence fit) to **0.2127623**;
 remain far above the **0.0225** threshold. A compact previous-state context
 screen, a nearest-neighbor operator lookup, and a residual context correction
 were all worse (validation mean normalized MSE **0.4178558**, **0.3247504**,
-and **0.4624460**, respectively). These screens are preserved in
+**0.4624460**, and **2.4635784** for a shared nonlinear latent provider,
+respectively). These screens are preserved in
 `reports/controller_provider_pca_2026-08-03/context_and_retrieval_screens.json`;
 none is a promotion artifact.
 

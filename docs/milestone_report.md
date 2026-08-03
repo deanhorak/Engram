@@ -127,7 +127,8 @@ held-out terminal normalized MSE **0.2127623**, and 20-step free-running
 projection adaptation reaches **0.2120011**, both failing the **0.0225**
 causal gate. Previous-state context, nearest-neighbor retrieval, and residual
 context correction screens regress to **0.4178558**, **0.3247504**, and
-**0.4624460** validation mean normalized MSE. The negative results are
+**0.4624460**; a shared nonlinear latent provider is worse at **2.4635784**
+validation mean normalized MSE. The negative results are
 preserved in `reports/controller_provider_pca_2026-08-03/context_and_retrieval_screens.json`.
 
 ## Native recurrent-controller implementation boundary
