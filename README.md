@@ -142,6 +142,16 @@ reproduces terminal normalized MSE **0.0000208009** and zero decoder-layer
 calls. This proves package/state durability, not learned generalization; the
 artifact is explicitly marked `learned: false`.
 
+Example validation command:
+
+```bash
+PYTHONPATH=src python -m engram.cli evaluate-controller-sequence \
+  --trace work/controller_distillation/bitnet_validation_16x16_b4 \
+  --provider work/controller_provider_trace_sequence_validation \
+  --controller work/controller_distillation/bitnet_rank128_operator_residual_1024x256_exact/controller \
+  --out reports/controller_provider_pca_2026-08-03/sequence_provider_cli_replay.json
+```
+
 The larger 64-sequence provider fit and 20-step causal adaptation were also
 screened (terminal normalized MSE **0.2127623** and **0.2120011**). Compact
 previous-state context, nearest-neighbor retrieval, and residual context
