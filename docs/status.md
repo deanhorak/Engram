@@ -50,8 +50,16 @@ protocol and report are recorded in the milestone report.
 The compressed cache is now reachable through an explicit package-runtime
 override (`local_window=128, local_int8=True`) without changing the authenticated
 manifest or production default. This verifies package assembly plus native
-INT8 state allocation; broader package policy metadata and benchmark work are
-still pending.
+INT8 state allocation. The compiler now also accepts the explicit opt-in pair
+`attention_local_window=128, attention_storage="int8"` and records that mode in
+the authenticated runtime manifest; the default compiler arguments still emit
+W16/FP32. A package-level 136-token benchmark measured 75.17 s for the
+ordinary W16/FP32 path versus 82.06 s for W128/INT8: counted attention reads
+fell from 45.83 GB to 28.11 GB, but total latency increased 9.17%. The current
+scalar INT8 implementation therefore makes no end-to-end speed claim; fused
+SIMD/dequantized kernels are the next optimization boundary. The benchmark
+artifact is `work/olmoe_q7/local_attention_package_benchmark_2026-08-03.json`
+(SHA-256 `e8d634a1e08ba12da01cc968e87a8d7b031fb510fd763ddd68a957e44e723bdb`).
 
 ### Compiled native OLMoE Q7 source track
 

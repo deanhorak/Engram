@@ -1852,6 +1852,7 @@ class OLMoENativePackageRuntime:
             self.path, expected_manifest_sha256=self.manifest_sha256
         )
         runtime = self.manifest["runtime"]
+        packaged_storage = runtime.get("attention_storage", "fp32")
         selected_threads = (
             int(runtime["kernel_threads"]) if threads is None else int(threads)
         )
@@ -1892,7 +1893,7 @@ class OLMoENativePackageRuntime:
             local_values_bf16=local_values_bf16,
             local_values_fp16=local_values_fp16,
             local_fp16=local_fp16,
-            local_int8=local_int8,
+            local_int8=(local_int8 or packaged_storage == "int8"),
         )
 
     def generate(self, prompt: str, *, max_new_tokens: int) -> dict[str, object]:

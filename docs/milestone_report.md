@@ -18,6 +18,15 @@ claim that the ordinary W16 package is already replaced.
 Protocol SHA-256: `953b83cead9e722e6228c5d79252ecaa0c0c8980343459c62f5567455d33bda7`.
 Report SHA-256: `7cd55514efab021b2109f835310eb14aff64664e972fa6458266f20d1d17df80`.
 
+An authenticated package-level benchmark over 128 teacher-forced context
+tokens plus eight native steps measured 75.17 s for ordinary W16/FP32 and
+82.06 s for W128/INT8. Counted attention reads fell from 45,834,829,824 to
+28,105,506,816 bytes, but total latency rose 9.17% because the current scalar
+dequantization path is not fused or vectorized. The result is therefore a
+memory-traffic/quality pass, not an end-to-end speedup claim. Artifact:
+`work/olmoe_q7/local_attention_package_benchmark_2026-08-03.json`, SHA-256
+`e8d634a1e08ba12da01cc968e87a8d7b031fb510fd763ddd68a957e44e723bdb`.
+
 The rank-16 compressed query/key selector followed by native exact reranking
 now passes both the eight-record train screen and the independently captured
 eight-record development screen. The development result is a causal CPU

@@ -140,6 +140,27 @@ with OLMoENativePackageRuntime(
 This opt-in is intentionally separate from the production manifest policy;
 the default package still uses W16 FP32 attention storage.
 
+For a separately authenticated research package, the compiler records the
+same choice in its manifest:
+
+```python
+compile_olmoe_native_package(
+    model, q7_artifact, non_mlp_safetensors, output,
+    attention_local_window=128,
+    attention_storage="int8",
+)
+```
+
+The validator accepts this mode only as the explicit W128/INT8 pair; all
+other packages retain the W16/C8/K4/S2 FP32 contract.
+
+The first package benchmark shows why this remains opt-in: 128 teacher-forced
+context tokens plus eight native steps took **75.17 s** with W16/FP32 and
+**82.06 s** with W128/INT8. Counted attention reads fell from **45.83 GB** to
+**28.11 GB**, but scalar INT8 dequantization made the complete run **9.17%
+slower**. SIMD/fused attention kernels are required before claiming a latency
+advantage over a tuned CPU implementation.
+
 Milestone 2 now has three source-track outcomes that should not be conflated:
 
 | Deliverable | Native-BitNet | OLMoE Q7 | Generic dense Llama |

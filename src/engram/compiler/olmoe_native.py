@@ -108,6 +108,9 @@ def validate_olmoe_native_package(
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise OLMoENativePackageError(f"invalid package manifest: {exc}") from exc
+    runtime = manifest.get("runtime", {}) if isinstance(manifest, dict) else {}
+    attention_mode = runtime.get("attention_mode")
+    attention_storage = runtime.get("attention_storage", "fp32")
     if (
         not isinstance(manifest, dict)
         or manifest.get("format") != OLMOE_NATIVE_PACKAGE_FORMAT
@@ -116,8 +119,14 @@ def validate_olmoe_native_package(
         or manifest.get("runtime", {}).get("device") != "cpu"
         or manifest.get("runtime", {}).get("mlp_mode")
         != "native_olmoe_groupwise_q7_topk"
-        or manifest.get("runtime", {}).get("attention_mode")
-        != "native_streaming_w16_c8_k4_sinks2"
+        or attention_mode
+        not in {
+            "native_streaming_w16_c8_k4_sinks2",
+            "native_streaming_w128_int8_c8_k4_sinks2",
+        }
+        or attention_storage not in {"fp32", "int8"}
+        or (attention_mode == "native_streaming_w16_c8_k4_sinks2" and attention_storage != "fp32")
+        or (attention_mode == "native_streaming_w128_int8_c8_k4_sinks2" and attention_storage != "int8")
     ):
         raise OLMoENativePackageError("native OLMoE manifest contract is unsupported")
     files = manifest.get("files")
@@ -210,11 +219,26 @@ def compile_olmoe_native_package(
     *,
     kernel_threads: int = 12,
     selector_policy: str | Path | None = None,
+    attention_local_window: int = 16,
+    attention_storage: str = "fp32",
 ) -> dict[str, Any]:
     """Atomically assemble a complete authenticated native OLMoE package."""
 
     if kernel_threads <= 0 or kernel_threads > 256:
         raise OLMoENativePackageError("kernel_threads must be in [1, 256]")
+    if attention_local_window not in {16, 128}:
+        raise OLMoENativePackageError(
+            "attention_local_window must be 16 or 128"
+        )
+    if attention_storage not in {"fp32", "int8"}:
+        raise OLMoENativePackageError("attention_storage must be fp32 or int8")
+    if (attention_local_window, attention_storage) not in {
+        (16, "fp32"),
+        (128, "int8"),
+    }:
+        raise OLMoENativePackageError(
+            "only the default W16/FP32 and evaluator W128/INT8 modes are supported"
+        )
     model_path = Path(model).expanduser().resolve()
     audit = audit_olmoe_source(model_path)
     if audit.decision != "proceed_to_router_trace":
@@ -341,9 +365,14 @@ def compile_olmoe_native_package(
                 "device": "cpu",
                 "kernel_threads": kernel_threads,
                 "mlp_mode": "native_olmoe_groupwise_q7_topk",
-                "attention_mode": "native_streaming_w16_c8_k4_sinks2",
+                "attention_mode": (
+                    "native_streaming_w128_int8_c8_k4_sinks2"
+                    if attention_local_window == 128
+                    else "native_streaming_w16_c8_k4_sinks2"
+                ),
+                "attention_storage": attention_storage,
                 "attention_policy": {
-                    "local_window": 16,
+                    "local_window": attention_local_window,
                     "older_candidates": 8,
                     "older_top_k": 4,
                     "sink_tokens": 2,
