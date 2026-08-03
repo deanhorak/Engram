@@ -38,6 +38,26 @@ pass.  The preserved report is
 `reports/controller_native_recurrent_2026-08-03/development_8x1.json`
 (SHA-256 `08f48fb2668fb1941bf6c3e94d963cf4003366743fdc4015d4087ca3cef530ba`).
 
+### Standalone transformer-free controller replay
+
+The exact operator-residual controller is now exposed as a separate CPU-only
+runtime and `engram evaluate-controller-only` CLI. It accepts only the
+serialized controller plus semantic/episodic operator streams from a
+checksummed trace; no Transformers model, decoder layer, attention module, or
+MLP weight is loaded. Nonzero factorized corrections remain rejected unless an
+explicit evaluator override is supplied.
+
+The sequence-disjoint 16-sequence validation trace (256 records, 30 stages)
+replays with terminal normalized MSE **0.0000208009** against its stored
+teacher boundaries, and the report records zero decoder-layer calls:
+`reports/controller_only_replay_2026-08-03/validation.json` (SHA-256
+`212d894b86de3b2e4e28481aa65091f276c74193b3031d53a4e9baeb4615ae4f`). The
+serialized controller directory is bound by SHA-256
+`51eb056d5755a69a5aa9a99336877e12a90531963abf4ef8b49a7a4a51716ee3`.
+This passes the controller state-transition threshold, but it is not an
+end-to-end generation result because a semantic/episodic provider still has to
+produce those streams without the original transformer layers.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and
@@ -1069,7 +1089,7 @@ scientific exit criterion has passed.
 | 1. Inspection, tracing, exact MLP decomposition, oracle experiment | Complete | Complete for the fixture and exercised on SmolLM2 |
 | 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP and OLMoE learned-expert routes, authenticated packages, CPU kernels, native token runtimes, and causal evaluators exist | **Native-BitNet passed** by postmortem adjudication and **OLMoE Q7 formally passed** an authenticated frozen complete-native 8×32 protocol. The matched W128 8×128 control passes every band and attributes the later sustained failure to attention, preserving the Q7/M2 decision. Generic dense-Llama conversion and broader replication remain incomplete |
 | 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, incremental package integration, exact per-layer/per-head native policy ABIs, an exact episodic K/V bank, and learned content/phase selectors implemented | The earlier W16 policy fails sustained older-context quality, but the prospective W128/per-vector-INT8 local-cache replay now passes all 1,024 semantic positions at 25% logical attention traffic (protocol `953b83ce…33bda7`, report `7cd55514…d17df80`). This clears the sustained attention-quality boundary. Package metadata/default integration, broader corpora, and end-to-end speedup remain. |
-| 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, authenticated package installation, persistent native stage state, one-call 30-stage C++ runner, and evaluator-only native factorized recurrence implemented | Existing controller/orchestration gates pass, but the authenticated package remains exact-residual (`step_scale == 0`). A trained nonzero correction must pass causal quality/generalization before layer-free promotion |
+| 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, standalone CPU controller-only replay, authenticated package installation, persistent native stage state, one-call 30-stage C++ runner, and evaluator-only native factorized recurrence implemented | The held-out state-transition replay passes (terminal normalized MSE 0.0000208009; zero decoder-layer calls). The authenticated package remains exact-residual (`step_scale == 0`), and a learned nonzero correction plus a transformer-free operator-stream provider must pass causal quality/generalization before layer-free generation promotion |
 | 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, native vocabulary argmax, evaluator recurrent-correction dispatch, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and passes source/package parity; authenticated nonzero-controller package assembly and full semantic-controller promotion remain gated |
 | 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime, memory-mapped BitNet DIP/projection kernels, streaming attention, native shell operators, authenticated C++ package mapping, manifest-derived model configuration/EOS, token-step control, greedy argmax, reset, standalone generation, and a versioned shared ABI implemented | **Partial**: model execution is native and chat uses the shared handle; tokenizer/template/history orchestration remains Python-side, the compressed INT8 attention path is opt-in, and AVX2 tuning plus hardware-counter traffic remain |
 | 7. Evaluation, ablations, tuning, documentation, final report | In progress | Many negative ablations exist; no successful reproducible final report |

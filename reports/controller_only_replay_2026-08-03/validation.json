@@ -1,0 +1,122 @@
+{
+  "controller": "/home/dean/repos/engram/work/controller_distillation/bitnet_rank128_operator_residual_1024x256_exact/controller",
+  "controller_metadata": {
+    "adapter_rank": 4,
+    "format": "engram.controller.factorized_residual",
+    "input_dim": 7680,
+    "num_stages": 30,
+    "operator": "operator_residual_with_factorized_correction",
+    "operator_residual_input_order": [
+      "semantic_output",
+      "episodic_output"
+    ],
+    "parameter_count": 2662490,
+    "rank": 128,
+    "schema_version": 3,
+    "serialized_bytes": 10649960,
+    "state_dim": 2560,
+    "state_normalization": "per_token_rms",
+    "storage_dtype": "float32",
+    "tensor_layout": {
+      "adapter_down": [
+        30,
+        2560,
+        4
+      ],
+      "adapter_up": [
+        30,
+        4,
+        2560
+      ],
+      "bias": [
+        5120
+      ],
+      "gate_up": [
+        128,
+        5120
+      ],
+      "input_down": [
+        7680,
+        128
+      ],
+      "operator_residual_scale": [
+        30,
+        2
+      ],
+      "recurrent_down": [
+        2560,
+        128
+      ],
+      "stage_embeddings": [
+        30,
+        2560
+      ],
+      "step_scale": [
+        30
+      ]
+    }
+  },
+  "controller_sha256": "51eb056d5755a69a5aa9a99336877e12a90531963abf4ef8b49a7a4a51716ee3",
+  "decoder_layer_forward_calls": 0,
+  "elapsed_seconds": 0.4616265319928061,
+  "experiment": "controller_only_trace_replay",
+  "gate": {
+    "end_to_end_generation": false,
+    "exact_operator_residual": true,
+    "layer_free_cpu_replay": true,
+    "metric": "terminal_normalized_mse",
+    "passed": true,
+    "threshold": 0.0225
+  },
+  "hidden_size": 2560,
+  "inference_device": "cpu",
+  "metrics": {
+    "maximum_absolute_error": 0.31882762908935547,
+    "maximum_stage_normalized_mse": 2.2630254534306005e-05,
+    "mean_stage_normalized_mse": 1.768504262145143e-05,
+    "stage_normalized_mse": [
+      2.8047898013028316e-06,
+      6.177304840093711e-06,
+      8.714244358998258e-06,
+      1.091286958398996e-05,
+      1.1843565516755916e-05,
+      1.3429606042336673e-05,
+      1.5053145943966229e-05,
+      1.6038680769270286e-05,
+      1.6550391592318192e-05,
+      1.7042231775121763e-05,
+      1.7551392375025898e-05,
+      1.868763501988724e-05,
+      1.9281145796412602e-05,
+      1.997054278035648e-05,
+      2.095172749250196e-05,
+      2.1031919459346682e-05,
+      2.111004687321838e-05,
+      2.1331909010768868e-05,
+      2.0182957086944953e-05,
+      2.0766910893144086e-05,
+      2.112321453751065e-05,
+      2.16007319977507e-05,
+      2.0743173081427813e-05,
+      2.2293539586826228e-05,
+      2.2630254534306005e-05,
+      2.168188257201109e-05,
+      2.088553628709633e-05,
+      2.074909207294695e-05,
+      1.8609949620440602e-05,
+      2.08008787012659e-05
+    ],
+    "terminal_normalized_mse": 2.08008787012659e-05
+  },
+  "num_stages": 30,
+  "operator_streams": {
+    "episodic": "trace.episodic_outputs",
+    "initial_state": "trace.teacher_states[...,0,:]",
+    "semantic": "trace.semantic_outputs"
+  },
+  "records": 256,
+  "status": "development_result",
+  "trace": "/home/dean/repos/engram/work/controller_distillation/bitnet_validation_16x16_b4",
+  "trace_sha256": "bc9730300886f65611777a9ddccc9d2fa2daaf3bab3b873758beabdefca5adf6",
+  "transformers_model_loaded": false
+}

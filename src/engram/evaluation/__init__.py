@@ -42,6 +42,7 @@ __all__ = [
     "benchmark_native_streaming_attention",
     "evaluate_native_bitnet_attention_substitution",
     "evaluate_native_bitnet_controller_substitution",
+    "evaluate_controller_only_trace",
     "evaluate_native_bitnet_controller_generation",
     "evaluate_rank_router_regularization_sweep",
     "evaluate_dip_exact_completion_sweep",
@@ -77,6 +78,10 @@ def __getattr__(name):
         )
 
         return evaluate_native_bitnet_controller_substitution
+    if name == "evaluate_controller_only_trace":
+        from .controller_only import evaluate_controller_only_trace
+
+        return evaluate_controller_only_trace
     if name == "evaluate_native_bitnet_controller_generation":
         from .native_bitnet_controller_generation import (
             evaluate_native_bitnet_controller_generation,

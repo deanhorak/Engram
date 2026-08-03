@@ -93,6 +93,17 @@ project procedure, not by cryptographic secrecy. This adjudicated semantic
 result does not establish a quality-preserving dense-Llama conversion and does
 not, by itself, certify every broader Milestone 2 deliverable as complete.
 
+### Current controller boundary
+
+The exact operator-residual controller also has a standalone CPU-only replay
+runtime. `engram evaluate-controller-only` consumes a serialized controller
+and captured semantic/episodic operator streams, without constructing a
+Transformers model or calling decoder layers. On the sequence-disjoint
+16-sequence validation trace it reaches terminal normalized MSE **0.0000208009**
+and records zero decoder-layer calls. This is a state-transition pass, not yet
+layer-free generation: an independent semantic/episodic provider and a
+causally qualified learned correction are still required.
+
 ### Milestone 2 ledger
 
 ### Current Milestone 3 attention boundary (2026-08-03)

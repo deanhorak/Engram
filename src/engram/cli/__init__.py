@@ -58,6 +58,7 @@ from engram.evaluation.native_bitnet_attention import (
 from engram.evaluation.controller_substitution import (
     evaluate_native_bitnet_controller_substitution,
 )
+from engram.evaluation.controller_only import evaluate_controller_only_trace
 from engram.evaluation.native_attention_benchmark import (
     benchmark_native_streaming_attention,
 )
@@ -933,6 +934,22 @@ def _parser() -> argparse.ArgumentParser:
     controller_substitution.add_argument("--retrieval-candidates", type=int, default=8)
     controller_substitution.add_argument("--retrieval-top-k", type=int, default=4)
     controller_substitution.add_argument("--sink-tokens", type=int, default=2)
+
+    controller_only = commands.add_parser(
+        "evaluate-controller-only",
+        help=(
+            "replay a serialized controller on operator streams without loading "
+            "a Transformers model"
+        ),
+    )
+    controller_only.add_argument("--trace", required=True, type=Path)
+    controller_only.add_argument("--controller", required=True, type=Path)
+    controller_only.add_argument("--out", required=True, type=Path)
+    controller_only.add_argument(
+        "--allow-correction",
+        action="store_true",
+        help="allow an unauthenticated nonzero factorized correction",
+    )
 
     attention_benchmark = commands.add_parser(
         "benchmark-native-attention",
@@ -2627,6 +2644,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             retrieval_candidates=args.retrieval_candidates,
             retrieval_top_k=args.retrieval_top_k,
             sink_tokens=args.sink_tokens,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "evaluate-controller-only":
+        result = evaluate_controller_only_trace(
+            args.trace,
+            args.controller,
+            out=args.out,
+            allow_correction=args.allow_correction,
         )
         print(json.dumps(result, indent=2, sort_keys=True))
     elif args.command == "benchmark-native-attention":

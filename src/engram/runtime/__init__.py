@@ -14,6 +14,7 @@ from .native_attention import (
 from .native_bitnet_attention import aggregate_native_attention_metrics
 from .native_projection import NativeTernaryProjectionKernel
 from .native_bitnet_chat import run_native_bitnet_chat
+from .controller_only import ControllerOnlyResult, ControllerOnlyRuntime
 from .olmoe_native import (
     OLMoENativePackageRuntime,
     OLMoENativeRuntimeError,
@@ -45,6 +46,8 @@ __all__ = [
     "OLMoESelectorPolicyError",
     "aggregate_native_attention_metrics",
     "run_native_bitnet_chat",
+    "ControllerOnlyResult",
+    "ControllerOnlyRuntime",
     "load_olmoe_selector_policy",
     "validate_native_bitnet_package",
 ]
