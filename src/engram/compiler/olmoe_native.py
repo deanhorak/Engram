@@ -22,6 +22,8 @@ OLMOE_Q7_PATH = PurePosixPath("mlp/experts.q7")
 OLMOE_NON_MLP_PATH = PurePosixPath("transformer/non_mlp.safetensors")
 OLMOE_CONFIG_PATH = PurePosixPath("model/config.json")
 OLMOE_TOKENIZER_PATH = PurePosixPath("tokenizer")
+OLMOE_SELECTOR_POLICY_PATH = PurePosixPath("selector/policy.json")
+OLMOE_SELECTOR_BASIS_PATH = PurePosixPath("selector/key_pca.safetensors")
 
 
 class OLMoENativePackageError(ValueError):
@@ -165,6 +167,38 @@ def validate_olmoe_native_package(
         or "tokenizer.json" not in tokenizer.get("files", [])
     ):
         raise OLMoENativePackageError("native OLMoE tokenizer descriptor is invalid")
+    selector_policy = manifest.get("selector_policy")
+    if selector_policy is not None:
+        from engram.runtime.olmoe_selector_policy import load_olmoe_selector_policy
+
+        if (
+            not isinstance(selector_policy, dict)
+            or selector_policy.get("policy_path")
+            != OLMOE_SELECTOR_POLICY_PATH.as_posix()
+            or selector_policy.get("basis_path")
+            != OLMOE_SELECTOR_BASIS_PATH.as_posix()
+            or selector_policy.get("policy_sha256")
+            != files[OLMOE_SELECTOR_POLICY_PATH.as_posix()]["sha256"]
+            or selector_policy.get("basis_sha256")
+            != files[OLMOE_SELECTOR_BASIS_PATH.as_posix()]["sha256"]
+            or selector_policy.get("runtime_mode") != "evaluator_only"
+            or selector_policy.get("enabled_by_default") is not False
+        ):
+            raise OLMoENativePackageError(
+                "native OLMoE selector policy descriptor is invalid"
+            )
+        try:
+            loaded_policy = load_olmoe_selector_policy(
+                root / OLMOE_SELECTOR_POLICY_PATH
+            )
+        except ValueError as error:
+            raise OLMoENativePackageError(
+                "native OLMoE selector policy failed validation"
+            ) from error
+        if not loaded_policy.evaluator_only:
+            raise OLMoENativePackageError(
+                "native OLMoE selector policy is not evaluator-only"
+            )
     return manifest
 
 
@@ -175,6 +209,7 @@ def compile_olmoe_native_package(
     out: str | Path,
     *,
     kernel_threads: int = 12,
+    selector_policy: str | Path | None = None,
 ) -> dict[str, Any]:
     """Atomically assemble a complete authenticated native OLMoE package."""
 
@@ -198,6 +233,25 @@ def compile_olmoe_native_package(
         raise OLMoENativePackageError("Q7 artifact dimensions do not match source")
     if non_mlp_path.is_symlink() or not non_mlp_path.is_file():
         raise OLMoENativePackageError("non-MLP artifact is not a regular file")
+    selector_source: Path | None = None
+    selector_basis_source: Path | None = None
+    if selector_policy is not None:
+        from engram.runtime.olmoe_selector_policy import load_olmoe_selector_policy
+
+        selector_source = Path(selector_policy).expanduser().resolve()
+        try:
+            loaded_policy = load_olmoe_selector_policy(selector_source)
+        except ValueError as error:
+            raise OLMoENativePackageError(
+                "selector policy input failed evaluator-only validation"
+            ) from error
+        if not loaded_policy.evaluator_only:
+            raise OLMoENativePackageError(
+                "selector policy input must be evaluator-only"
+            )
+        selector_basis_source = selector_source.parent / str(
+            loaded_policy.metadata["basis"]["path"]
+        )
 
     target = Path(out).expanduser().absolute()
     if target.exists():
@@ -218,6 +272,15 @@ def compile_olmoe_native_package(
         generation = model_path / "generation_config.json"
         if generation.is_file():
             _copy_atomic(generation, staged / "model" / generation.name)
+        if selector_source is not None and selector_basis_source is not None:
+            _copy_atomic(
+                selector_source,
+                staged.joinpath(*OLMOE_SELECTOR_POLICY_PATH.parts),
+            )
+            _copy_atomic(
+                selector_basis_source,
+                staged.joinpath(*OLMOE_SELECTOR_BASIS_PATH.parts),
+            )
         tokenizer_files = []
         for name in (
             "tokenizer.json",
@@ -289,6 +352,19 @@ def compile_olmoe_native_package(
             "files": files,
             "does_not_require_transformers": True,
         }
+        if selector_source is not None and selector_basis_source is not None:
+            manifest["selector_policy"] = {
+                "policy_path": OLMOE_SELECTOR_POLICY_PATH.as_posix(),
+                "basis_path": OLMOE_SELECTOR_BASIS_PATH.as_posix(),
+                "policy_sha256": files[OLMOE_SELECTOR_POLICY_PATH.as_posix()][
+                    "sha256"
+                ],
+                "basis_sha256": files[OLMOE_SELECTOR_BASIS_PATH.as_posix()][
+                    "sha256"
+                ],
+                "runtime_mode": "evaluator_only",
+                "enabled_by_default": False,
+            }
         atomic_json(staged / "manifest.json", manifest)
         manifest_sha256 = sha256_file(staged / "manifest.json")
         validate_olmoe_native_package(staged, expected_manifest_sha256=manifest_sha256)
@@ -308,6 +384,8 @@ __all__ = [
     "OLMOE_NATIVE_PACKAGE_VERSION",
     "OLMOE_NON_MLP_PATH",
     "OLMOE_Q7_PATH",
+    "OLMOE_SELECTOR_BASIS_PATH",
+    "OLMOE_SELECTOR_POLICY_PATH",
     "OLMoENativePackageError",
     "compile_olmoe_native_package",
     "validate_olmoe_native_package",

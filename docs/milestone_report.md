@@ -63,6 +63,9 @@ SHA-256
 `1897767a6b22801faad4267c22152b5029285091e53fc3f36078ad6aa849f813`.
 The loader deliberately refuses any artifact that is not evaluator-only and
 disabled by default; native package defaults remain unchanged.
+The native package compiler can copy this artifact under `selector/` and bind
+both files into the authenticated package manifest when explicitly requested;
+omitting that option preserves the previous package layout.
 
 ## Milestones
 

@@ -1945,3 +1945,9 @@ cross-split selector.  This makes package integration testable without
 changing native defaults or opening protected data.  The compiler and loader
 are `engram.compiler.olmoe_selector_policy` and
 `engram.runtime.olmoe_selector_policy`.
+
+`compile_olmoe_native_package(..., selector_policy=POLICY_JSON)` can copy the
+policy and PCA basis into `selector/` and authenticate both files in the
+native package manifest.  The manifest records the same evaluator-only,
+disabled-by-default contract; omitting the argument produces the unchanged
+package layout.
