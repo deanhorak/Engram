@@ -95,6 +95,51 @@ not, by itself, certify every broader Milestone 2 deliverable as complete.
 
 ### Milestone 2 ledger
 
+### Current Milestone 3 attention boundary (2026-08-03)
+
+The sustained bounded-attention failure has now been resolved at the
+evaluator level without giving up CPU-only execution. The native runtime keeps
+the complete 128-position local context (W128), but stores each local key and
+value vector as symmetric INT8 with one FP32 scale. On the frozen eight-record,
+1,024-position causal replay, this reaches KL **0.00417982**, top-1 agreement
+**0.974609**, target-NLL delta **+0.000391**, and hidden-state relative L2
+**0.048147**. Every position band passes, including offsets 96–127 (KL
+**0.00301720**, top-1 **0.964844**, hidden L2 **0.043127**). Actual native
+attention reads are **4,328,521,728 bytes**, exactly **25%** of the dense
+reference, and the run uses no Transformers model shell or GPU.
+
+This is a prospective evaluator-only Milestone 3 gate, not a protected
+Milestone 2 replay and not yet the ordinary package default. The W16 bounded
+policy remains the production default while we integrate the compression into
+package metadata, test additional corpora, and measure end-to-end generation
+speed. The frozen protocol is
+`work/olmoe_q7/local_int8_w128_2026-08-03_protocol.json` (SHA-256
+`953b83cead9e722e6228c5d79252ecaa0c0c8980343459c62f5567455d33bda7`) and the
+authenticated result is
+`work/olmoe_q7/local_int8_w128_2026-08-03_report.json` (SHA-256
+`7cd55514efab021b2109f835310eb14aff64664e972fa6458266f20d1d17df80`).
+
+The native Python package frontend can exercise this path explicitly without
+changing the authenticated package manifest:
+
+```python
+from engram.runtime.olmoe_native import OLMoENativePackageRuntime
+from engram.utils import sha256_file
+
+with OLMoENativePackageRuntime(
+    "work/olmoe_q7/package",
+    manifest_sha256=sha256_file("work/olmoe_q7/package/manifest.json"),
+    library="build/libengram_olmoe_token_runtime.so",
+    threads=12,
+    local_window=128,
+    local_int8=True,
+) as runtime:
+    result = runtime.runtime.forward([token_id])
+```
+
+This opt-in is intentionally separate from the production manifest policy;
+the default package still uses W16 FP32 attention storage.
+
 Milestone 2 now has three source-track outcomes that should not be conflated:
 
 | Deliverable | Native-BitNet | OLMoE Q7 | Generic dense Llama |
@@ -111,15 +156,11 @@ paths are operational and may advance**. Engram still cannot claim that it
 converts an arbitrary dense Llama checkpoint into a gate-passing
 semantic-memory model.
 
-For OLMoE, the current Milestone 3 evidence is a train-only
-attention-capacity pass followed by two negative causal-selector screens. A
-frozen oracle over the 28 value rows already read by the bounded native
-runtime recovered **66.54%** of the same-state W128 residual without adding KV
-state or reads. A rank-4 query-content selector then recovered only
-**25.42%**, and a phase-conditioned mass selector recovered only **26.19%**.
-Both passed their authentication, parity, and resource checks but failed the
-frozen semantic threshold. Neither authorized native promotion, development,
-or confirmation; Milestone 3 remains blocked.
+The earlier Milestone 3 selector screens remain useful negative controls: a
+rank-4 query-content selector recovered only **25.42%** of the same-state
+residual and a phase-conditioned mass selector **26.19%**. The newer INT8
+full-context cache above addresses the actual failure mode—older-context
+eviction—while retaining a substantially lower memory-traffic budget.
 
 ### OLMoE source-track experiment
 
@@ -245,10 +286,11 @@ matched all 128 pre-intervention rows exactly and passed every position band
 and evidence check. Overall KL was **0.00343811931**, top-1 agreement
 **0.974609375**, NLL delta **+0.00145861260**, and hidden L2
 **0.04138915755**. The result attributes the sustained failure to bounded
-attention, vindicates the Q7 semantic substitution underlying the formal M2
-pass, and makes **Milestone 3 bounded attention** the remaining OLMoE blocker.
+attention and vindicates the Q7 semantic substitution underlying the formal M2
+pass; it motivated the compressed full-context INT8 experiment reported at
+the top of this section.
 
-W128 is a diagnostic, not a deployable solution: it reads **100%** of dense
+The uncompressed W128 control is a diagnostic, not a deployable solution: it reads **100%** of dense
 causal attention bytes (**2,164,260,864 bytes per sequence**) and holds
 **35,825,664 bytes** of attention state. The prospectively frozen follow-up
 therefore compared W16/C18/K16/S2, W24/C10/K8/S2, and W30/C4/K2/S2 at an

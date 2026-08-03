@@ -198,6 +198,11 @@ def _configure(
     bool,
     bool,
     bool,
+    bool,
+    bool,
+    bool,
+    bool,
+    bool,
 ]:
     library.engram_olmoe_token_open.argtypes = [
         ctypes.POINTER(_Config),
@@ -262,6 +267,56 @@ def _configure(
             ctypes.c_size_t,
         ]
         library.engram_olmoe_token_open_headwise_v1.restype = ctypes.c_void_p
+    has_local_bf16_open = hasattr(
+        library, "engram_olmoe_token_open_local_bf16_v1"
+    )
+    if has_local_bf16_open:
+        library.engram_olmoe_token_open_local_bf16_v1.argtypes = [
+            ctypes.POINTER(_Config),
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        library.engram_olmoe_token_open_local_bf16_v1.restype = ctypes.c_void_p
+    has_local_values_bf16_open = hasattr(
+        library, "engram_olmoe_token_open_local_values_bf16_v1"
+    )
+    if has_local_values_bf16_open:
+        library.engram_olmoe_token_open_local_values_bf16_v1.argtypes = [
+            ctypes.POINTER(_Config),
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        library.engram_olmoe_token_open_local_values_bf16_v1.restype = (
+            ctypes.c_void_p
+        )
+    has_local_values_fp16_open = hasattr(
+        library, "engram_olmoe_token_open_local_values_fp16_v1"
+    )
+    if has_local_values_fp16_open:
+        library.engram_olmoe_token_open_local_values_fp16_v1.argtypes = [
+            ctypes.POINTER(_Config),
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        library.engram_olmoe_token_open_local_values_fp16_v1.restype = (
+            ctypes.c_void_p
+        )
+    has_local_fp16_open = hasattr(
+        library, "engram_olmoe_token_open_local_fp16_v1"
+    )
+    if has_local_fp16_open:
+        library.engram_olmoe_token_open_local_fp16_v1.argtypes = [
+            ctypes.POINTER(_Config), ctypes.c_char_p, ctypes.c_size_t
+        ]
+        library.engram_olmoe_token_open_local_fp16_v1.restype = ctypes.c_void_p
+    has_local_int8_open = hasattr(
+        library, "engram_olmoe_token_open_local_int8_v1"
+    )
+    if has_local_int8_open:
+        library.engram_olmoe_token_open_local_int8_v1.argtypes = [
+            ctypes.POINTER(_Config), ctypes.c_char_p, ctypes.c_size_t
+        ]
+        library.engram_olmoe_token_open_local_int8_v1.restype = ctypes.c_void_p
     episodic_symbols = (
         "engram_olmoe_token_open_episodic_v1",
         "engram_olmoe_token_forward_episodic_v1",
@@ -573,6 +628,11 @@ def _configure(
         has_c28_qk_candidate_trace,
         has_c28_qk_candidate_key_trace,
         has_c28_qk_candidate_value_trace,
+        has_local_bf16_open,
+        has_local_values_bf16_open,
+        has_local_values_fp16_open,
+        has_local_fp16_open,
+        has_local_int8_open,
     )
 
 
@@ -769,6 +829,11 @@ class OLMoENativeTokenRuntime:
         c28_qk_candidate_trace: bool = False,
         c28_qk_candidate_key_trace: bool = False,
         c28_qk_candidate_value_trace: bool = False,
+        local_bf16: bool = False,
+        local_values_bf16: bool = False,
+        local_values_fp16: bool = False,
+        local_fp16: bool = False,
+        local_int8: bool = False,
     ):
         config_path = Path(model_config)
         config_value = json.loads(config_path.read_text(encoding="utf-8"))
@@ -781,12 +846,22 @@ class OLMoENativeTokenRuntime:
         self._library = ctypes.CDLL(str(Path(library).resolve()))
         configured = _configure(self._library)
         if len(configured) == 10:
-            configured = (*configured, False, False, False, False)
+            configured = (*configured, False, False, False, False, False, False, False, False, False)
         elif len(configured) == 11:
-            configured = (*configured, False, False, False)
+            configured = (*configured, False, False, False, False, False, False, False, False)
         elif len(configured) == 12:
-            configured = (*configured, False, False)
+            configured = (*configured, False, False, False, False, False, False, False)
         elif len(configured) == 13:
+            configured = (*configured, False, False, False, False, False, False)
+        elif len(configured) == 14:
+            configured = (*configured, False, False, False, False, False)
+        elif len(configured) == 15:
+            configured = (*configured, False, False, False, False)
+        elif len(configured) == 16:
+            configured = (*configured, False, False, False)
+        elif len(configured) == 17:
+            configured = (*configured, False, False)
+        elif len(configured) == 18:
             configured = (*configured, False)
         (
             self._has_attention_metrics,
@@ -803,6 +878,11 @@ class OLMoENativeTokenRuntime:
             has_c28_qk_candidate_trace,
             has_c28_qk_candidate_key_trace,
             has_c28_qk_candidate_value_trace,
+            has_local_bf16_open,
+            has_local_values_bf16_open,
+            has_local_values_fp16_open,
+            has_local_fp16_open,
+            has_local_int8_open,
         ) = configured
         self._has_episodic_metrics = has_episodic
         self.masked_episodic_available = hasattr(
@@ -819,6 +899,20 @@ class OLMoENativeTokenRuntime:
         if attention_policies is not None and attention_head_policies is not None:
             raise ValueError(
                 "per-layer and per-head attention policies cannot be combined"
+            )
+        if sum((bool(local_bf16), bool(local_values_bf16),
+                bool(local_values_fp16), bool(local_fp16),
+                bool(local_int8))) > 1:
+            raise ValueError("local compression modes are mutually exclusive")
+        if (local_bf16 or local_values_bf16 or local_values_fp16 or local_fp16 or local_int8) and (
+            attention_policies is not None
+            or attention_head_policies is not None
+            or episodic_policy is not None
+            or shadow_attention_policy is not None
+        ):
+            raise ValueError(
+                "local BF16 storage is currently available only for the "
+                "scalar non-episodic evaluator ABI"
             )
         if episodic_policy is not None and (
             attention_policies is not None or attention_head_policies is not None
@@ -1086,9 +1180,55 @@ class OLMoENativeTokenRuntime:
                 normalized_episodic["slots"] // normalized_episodic["span_size"]
             )
         elif attention_policies is None and attention_head_policies is None:
-            self._handle = self._library.engram_olmoe_token_open(
-                ctypes.byref(native_config), error, len(error)
-            )
+            if local_bf16 or local_values_bf16 or local_values_fp16 or local_fp16 or local_int8:
+                if local_int8:
+                    if not has_local_int8_open:
+                        raise OLMoENativeRuntimeError(
+                            "native OLMoE library has no local-INT8 evaluator ABI"
+                        )
+                    self._handle = self._library.engram_olmoe_token_open_local_int8_v1(
+                        ctypes.byref(native_config), error, len(error)
+                    )
+                elif local_fp16:
+                    if not has_local_fp16_open:
+                        raise OLMoENativeRuntimeError(
+                            "native OLMoE library has no local-FP16 evaluator ABI"
+                        )
+                    self._handle = self._library.engram_olmoe_token_open_local_fp16_v1(
+                        ctypes.byref(native_config), error, len(error)
+                    )
+                elif local_values_fp16:
+                    if not has_local_values_fp16_open:
+                        raise OLMoENativeRuntimeError(
+                            "native OLMoE library has no local-value-FP16 "
+                            "evaluator ABI"
+                        )
+                    self._handle = (
+                        self._library.engram_olmoe_token_open_local_values_fp16_v1(
+                            ctypes.byref(native_config), error, len(error)
+                        )
+                    )
+                elif local_values_bf16:
+                    if not has_local_values_bf16_open:
+                        raise OLMoENativeRuntimeError(
+                            "native OLMoE library has no local-value-BF16 "
+                            "evaluator ABI"
+                        )
+                    self._handle = (
+                        self._library.engram_olmoe_token_open_local_values_bf16_v1(
+                            ctypes.byref(native_config), error, len(error)
+                        )
+                    )
+                else:
+                    self._handle = (
+                        self._library.engram_olmoe_token_open_local_bf16_v1(
+                            ctypes.byref(native_config), error, len(error)
+                        )
+                    )
+            else:
+                self._handle = self._library.engram_olmoe_token_open(
+                    ctypes.byref(native_config), error, len(error)
+                )
             self.attention_policies = tuple(
                 dict(scalar_policy) for _layer in range(layers)
             )
@@ -1168,6 +1308,11 @@ class OLMoENativeTokenRuntime:
         self.hidden_size = hidden
         self.query_heads = heads
         self.head_dimension = hidden // heads
+        self.local_bf16 = bool(local_bf16)
+        self.local_values_bf16 = bool(local_values_bf16)
+        self.local_values_fp16 = bool(local_values_fp16)
+        self.local_fp16 = bool(local_fp16)
+        self.local_int8 = bool(local_int8)
         self.older_candidates = scalar_policy["older_candidates"]
         self.vocabulary_size = int(
             self._library.engram_olmoe_token_vocabulary_size(self._handle)
@@ -1694,6 +1839,12 @@ class OLMoENativePackageRuntime:
         manifest_sha256: str,
         library: str | Path,
         threads: int | None = None,
+        local_window: int | None = None,
+        local_bf16: bool = False,
+        local_values_bf16: bool = False,
+        local_values_fp16: bool = False,
+        local_fp16: bool = False,
+        local_int8: bool = False,
     ):
         self.path = Path(os.path.abspath(os.fspath(Path(package).expanduser())))
         self.manifest_sha256 = manifest_sha256.lower()
@@ -1729,10 +1880,19 @@ class OLMoENativePackageRuntime:
             _package_path(self.path, OLMOE_Q7_PATH.as_posix()),
             library,
             threads=selected_threads,
-            local_window=int(runtime["attention_policy"]["local_window"]),
+            local_window=(
+                int(runtime["attention_policy"]["local_window"])
+                if local_window is None
+                else int(local_window)
+            ),
             older_candidates=int(runtime["attention_policy"]["older_candidates"]),
             older_top_k=int(runtime["attention_policy"]["older_top_k"]),
             sink_tokens=int(runtime["attention_policy"]["sink_tokens"]),
+            local_bf16=local_bf16,
+            local_values_bf16=local_values_bf16,
+            local_values_fp16=local_values_fp16,
+            local_fp16=local_fp16,
+            local_int8=local_int8,
         )
 
     def generate(self, prompt: str, *, max_new_tokens: int) -> dict[str, object]:

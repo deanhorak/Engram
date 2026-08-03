@@ -79,6 +79,13 @@ struct OLMoETokenConfig {
   // paired with the key trace. Values are copied before top-K truncation and
   // never affect inference.
   bool c28_qk_candidate_value_trace{};
+  // Evaluator-only local K/V BF16 storage. The default package path remains
+  // FP32; this flag is exposed only through the versioned opt-in ABI.
+  bool local_bf16{};
+  bool local_values_bf16{};
+  bool local_values_fp16{};
+  bool local_fp16{};
+  bool local_int8{};
 };
 
 struct OLMoETokenMetrics {

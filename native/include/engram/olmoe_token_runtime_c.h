@@ -81,6 +81,33 @@ typedef struct engram_olmoe_episodic_metrics_v1 {
 
 void* engram_olmoe_token_open(const engram_olmoe_token_config* config,
                               char* error, size_t error_capacity);
+// Evaluator-only scalar open that stores the local K/V cache as BF16. The
+// original open ABI remains FP32 and unchanged; this mode is not a package
+// default and is intended for prospective attention-quality experiments.
+void* engram_olmoe_token_open_local_bf16_v1(
+    const engram_olmoe_token_config* config, char* error,
+    size_t error_capacity);
+// Evaluator-only scalar open that keeps local keys in FP32 and stores local
+// values as BF16. Existing/default ABIs remain unchanged.
+void* engram_olmoe_token_open_local_values_bf16_v1(
+    const engram_olmoe_token_config* config, char* error,
+    size_t error_capacity);
+// Evaluator-only scalar open that keeps local keys in FP32 and stores local
+// values as IEEE FP16. Existing/default ABIs remain unchanged.
+void* engram_olmoe_token_open_local_values_fp16_v1(
+    const engram_olmoe_token_config* config, char* error,
+    size_t error_capacity);
+// Evaluator-only scalar open that stores both local keys and values as IEEE
+// FP16. Existing/default ABIs remain unchanged.
+void* engram_olmoe_token_open_local_fp16_v1(
+    const engram_olmoe_token_config* config, char* error,
+    size_t error_capacity);
+// Evaluator-only scalar open that stores local keys and values using
+// per-vector symmetric INT8 with FP32 scales. Existing/default ABIs remain
+// unchanged.
+void* engram_olmoe_token_open_local_int8_v1(
+    const engram_olmoe_token_config* config, char* error,
+    size_t error_capacity);
 // Opens a runtime with exactly one policy entry per configured layer. This is
 // additive: engram_olmoe_token_open retains its original scalar behavior and
 // ABI.

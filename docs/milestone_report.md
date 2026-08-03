@@ -4,6 +4,20 @@ Status date: 2026-08-03
 
 ## Executive result
 
+The latest Milestone 3 attention-substitution boundary is now a passing
+prospective causal gate. On the frozen eight-sequence/128-position corpus, the
+native CPU runtime retains the full W128 local context while storing local keys
+and values as per-vector symmetric INT8 with FP32 scales. The independently
+rerun report passes every semantic band and structural check: overall KL
+0.00417982, top-1 0.974609, target-NLL delta +0.000391, hidden L2 0.048147,
+and 25.0% logical attention traffic versus dense. The final 96–127 band also
+passes (KL 0.00301720, top-1 0.964844, hidden L2 0.043127). This is an
+evaluator-only CPU compression result, not a protected Milestone 2 replay or a
+claim that the ordinary W16 package is already replaced.
+
+Protocol SHA-256: `953b83cead9e722e6228c5d79252ecaa0c0c8980343459c62f5567455d33bda7`.
+Report SHA-256: `7cd55514efab021b2109f835310eb14aff64664e972fa6458266f20d1d17df80`.
+
 The rank-16 compressed query/key selector followed by native exact reranking
 now passes both the eight-record train screen and the independently captured
 eight-record development screen. The development result is a causal CPU
@@ -91,7 +105,7 @@ boundary without silently enabling the policy in ordinary generation.
 |---|---|---|
 | 1. Repository, inspection, fixtures, teacher traces, exact MLP decomposition, oracle top-K, tests | Complete | Build system, source inspection, teacher traces, exact SwiGLU/MLP decomposition, oracle experiments, and regression reports are present. |
 | 2. Semantic memory, practical routing, quantization, Python runtime, substituted-MLP evaluation | Protected promotion passed; opt-in only | Train-to-development causal replay, 512/2,048-position CPU scaling, frozen pool frontier, authenticated opt-in package generation, and the separately authorized protected rank-16/pool-6 replay pass. Protected aggregate: 100% top-1, hidden L2 0.009133, logit L2 0.004416, NLL delta −0.000460. The policy remains disabled by default and requires explicit package opt-in. |
-| 3. Attention analysis, local/recurrent/retrieval heads, hybrid episodic memory, attention substitution | In progress | Native W16/C8/K4 attention, episodic cache, Q/K candidate tracing, compressed selection, exact reranking, and long-context scaling are implemented. Protected substitution and kernel-level speedup remain. |
+| 3. Attention analysis, local/recurrent/retrieval heads, hybrid episodic memory, attention substitution | Sustained quality gate passed; promotion pending | W128 full-context local attention with per-vector INT8 K/V and FP32 scales passes all frozen bands at 25% logical attention traffic on CPU. Deployable package policy integration, broader corpora, and end-to-end speedup remain. |
 | 4. Shared recurrent controller and layer-free Engram runtime | Partial | Controller training, intermediate-state checks, adaptive-cycle experiments, and incremental dispatch exist. Broad generalization and fully promoted layer-free generation remain. |
 | 5. Vocabulary/transition/correction artifacts, compiler, validation and CLI | Partial/usable | Native package generation, mapped weights, correction paths, validation, greedy generation, and chat CLI work. Full semantic-controller package promotion remains gated. |
 | 6. Native C++ runtime, kernels, mapping, parity, generation, benchmarks | Partial/usable | CPU scalar/vector kernels, memory mapping, C ABI parity, native generation, and tests are operational. End-to-end long-context benchmarks and optimization remain. |

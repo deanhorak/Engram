@@ -34,14 +34,24 @@ was assembled and one-token native generation matched the ordinary package.
 The policy remains disabled by default, and this result is not an end-to-end
 speedup claim.
 
-For OLMoE, the earlier Milestone 3 train-only same-state-capacity prerequisite
-passed at 0.6653937751, but both of its learned successors failed: the rank-4
-query-content-plus-mass selector recovered 0.25422074198 in BF16 and the
-phase-conditioned mass selector recovered 0.2618728353. Both passed their
-systems, parity, and authentication checks, but neither authorized progression
-of that Milestone 3 controller path; Milestone 3 remains blocked. The separate
-rank-16/pool-6 retrieval selector is the later protected Milestone 2 result
-summarized above.
+For OLMoE, the earlier bounded W16 attention screen failed because older
+context was evicted, while W128 dense attention passed attribution but exceeded
+the traffic budget. The follow-up CPU-only local-cache compression experiment
+now passes the sustained eight-sequence/128-position semantic gate: a full W128
+cache stored as per-vector symmetric INT8 with FP32 scales reaches KL
+0.00417982, top-1 0.974609, target-NLL delta +0.000391, and hidden L2
+0.048147 across all 1,024 positions. Every frozen band passes, including
+positions 96–127 (KL 0.00301720, top-1 0.964844, hidden L2 0.043127), while
+logical attention reads fall to 25% of dense. This is an evaluator-only
+Milestone 3 attention-substitution pass; the ordinary package remains W16 and
+the recurrent/episodic bounded policy is not yet promoted. The authenticated
+protocol and report are recorded in the milestone report.
+
+The compressed cache is now reachable through an explicit package-runtime
+override (`local_window=128, local_int8=True`) without changing the authenticated
+manifest or production default. This verifies package assembly plus native
+INT8 state allocation; broader package policy metadata and benchmark work are
+still pending.
 
 ### Compiled native OLMoE Q7 source track
 
@@ -1010,10 +1020,10 @@ scientific exit criterion has passed.
 |---|---|---|
 | 1. Inspection, tracing, exact MLP decomposition, oracle experiment | Complete | Complete for the fixture and exercised on SmolLM2 |
 | 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP and OLMoE learned-expert routes, authenticated packages, CPU kernels, native token runtimes, and causal evaluators exist | **Native-BitNet passed** by postmortem adjudication and **OLMoE Q7 formally passed** an authenticated frozen complete-native 8×32 protocol. The matched W128 8×128 control passes every band and attributes the later sustained failure to attention, preserving the Q7/M2 decision. Generic dense-Llama conversion and broader replication remain incomplete |
-| 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, incremental package integration, exact per-layer/per-head native policy ABIs, an exact episodic K/V bank, and learned content/phase selectors implemented | Native-BitNet has a source-specific bounded trained-model pass. **OLMoE W16/C8/K4/S2 fails the authenticated 8×128 gate beginning at offsets 32–63**; W128 full attention passes but is nondeployable at 100% reads and 35.8 MB state. Earlier static, episodic, residual, mass, and simplex families failed their applicable gates. Full-visible C28 established 0.665394 train-only capacity, but its rank-4 content and phase-conditioned mass successors recovered only 0.254221 and 0.261873 in BF16. Both passed systems checks and failed semantically. Those learned classes are closed; the next directional boundary is blockwise-QK. Milestone 3 remains blocked |
+| 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, incremental package integration, exact per-layer/per-head native policy ABIs, an exact episodic K/V bank, and learned content/phase selectors implemented | The earlier W16 policy fails sustained older-context quality, but the prospective W128/per-vector-INT8 local-cache replay now passes all 1,024 semantic positions at 25% logical attention traffic (protocol `953b83ce…33bda7`, report `7cd55514…d17df80`). This clears the sustained attention-quality boundary. Package metadata/default integration, broader corpora, and end-to-end speedup remain. |
 | 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, authenticated package installation, persistent native stage state, and a one-call 30-stage C++ attention/semantic runner implemented | **Controller, compiled-substitution, incremental-generation, and C++ orchestration gates pass**; frozen generation reaches 96.875% token agreement, 87.5% exact prompts, correct cache positions, and zero decoder-layer calls |
 | 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, native vocabulary argmax, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and passes source/package parity; generic vocabulary/cache/correction paths are not all active in the promoted native-BitNet runtime |
-| 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime, memory-mapped BitNet DIP/projection kernels, streaming attention, native shell operators, authenticated C++ package mapping, manifest-derived model configuration/EOS, token-step control, greedy argmax, reset, standalone generation, and a versioned shared ABI implemented | **Partial**: model execution is native and chat uses the shared handle; tokenizer/template/history orchestration remains Python-side, OLMoE sustained older-context quality fails under the current bounded policy, and AVX2 tuning and hardware-counter traffic remain |
+| 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime, memory-mapped BitNet DIP/projection kernels, streaming attention, native shell operators, authenticated C++ package mapping, manifest-derived model configuration/EOS, token-step control, greedy argmax, reset, standalone generation, and a versioned shared ABI implemented | **Partial**: model execution is native and chat uses the shared handle; tokenizer/template/history orchestration remains Python-side, the compressed INT8 attention path is opt-in, and AVX2 tuning plus hardware-counter traffic remain |
 | 7. Evaluation, ablations, tuning, documentation, final report | In progress | Many negative ablations exist; no successful reproducible final report |
 
 The optional Oracle cognitive executive is a separate request-level subsystem.

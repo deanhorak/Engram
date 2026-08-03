@@ -68,6 +68,67 @@ std::uint16_t float_to_bf16(const float value) noexcept {
   return static_cast<std::uint16_t>(bits >> 16U);
 }
 
+std::uint16_t float_to_fp16(const float value) noexcept {
+  const std::uint32_t bits = std::bit_cast<std::uint32_t>(value);
+  const std::uint32_t sign = (bits >> 16U) & 0x8000U;
+  const std::uint32_t exponent = (bits >> 23U) & 0xFFU;
+  const std::uint32_t mantissa = bits & 0x7FFFFFU;
+  if (exponent == 0xFFU) {
+    return static_cast<std::uint16_t>(sign | 0x7C00U |
+                                       (mantissa != 0U ? 0x0200U : 0U));
+  }
+  const int unbiased = static_cast<int>(exponent) - 127;
+  if (unbiased > 15) return static_cast<std::uint16_t>(sign | 0x7C00U);
+  if (unbiased < -14) {
+    if (unbiased < -24) return static_cast<std::uint16_t>(sign);
+    const std::uint32_t shifted = mantissa | 0x800000U;
+    const int shift = -unbiased - 14;
+    const std::uint32_t rounded =
+        (shifted + (1U << (shift + 12))) >> (shift + 13);
+    return static_cast<std::uint16_t>(sign | rounded);
+  }
+  std::uint32_t half_exponent = static_cast<std::uint32_t>(unbiased + 15);
+  std::uint32_t half_mantissa = (mantissa + 0x1000U) >> 13U;
+  if (half_mantissa == 0x400U) {
+    half_mantissa = 0;
+    ++half_exponent;
+  }
+  if (half_exponent >= 0x1FU) return static_cast<std::uint16_t>(sign | 0x7C00U);
+  return static_cast<std::uint16_t>(sign | (half_exponent << 10U) |
+                                    half_mantissa);
+}
+
+float fp16_to_float(const std::uint16_t value) noexcept {
+  const std::uint32_t sign = (static_cast<std::uint32_t>(value) & 0x8000U)
+                             << 16U;
+  const std::uint32_t exponent = (value >> 10U) & 0x1FU;
+  const std::uint32_t mantissa = value & 0x03FFU;
+  std::uint32_t bits{};
+  if (exponent == 0U) {
+    if (mantissa == 0U) {
+      bits = sign;
+    } else {
+      std::uint32_t normalized = mantissa;
+      int exponent_value = -14;
+      while ((normalized & 0x0400U) == 0U) {
+        normalized <<= 1U;
+        --exponent_value;
+      }
+      normalized &= 0x03FFU;
+      bits = sign |
+             (static_cast<std::uint32_t>(exponent_value + 127) << 23U) |
+             (normalized << 13U);
+    }
+  } else if (exponent == 0x1FU) {
+    bits = sign | 0x7F800000U | (mantissa << 13U);
+  } else {
+    bits = sign |
+           (static_cast<std::uint32_t>(exponent - 15U + 127U) << 23U) |
+           (mantissa << 13U);
+  }
+  return std::bit_cast<float>(bits);
+}
+
 float dot_bf16(const float* left, const std::uint16_t* right,
                const std::size_t width) noexcept {
   float result = 0.0F;
@@ -97,6 +158,71 @@ float dot_bf16_rope_bands(const float* left, const std::uint16_t* right,
   return result;
 }
 
+float dot_fp16(const float* left, const std::uint16_t* right,
+               const std::size_t width) noexcept {
+  float result = 0.0F;
+  for (std::size_t index = 0; index < width; ++index) {
+    result += left[index] * fp16_to_float(right[index]);
+  }
+  return result;
+}
+
+float dot_fp16_rope_bands(const float* left, const std::uint16_t* right,
+                          const std::size_t width, const float scale,
+                          const std::span<float> partials) noexcept {
+  std::fill(partials.begin(), partials.end(), 0.0F);
+  float result = 0.0F;
+  const std::size_t half = width / 2;
+  for (std::size_t index = 0; index < width; ++index) {
+    const float product = left[index] * fp16_to_float(right[index]);
+    result += product;
+    const std::size_t frequency = index < half ? index : index - half;
+    partials[frequency / StreamingAttention::kQKPartialBandHalfWidth] +=
+        product;
+  }
+  for (float& partial : partials) partial *= scale;
+  return result;
+}
+
+float dot_int8(const float* left, const std::int8_t* right,
+               const float scale, const std::size_t width) noexcept {
+  float result = 0.0F;
+  for (std::size_t index = 0; index < width; ++index) {
+    result += left[index] * (static_cast<float>(right[index]) * scale);
+  }
+  return result;
+}
+
+float dot_int8_rope_bands(const float* left, const std::int8_t* right,
+                          const float value_scale, const std::size_t width,
+                          const float scale,
+                          const std::span<float> partials) noexcept {
+  std::fill(partials.begin(), partials.end(), 0.0F);
+  float result = 0.0F;
+  const std::size_t half = width / 2;
+  for (std::size_t index = 0; index < width; ++index) {
+    const float product =
+        left[index] * (static_cast<float>(right[index]) * value_scale);
+    result += product;
+    const std::size_t frequency = index < half ? index : index - half;
+    partials[frequency / StreamingAttention::kQKPartialBandHalfWidth] +=
+        product;
+  }
+  for (float& partial : partials) partial *= scale;
+  return result;
+}
+
+float int8_scale(const std::span<const float> values) noexcept {
+  float maximum = 0.0F;
+  for (const float value : values) maximum = std::max(maximum, std::abs(value));
+  return maximum > 0.0F ? maximum / 127.0F : 1.0F;
+}
+
+std::int8_t float_to_int8(const float value, const float scale) noexcept {
+  const float quantized = std::round(value / scale);
+  return static_cast<std::int8_t>(std::clamp(quantized, -127.0F, 127.0F));
+}
+
 }  // namespace
 
 StreamingAttention::StreamingAttention(StreamingAttentionConfig config)
@@ -122,6 +248,14 @@ StreamingAttention::StreamingAttention(StreamingAttentionConfig config)
   if (!std::isfinite(config_.episodic_logit_bias)) {
     throw std::invalid_argument(
         "streaming episodic logit bias must be finite");
+  }
+  if ((config_.local_bf16 ? 1 : 0) +
+          (config_.local_values_bf16 ? 1 : 0) +
+          (config_.local_values_fp16 ? 1 : 0) +
+          (config_.local_fp16 ? 1 : 0) +
+          (config_.local_int8 ? 1 : 0) >
+      1) {
+    throw std::invalid_argument("streaming local compression modes conflict");
   }
   if ((config_.episodic_slots == 0) !=
           (config_.episodic_span_size == 0) ||
@@ -165,8 +299,27 @@ StreamingAttention::StreamingAttention(StreamingAttentionConfig config)
   const std::size_t episodic_elements =
       checked_product(episodic_vectors, config_.head_dimension,
                       "streaming episodic storage overflows");
-  recent_keys_.resize(recent_elements);
-  recent_values_.resize(recent_elements);
+  if (config_.local_bf16) {
+    recent_keys_bf16_.resize(recent_elements);
+    recent_values_bf16_.resize(recent_elements);
+  } else if (config_.local_values_bf16) {
+    recent_keys_.resize(recent_elements);
+    recent_values_bf16_.resize(recent_elements);
+  } else if (config_.local_values_fp16) {
+    recent_keys_.resize(recent_elements);
+    recent_values_fp16_.resize(recent_elements);
+  } else if (config_.local_fp16) {
+    recent_keys_fp16_.resize(recent_elements);
+    recent_values_fp16_.resize(recent_elements);
+  } else if (config_.local_int8) {
+    recent_keys_int8_.resize(recent_elements);
+    recent_values_int8_.resize(recent_elements);
+    recent_key_scales_int8_.resize(recent_vectors);
+    recent_value_scales_int8_.resize(recent_vectors);
+  } else {
+    recent_keys_.resize(recent_elements);
+    recent_values_.resize(recent_elements);
+  }
   recent_mass_.resize(config_.query_heads * config_.local_window);
   recent_positions_.resize(config_.local_window);
   older_keys_.resize(older_elements);
@@ -229,6 +382,138 @@ std::size_t StreamingAttention::episodic_offset(
          config_.head_dimension;
 }
 
+float StreamingAttention::recent_key_at(const std::size_t slot,
+                                         const std::size_t kv_head,
+                                         const std::size_t dimension) const
+    noexcept {
+  const std::size_t offset = recent_offset(slot, kv_head) + dimension;
+  if (config_.local_bf16) return bf16_to_float(recent_keys_bf16_[offset]);
+  if (config_.local_fp16) return fp16_to_float(recent_keys_fp16_[offset]);
+  if (config_.local_int8) {
+    const std::size_t vector = slot * config_.key_value_heads + kv_head;
+    return static_cast<float>(recent_keys_int8_[offset]) *
+           recent_key_scales_int8_[vector];
+  }
+  return recent_keys_[offset];
+}
+
+float StreamingAttention::recent_value_at(const std::size_t slot,
+                                           const std::size_t kv_head,
+                                           const std::size_t dimension) const
+    noexcept {
+  const std::size_t offset = recent_offset(slot, kv_head) + dimension;
+  if (config_.local_bf16 || config_.local_values_bf16) {
+    return bf16_to_float(recent_values_bf16_[offset]);
+  }
+  if (config_.local_values_fp16 || config_.local_fp16) {
+    return fp16_to_float(recent_values_fp16_[offset]);
+  }
+  if (config_.local_int8) {
+    const std::size_t vector = slot * config_.key_value_heads + kv_head;
+    return static_cast<float>(recent_values_int8_[offset]) *
+           recent_value_scales_int8_[vector];
+  }
+  return recent_values_[offset];
+}
+
+float StreamingAttention::recent_key_dot(
+    const float* query, const std::size_t slot, const std::size_t kv_head,
+    const std::span<float> partials) const noexcept {
+  const std::size_t offset = recent_offset(slot, kv_head);
+  if (config_.local_bf16) {
+    if (partials.empty()) {
+      return dot_bf16(query, recent_keys_bf16_.data() + offset,
+                      config_.head_dimension);
+    }
+    return dot_bf16_rope_bands(
+        query, recent_keys_bf16_.data() + offset, config_.head_dimension,
+        config_.scale, partials);
+  }
+  if (config_.local_fp16) {
+    if (partials.empty()) {
+      return dot_fp16(query, recent_keys_fp16_.data() + offset,
+                      config_.head_dimension);
+    }
+    return dot_fp16_rope_bands(
+        query, recent_keys_fp16_.data() + offset, config_.head_dimension,
+        config_.scale, partials);
+  }
+  if (config_.local_int8) {
+    const std::size_t vector = slot * config_.key_value_heads + kv_head;
+    if (partials.empty()) {
+      return dot_int8(query, recent_keys_int8_.data() + offset,
+                      recent_key_scales_int8_[vector], config_.head_dimension);
+    }
+    return dot_int8_rope_bands(
+        query, recent_keys_int8_.data() + offset,
+        recent_key_scales_int8_[vector], config_.head_dimension, config_.scale,
+        partials);
+  }
+  if (partials.empty()) {
+    return dot(query, recent_keys_.data() + offset, config_.head_dimension);
+  }
+  return dot_rope_bands(query, recent_keys_.data() + offset,
+                        config_.head_dimension, config_.scale, partials);
+}
+
+void StreamingAttention::store_recent(
+    const std::size_t slot, const std::size_t kv_head,
+    const std::span<const float> key,
+    const std::span<const float> value) noexcept {
+  const std::size_t target = recent_offset(slot, kv_head);
+  if (config_.local_bf16) {
+    for (std::size_t dimension = 0; dimension < config_.head_dimension;
+         ++dimension) {
+      recent_keys_bf16_[target + dimension] = float_to_bf16(key[dimension]);
+      recent_values_bf16_[target + dimension] =
+          float_to_bf16(value[dimension]);
+    }
+    return;
+  }
+  if (config_.local_fp16) {
+    for (std::size_t dimension = 0; dimension < config_.head_dimension;
+         ++dimension) {
+      recent_keys_fp16_[target + dimension] = float_to_fp16(key[dimension]);
+      recent_values_fp16_[target + dimension] =
+          float_to_fp16(value[dimension]);
+    }
+    return;
+  }
+  if (config_.local_int8) {
+    const std::size_t vector = slot * config_.key_value_heads + kv_head;
+    const float key_scale = int8_scale(key);
+    const float value_scale = int8_scale(value);
+    recent_key_scales_int8_[vector] = key_scale;
+    recent_value_scales_int8_[vector] = value_scale;
+    for (std::size_t dimension = 0; dimension < config_.head_dimension;
+         ++dimension) {
+      recent_keys_int8_[target + dimension] =
+          float_to_int8(key[dimension], key_scale);
+      recent_values_int8_[target + dimension] =
+          float_to_int8(value[dimension], value_scale);
+    }
+    return;
+  }
+  std::copy_n(key.data(), config_.head_dimension,
+              recent_keys_.data() + target);
+  if (config_.local_values_bf16) {
+    for (std::size_t dimension = 0; dimension < config_.head_dimension;
+         ++dimension) {
+      recent_values_bf16_[target + dimension] =
+          float_to_bf16(value[dimension]);
+    }
+  } else if (config_.local_values_fp16) {
+    for (std::size_t dimension = 0; dimension < config_.head_dimension;
+         ++dimension) {
+      recent_values_fp16_[target + dimension] =
+          float_to_fp16(value[dimension]);
+    }
+  } else {
+    std::copy_n(value.data(), config_.head_dimension,
+                recent_values_.data() + target);
+  }
+}
+
 void StreamingAttention::evict_recent(
     const std::size_t slot, std::uint64_t& sink_insertions,
     std::uint64_t& heavy_hitter_updates) {
@@ -267,12 +552,14 @@ void StreamingAttention::evict_recent(
     }
     const std::size_t index = base + destination;
     const std::size_t kv_head = head / groups_;
-    const std::size_t source = recent_offset(slot, kv_head);
     const std::size_t target = older_offset(head, destination);
-    std::copy_n(recent_keys_.data() + source, config_.head_dimension,
-                older_keys_.data() + target);
-    std::copy_n(recent_values_.data() + source, config_.head_dimension,
-                older_values_.data() + target);
+    for (std::size_t dimension = 0; dimension < config_.head_dimension;
+         ++dimension) {
+      older_keys_[target + dimension] =
+          recent_key_at(slot, kv_head, dimension);
+      older_values_[target + dimension] =
+          recent_value_at(slot, kv_head, dimension);
+    }
     older_scores_[index] = incoming_score;
     older_positions_[index] = position;
     older_active_[index] = 1;
@@ -831,12 +1118,11 @@ StreamingAttentionMetrics StreamingAttention::step_episodic_impl(
     ++recent_size_;
   }
   for (std::size_t kv_head = 0; kv_head < config_.key_value_heads; ++kv_head) {
-    const std::size_t target = recent_offset(write_slot, kv_head);
     const std::size_t source = kv_head * config_.head_dimension;
-    std::copy_n(key.data() + source, config_.head_dimension,
-                recent_keys_.data() + target);
-    std::copy_n(value.data() + source, config_.head_dimension,
-                recent_values_.data() + target);
+    store_recent(
+        write_slot, kv_head,
+        std::span<const float>(key.data() + source, config_.head_dimension),
+        std::span<const float>(value.data() + source, config_.head_dimension));
   }
   recent_positions_[write_slot] = tokens_seen_;
   for (std::size_t head = 0; head < config_.query_heads; ++head) {
@@ -968,16 +1254,9 @@ StreamingAttentionMetrics StreamingAttention::step_episodic_impl(
     float maximum = -std::numeric_limits<float>::infinity();
     for (std::size_t local = 0; local < recent_size_; ++local) {
       const std::size_t slot = (recent_start_ + local) % config_.local_window;
-      const float raw_score =
-          trace_qk_partials
-              ? dot_rope_bands(
-                    query_row,
-                    recent_keys_.data() + recent_offset(slot, kv_head),
-                    config_.head_dimension, config_.scale,
-                    qk_entry(local))
-              : dot(query_row,
-                    recent_keys_.data() + recent_offset(slot, kv_head),
-                    config_.head_dimension);
+      const float raw_score = recent_key_dot(
+          query_row, slot, kv_head,
+          trace_qk_partials ? qk_entry(local) : std::span<float>{});
       const float score = raw_score * config_.scale;
       score_scratch_[visible++] = score;
       maximum = std::max(maximum, score);
@@ -1025,12 +1304,11 @@ StreamingAttentionMetrics StreamingAttention::step_episodic_impl(
       const std::size_t slot = (recent_start_ + local) % config_.local_window;
       const float weight = weight_scratch_[weight_index++] / denominator;
       recent_mass_[head * config_.local_window + slot] += weight;
-      const float* source =
-          recent_values_.data() + recent_offset(slot, kv_head);
       float* target = output.data() + head * config_.head_dimension;
       for (std::size_t dimension = 0; dimension < config_.head_dimension;
            ++dimension) {
-        target[dimension] += weight * source[dimension];
+        target[dimension] +=
+            weight * recent_value_at(slot, kv_head, dimension);
       }
     }
     for (std::size_t index = 0; index < selected_count; ++index) {
@@ -1106,11 +1384,10 @@ StreamingAttentionMetrics StreamingAttention::step_episodic_impl(
           const float weight =
               weight_scratch_[trace_weight_index++] / denominator;
           current_regular_mass += weight;
-          const float* source =
-              recent_values_.data() + recent_offset(slot, kv_head);
           for (std::size_t dimension = 0;
                dimension < config_.head_dimension; ++dimension) {
-            regular_target[dimension] += weight * source[dimension];
+            regular_target[dimension] +=
+                weight * recent_value_at(slot, kv_head, dimension);
           }
         }
         for (std::size_t index = 0; index < selected_count; ++index) {
@@ -1190,11 +1467,11 @@ StreamingAttentionMetrics StreamingAttention::step_episodic_impl(
         regular_entry_mass[entry] = weight;
         regular_entry_valid_kind[entry] = kRegularTraceLocal;
         regular_entry_positions[entry] = recent_positions_[slot];
-        std::copy_n(
-            recent_values_.data() + recent_offset(slot, kv_head),
-            config_.head_dimension,
-            regular_entry_values.data() +
-                entry * config_.head_dimension);
+        for (std::size_t dimension = 0;
+             dimension < config_.head_dimension; ++dimension) {
+          regular_entry_values[entry * config_.head_dimension + dimension] =
+              recent_value_at(slot, kv_head, dimension);
+        }
       }
       for (std::size_t index = 0; index < selected_count; ++index) {
         const std::size_t slot = selected_scratch_[index];
@@ -1213,7 +1490,18 @@ StreamingAttentionMetrics StreamingAttention::step_episodic_impl(
                 entry * config_.head_dimension);
       }
     }
-    local_bytes += recent_size_ * config_.head_dimension * sizeof(float) * 2;
+    const std::size_t key_bytes =
+        (config_.local_bf16 || config_.local_fp16)
+            ? sizeof(std::uint16_t)
+            : (config_.local_int8 ? sizeof(std::int8_t) : sizeof(float));
+    const std::size_t value_bytes =
+      (config_.local_bf16 || config_.local_values_bf16 ||
+       config_.local_values_fp16 || config_.local_fp16 || config_.local_int8)
+            ? (config_.local_int8 ? sizeof(std::int8_t)
+                                   : sizeof(std::uint16_t))
+            : sizeof(float);
+    local_bytes += recent_size_ * config_.head_dimension *
+                   (key_bytes + value_bytes);
     selected_value_bytes +=
         selected_count * config_.head_dimension * sizeof(float);
   }
@@ -1258,8 +1546,29 @@ std::size_t StreamingAttention::active_episodic_slots() const noexcept {
 }
 
 std::size_t StreamingAttention::allocated_state_bytes() const noexcept {
-  return recent_keys_.size() * sizeof(float) +
-         recent_values_.size() * sizeof(float) +
+  const std::size_t recent_key_bytes =
+      (config_.local_bf16 || config_.local_fp16)
+          ? (config_.local_bf16 ? recent_keys_bf16_.size()
+                                : recent_keys_fp16_.size()) *
+                sizeof(std::uint16_t)
+          : (config_.local_int8
+                 ? recent_keys_int8_.size() * sizeof(std::int8_t)
+                 : recent_keys_.size() * sizeof(float));
+  const std::size_t recent_value_bytes =
+      (config_.local_bf16 || config_.local_values_bf16)
+          ? recent_values_bf16_.size() * sizeof(std::uint16_t)
+          : ((config_.local_values_fp16 || config_.local_fp16)
+                 ? recent_values_fp16_.size() * sizeof(std::uint16_t)
+                 : (config_.local_int8
+                        ? recent_values_int8_.size() * sizeof(std::int8_t)
+                        : recent_values_.size() * sizeof(float)));
+  const std::size_t int8_scale_bytes =
+      config_.local_int8
+          ? (recent_key_scales_int8_.size() +
+             recent_value_scales_int8_.size()) * sizeof(float)
+          : 0;
+  return recent_key_bytes + recent_value_bytes +
+         int8_scale_bytes +
          recent_mass_.size() * sizeof(float) +
          recent_positions_.size() * sizeof(std::uint64_t) +
          older_keys_.size() * sizeof(float) +

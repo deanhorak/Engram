@@ -34,7 +34,12 @@ engram::OLMoETokenConfig native_config(
     const bool c28_qk_partial_trace = false,
     const bool c28_qk_candidate_trace = false,
     const bool c28_qk_candidate_key_trace = false,
-    const bool c28_qk_candidate_value_trace = false) {
+    const bool c28_qk_candidate_value_trace = false,
+    const bool local_bf16 = false,
+    const bool local_values_bf16 = false,
+    const bool local_values_fp16 = false,
+    const bool local_fp16 = false,
+    const bool local_int8 = false) {
   if (config == nullptr || config->non_mlp_safetensors == nullptr ||
       config->q7_artifact == nullptr) {
     throw std::invalid_argument("native OLMoE token config is null");
@@ -97,6 +102,11 @@ engram::OLMoETokenConfig native_config(
       .c28_qk_candidate_trace = c28_qk_candidate_trace,
       .c28_qk_candidate_key_trace = c28_qk_candidate_key_trace,
       .c28_qk_candidate_value_trace = c28_qk_candidate_value_trace,
+      .local_bf16 = local_bf16,
+      .local_values_bf16 = local_values_bf16,
+      .local_values_fp16 = local_values_fp16,
+      .local_fp16 = local_fp16,
+      .local_int8 = local_int8,
   };
 }
 
@@ -189,6 +199,91 @@ void* engram_olmoe_token_open(const engram_olmoe_token_config* config,
     return nullptr;
   } catch (...) {
     error_text(error, error_capacity, "unknown native OLMoE token open failure");
+    return nullptr;
+  }
+}
+
+void* engram_olmoe_token_open_local_bf16_v1(
+    const engram_olmoe_token_config* config, char* error,
+    const std::size_t error_capacity) {
+  try {
+    return new engram::OLMoETokenRuntime(
+        native_config(config, {}, {}, nullptr, {}, 0.0F, nullptr, false,
+                      false, false, false, true));
+  } catch (const std::exception& exception) {
+    error_text(error, error_capacity, exception.what());
+    return nullptr;
+  } catch (...) {
+    error_text(error, error_capacity,
+               "unknown native BF16-local OLMoE token open failure");
+    return nullptr;
+  }
+}
+
+void* engram_olmoe_token_open_local_values_bf16_v1(
+    const engram_olmoe_token_config* config, char* error,
+    const std::size_t error_capacity) {
+  try {
+    return new engram::OLMoETokenRuntime(
+        native_config(config, {}, {}, nullptr, {}, 0.0F, nullptr, false,
+                      false, false, false, false, true));
+  } catch (const std::exception& exception) {
+    error_text(error, error_capacity, exception.what());
+    return nullptr;
+  } catch (...) {
+    error_text(error, error_capacity,
+               "unknown native BF16-local-value OLMoE token open failure");
+    return nullptr;
+  }
+}
+
+void* engram_olmoe_token_open_local_values_fp16_v1(
+    const engram_olmoe_token_config* config, char* error,
+    const std::size_t error_capacity) {
+  try {
+    return new engram::OLMoETokenRuntime(
+        native_config(config, {}, {}, nullptr, {}, 0.0F, nullptr, false,
+                      false, false, false, false, false, true));
+  } catch (const std::exception& exception) {
+    error_text(error, error_capacity, exception.what());
+    return nullptr;
+  } catch (...) {
+    error_text(error, error_capacity,
+               "unknown native FP16-local-value OLMoE token open failure");
+    return nullptr;
+  }
+}
+
+void* engram_olmoe_token_open_local_fp16_v1(
+    const engram_olmoe_token_config* config, char* error,
+    const std::size_t error_capacity) {
+  try {
+    return new engram::OLMoETokenRuntime(
+        native_config(config, {}, {}, nullptr, {}, 0.0F, nullptr, false,
+                      false, false, false, false, false, false, true));
+  } catch (const std::exception& exception) {
+    error_text(error, error_capacity, exception.what());
+    return nullptr;
+  } catch (...) {
+    error_text(error, error_capacity,
+               "unknown native FP16-local OLMoE token open failure");
+    return nullptr;
+  }
+}
+
+void* engram_olmoe_token_open_local_int8_v1(
+    const engram_olmoe_token_config* config, char* error,
+    const std::size_t error_capacity) {
+  try {
+    return new engram::OLMoETokenRuntime(
+        native_config(config, {}, {}, nullptr, {}, 0.0F, nullptr, false,
+                      false, false, false, false, false, false, false, true));
+  } catch (const std::exception& exception) {
+    error_text(error, error_capacity, exception.what());
+    return nullptr;
+  } catch (...) {
+    error_text(error, error_capacity,
+               "unknown native INT8-local OLMoE token open failure");
     return nullptr;
   }
 }

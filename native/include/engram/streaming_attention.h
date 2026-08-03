@@ -28,6 +28,20 @@ struct StreamingAttentionConfig {
   // Additive logit bias applied only to selected episodic entries before the
   // joint local/older/episodic softmax. Zero preserves the original route.
   float episodic_logit_bias{};
+  // Evaluator-only local K/V compression.  When enabled, recent rows are
+  // stored as BF16 and decoded for attention; legacy/default storage remains
+  // FP32 and all older candidates retain their existing representation.
+  bool local_bf16{false};
+  // Evaluator-only value-only variant: local keys remain FP32 while local
+  // values use BF16. This preserves retrieval scores while reducing value
+  // traffic; it is exposed only through a versioned opt-in ABI.
+  bool local_values_bf16{false};
+  // Evaluator-only value-only IEEE FP16 storage. Local keys remain FP32.
+  bool local_values_fp16{false};
+  // Evaluator-only IEEE FP16 storage for both local keys and values.
+  bool local_fp16{false};
+  // Evaluator-only per-vector symmetric INT8 storage for local keys/values.
+  bool local_int8{false};
 };
 
 struct StreamingAttentionMetrics {
@@ -288,6 +302,16 @@ class StreamingAttention {
                                          std::size_t slot) const noexcept;
   [[nodiscard]] std::size_t episodic_offset(
       std::size_t slot, std::size_t kv_head) const noexcept;
+  [[nodiscard]] float recent_key_at(std::size_t slot, std::size_t kv_head,
+                                    std::size_t dimension) const noexcept;
+  [[nodiscard]] float recent_value_at(std::size_t slot, std::size_t kv_head,
+                                      std::size_t dimension) const noexcept;
+  [[nodiscard]] float recent_key_dot(
+      const float* query, std::size_t slot, std::size_t kv_head,
+      std::span<float> partials) const noexcept;
+  void store_recent(std::size_t slot, std::size_t kv_head,
+                    std::span<const float> key,
+                    std::span<const float> value) noexcept;
   void evict_recent(std::size_t slot, std::uint64_t& sink_insertions,
                     std::uint64_t& heavy_hitter_updates);
   void validate_inputs(std::span<const float> query,
@@ -323,6 +347,14 @@ class StreamingAttention {
 
   std::vector<float> recent_keys_;
   std::vector<float> recent_values_;
+  std::vector<std::uint16_t> recent_keys_bf16_;
+  std::vector<std::uint16_t> recent_values_bf16_;
+  std::vector<std::uint16_t> recent_values_fp16_;
+  std::vector<std::uint16_t> recent_keys_fp16_;
+  std::vector<std::int8_t> recent_keys_int8_;
+  std::vector<std::int8_t> recent_values_int8_;
+  std::vector<float> recent_key_scales_int8_;
+  std::vector<float> recent_value_scales_int8_;
   std::vector<float> recent_mass_;
   std::vector<std::uint64_t> recent_positions_;
 

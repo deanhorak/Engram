@@ -333,6 +333,11 @@ OLMoETokenRuntime::OLMoETokenRuntime(OLMoETokenConfig config)
                     1.0F /
                     std::sqrt(static_cast<float>(config_.head_dimension)),
                 .episodic_logit_bias = 0.0F,
+                .local_bf16 = config_.local_bf16,
+                .local_values_bf16 = config_.local_values_bf16,
+                .local_values_fp16 = config_.local_values_fp16,
+                .local_fp16 = config_.local_fp16,
+                .local_int8 = config_.local_int8,
             }));
         attention_state_capacity_bytes_ = checked_metric_sum(
             attention_state_capacity_bytes_,
@@ -392,6 +397,11 @@ OLMoETokenRuntime::OLMoETokenRuntime(OLMoETokenConfig config)
                 layer_episodic_active
                     ? config_.episodic_logit_bias
                     : 0.0F,
+            .local_bf16 = config_.local_bf16,
+            .local_values_bf16 = config_.local_values_bf16,
+            .local_values_fp16 = config_.local_values_fp16,
+            .local_fp16 = config_.local_fp16,
+            .local_int8 = config_.local_int8,
         }));
     attention_state_capacity_bytes_ = checked_metric_sum(
         attention_state_capacity_bytes_,
