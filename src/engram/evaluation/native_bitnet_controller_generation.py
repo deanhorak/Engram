@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 from engram.controller import FactorizedRecurrentController
 from engram.runtime.native_bitnet import NativeBitNetRuntime
 from engram.utils import atomic_json, sha256_file
@@ -59,6 +61,9 @@ def evaluate_native_bitnet_controller_generation(
     prompt_path = Path(prompts).resolve()
     records = _load_prompts(prompt_path)
     controller_runtime = FactorizedRecurrentController.load(controller)
+    controller_correction_enabled = bool(
+        np.any(controller_runtime.step_scale != 0.0)
+    )
     results = []
     with NativeBitNetRuntime(
         package,
@@ -175,12 +180,12 @@ def evaluate_native_bitnet_controller_generation(
             "semantic_operator": "native_packed_bitnet_phase_stream",
             "episodic_operator": "native_streaming_w16_c8_k4_sinks2",
             "native_packed_attention_projections": True,
-            "controller_correction_enabled": False,
+            "controller_correction_enabled": controller_correction_enabled,
             "native_embedding_lookup": True,
             "native_rms_norm": True,
             "native_rope": True,
             "native_vocabulary_argmax": True,
-            "native_cpp_stage_runner": True,
+            "native_cpp_stage_runner": not controller_correction_enabled,
         },
         "results": results,
         "summary": {
@@ -210,7 +215,8 @@ def evaluate_native_bitnet_controller_generation(
             "source_mlp_tensors_loaded": False,
             "torch_module_shell_still_used": True,
             "fully_native_cpp_controller_used": True,
-            "native_cpp_stage_runner_used": True,
+            "native_cpp_stage_runner_used": not controller_correction_enabled,
+            "native_cpp_recurrent_transition_used": controller_correction_enabled,
             "torch_embedding_used": False,
             "torch_rms_norm_used": False,
             "torch_rope_used": False,
@@ -219,7 +225,11 @@ def evaluate_native_bitnet_controller_generation(
         "decision": (
             "incremental_controller_generation_pass_native_package_loader_next"
             if gate_passed
-            else "diagnose_controller_generation_divergence"
+            else (
+                "diagnose_controller_correction_causal_divergence"
+                if controller_correction_enabled
+                else "diagnose_controller_generation_divergence"
+            )
         ),
     }
     atomic_json(Path(out), report)

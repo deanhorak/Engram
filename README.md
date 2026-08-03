@@ -199,11 +199,13 @@ path; that is execution evidence only, not a semantic gate or production
 deployment.
 
 The Python `ControllerDrivenBitNet` path also uses this ABI for nonzero
-corrections. In a one-prompt bounded comparison, an existing nonzero
-development controller changed the selected token from `12366` (exact
-residual) to `36306`, used 9.69 seconds of controller-stage work, and made zero
-decoder-layer calls. This confirms the native dispatch while exposing the
-quality risk; it is intentionally not a gate result.
+corrections. An eight-prompt, one-token development screen reached **0.0%
+token agreement** and **0/8 exact prompts** against the exact residual package;
+cache positions and zero decoder-layer calls passed. Controller-stage work
+averaged 12.50 seconds per prompt, and the first exact token `12366` became
+`36306`. This confirms native dispatch while exposing a decisive quality
+failure; it is intentionally not a gate result. The preserved report is
+`reports/controller_native_recurrent_2026-08-03/development_8x1.json`.
 
 Milestone 2 now has three source-track outcomes that should not be conflated:
 

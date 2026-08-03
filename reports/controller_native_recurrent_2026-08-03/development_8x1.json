@@ -1,0 +1,298 @@
+{
+  "checks": {
+    "cache_positions": true,
+    "decoder_layers_bypassed": true,
+    "exact_prompt_fraction": false,
+    "generated_reference_tokens": false,
+    "prompt_count": true,
+    "weighted_token_agreement": false
+  },
+  "configuration": {
+    "controller_correction_enabled": true,
+    "episodic_operator": "native_streaming_w16_c8_k4_sinks2",
+    "greedy": true,
+    "max_new_tokens": 1,
+    "native_cpp_stage_runner": false,
+    "native_embedding_lookup": true,
+    "native_packed_attention_projections": true,
+    "native_rms_norm": true,
+    "native_rope": true,
+    "native_vocabulary_argmax": true,
+    "semantic_operator": "native_packed_bitnet_phase_stream"
+  },
+  "controller": {
+    "adapter_rank": 4,
+    "format": "engram.controller.factorized_residual",
+    "input_dim": 7680,
+    "num_stages": 30,
+    "operator": "operator_residual_with_factorized_correction",
+    "operator_residual_input_order": [
+      "semantic_output",
+      "episodic_output"
+    ],
+    "parameter_count": 2662490,
+    "path": "/tmp/engram-controller-schema3",
+    "rank": 128,
+    "schema_version": 3,
+    "serialized_bytes": 10649960,
+    "state_dim": 2560,
+    "state_normalization": "per_token_rms",
+    "storage_dtype": "float32",
+    "tensor_layout": {
+      "adapter_down": [
+        30,
+        2560,
+        4
+      ],
+      "adapter_up": [
+        30,
+        4,
+        2560
+      ],
+      "bias": [
+        5120
+      ],
+      "gate_up": [
+        128,
+        5120
+      ],
+      "input_down": [
+        7680,
+        128
+      ],
+      "operator_residual_scale": [
+        30,
+        2
+      ],
+      "recurrent_down": [
+        2560,
+        128
+      ],
+      "stage_embeddings": [
+        30,
+        2560
+      ],
+      "step_scale": [
+        30
+      ]
+    }
+  },
+  "decision": "diagnose_controller_correction_causal_divergence",
+  "experiment": "native_bitnet_controller_incremental_generation",
+  "gate_passed": false,
+  "package": "/home/dean/repos/engram/work/native_bitnet/model.engram-bitnet",
+  "prompt_suite": {
+    "path": "/tmp/engram-inference-prompts-8.jsonl",
+    "prompts": 8,
+    "sha256": "dd38c4ce92045d333edd572f23bad3f41f331393edfc58796a7cf2af01554fd2"
+  },
+  "results": [
+    {
+      "attention_tokens_seen": 6,
+      "baseline_seconds": 3.826848657015944,
+      "baseline_text": " Paris",
+      "baseline_tokens": [
+        12366
+      ],
+      "cache_position_passed": true,
+      "controller_math_seconds": 9.609451126074418,
+      "controller_runtime_seconds": 10.670299666002393,
+      "controller_state_bytes": 61464,
+      "controller_text": "ateurs",
+      "controller_tokens": [
+        36306
+      ],
+      "decoder_layer_forward_calls": 0,
+      "exact_token_parity": false,
+      "expected_attention_tokens_seen": 6,
+      "prompt": "The capital of France is",
+      "prompt_tokens": 6,
+      "token_agreement": 0.0
+    },
+    {
+      "attention_tokens_seen": 8,
+      "baseline_seconds": 3.143544408987509,
+      "baseline_text": " the",
+      "baseline_tokens": [
+        279
+      ],
+      "cache_position_passed": true,
+      "controller_math_seconds": 11.696185876964591,
+      "controller_runtime_seconds": 12.59891515498748,
+      "controller_state_bytes": 81952,
+      "controller_text": "ateurs",
+      "controller_tokens": [
+        36306
+      ],
+      "decoder_layer_forward_calls": 0,
+      "exact_token_parity": false,
+      "expected_attention_tokens_seen": 8,
+      "prompt": "In simple terms, photosynthesis is",
+      "prompt_tokens": 8,
+      "token_agreement": 0.0
+    },
+    {
+      "attention_tokens_seen": 11,
+      "baseline_seconds": 3.7119188719952945,
+      "baseline_text": " one",
+      "baseline_tokens": [
+        832
+      ],
+      "cache_position_passed": true,
+      "controller_math_seconds": 15.403064676880604,
+      "controller_runtime_seconds": 16.39352242500172,
+      "controller_state_bytes": 112684,
+      "controller_text": "ateurs",
+      "controller_tokens": [
+        36306
+      ],
+      "decoder_layer_forward_calls": 0,
+      "exact_token_parity": false,
+      "expected_attention_tokens_seen": 11,
+      "prompt": "Write a short Python function that adds two numbers:",
+      "prompt_tokens": 11,
+      "token_agreement": 0.0
+    },
+    {
+      "attention_tokens_seen": 9,
+      "baseline_seconds": 3.452302935998887,
+      "baseline_text": " the",
+      "baseline_tokens": [
+        279
+      ],
+      "cache_position_passed": true,
+      "controller_math_seconds": 13.096142213064013,
+      "controller_runtime_seconds": 14.027202975994442,
+      "controller_state_bytes": 92196,
+      "controller_text": "ateurs",
+      "controller_tokens": [
+        36306
+      ],
+      "decoder_layer_forward_calls": 0,
+      "exact_token_parity": false,
+      "expected_attention_tokens_seen": 9,
+      "prompt": "The primary cause of ocean tides is",
+      "prompt_tokens": 9,
+      "token_agreement": 0.0
+    },
+    {
+      "attention_tokens_seen": 9,
+      "baseline_seconds": 3.588344362011412,
+      "baseline_text": " named",
+      "baseline_tokens": [
+        7086
+      ],
+      "cache_position_passed": true,
+      "controller_math_seconds": 13.229018610116327,
+      "controller_runtime_seconds": 14.17787797699566,
+      "controller_state_bytes": 92196,
+      "controller_text": "icolor",
+      "controller_tokens": [
+        74909
+      ],
+      "decoder_layer_forward_calls": 0,
+      "exact_token_parity": false,
+      "expected_attention_tokens_seen": 9,
+      "prompt": "Once upon a time, a curious robot",
+      "prompt_tokens": 9,
+      "token_agreement": 0.0
+    },
+    {
+      "attention_tokens_seen": 7,
+      "baseline_seconds": 3.508556873013731,
+      "baseline_text": " include",
+      "baseline_tokens": [
+        2997
+      ],
+      "cache_position_passed": true,
+      "controller_math_seconds": 10.770626172976336,
+      "controller_runtime_seconds": 12.05764853997971,
+      "controller_state_bytes": 71708,
+      "controller_text": "icolor",
+      "controller_tokens": [
+        74909
+      ],
+      "decoder_layer_forward_calls": 0,
+      "exact_token_parity": false,
+      "expected_attention_tokens_seen": 7,
+      "prompt": "A healthy software testing strategy should",
+      "prompt_tokens": 7,
+      "token_agreement": 0.0
+    },
+    {
+      "attention_tokens_seen": 9,
+      "baseline_seconds": 3.473773060977692,
+      "baseline_text": " that",
+      "baseline_tokens": [
+        430
+      ],
+      "cache_position_passed": true,
+      "controller_math_seconds": 13.101917958061676,
+      "controller_runtime_seconds": 13.994307020999258,
+      "controller_state_bytes": 92196,
+      "controller_text": "ateurs",
+      "controller_tokens": [
+        36306
+      ],
+      "decoder_layer_forward_calls": 0,
+      "exact_token_parity": false,
+      "expected_attention_tokens_seen": 9,
+      "prompt": "The difference between RAM and disk storage is",
+      "prompt_tokens": 9,
+      "token_agreement": 0.0
+    },
+    {
+      "attention_tokens_seen": 9,
+      "baseline_seconds": 3.433810499001993,
+      "baseline_text": ",",
+      "baseline_tokens": [
+        11
+      ],
+      "cache_position_passed": true,
+      "controller_math_seconds": 13.09705343816313,
+      "controller_runtime_seconds": 14.03042804999859,
+      "controller_state_bytes": 92196,
+      "controller_text": "ateurs",
+      "controller_tokens": [
+        36306
+      ],
+      "decoder_layer_forward_calls": 0,
+      "exact_token_parity": false,
+      "expected_attention_tokens_seen": 9,
+      "prompt": "To make a cup of tea, first",
+      "prompt_tokens": 9,
+      "token_agreement": 0.0
+    }
+  ],
+  "schema_version": 1,
+  "scope": {
+    "absolute_rope_positions_advanced": true,
+    "decoder_layer_forward_used": false,
+    "fully_native_cpp_controller_used": true,
+    "native_cpp_recurrent_transition_used": true,
+    "native_cpp_stage_runner_used": false,
+    "persistent_native_attention_cache_used": true,
+    "source_mlp_tensors_loaded": false,
+    "torch_embedding_used": false,
+    "torch_module_shell_still_used": true,
+    "torch_rms_norm_used": false,
+    "torch_rope_used": false,
+    "torch_vocabulary_projection_used": false
+  },
+  "status": "controller_generation_development_result",
+  "summary": {
+    "exact_prompt_fraction": 0.0,
+    "generated_reference_tokens": 8,
+    "maximum_controller_state_bytes": 112684,
+    "mean_controller_math_seconds": 12.500432509037637,
+    "mean_controller_runtime_seconds": 13.493775226244907,
+    "prompts": 8,
+    "weighted_token_agreement": 0.0
+  },
+  "thresholds": {
+    "minimum_exact_prompt_fraction": 0.75,
+    "minimum_generated_reference_tokens": 32,
+    "minimum_prompts": 8,
+    "minimum_weighted_token_agreement": 0.9
+  }
+}

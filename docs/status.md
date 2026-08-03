@@ -27,12 +27,16 @@ causal, held-out, and generalization gates before it can replace the exact
 residual package boundary.
 
 The Python `ControllerDrivenBitNet` path now uses the same native stage ABI for
-nonzero corrections instead of rejecting them.  A one-prompt bounded native
-comparison executed with zero semantic residual scales and an existing
-nonzero controller: the exact package selected token `12366`, while the
-correction selected `36306`; the correction path spent 9.69 s in controller
-stages and made zero decoder-layer calls.  This confirms dispatch and exposes
-the expected quality risk; it is deliberately not counted as a gate pass.
+nonzero corrections instead of rejecting them.  An eight-prompt, one-token
+bounded development screen, using zero semantic residual scales and an
+existing nonzero controller, reached **0.0% token agreement** and **0/8 exact
+prompts** against the exact package.  Cache positions and zero decoder-layer
+calls passed; the correction path averaged 12.50 s of controller-stage work
+per prompt.  The first exact token `12366` became `36306`.  This confirms
+dispatch and exposes a decisive quality failure; it is deliberately not a gate
+pass.  The preserved report is
+`reports/controller_native_recurrent_2026-08-03/development_8x1.json`
+(SHA-256 `08f48fb2668fb1941bf6c3e94d963cf4003366743fdc4015d4087ca3cef530ba`).
 
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
