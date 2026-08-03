@@ -1552,6 +1552,11 @@ geometry. The loader reproduces the development mask tensor bit-for-bit and
 fails closed if the artifact is enabled by default or its basis digest changes.
 Native package defaults remain unmodified.
 
+The serialized policy has now driven the native masked ABI on development
+record 0 with 100% answer top-1 agreement and the expected logical-read
+reduction (710,668,288 to 702,124,544 bytes). The opt-in package compiler also
+copied and authenticated the policy and PCA basis.
+
 The same development replay now records native counters.  Mean logical
 attention reads fall from **710,667,264** bytes unmasked to **702,166,336**
 bytes masked (**98.8038%** retained, **1.1962%** reduction); older candidate

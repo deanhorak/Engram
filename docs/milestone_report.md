@@ -67,6 +67,13 @@ The native package compiler can copy this artifact under `selector/` and bind
 both files into the authenticated package manifest when explicitly requested;
 omitting that option preserves the previous package layout.
 
+That opt-in path has now been exercised end to end on development record 0:
+the serialized policy generated the native masked replay, preserving 100%
+answer top-1 agreement while reducing logical attention reads from 710,668,288
+to 702,124,544 bytes.  The tiny-package compiler/validator also authenticated
+the copied policy and basis under `selector/`.  This closes the implementation
+boundary without silently enabling the policy in ordinary generation.
+
 ## Milestones
 
 | Milestone | Status | Evidence and remaining work |

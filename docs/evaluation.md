@@ -1951,3 +1951,10 @@ policy and PCA basis into `selector/` and authenticate both files in the
 native package manifest.  The manifest records the same evaluator-only,
 disabled-by-default contract; omitting the argument produces the unchanged
 package layout.
+
+The serialized artifact has also driven the native masked ABI on development
+record 0: answer top-1 agreement remained **100%**, and logical attention reads
+fell from **710,668,288** to **702,124,544** bytes.  The corresponding tiny
+package copied and authenticated both selector files.  This validates the
+implementation boundary; it does not authorize protected evaluation or claim
+that the default native generation path is now selector-enabled.
