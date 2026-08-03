@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 
 namespace engram {
 
@@ -17,6 +18,18 @@ enum class VectorKernelKind { scalar, avx2 };
 // Cached runtime-dispatched hot-path entry point.
 [[nodiscard]] float dot_product(const float* left, const float* right,
                                std::size_t size) noexcept;
+// Dot product against a symmetric per-vector INT8 payload. The scale is
+// applied after sign-extending each stored code. Dispatch is guarded by the
+// same runtime AVX2 feature check as the FP32 kernel.
+[[nodiscard]] float dot_product_int8_scalar(
+    const float* left, const std::int8_t* right, float scale,
+    std::size_t size) noexcept;
+[[nodiscard]] float dot_product_int8_avx2(
+    const float* left, const std::int8_t* right, float scale,
+    std::size_t size) noexcept;
+[[nodiscard]] float dot_product_int8(
+    const float* left, const std::int8_t* right, float scale,
+    std::size_t size) noexcept;
 [[nodiscard]] bool avx2_dot_kernel_compiled() noexcept;
 [[nodiscard]] VectorKernelKind selected_dot_kernel() noexcept;
 [[nodiscard]] const char* selected_dot_kernel_name() noexcept;

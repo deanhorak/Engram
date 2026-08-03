@@ -16,6 +16,8 @@ namespace engram {
 namespace {
 
 using DotKernel = float (*)(const float*, const float*, std::size_t) noexcept;
+using Int8DotKernel = float (*)(const float*, const std::int8_t*, float,
+                                std::size_t) noexcept;
 
 #if ENGRAM_COMPILED_AVX2_DOT
 ENGRAM_TARGET_AVX2 float dot_product_avx2_implementation(
@@ -39,6 +41,31 @@ ENGRAM_TARGET_AVX2 float dot_product_avx2_implementation(
   }
   return result;
 }
+
+ENGRAM_TARGET_AVX2 float dot_product_int8_avx2_implementation(
+    const float* left, const std::int8_t* right, const float scale,
+    const std::size_t size) noexcept {
+  const __m256 scale_values = _mm256_set1_ps(scale);
+  __m256 accumulator = _mm256_setzero_ps();
+  std::size_t index = 0;
+  for (; index + 8 <= size; index += 8) {
+    const __m128i packed = _mm_loadl_epi64(
+        reinterpret_cast<const __m128i*>(right + index));
+    const __m256i widened = _mm256_cvtepi8_epi32(packed);
+    const __m256 values = _mm256_mul_ps(
+        _mm256_cvtepi32_ps(widened), scale_values);
+    accumulator = _mm256_add_ps(
+        accumulator, _mm256_mul_ps(_mm256_loadu_ps(left + index), values));
+  }
+  alignas(32) float lanes[8];
+  _mm256_store_ps(lanes, accumulator);
+  float result = 0.0F;
+  for (const float lane : lanes) result += lane;
+  for (; index < size; ++index) {
+    result += left[index] * (static_cast<float>(right[index]) * scale);
+  }
+  return result;
+}
 #endif
 
 DotKernel dispatched_kernel() noexcept {
@@ -48,6 +75,15 @@ DotKernel dispatched_kernel() noexcept {
   }
 #endif
   return &dot_product_scalar;
+}
+
+Int8DotKernel dispatched_int8_kernel() noexcept {
+#if ENGRAM_COMPILED_AVX2_DOT
+  if (cpu_features().avx2) {
+    return &dot_product_int8_avx2_implementation;
+  }
+#endif
+  return &dot_product_int8_scalar;
 }
 
 }  // namespace
@@ -75,6 +111,34 @@ float dot_product(const float* left, const float* right,
                   const std::size_t size) noexcept {
   static const DotKernel kernel = dispatched_kernel();
   return kernel(left, right, size);
+}
+
+float dot_product_int8_scalar(const float* left, const std::int8_t* right,
+                              const float scale,
+                              const std::size_t size) noexcept {
+  float result = 0.0F;
+  for (std::size_t index = 0; index < size; ++index) {
+    result += left[index] * (static_cast<float>(right[index]) * scale);
+  }
+  return result;
+}
+
+float dot_product_int8_avx2(const float* left, const std::int8_t* right,
+                            const float scale,
+                            const std::size_t size) noexcept {
+#if ENGRAM_COMPILED_AVX2_DOT
+  if (cpu_features().avx2) {
+    return dot_product_int8_avx2_implementation(left, right, scale, size);
+  }
+#endif
+  return dot_product_int8_scalar(left, right, scale, size);
+}
+
+float dot_product_int8(const float* left, const std::int8_t* right,
+                       const float scale,
+                       const std::size_t size) noexcept {
+  static const Int8DotKernel kernel = dispatched_int8_kernel();
+  return kernel(left, right, scale, size);
 }
 
 bool avx2_dot_kernel_compiled() noexcept {

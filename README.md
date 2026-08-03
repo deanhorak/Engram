@@ -159,7 +159,10 @@ context tokens plus eight native steps took **75.17 s** with W16/FP32 and
 **82.06 s** with W128/INT8. Counted attention reads fell from **45.83 GB** to
 **28.11 GB**, but scalar INT8 dequantization made the complete run **9.17%
 slower**. SIMD/fused attention kernels are required before claiming a latency
-advantage over a tuned CPU implementation.
+advantage over a tuned CPU implementation. The native kernel library now also
+contains a runtime-dispatched AVX2 INT8 dot kernel plus the portable scalar
+fallback. This host reports `avx2_available=false`, so AVX2 performance remains
+unvalidated until an AVX2-equipped CPU is used.
 
 Milestone 2 now has three source-track outcomes that should not be conflated:
 

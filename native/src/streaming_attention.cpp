@@ -1,5 +1,7 @@
 #include "engram/streaming_attention.h"
 
+#include "engram/vector_kernels.h"
+
 #include <algorithm>
 #include <bit>
 #include <cmath>
@@ -181,15 +183,6 @@ float dot_fp16_rope_bands(const float* left, const std::uint16_t* right,
         product;
   }
   for (float& partial : partials) partial *= scale;
-  return result;
-}
-
-float dot_int8(const float* left, const std::int8_t* right,
-               const float scale, const std::size_t width) noexcept {
-  float result = 0.0F;
-  for (std::size_t index = 0; index < width; ++index) {
-    result += left[index] * (static_cast<float>(right[index]) * scale);
-  }
   return result;
 }
 
@@ -441,8 +434,9 @@ float StreamingAttention::recent_key_dot(
   if (config_.local_int8) {
     const std::size_t vector = slot * config_.key_value_heads + kv_head;
     if (partials.empty()) {
-      return dot_int8(query, recent_keys_int8_.data() + offset,
-                      recent_key_scales_int8_[vector], config_.head_dimension);
+      return dot_product_int8(
+          query, recent_keys_int8_.data() + offset,
+          recent_key_scales_int8_[vector], config_.head_dimension);
     }
     return dot_int8_rope_bands(
         query, recent_keys_int8_.data() + offset,

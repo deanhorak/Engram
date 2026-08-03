@@ -60,6 +60,10 @@ scalar INT8 implementation therefore makes no end-to-end speed claim; fused
 SIMD/dequantized kernels are the next optimization boundary. The benchmark
 artifact is `work/olmoe_q7/local_attention_package_benchmark_2026-08-03.json`
 (SHA-256 `e8d634a1e08ba12da01cc968e87a8d7b031fb510fd763ddd68a957e44e723bdb`).
+The native vector-kernel layer now includes a guarded AVX2 INT8 dot-product
+implementation with scalar fallback and parity coverage. This host reports
+`avx2_available=false`, so its measured behavior remains the scalar path; AVX2
+performance and hardware-counter traffic are still unvalidated.
 
 ### Compiled native OLMoE Q7 source track
 

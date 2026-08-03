@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -32,6 +33,21 @@ int main() {
   }
   if (engram::dot_product(nullptr, nullptr, 0) != 0.0F) {
     return fail("empty dot product must be zero");
+  }
+
+  constexpr std::int8_t quantized[] = {2, -1, 3, 4, -2};
+  constexpr float quantized_scale = 0.5F;
+  constexpr float quantized_expected = 11.75F;
+  if (!close(engram::dot_product_int8_scalar(
+                 left, quantized, quantized_scale, 5),
+             quantized_expected, 1e-6F) ||
+      !close(engram::dot_product_int8(
+                 left, quantized, quantized_scale, 5),
+             quantized_expected, 1e-6F) ||
+      !close(engram::dot_product_int8_avx2(
+                 left, quantized, quantized_scale, 5),
+             quantized_expected, 1e-6F)) {
+    return fail("INT8 scalar/dispatched dot product mismatch");
   }
 
   // Exercise vector blocks plus a scalar tail using deterministic finite data.
