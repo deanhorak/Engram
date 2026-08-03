@@ -47,6 +47,37 @@ void require_shape(const NpyArray& array,
   }
 }
 
+void require_controller_shapes(const NpyArray& input_down,
+                               const NpyArray& recurrent_down,
+                               const NpyArray& gate_up, const NpyArray& bias,
+                               const NpyArray& stage_embeddings,
+                               const NpyArray& adapter_down,
+                               const NpyArray& adapter_up,
+                               const std::size_t layers,
+                               const std::size_t hidden_size) {
+  require_shape(input_down, {3 * hidden_size, input_down.shape().size() == 2
+                                           ? input_down.shape()[1]
+                                           : 0},
+                "controller input down");
+  const std::size_t rank = input_down.shape()[1];
+  require_shape(recurrent_down, {hidden_size, rank},
+                "controller recurrent down");
+  require_shape(gate_up, {rank, 2 * hidden_size}, "controller gate up");
+  require_shape(bias, {2 * hidden_size}, "controller bias");
+  require_shape(stage_embeddings, {layers, hidden_size},
+                "controller stage embeddings");
+  if (adapter_down.dtype() != NpyDType::Float32 ||
+      adapter_up.dtype() != NpyDType::Float32 ||
+      adapter_down.shape().size() != 3 || adapter_up.shape().size() != 3 ||
+      adapter_down.shape()[0] != layers ||
+      adapter_down.shape()[1] != hidden_size ||
+      adapter_up.shape()[0] != layers ||
+      adapter_up.shape()[1] != adapter_down.shape()[2] ||
+      adapter_up.shape()[2] != hidden_size) {
+    throw std::invalid_argument("controller stage adapter shapes are invalid");
+  }
+}
+
 }  // namespace
 
 NativeBitNetTokenRuntime::NativeBitNetTokenRuntime(
@@ -61,7 +92,17 @@ NativeBitNetTokenRuntime::NativeBitNetTokenRuntime(
       operator_scales_(load_npy(config_.controller_directory /
                                 "operator_residual_scale.npy")),
       correction_scales_(
-          load_npy(config_.controller_directory / "step_scale.npy")) {
+          load_npy(config_.controller_directory / "step_scale.npy")),
+      input_down_(load_npy(config_.controller_directory / "input_down.npy")),
+      recurrent_down_(
+          load_npy(config_.controller_directory / "recurrent_down.npy")),
+      gate_up_(load_npy(config_.controller_directory / "gate_up.npy")),
+      bias_(load_npy(config_.controller_directory / "bias.npy")),
+      stage_embeddings_(
+          load_npy(config_.controller_directory / "stage_embeddings.npy")),
+      adapter_down_(
+          load_npy(config_.controller_directory / "adapter_down.npy")),
+      adapter_up_(load_npy(config_.controller_directory / "adapter_up.npy")) {
   if (semantic_.layer_count() != config_.layers ||
       semantic_.hidden_size() != config_.hidden_size ||
       config_.query_heads * config_.head_dimension != config_.hidden_size ||
@@ -72,7 +113,40 @@ NativeBitNetTokenRuntime::NativeBitNetTokenRuntime(
   require_shape(operator_scales_, {config_.layers, 2},
                 "operator residual scale");
   require_shape(correction_scales_, {config_.layers}, "controller step scale");
-  if (!std::all_of(correction_scales_.float32().begin(),
+  require_controller_shapes(input_down_, recurrent_down_, gate_up_, bias_,
+                             stage_embeddings_, adapter_down_, adapter_up_,
+                             config_.layers, config_.hidden_size);
+  const auto input_adapter_down_path =
+      config_.controller_directory / "input_adapter_down.npy";
+  const auto input_adapter_up_path =
+      config_.controller_directory / "input_adapter_up.npy";
+  const bool has_input_adapter_down =
+      std::filesystem::is_regular_file(input_adapter_down_path);
+  const bool has_input_adapter_up =
+      std::filesystem::is_regular_file(input_adapter_up_path);
+  if (has_input_adapter_down != has_input_adapter_up) {
+    throw std::invalid_argument(
+        "native controller input adapter tensors must be paired");
+  }
+  if (has_input_adapter_down) {
+    input_adapter_down_ = std::make_unique<NpyArray>(
+        load_npy(input_adapter_down_path));
+    input_adapter_up_ = std::make_unique<NpyArray>(
+        load_npy(input_adapter_up_path));
+    const auto& down_shape = input_adapter_down_->shape();
+    const auto& up_shape = input_adapter_up_->shape();
+    const std::size_t rank = input_down_.shape()[1];
+    if (input_adapter_down_->dtype() != NpyDType::Float32 ||
+        input_adapter_up_->dtype() != NpyDType::Float32 ||
+        down_shape.size() != 3 || up_shape.size() != 3 ||
+        down_shape[0] != config_.layers || down_shape[1] != 3 * config_.hidden_size ||
+        up_shape[0] != config_.layers || down_shape[2] != up_shape[1] ||
+        up_shape[2] != rank) {
+      throw std::invalid_argument("native controller input adapter shapes are invalid");
+    }
+  }
+  if (!config_.enable_recurrent_correction &&
+      !std::all_of(correction_scales_.float32().begin(),
                    correction_scales_.float32().end(),
                    [](const float value) { return value == 0.0F; })) {
     throw std::invalid_argument(
@@ -166,9 +240,51 @@ std::int64_t NativeBitNetTokenRuntime::forward(
     semantic_.forward_bf16(
         layer, semantic_input, length, semantic_output, selected_counts,
         &semantic_metrics[layer]);
-    if (engram_native_stage_accept_semantic_bf16(
-            stage.get(), semantic_output.data(), scales[layer * 2],
-            scales[layer * 2 + 1], error, sizeof(error)) != 0) {
+    int accept_status = 0;
+    if (!config_.enable_recurrent_correction) {
+      accept_status = engram_native_stage_accept_semantic_bf16(
+          stage.get(), semantic_output.data(), scales[layer * 2],
+          scales[layer * 2 + 1], error, sizeof(error));
+    } else {
+      const std::size_t rank = input_down_.shape()[1];
+      const std::size_t adapter_rank = adapter_down_.shape()[2];
+      const std::size_t input_adapter_rank =
+          input_adapter_down_ == nullptr ? 0 : input_adapter_down_->shape()[2];
+      const auto stage_offset = layer * config_.hidden_size;
+      const auto adapter_down_offset =
+          layer * config_.hidden_size * adapter_rank;
+      const auto adapter_up_offset = layer * adapter_rank * config_.hidden_size;
+      const auto input_down_offset =
+          layer * (3 * config_.hidden_size) * input_adapter_rank;
+      const auto input_up_offset = layer * input_adapter_rank * rank;
+      const engram_native_controller_weights_f32 controller{
+          .input_dim = 3 * config_.hidden_size,
+          .state_dim = config_.hidden_size,
+          .rank = rank,
+          .adapter_rank = adapter_rank,
+          .input_adapter_rank = input_adapter_rank,
+          .input_down = input_down_.float32().data(),
+          .recurrent_down = recurrent_down_.float32().data(),
+          .gate_up = gate_up_.float32().data(),
+          .bias = bias_.float32().data(),
+          .stage_embedding = stage_embeddings_.float32().data() + stage_offset,
+          .adapter_down = adapter_down_.float32().data() + adapter_down_offset,
+          .adapter_up = adapter_up_.float32().data() + adapter_up_offset,
+          .input_adapter_down =
+              input_adapter_down_ == nullptr
+                  ? nullptr
+                  : input_adapter_down_->float32().data() + input_down_offset,
+          .input_adapter_up =
+              input_adapter_up_ == nullptr
+                  ? nullptr
+                  : input_adapter_up_->float32().data() + input_up_offset,
+          .step_scale = correction_scales_.float32()[layer],
+      };
+      accept_status = engram_native_stage_accept_controller_f32(
+          stage.get(), semantic_output.data(), scales[layer * 2],
+          scales[layer * 2 + 1], &controller, error, sizeof(error));
+    }
+    if (accept_status != 0) {
       throw std::runtime_error(error);
     }
   }

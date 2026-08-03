@@ -164,6 +164,40 @@ contains a runtime-dispatched AVX2 INT8 dot kernel plus the portable scalar
 fallback. This host reports `avx2_available=false`, so AVX2 performance remains
 unvalidated until an AVX2-equipped CPU is used.
 
+### Native recurrent-controller boundary (2026-08-03)
+
+The native token runtime now executes the schema-v3 factorized recurrent
+correction directly. It loads the shared `input_down` and `recurrent_down`
+projections, `gate_up`/`bias`, per-stage embeddings and low-rank adapters,
+checks their float32 shapes, and applies the same operator-residual plus
+per-token RMS transition as the NumPy controller reference. Optional
+stage-specific input adapters are supported too.
+
+The authenticated package deliberately remains on the exact residual path:
+its `step_scale` values are zero and the normal runtime rejects nonzero
+corrections. This is a security and scientific boundary. A nonzero learned
+controller must first pass causal quality and held-out generalization before
+it can replace the exact operator additions or support the layer-free
+Milestone 4 claim.
+
+For implementation testing only, the native token CLI exposes an explicit
+unauthenticated evaluator override:
+
+```bash
+./build/engram-bitnet-token-generate \
+  work/native_bitnet/model.engram-bitnet-dip 1 12 \
+  --enable-recurrent-correction \
+  --controller-directory work/controller_distillation/<controller>/controller \
+  TOKEN_ID [TOKEN_ID ...]
+```
+
+It prints a warning because the override directory is not covered by the
+package manifest. Native tests prove zero-correction parity, a known nonzero
+transition, and fail-closed rejection of incomplete tensors. An existing
+trained controller completed a short six-position CPU smoke run through this
+path; that is execution evidence only, not a semantic gate or production
+deployment.
+
 Milestone 2 now has three source-track outcomes that should not be conflated:
 
 | Deliverable | Native-BitNet | OLMoE Q7 | Generic dense Llama |

@@ -2,6 +2,30 @@
 
 Snapshot date: **2026-08-03**
 
+## Latest native recurrent-controller boundary
+
+The native token runtime now executes the schema-v3 factorized recurrent
+transition itself.  It consumes the shared `input_down` and
+`recurrent_down` projections, `gate_up`/`bias`, per-stage embeddings and
+low-rank adapters, applies the same operator-residual additions and per-token
+RMS normalization as the NumPy reference, and validates all tensor shapes and
+dtypes before dispatch.  Optional input-adapter tensors are supported when
+present.
+
+This is an implementation boundary, not yet a Milestone 4 promotion.  The
+authenticated package keeps `step_scale == 0` and therefore uses the exact
+operator-residual path; the native runtime still rejects a nonzero correction
+unless the caller explicitly enables the evaluator mode.  The native stage
+tests prove zero-correction parity, a known nonzero correction calculation,
+and fail-closed rejection of incomplete tensors.  An existing nonzero
+controller artifact also completed a six-position, 30-stage CPU smoke run via
+`engram-bitnet-token-generate` with
+`--enable-recurrent-correction --controller-directory PATH`.  That override
+warns that the directory is unauthenticated and is not a quality result or a
+production deployment path.  A trained correction artifact must still pass
+causal, held-out, and generalization gates before it can replace the exact
+residual package boundary.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and
@@ -1033,8 +1057,8 @@ scientific exit criterion has passed.
 | 1. Inspection, tracing, exact MLP decomposition, oracle experiment | Complete | Complete for the fixture and exercised on SmolLM2 |
 | 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP and OLMoE learned-expert routes, authenticated packages, CPU kernels, native token runtimes, and causal evaluators exist | **Native-BitNet passed** by postmortem adjudication and **OLMoE Q7 formally passed** an authenticated frozen complete-native 8×32 protocol. The matched W128 8×128 control passes every band and attributes the later sustained failure to attention, preserving the Q7/M2 decision. Generic dense-Llama conversion and broader replication remain incomplete |
 | 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, incremental package integration, exact per-layer/per-head native policy ABIs, an exact episodic K/V bank, and learned content/phase selectors implemented | The earlier W16 policy fails sustained older-context quality, but the prospective W128/per-vector-INT8 local-cache replay now passes all 1,024 semantic positions at 25% logical attention traffic (protocol `953b83ce…33bda7`, report `7cd55514…d17df80`). This clears the sustained attention-quality boundary. Package metadata/default integration, broader corpora, and end-to-end speedup remain. |
-| 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, authenticated package installation, persistent native stage state, and a one-call 30-stage C++ attention/semantic runner implemented | **Controller, compiled-substitution, incremental-generation, and C++ orchestration gates pass**; frozen generation reaches 96.875% token agreement, 87.5% exact prompts, correct cache positions, and zero decoder-layer calls |
-| 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, native vocabulary argmax, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and passes source/package parity; generic vocabulary/cache/correction paths are not all active in the promoted native-BitNet runtime |
+| 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, authenticated package installation, persistent native stage state, one-call 30-stage C++ runner, and evaluator-only native factorized recurrence implemented | Existing controller/orchestration gates pass, but the authenticated package remains exact-residual (`step_scale == 0`). A trained nonzero correction must pass causal quality/generalization before layer-free promotion |
+| 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, native vocabulary argmax, evaluator recurrent-correction dispatch, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and passes source/package parity; authenticated nonzero-controller package assembly and full semantic-controller promotion remain gated |
 | 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime, memory-mapped BitNet DIP/projection kernels, streaming attention, native shell operators, authenticated C++ package mapping, manifest-derived model configuration/EOS, token-step control, greedy argmax, reset, standalone generation, and a versioned shared ABI implemented | **Partial**: model execution is native and chat uses the shared handle; tokenizer/template/history orchestration remains Python-side, the compressed INT8 attention path is opt-in, and AVX2 tuning plus hardware-counter traffic remain |
 | 7. Evaluation, ablations, tuning, documentation, final report | In progress | Many negative ablations exist; no successful reproducible final report |
 

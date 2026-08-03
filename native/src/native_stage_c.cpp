@@ -36,6 +36,7 @@ class StageState {
       : vectors_(vectors),
         width_(width),
         state_(vectors * width),
+        embedding_state_(vectors * width),
         attention_(vectors * width),
         post_attention_(vectors * width),
         residual_rms_(vectors) {
@@ -58,6 +59,8 @@ class StageState {
       residual_rms_[row] = rms;
       for (std::size_t column = 0; column < width_; ++column) {
         state_[row * width_ + column] /= rms;
+        embedding_state_[row * width_ + column] =
+            state_[row * width_ + column];
       }
     }
     phase_ = Phase::attention;
@@ -117,6 +120,99 @@ class StageState {
     phase_ = Phase::attention;
   }
 
+  void accept_controller(
+      const std::uint16_t* output, const float semantic_scale,
+      const float episodic_scale,
+      const engram_native_controller_weights_f32& controller) {
+    require_phase(Phase::semantic);
+    require(output, "semantic output");
+    validate_controller(controller);
+    std::vector<float> feature(controller.rank);
+    std::vector<float> projected(2 * width_);
+    std::vector<float> supplied(controller.input_dim);
+    std::vector<float> residual(width_);
+    for (std::size_t row = 0; row < vectors_; ++row) {
+      const std::size_t base = row * width_;
+      for (std::size_t column = 0; column < width_; ++column) {
+        supplied[column] = embedding_state_[base + column];
+        supplied[width_ + column] =
+            bf16_to_float(output[base + column]) / residual_rms_[row];
+        supplied[2 * width_ + column] = attention_[base + column];
+        residual[column] =
+            state_[base + column] + semantic_scale * supplied[width_ + column] +
+            episodic_scale * supplied[2 * width_ + column];
+      }
+      if (controller.step_scale != 0.0F) {
+        for (std::size_t bottleneck = 0; bottleneck < controller.rank;
+             ++bottleneck) {
+          float value = 0.0F;
+          for (std::size_t input = 0; input < controller.input_dim; ++input) {
+            value += supplied[input] *
+                     controller.input_down[input * controller.rank + bottleneck];
+          }
+          for (std::size_t input_rank = 0;
+               input_rank < controller.input_adapter_rank; ++input_rank) {
+            float adapted = 0.0F;
+            for (std::size_t input = 0; input < controller.input_dim; ++input) {
+              adapted += supplied[input] * controller.input_adapter_down[
+                  input * controller.input_adapter_rank + input_rank];
+            }
+            value += adapted * controller.input_adapter_up[
+                input_rank * controller.rank + bottleneck];
+          }
+          float recurrent = 0.0F;
+          for (std::size_t column = 0; column < width_; ++column) {
+            recurrent += state_[base + column] *
+                         controller.recurrent_down[column * controller.rank +
+                                                   bottleneck];
+          }
+          feature[bottleneck] = silu(value + recurrent);
+        }
+        for (std::size_t output_column = 0; output_column < 2 * width_;
+             ++output_column) {
+          float value = controller.bias[output_column];
+          for (std::size_t bottleneck = 0; bottleneck < controller.rank;
+               ++bottleneck) {
+            value += feature[bottleneck] *
+                     controller.gate_up[bottleneck * (2 * width_) +
+                                        output_column];
+          }
+          projected[output_column] = value;
+        }
+        for (std::size_t column = 0; column < width_; ++column) {
+          float candidate = projected[width_ + column] +
+                            controller.stage_embedding[column];
+          for (std::size_t adapter = 0; adapter < controller.adapter_rank;
+               ++adapter) {
+            float down = 0.0F;
+            for (std::size_t state_column = 0; state_column < width_;
+                 ++state_column) {
+              down += state_[base + state_column] *
+                      controller.adapter_down[state_column *
+                                                  controller.adapter_rank +
+                                              adapter];
+            }
+            candidate += down *
+                         controller.adapter_up[adapter * width_ + column];
+          }
+          const float gate = sigmoid(projected[column]);
+          residual[column] += controller.step_scale * gate * std::tanh(candidate);
+        }
+      }
+      double sum = 0.0;
+      for (const float value : residual) sum += value * value;
+      const float raw_rms = static_cast<float>(
+          std::sqrt(sum / static_cast<double>(width_)));
+      const float normalization_rms = static_cast<float>(
+          std::sqrt(sum / static_cast<double>(width_) + 1.0e-6));
+      residual_rms_[row] *= std::max(raw_rms, 1.0e-6F);
+      for (std::size_t column = 0; column < width_; ++column) {
+        state_[base + column] = residual[column] / normalization_rms;
+      }
+    }
+    phase_ = Phase::attention;
+  }
+
   void final_norm(const std::uint16_t* weight, const float epsilon,
                   std::uint16_t* output) const {
     require_phase(Phase::attention);
@@ -138,6 +234,32 @@ class StageState {
       throw std::invalid_argument(std::string("native stage missing ") + name);
     }
   }
+
+  void validate_controller(
+      const engram_native_controller_weights_f32& controller) const {
+    if (controller.input_dim != 3 * width_ || controller.state_dim != width_ ||
+        controller.rank == 0 ||
+        (controller.input_adapter_rank != 0 &&
+         (controller.input_adapter_down == nullptr ||
+          controller.input_adapter_up == nullptr)) ||
+        controller.input_down == nullptr || controller.recurrent_down == nullptr ||
+        controller.gate_up == nullptr || controller.bias == nullptr ||
+        controller.stage_embedding == nullptr || controller.adapter_down == nullptr ||
+        controller.adapter_up == nullptr) {
+      throw std::invalid_argument("native controller dimensions or tensors are invalid");
+    }
+  }
+
+  static float sigmoid(const float value) {
+    if (value >= 0.0F) {
+      const float e = std::exp(-value);
+      return 1.0F / (1.0F + e);
+    }
+    const float e = std::exp(value);
+    return e / (1.0F + e);
+  }
+
+  static float silu(const float value) { return value * sigmoid(value); }
 
   void require_phase(const Phase expected) const {
     if (phase_ != expected) {
@@ -173,6 +295,7 @@ class StageState {
   std::size_t vectors_;
   std::size_t width_;
   std::vector<float> state_;
+  std::vector<float> embedding_state_;
   std::vector<float> attention_;
   std::vector<float> post_attention_;
   std::vector<float> residual_rms_;
@@ -248,6 +371,22 @@ extern "C" int engram_native_stage_accept_semantic_bf16(
   return protect(
       [&] {
         state(handle).accept_semantic(output, semantic_scale, episodic_scale);
+      },
+      error, capacity);
+}
+
+extern "C" int engram_native_stage_accept_controller_f32(
+    void* handle, const std::uint16_t* output, const float semantic_scale,
+    const float episodic_scale,
+    const engram_native_controller_weights_f32* controller, char* error,
+    const std::size_t capacity) {
+  return protect(
+      [&] {
+        if (controller == nullptr) {
+          throw std::invalid_argument("native controller weights are null");
+        }
+        state(handle).accept_controller(output, semantic_scale, episodic_scale,
+                                        *controller);
       },
       error, capacity);
 }

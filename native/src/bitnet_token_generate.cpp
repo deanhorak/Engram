@@ -91,7 +91,8 @@ bool matching_structural_metrics(
 int main(int argc, char** argv) {
   if (argc < 5) {
     std::cerr << "usage: engram-bitnet-token-generate PACKAGE MAX_NEW THREADS "
-                 "[--verify-reset] TOKEN [TOKEN ...]\n";
+                 "[--verify-reset] [--enable-recurrent-correction] "
+                 "[--controller-directory PATH] TOKEN [TOKEN ...]\n";
     return 2;
   }
   try {
@@ -103,9 +104,31 @@ int main(int argc, char** argv) {
     const std::size_t threads =
         positive_size(argv[3], "THREADS", kMaximumThreads);
     int token_start = 4;
-    const bool verify_reset =
-        std::string(argv[token_start]) == "--verify-reset";
-    if (verify_reset) ++token_start;
+    bool verify_reset = false;
+    bool enable_recurrent_correction = false;
+    std::filesystem::path controller_override;
+    while (token_start < argc) {
+      const std::string argument(argv[token_start]);
+      if (argument == "--verify-reset") {
+        verify_reset = true;
+        ++token_start;
+      } else if (argument == "--enable-recurrent-correction") {
+        enable_recurrent_correction = true;
+        ++token_start;
+      } else if (argument == "--controller-directory") {
+        if (++token_start >= argc) {
+          throw std::invalid_argument(
+              "--controller-directory requires a path");
+        }
+        controller_override = argv[token_start++];
+      } else {
+        break;
+      }
+    }
+    if (!controller_override.empty() && !enable_recurrent_correction) {
+      throw std::invalid_argument(
+          "controller overrides require --enable-recurrent-correction");
+    }
     if (token_start == argc) {
       throw std::invalid_argument("native generation prompt is empty");
     }
@@ -134,12 +157,20 @@ int main(int argc, char** argv) {
           "prompt and generation budget exceed authenticated context length");
     }
 
+    const auto controller_directory = controller_override.empty()
+                                          ? metadata.controller_directory
+                                          : controller_override;
+    if (!controller_override.empty()) {
+      std::cerr
+          << "warning: using an unauthenticated evaluator controller artifact"
+          << '\n';
+    }
     engram::NativeBitNetTokenRuntime runtime(
         engram::NativeBitNetTokenConfig{
             .non_mlp_safetensors = metadata.non_mlp_safetensors,
             .mlp_artifact = metadata.mlp_artifact,
             .dip_coordinate_index = metadata.dip_coordinate_index,
-            .controller_directory = metadata.controller_directory,
+            .controller_directory = controller_directory,
             .layers = metadata.layers,
             .hidden_size = metadata.hidden_size,
             .query_heads = metadata.query_heads,
@@ -152,6 +183,7 @@ int main(int argc, char** argv) {
             .sink_tokens = metadata.sink_tokens,
             .rms_norm_epsilon = metadata.rms_norm_epsilon,
             .rope_theta = metadata.rope_theta,
+            .enable_recurrent_correction = enable_recurrent_correction,
             .eos_token_ids = metadata.eos_token_ids,
         });
     const auto generated = runtime.generate(prompt, max_new);
@@ -178,6 +210,10 @@ int main(int argc, char** argv) {
     std::cout << '\n';
     const auto& metrics = first_metrics;
     std::cerr << "semantic_backend=" << runtime.semantic_backend()
+              << " controller_mode="
+              << (enable_recurrent_correction
+                      ? "factorized_recurrent_correction_evaluator"
+                      : "exact_operator_residual")
               << " positions=" << metrics.positions_processed
               << " stage_calls=" << metrics.stage_calls
               << " semantic_calls=" << metrics.semantic_calls

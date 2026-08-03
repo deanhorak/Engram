@@ -31,6 +31,10 @@ struct NativeBitNetTokenConfig {
   std::size_t sink_tokens = 2;
   float rms_norm_epsilon = 1.0e-5F;
   float rope_theta = 500000.0F;
+  // Evaluator-only opt-in for nonzero factorized controller corrections.
+  // Production authenticated packages keep this false until a separately
+  // reviewed nonzero artifact and causal gate are promoted.
+  bool enable_recurrent_correction = false;
   std::vector<std::int64_t> eos_token_ids;
 };
 
@@ -90,6 +94,15 @@ class NativeBitNetTokenRuntime {
   NativeBitNetDIPKernel semantic_;
   NpyArray operator_scales_;
   NpyArray correction_scales_;
+  NpyArray input_down_;
+  NpyArray recurrent_down_;
+  NpyArray gate_up_;
+  NpyArray bias_;
+  NpyArray stage_embeddings_;
+  NpyArray adapter_down_;
+  NpyArray adapter_up_;
+  std::unique_ptr<NpyArray> input_adapter_down_;
+  std::unique_ptr<NpyArray> input_adapter_up_;
   std::vector<std::unique_ptr<StreamingAttention>> attention_;
   std::size_t position_ = 0;
   NativeBitNetTokenMetrics metrics_;

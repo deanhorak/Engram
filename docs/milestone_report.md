@@ -2,6 +2,25 @@
 
 Status date: 2026-08-03
 
+## Native recurrent-controller implementation boundary
+
+The native token runtime now has a direct implementation of the schema-v3
+factorized recurrent correction. The C++ stage ABI validates and consumes the
+shared projections, gate/up projection, stage embeddings, low-rank adapters,
+and optional input adapters, then applies operator-residual scaling and the
+per-token RMS transition. Native tests establish exact zero-correction
+parity, a deterministic nonzero transition, and fail-closed handling of
+missing tensors.
+
+This does not yet promote a learned controller. The authenticated package
+continues to require zero `step_scale` and uses exact operator residuals. An
+explicit evaluator-only CLI override can run an unauthenticated nonzero
+controller directory; an existing trained artifact completed a six-position,
+30-stage CPU smoke generation through it. That run demonstrates native
+execution only—no semantic quality, held-out generalization, or package
+promotion claim. A trained nonzero artifact and an independently sealed
+causal gate remain required for the layer-free Milestone 4 boundary.
+
 ## Executive result
 
 The latest Milestone 3 attention-substitution boundary is now a passing
@@ -115,8 +134,8 @@ boundary without silently enabling the policy in ordinary generation.
 | 1. Repository, inspection, fixtures, teacher traces, exact MLP decomposition, oracle top-K, tests | Complete | Build system, source inspection, teacher traces, exact SwiGLU/MLP decomposition, oracle experiments, and regression reports are present. |
 | 2. Semantic memory, practical routing, quantization, Python runtime, substituted-MLP evaluation | Protected promotion passed; opt-in only | Train-to-development causal replay, 512/2,048-position CPU scaling, frozen pool frontier, authenticated opt-in package generation, and the separately authorized protected rank-16/pool-6 replay pass. Protected aggregate: 100% top-1, hidden L2 0.009133, logit L2 0.004416, NLL delta −0.000460. The policy remains disabled by default and requires explicit package opt-in. |
 | 3. Attention analysis, local/recurrent/retrieval heads, hybrid episodic memory, attention substitution | Sustained quality gate passed; promotion pending | W128 full-context local attention with per-vector INT8 K/V and FP32 scales passes all frozen bands at 25% logical attention traffic on CPU. Deployable package policy integration, broader corpora, and end-to-end speedup remain. |
-| 4. Shared recurrent controller and layer-free Engram runtime | Partial | Controller training, intermediate-state checks, adaptive-cycle experiments, and incremental dispatch exist. Broad generalization and fully promoted layer-free generation remain. |
-| 5. Vocabulary/transition/correction artifacts, compiler, validation and CLI | Partial/usable | Native package generation, mapped weights, correction paths, validation, greedy generation, and chat CLI work. Full semantic-controller package promotion remains gated. |
+| 4. Shared recurrent controller and layer-free Engram runtime | Partial | Controller training, intermediate-state checks, adaptive-cycle experiments, incremental dispatch, and the native factorized transition exist. The authenticated package remains exact-residual; a trained nonzero correction must pass causal and generalization gates before layer-free promotion. |
+| 5. Vocabulary/transition/correction artifacts, compiler, validation and CLI | Partial/usable | Native package generation, mapped weights, evaluator recurrent-correction dispatch, validation, greedy generation, and chat CLI work. Authenticated nonzero-controller package promotion remains gated. |
 | 6. Native C++ runtime, kernels, mapping, parity, generation, benchmarks | Partial/usable | CPU scalar/vector kernels, memory mapping, C ABI parity, native generation, and tests are operational. End-to-end long-context benchmarks and optimization remain. |
 | 7. Comprehensive evaluation, ablations, tuning, documentation, final report | In progress | Protected promotion and its documentation are complete. Broad model/task coverage, end-to-end performance tuning, ablations, and the reproducible final study remain. |
 
