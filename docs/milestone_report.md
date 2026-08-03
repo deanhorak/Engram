@@ -26,6 +26,14 @@ streams are still supplied by a captured/compiled provider, so it is not yet a
 layer-free end-to-end generator and does not promote a learned nonzero
 correction.
 
+The trace contract now has an opt-in causal extension: `--causal-top-k` stores
+teacher top-k logits and next-token IDs, while `distill-controller` can consume
+those fields with a frozen vocabulary matrix and final RMSNorm vector. A
+synthetic CPU smoke confirmed that the objective backpropagates and the
+serialized controller still reloads with parity. No real BitNet causal trace
+has been captured in this boundary, so this is plumbing evidence rather than a
+semantic gate result.
+
 ## Native recurrent-controller implementation boundary
 
 The native token runtime now has a direct implementation of the schema-v3

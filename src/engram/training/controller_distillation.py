@@ -84,6 +84,9 @@ def _controller_trace_arrays(
     mlp_outputs: dict[int, Any],
     layer_count: int,
     hidden_size: int,
+    causal_top_ids=None,
+    causal_top_logits=None,
+    causal_target_ids=None,
 ) -> dict[str, np.ndarray]:
     """Normalize and flatten one padded teacher batch into valid positions."""
 
@@ -129,7 +132,7 @@ def _controller_trace_arrays(
     sample_matrix = torch.as_tensor(sample_ids, dtype=torch.int64)[:, None].expand(
         -1, input_ids.shape[1]
     )
-    return {
+    result = {
         "sample_id": sample_matrix[valid].numpy(),
         "token_id": input_ids[valid].numpy(),
         "token_position": positions[valid].numpy(),
@@ -140,6 +143,32 @@ def _controller_trace_arrays(
         "semantic_outputs": normalized_semantic[valid].numpy().astype(np.float16),
         "episodic_outputs": normalized_episodic[valid].numpy().astype(np.float16),
     }
+    if causal_top_ids is not None or causal_top_logits is not None:
+        if causal_top_ids is None or causal_top_logits is None or causal_target_ids is None:
+            raise ValueError(
+                "causal top-k ids, logits, and target ids must be supplied together"
+            )
+        if (
+            causal_top_ids.ndim != 3
+            or causal_top_logits.shape != causal_top_ids.shape
+            or causal_target_ids.shape != input_ids.shape
+            or causal_top_ids.shape[:2] != input_ids.shape
+        ):
+            raise ValueError("causal top-k arrays do not match token boundaries")
+        result.update(
+            {
+                "causal_top_ids": causal_top_ids[valid]
+                .numpy()
+                .astype(np.int32),
+                "causal_top_logits": causal_top_logits[valid]
+                .numpy()
+                .astype(np.float16),
+                "causal_target_ids": causal_target_ids[valid]
+                .numpy()
+                .astype(np.int64),
+            }
+        )
+    return result
 
 
 def capture_native_bitnet_controller_traces(
@@ -150,6 +179,7 @@ def capture_native_bitnet_controller_traces(
     split: str,
     samples: int = 8,
     max_tokens: int = 64,
+    causal_top_k: int = 0,
     batch_size: int = 1,
     record_offset: int = 0,
     seed: int = 31,
@@ -166,6 +196,8 @@ def capture_native_bitnet_controller_traces(
 
     if samples <= 0 or max_tokens <= 0 or batch_size <= 0:
         raise ValueError("samples, max_tokens, and batch_size must be positive")
+    if causal_top_k < 0:
+        raise ValueError("causal_top_k must be non-negative")
     if record_offset < 0:
         raise ValueError("record_offset must be non-negative")
     package_path = Path(package).resolve()
@@ -259,6 +291,7 @@ def capture_native_bitnet_controller_traces(
                         "batch_size": batch_size,
                         "record_offset": record_offset,
                         "requested_samples": samples,
+                        "causal_top_k": causal_top_k,
                         "sequence_boundaries_preserved": True,
                     },
                     resume=resume,
@@ -323,11 +356,29 @@ def capture_native_bitnet_controller_traces(
                     layer_outputs.clear()
                     attention_outputs.clear()
                     mlp_outputs.clear()
-                    model(
+                    model_output = model(
                         input_ids=input_ids,
                         attention_mask=attention_mask,
                         use_cache=False,
+                        return_dict=True,
                     )
+                    causal_top_ids = None
+                    causal_top_logits = None
+                    causal_target_ids = None
+                    if causal_top_k:
+                        logits = (
+                            model_output.logits
+                            if hasattr(model_output, "logits")
+                            else model_output[0]
+                        )
+                        vocabulary = int(logits.shape[-1])
+                        width = min(causal_top_k, vocabulary)
+                        causal_top_logits, causal_top_ids = torch.topk(
+                            logits.float(), width, dim=-1
+                        )
+                        causal_target_ids = torch.full_like(input_ids, -1)
+                        if input_ids.shape[1] > 1:
+                            causal_target_ids[:, :-1] = input_ids[:, 1:]
                     expected = set(range(layer_count))
                     for label, captured in (
                         ("layer inputs", layer_inputs),
@@ -349,6 +400,9 @@ def capture_native_bitnet_controller_traces(
                             mlp_outputs=mlp_outputs,
                             layer_count=layer_count,
                             hidden_size=hidden_size,
+                            causal_top_ids=causal_top_ids,
+                            causal_top_logits=causal_top_logits,
+                            causal_target_ids=causal_target_ids,
                         )
                     )
                     completed_batches += 1
@@ -375,6 +429,7 @@ def capture_native_bitnet_controller_traces(
         "batches": len(manifest["shards"]),
         "batch_size": batch_size,
         "record_offset": record_offset,
+        "causal_top_k": causal_top_k,
         "token_positions": sum(int(shard["records"]) for shard in manifest["shards"]),
         "hidden_size": hidden_size,
         "num_stages": layer_count,
@@ -404,6 +459,10 @@ class _TrajectoryArrays:
     episodic_outputs: np.ndarray
     sample_id: np.ndarray
     manifest: dict[str, Any]
+    token_id: np.ndarray | None = None
+    causal_top_ids: np.ndarray | None = None
+    causal_top_logits: np.ndarray | None = None
+    causal_target_ids: np.ndarray | None = None
 
     @property
     def records(self) -> int:
@@ -440,6 +499,18 @@ def _load_trajectories(path: str | Path) -> _TrajectoryArrays:
         "episodic_outputs",
         "sample_id",
     ]
+    available_fields = [
+        set(shard.get("fields", {})) for shard in reader.manifest.get("shards", [])
+    ]
+    optional_fields = (
+        "token_id",
+        "causal_top_ids",
+        "causal_top_logits",
+        "causal_target_ids",
+    )
+    for field in optional_fields:
+        if available_fields and all(field in shard for shard in available_fields):
+            fields.append(field)
     shards = list(reader.iter_shards(fields))
     arrays = {
         field: np.concatenate([np.asarray(shard[field]) for shard in shards], axis=0)
@@ -452,6 +523,10 @@ def _load_trajectories(path: str | Path) -> _TrajectoryArrays:
         episodic_outputs=arrays["episodic_outputs"],
         sample_id=arrays["sample_id"],
         manifest=reader.manifest,
+        token_id=arrays.get("token_id"),
+        causal_top_ids=arrays.get("causal_top_ids"),
+        causal_top_logits=arrays.get("causal_top_logits"),
+        causal_target_ids=arrays.get("causal_target_ids"),
     )
     expected_states = (
         result.records,
@@ -470,6 +545,24 @@ def _load_trajectories(path: str | Path) -> _TrajectoryArrays:
         or result.episodic_outputs.shape != expected_operators
     ):
         raise ValueError("controller trace operator-output shape is inconsistent")
+    causal_fields = (
+        result.causal_top_ids,
+        result.causal_top_logits,
+        result.causal_target_ids,
+    )
+    if any(value is not None for value in causal_fields):
+        if any(value is None for value in causal_fields):
+            raise ValueError("causal top-k trace fields must be present together")
+        assert result.causal_top_ids is not None
+        assert result.causal_top_logits is not None
+        assert result.causal_target_ids is not None
+        if (
+            result.causal_top_ids.ndim != 2
+            or result.causal_top_logits.shape != result.causal_top_ids.shape
+            or result.causal_target_ids.shape != (result.records,)
+            or result.causal_top_ids.shape[0] != result.records
+        ):
+            raise ValueError("causal top-k trace arrays are inconsistent")
     return result
 
 
@@ -557,6 +650,67 @@ def _controller_inputs(torch, data: _TrajectoryArrays, indices, device):
     return torch.cat((embedding, semantic, episodic), dim=-1)
 
 
+def _causal_topk_loss(
+    torch,
+    state,
+    data: _TrajectoryArrays,
+    indices,
+    device,
+    *,
+    lm_head,
+    norm_weight,
+):
+    """Distill teacher top-k logits through a frozen vocabulary readout.
+
+    Only the final controller state is differentiated.  The trace supplies
+    teacher top-k logits and target IDs, while ``lm_head`` and the final RMSNorm
+    weight are immutable CPU/CUDA tensors loaded from the source package.  This
+    keeps the objective causal without constructing decoder layers.
+    """
+
+    if (
+        data.causal_top_ids is None
+        or data.causal_top_logits is None
+        or data.causal_target_ids is None
+    ):
+        raise ValueError("causal top-k targets are missing from the controller trace")
+    top_ids = torch.as_tensor(data.causal_top_ids[indices], dtype=torch.long, device=device)
+    teacher_logits = torch.as_tensor(
+        data.causal_top_logits[indices], dtype=torch.float32, device=device
+    )
+    targets = torch.as_tensor(
+        data.causal_target_ids[indices], dtype=torch.long, device=device
+    )
+    valid = targets >= 0
+    if not bool(valid.any()):
+        zero = state.sum() * 0.0
+        return zero, {"causal_topk_kl": zero, "causal_target_ce": zero}
+    state = state[valid]
+    top_ids = top_ids[valid]
+    teacher_logits = teacher_logits[valid]
+    targets = targets[valid]
+    rms = state.square().mean(dim=-1, keepdim=True).add(1e-6).sqrt()
+    normalized = state / rms * norm_weight
+    rows = lm_head[top_ids]
+    student_logits = (normalized[:, None, :] * rows).sum(dim=-1)
+    teacher_probabilities = torch.softmax(teacher_logits, dim=-1)
+    student_log_probabilities = torch.log_softmax(student_logits, dim=-1)
+    topk_kl = -(
+        teacher_probabilities * student_log_probabilities
+    ).sum(dim=-1).mean()
+    matched = top_ids == targets[:, None]
+    matched_rows = matched.any(dim=-1)
+    if bool(matched_rows.any()):
+        positions = matched[matched_rows].to(dtype=torch.float32).argmax(dim=-1)
+        target_ce = -student_log_probabilities[matched_rows, positions].mean()
+    else:
+        target_ce = topk_kl * 0.0
+    return topk_kl + 0.25 * target_ce, {
+        "causal_topk_kl": topk_kl,
+        "causal_target_ce": target_ce,
+    }
+
+
 def _rollout_loss(
     torch,
     module,
@@ -565,6 +719,9 @@ def _rollout_loss(
     device,
     *,
     teacher_forcing: float,
+    causal_lm_head=None,
+    causal_norm_weight=None,
+    causal_weight: float = 0.0,
 ):
     targets = torch.as_tensor(
         data.teacher_states[indices], dtype=torch.float32, device=device
@@ -604,6 +761,18 @@ def _rollout_loss(
     )
     terminal_loss = (((state - targets[:, -1]) / terminal_rms) ** 2).mean()
     total = hidden_loss + 0.25 * delta_loss + 0.1 * cosine_loss + terminal_loss
+    causal_metrics = {}
+    if causal_lm_head is not None:
+        causal_loss, causal_metrics = _causal_topk_loss(
+            torch,
+            state,
+            data,
+            indices,
+            device,
+            lm_head=causal_lm_head,
+            norm_weight=causal_norm_weight,
+        )
+        total = total + causal_weight * causal_loss
     return (
         total,
         {
@@ -611,6 +780,7 @@ def _rollout_loss(
             "delta_normalized_mse": delta_loss,
             "cosine_loss": cosine_loss,
             "terminal_normalized_mse": terminal_loss,
+            **causal_metrics,
         },
         state,
     )
@@ -623,6 +793,9 @@ def _evaluate(
     device,
     *,
     batch_size: int,
+    causal_lm_head=None,
+    causal_norm_weight=None,
+    causal_weight: float = 0.0,
 ) -> dict[str, float]:
     module.eval()
     totals: dict[str, float] = {}
@@ -637,6 +810,9 @@ def _evaluate(
                 indices,
                 device,
                 teacher_forcing=0.0,
+                causal_lm_head=causal_lm_head,
+                causal_norm_weight=causal_norm_weight,
+                causal_weight=causal_weight,
             )
             count = len(indices)
             values = {"loss": loss, **metrics}
@@ -704,6 +880,9 @@ def distill_factorized_controller(
     learning_rate: float = 3e-4,
     weight_decay: float = 1e-3,
     teacher_forcing_schedule: str = "scheduled",
+    causal_lm_head: str | Path | None = None,
+    causal_norm_weight: str | Path | None = None,
+    causal_weight: float = 0.0,
     seed: int = 37,
 ) -> dict[str, Any]:
     """Fit a compact controller and prove independent NumPy CPU reload."""
@@ -714,6 +893,12 @@ def distill_factorized_controller(
         raise ValueError("learning_rate must be finite and positive")
     if teacher_forcing_schedule not in {"scheduled", "none"}:
         raise ValueError("teacher_forcing_schedule must be 'scheduled' or 'none'")
+    if not math.isfinite(causal_weight) or causal_weight < 0.0:
+        raise ValueError("causal_weight must be finite and non-negative")
+    if (causal_lm_head is None) != (causal_norm_weight is None):
+        raise ValueError(
+            "causal_lm_head and causal_norm_weight must be supplied together"
+        )
     training = _load_trajectories(trace)
     validation = (
         _load_trajectories(validation_trace)
@@ -743,6 +928,25 @@ def distill_factorized_controller(
     torch.manual_seed(seed)
     if device.startswith("cuda"):
         torch.cuda.manual_seed_all(seed)
+    causal_head = None
+    causal_norm = None
+    if causal_lm_head is not None:
+        assert causal_norm_weight is not None
+        causal_head_array = np.asarray(np.load(causal_lm_head), dtype=np.float32)
+        causal_norm_array = np.asarray(np.load(causal_norm_weight), dtype=np.float32)
+        if causal_head_array.ndim != 2 or causal_head_array.shape[1] != training.hidden_size:
+            raise ValueError("causal lm_head must have shape [vocabulary, hidden_size]")
+        if causal_norm_array.shape != (training.hidden_size,):
+            raise ValueError("causal norm weight must have shape [hidden_size]")
+        for data, name in ((training, "training"), (validation, "validation")):
+            if (
+                data.causal_top_ids is None
+                or data.causal_top_logits is None
+                or data.causal_target_ids is None
+            ):
+                raise ValueError(f"causal top-k targets are missing from {name} trace")
+        causal_head = torch.as_tensor(causal_head_array, dtype=torch.float32, device=device)
+        causal_norm = torch.as_tensor(causal_norm_array, dtype=torch.float32, device=device)
     np_rng = np.random.default_rng(seed)
     target_deltas = training.teacher_states[:, 1:].astype(
         np.float32
@@ -797,10 +1001,24 @@ def distill_factorized_controller(
         module.parameters(), lr=learning_rate, weight_decay=weight_decay
     )
     initial_train_metrics = _evaluate(
-        torch, module, training, device, batch_size=batch_size
+        torch,
+        module,
+        training,
+        device,
+        batch_size=batch_size,
+        causal_lm_head=causal_head,
+        causal_norm_weight=causal_norm,
+        causal_weight=causal_weight,
     )
     initial_validation_metrics = _evaluate(
-        torch, module, validation, device, batch_size=batch_size
+        torch,
+        module,
+        validation,
+        device,
+        batch_size=batch_size,
+        causal_lm_head=causal_head,
+        causal_norm_weight=causal_norm,
+        causal_weight=causal_weight,
     )
     started = time.perf_counter()
     history: list[dict[str, float]] = []
@@ -825,6 +1043,9 @@ def distill_factorized_controller(
             indices,
             device,
             teacher_forcing=teacher_forcing,
+            causal_lm_head=causal_head,
+            causal_norm_weight=causal_norm,
+            causal_weight=causal_weight,
         )
         if not bool(torch.isfinite(loss)):
             raise RuntimeError(f"controller loss became non-finite at step {step}")
@@ -844,9 +1065,25 @@ def distill_factorized_controller(
                 }
             )
 
-    train_metrics = _evaluate(torch, module, training, device, batch_size=batch_size)
+    train_metrics = _evaluate(
+        torch,
+        module,
+        training,
+        device,
+        batch_size=batch_size,
+        causal_lm_head=causal_head,
+        causal_norm_weight=causal_norm,
+        causal_weight=causal_weight,
+    )
     validation_metrics = _evaluate(
-        torch, module, validation, device, batch_size=batch_size
+        torch,
+        module,
+        validation,
+        device,
+        batch_size=batch_size,
+        causal_lm_head=causal_head,
+        causal_norm_weight=causal_norm,
+        causal_weight=causal_weight,
     )
     target = Path(out)
     controller_path = target / "controller"
@@ -890,6 +1127,22 @@ def distill_factorized_controller(
         "optimizer_device": str(device),
         "inference_device": "cpu",
         "torch_required_for_inference": False,
+        "causal_objective": {
+            "enabled": causal_head is not None,
+            "lm_head": (
+                str(Path(causal_lm_head).resolve())
+                if causal_lm_head is not None
+                else None
+            ),
+            "norm_weight": (
+                str(Path(causal_norm_weight).resolve())
+                if causal_norm_weight is not None
+                else None
+            ),
+            "weight": causal_weight,
+            "target": "teacher_topk_logits_and_next_token",
+            "decoder_layers_loaded": False,
+        },
         "records": {
             "training": training.records,
             "validation": validation.records,
@@ -901,6 +1154,7 @@ def distill_factorized_controller(
             "learning_rate": learning_rate,
             "weight_decay": weight_decay,
             "teacher_forcing_schedule": teacher_forcing_schedule,
+            "causal_weight": causal_weight,
             "seed": seed,
             "history": history,
             "elapsed_seconds": time.perf_counter() - started,

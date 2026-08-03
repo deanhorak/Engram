@@ -328,3 +328,80 @@ def test_batched_trace_flattening_drops_padding_and_preserves_sample_ids():
         np.mean(np.square(arrays["teacher_states"].astype(np.float32)), axis=-1)
     )
     np.testing.assert_allclose(rms, 1.0, atol=5e-4)
+
+
+def test_batched_trace_can_carry_optional_causal_topk_targets():
+    torch = pytest.importorskip("torch")
+    from engram.training.controller_distillation import _controller_trace_arrays
+
+    input_ids = torch.tensor([[11, 12, 13], [21, 22, 0]])
+    attention_mask = torch.tensor([[1, 1, 1], [1, 1, 0]])
+    initial = torch.ones((2, 3, 4), dtype=torch.float32)
+    layer_inputs = {0: initial, 1: initial}
+    layer_outputs = {0: initial, 1: initial}
+    attention_outputs = {0: initial, 1: initial}
+    mlp_outputs = {0: initial, 1: initial}
+    top_ids = torch.tensor(
+        [
+            [[1, 2], [3, 4], [5, 6]],
+            [[7, 8], [9, 10], [11, 12]],
+        ],
+        dtype=torch.int64,
+    )
+    top_logits = top_ids.float() / 10.0
+    targets = torch.tensor([[12, 13, -1], [22, 0, -1]], dtype=torch.int64)
+    arrays = _controller_trace_arrays(
+        torch,
+        input_ids=input_ids,
+        attention_mask=attention_mask,
+        sample_ids=[7, 9],
+        layer_inputs=layer_inputs,
+        layer_outputs=layer_outputs,
+        attention_outputs=attention_outputs,
+        mlp_outputs=mlp_outputs,
+        layer_count=2,
+        hidden_size=4,
+        causal_top_ids=top_ids,
+        causal_top_logits=top_logits,
+        causal_target_ids=targets,
+    )
+    assert arrays["causal_top_ids"].shape == (5, 2)
+    assert arrays["causal_top_logits"].dtype == np.float16
+    np.testing.assert_array_equal(arrays["causal_target_ids"], [12, 13, -1, 22, 0])
+
+
+def test_causal_topk_loss_backpropagates_through_final_controller_state():
+    torch = pytest.importorskip("torch")
+    from engram.training.controller_distillation import (
+        _TrajectoryArrays,
+        _causal_topk_loss,
+    )
+
+    data = _TrajectoryArrays(
+        token_embedding=np.zeros((2, 4), dtype=np.float32),
+        teacher_states=np.zeros((2, 2, 4), dtype=np.float16),
+        semantic_outputs=np.zeros((2, 1, 4), dtype=np.float16),
+        episodic_outputs=np.zeros((2, 1, 4), dtype=np.float16),
+        sample_id=np.arange(2, dtype=np.int64),
+        manifest={},
+        causal_top_ids=np.asarray([[0, 1], [2, 3]], dtype=np.int32),
+        causal_top_logits=np.asarray([[2.0, 0.0], [1.0, -1.0]], dtype=np.float16),
+        causal_target_ids=np.asarray([0, 2], dtype=np.int64),
+    )
+    state = torch.ones((2, 4), dtype=torch.float32, requires_grad=True)
+    lm_head = torch.eye(4, dtype=torch.float32)
+    norm = torch.ones(4, dtype=torch.float32)
+    loss, metrics = _causal_topk_loss(
+        torch,
+        state,
+        data,
+        np.arange(2),
+        "cpu",
+        lm_head=lm_head,
+        norm_weight=norm,
+    )
+    assert torch.isfinite(loss)
+    assert set(metrics) == {"causal_topk_kl", "causal_target_ce"}
+    loss.backward()
+    assert state.grad is not None
+    assert torch.isfinite(state.grad).all()

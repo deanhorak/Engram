@@ -763,6 +763,15 @@ def _parser() -> argparse.ArgumentParser:
     )
     controller_trace.add_argument("--samples", type=int, default=8)
     controller_trace.add_argument("--max-tokens", type=int, default=64)
+    controller_trace.add_argument(
+        "--causal-top-k",
+        type=int,
+        default=0,
+        help=(
+            "optionally store teacher top-k logits and next-token targets in "
+            "the trace for causal controller distillation"
+        ),
+    )
     controller_trace.add_argument("--batch-size", type=int, default=1)
     controller_trace.add_argument("--record-offset", type=int, default=0)
     controller_trace.add_argument("--seed", type=int, default=31)
@@ -805,6 +814,22 @@ def _parser() -> argparse.ArgumentParser:
         "--teacher-forcing",
         choices=("scheduled", "none"),
         default="scheduled",
+    )
+    controller_distill.add_argument(
+        "--causal-lm-head",
+        type=Path,
+        help="optional frozen vocabulary matrix for top-k causal distillation",
+    )
+    controller_distill.add_argument(
+        "--causal-norm-weight",
+        type=Path,
+        help="final RMSNorm weight paired with --causal-lm-head",
+    )
+    controller_distill.add_argument(
+        "--causal-weight",
+        type=float,
+        default=0.0,
+        help="weight for the optional trace top-k causal objective",
     )
     controller_distill.add_argument("--seed", type=int, default=37)
 
@@ -2519,6 +2544,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             split=args.split,
             samples=args.samples,
             max_tokens=args.max_tokens,
+            causal_top_k=args.causal_top_k,
             batch_size=args.batch_size,
             record_offset=args.record_offset,
             seed=args.seed,
@@ -2543,6 +2569,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             learning_rate=args.learning_rate,
             weight_decay=args.weight_decay,
             teacher_forcing_schedule=args.teacher_forcing,
+            causal_lm_head=args.causal_lm_head,
+            causal_norm_weight=args.causal_norm_weight,
+            causal_weight=args.causal_weight,
             seed=args.seed,
         )
         print(json.dumps(result, indent=2, sort_keys=True))

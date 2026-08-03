@@ -58,6 +58,14 @@ This passes the controller state-transition threshold, but it is not an
 end-to-end generation result because a semantic/episodic provider still has to
 produce those streams without the original transformer layers.
 
+The controller trace format also now supports an opt-in causal extension:
+`trace-native-bitnet-controller --causal-top-k K` records teacher top-k logits
+and next-token targets, and `distill-controller` accepts a frozen vocabulary
+matrix plus final RMSNorm vector for a decoder-layer-free causal objective. A
+synthetic CPU smoke exercised backpropagation and reload parity. This does not
+qualify the gate until real BitNet causal traces and an independent held-out
+run are captured.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and
