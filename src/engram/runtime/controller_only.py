@@ -14,6 +14,7 @@ from pathlib import Path
 import numpy as np
 
 from engram.controller import FactorizedRecurrentController
+from engram.runtime.operator_stream import OperatorStreamProvider
 
 
 @dataclass(frozen=True)
@@ -115,6 +116,68 @@ class ControllerOnlyRuntime:
                 (token_embedding, semantic[..., cycle, :], episodic[..., cycle, :]),
                 axis=-1,
             )
+            state = self.controller.step(state, supplied, stage=stage)
+            states.append(state)
+        return ControllerOnlyResult(
+            final_state=np.asarray(state, dtype=np.float32),
+            stage_states=np.stack(states, axis=-2).astype(np.float32, copy=False),
+            normalized_initial=normalized,
+        )
+
+    def run_provider(
+        self,
+        initial_state: np.ndarray,
+        token_embedding: np.ndarray,
+        provider: OperatorStreamProvider,
+        *,
+        initial_is_normalized: bool = False,
+        stage_offset: int = 0,
+    ) -> ControllerOnlyResult:
+        """Run the controller while a provider supplies streams stage by stage.
+
+        This is the layer-free execution seam.  The provider receives only the
+        current controller state, the token embedding, and a stage index; it
+        returns semantic and episodic vectors.  No decoder layer or source
+        model object is constructed here.
+        """
+
+        initial = np.asarray(initial_state, dtype=np.float32)
+        token = np.asarray(token_embedding, dtype=np.float32)
+        if initial.ndim < 1 or initial.shape[-1] != self.controller.state_dim:
+            raise ValueError(
+                f"initial_state must have trailing dimension {self.controller.state_dim}"
+            )
+        if token.shape != initial.shape:
+            raise ValueError("token_embedding must have the same shape as initial_state")
+        if provider.state_dim != self.controller.state_dim:
+            raise ValueError("provider width does not match controller")
+        if provider.num_stages != self.controller.num_stages:
+            raise ValueError("provider stage count does not match controller")
+        if isinstance(stage_offset, bool) or not isinstance(stage_offset, (int, np.integer)):
+            raise ValueError("stage_offset must be an integer")
+        if stage_offset < 0:
+            raise ValueError("stage_offset must be non-negative")
+        normalized = (
+            np.ascontiguousarray(initial, dtype=np.float32)
+            if initial_is_normalized
+            else self._normalize_initial(initial)
+        )
+        state = normalized.copy()
+        states = []
+        for cycle in range(self.controller.num_stages):
+            stage = (stage_offset + cycle) % self.controller.num_stages
+            semantic, episodic = provider.step(state, token, stage)
+            semantic = np.asarray(semantic, dtype=np.float32)
+            episodic = np.asarray(episodic, dtype=np.float32)
+            expected = (*state.shape[:-1], self.controller.state_dim)
+            if semantic.shape != expected or episodic.shape != expected:
+                raise ValueError(
+                    "provider streams must match the controller state shape; "
+                    f"expected {expected}, got {semantic.shape}/{episodic.shape}"
+                )
+            if not np.all(np.isfinite(semantic)) or not np.all(np.isfinite(episodic)):
+                raise ValueError("provider streams must be finite")
+            supplied = np.concatenate((token, semantic, episodic), axis=-1)
             state = self.controller.step(state, supplied, stage=stage)
             states.append(state)
         return ControllerOnlyResult(

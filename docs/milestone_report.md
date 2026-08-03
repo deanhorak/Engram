@@ -57,6 +57,37 @@ normalized MSE **0.2710301**, hidden MSE **0.7289818**, and top-k KL
 **8.9769297**. Capacity alone is therefore rejected; the next change must
 co-adapt or replace the operator-stream provider.
 
+### Operator-provider boundary (2026-08-03)
+
+The layer-free seam is now explicit in `engram.runtime.operator_stream` and
+`engram evaluate-controller-provider`. A provider receives only the current
+controller state, token embedding, and stage, and returns semantic and
+episodic vectors; the controller runtime performs no Transformer imports or
+decoder-layer calls. The trace-backed provider is labeled replay-only. A
+serialized PCA/ridge provider is conditioned on state and token embedding and
+contains no source-model tensors. `engram fit-operator-provider` creates it
+with a checksummed manifest and an explicit target (`streams` or the
+co-adapted `combined_delta` arm).
+
+The first independent causal replay uses 128 training records, 256 held-out
+records, rank-16 output factors, and the exact operator-residual controller.
+CPU reload and layer-free execution pass structurally, but terminal
+normalized MSE is **0.2536094** (threshold 0.0225), hidden MSE **0.8770986**,
+and the quality gate fails. Increasing the provider output rank to 64 and 128
+does not recover the threshold (terminal MSE **0.2404522** and **0.2478832**);
+the combined-delta rank-16 arm is worse (**0.5889627**). These are provider
+change experiments, not promotion claims. The canonical rank-16 report is
+`reports/controller_provider_pca_2026-08-03/rank16_train8x16_validation16x16.json`
+(provider SHA-256 `3bc7c9afd9996f26673e408328b9d35e77986f66fdd6492025967dacaeb0a3a9`).
+Twenty steps of joint free-running projection adaptation reduce held-out
+terminal MSE to **0.1970640** from **0.2536094**, while the training terminal
+reaches **0.1501944**; the gate still fails. The retained adaptation report is
+`reports/controller_provider_pca_2026-08-03/joint20_train8x16_validation16x16.json`
+(SHA-256 `7edd36f97fbbeb196869e3e5b5d4cc435c94bbf3c475c036c86790371844b1d7`).
+The next M4 attempt must add temporal/context features or a stronger jointly
+trained provider/controller model; another isolated rank sweep is not
+justified.
+
 ## Native recurrent-controller implementation boundary
 
 The native token runtime now has a direct implementation of the schema-v3
@@ -200,7 +231,7 @@ boundary without silently enabling the policy in ordinary generation.
 | 1. Repository, inspection, fixtures, teacher traces, exact MLP decomposition, oracle top-K, tests | Complete | Build system, source inspection, teacher traces, exact SwiGLU/MLP decomposition, oracle experiments, and regression reports are present. |
 | 2. Semantic memory, practical routing, quantization, Python runtime, substituted-MLP evaluation | Protected promotion passed; opt-in only | Train-to-development causal replay, 512/2,048-position CPU scaling, frozen pool frontier, authenticated opt-in package generation, and the separately authorized protected rank-16/pool-6 replay pass. Protected aggregate: 100% top-1, hidden L2 0.009133, logit L2 0.004416, NLL delta −0.000460. The policy remains disabled by default and requires explicit package opt-in. |
 | 3. Attention analysis, local/recurrent/retrieval heads, hybrid episodic memory, attention substitution | Sustained quality gate passed; promotion pending | W128 full-context local attention with per-vector INT8 K/V and FP32 scales passes all frozen bands at 25% logical attention traffic on CPU. Deployable package policy integration, broader corpora, and end-to-end speedup remain. |
-| 4. Shared recurrent controller and layer-free Engram runtime | Partial; state-transition gate passed | The standalone CPU controller runtime replays exact semantic/episodic streams with zero decoder-layer calls and terminal normalized MSE 0.0000208009 on the held-out trajectory. Rank-128 and rank-256 causal fits both fail free-run validation, so a learned nonzero correction and a provider that generates operator streams without original layers remain unpromoted. |
+| 4. Shared recurrent controller and layer-free Engram runtime | Partial; state-transition gate passed | The standalone CPU controller runtime replays exact semantic/episodic streams with zero decoder-layer calls and terminal normalized MSE 0.0000208009 on the held-out trajectory. The explicit learned provider seam and joint projection adaptation are implemented, but the best held-out terminal MSE is 0.1970640, so causal provider/controller promotion remains blocked. |
 | 5. Vocabulary/transition/correction artifacts, compiler, validation and CLI | Partial/usable | Native package generation, mapped weights, evaluator recurrent-correction dispatch, validation, greedy generation, and chat CLI work. Authenticated nonzero-controller package promotion remains gated. |
 | 6. Native C++ runtime, kernels, mapping, parity, generation, benchmarks | Partial/usable | CPU scalar/vector kernels, memory mapping, C ABI parity, native generation, and tests are operational. End-to-end long-context benchmarks and optimization remain. |
 | 7. Comprehensive evaluation, ablations, tuning, documentation, final report | In progress | Protected promotion and its documentation are complete. Broad model/task coverage, end-to-end performance tuning, ablations, and the reproducible final study remain. |
@@ -233,10 +264,10 @@ thresholds.
    full runtime policy consumption and broader end-to-end benchmarking.
 4. Keep the exact operator-residual controller as the production boundary.
    The standalone controller-only replay now passes the state-transition
-   threshold, but both the existing nonzero artifact and the new evidence-sized
-   rank-128 causal fit fail quality. Do not add blind epochs to this factorized
-   controller; the next M4 experiment must change the sparse semantic/attention
-   provider or controller capacity and repeat the causal split.
+   threshold, but learned provider and joint adaptation arms remain far above
+   the causal threshold. The next M4 experiment must add temporal/context
+   features or a stronger joint provider/controller model and repeat the causal
+   split; isolated rank or epoch sweeps are closed.
 
 ## Verification
 

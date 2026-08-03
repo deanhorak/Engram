@@ -5,6 +5,10 @@ from engram.evaluation.controller_substitution import (
     replay_compiled_operator_trajectory,
 )
 from engram.runtime.controller_only import ControllerOnlyRuntime
+from engram.runtime.operator_stream import (
+    PCAOperatorStreamProvider,
+    TraceOperatorStreamProvider,
+)
 
 
 def test_compiled_operator_replay_matches_exact_residual_trajectory():
@@ -94,3 +98,54 @@ def test_controller_only_runtime_rejects_nonzero_correction_by_default():
     episodic = np.zeros((1, 1, 2), dtype=np.float32)
     result = runtime.run(initial, semantic, episodic)
     assert result.stage_states.shape == (1, 1, 2)
+
+
+def test_controller_only_runtime_provider_matches_stream_replay():
+    controller = FactorizedRecurrentController.initialize(
+        input_dim=12,
+        state_dim=4,
+        num_stages=3,
+        rank=2,
+        adapter_rank=1,
+        operator_residual=True,
+        seed=67,
+    )
+    tensors = controller.tensors()
+    tensors["step_scale"][:] = 0.0
+    controller = FactorizedRecurrentController(**tensors)
+    rng = np.random.default_rng(71)
+    initial = rng.normal(size=(2, 4)).astype(np.float32)
+    token = rng.normal(size=(2, 4)).astype(np.float32)
+    semantic = rng.normal(scale=0.1, size=(2, 3, 4)).astype(np.float32)
+    episodic = rng.normal(scale=0.1, size=(2, 3, 4)).astype(np.float32)
+    provider = TraceOperatorStreamProvider(semantic, episodic)
+    runtime = ControllerOnlyRuntime(controller)
+    expected = runtime.run(initial, semantic, episodic)
+    actual = runtime.run_provider(initial, token, provider)
+    np.testing.assert_allclose(actual.final_state, expected.final_state)
+    np.testing.assert_allclose(actual.stage_states, expected.stage_states)
+    assert provider.metadata()["learned"] is False
+
+
+def test_pca_operator_stream_provider_round_trips_without_model(tmp_path):
+    rng = np.random.default_rng(73)
+    stages, width, rank = 3, 4, 2
+    provider = PCAOperatorStreamProvider(
+        semantic_mean=rng.normal(size=(stages, width)).astype(np.float32),
+        semantic_basis=rng.normal(size=(stages, rank, width)).astype(np.float32),
+        semantic_projection=rng.normal(size=(stages, 2 * width + 1, rank)).astype(np.float32),
+        episodic_mean=rng.normal(size=(stages, width)).astype(np.float32),
+        episodic_basis=rng.normal(size=(stages, rank, width)).astype(np.float32),
+        episodic_projection=rng.normal(size=(stages, 2 * width + 1, rank)).astype(np.float32),
+        metadata_payload={"source_model_hash": "test"},
+    )
+    path = provider.save(tmp_path / "provider")
+    restored = PCAOperatorStreamProvider.load(path)
+    state = rng.normal(size=(2, width)).astype(np.float32)
+    token = rng.normal(size=(2, width)).astype(np.float32)
+    for stage in range(stages):
+        expected = provider.step(state, token, stage)
+        actual = restored.step(state, token, stage)
+        np.testing.assert_allclose(actual[0], expected[0])
+        np.testing.assert_allclose(actual[1], expected[1])
+    assert restored.metadata()["provider_kind"] == "pca_state_token"

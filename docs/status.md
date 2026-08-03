@@ -86,6 +86,31 @@ normalized MSE **0.2710301**, hidden MSE **0.7289818**, and top-k KL
 **8.9769297**. Capacity alone is therefore rejected; the next change must
 co-adapt or replace the operator-stream provider.
 
+### Learned operator-provider experiment
+
+The provider interface is now implemented in
+`src/engram/runtime/operator_stream.py`. `TraceOperatorStreamProvider` is a
+checksummed replay adapter; `PCAOperatorStreamProvider` is a NumPy-only
+state/token-conditioned provider with a versioned manifest. The controller
+runtime exposes `run_provider`, and the CLI commands
+`fit-operator-provider` and `evaluate-controller-provider` exercise the seam
+without constructing a Transformers model.
+
+The first causal held-out replay was trained on 128 records and evaluated on
+256 sequence-disjoint records. Rank-16 output factors reached terminal
+normalized MSE **0.2536094**, hidden MSE **0.8770986**, and failed the 0.0225
+controller threshold. Rank-64 and rank-128 arms also failed (0.2404522 and
+0.2478832), while direct combined-delta fitting was worse (0.5889627). This
+proves the provider boundary is executable and auditable, but does not pass
+Milestone 4; temporal/context features or joint provider/controller causal
+training are still required. The retained report is
+`reports/controller_provider_pca_2026-08-03/rank16_train8x16_validation16x16.json`.
+Twenty CPU steps of joint free-running projection adaptation reduce held-out
+terminal MSE to **0.1970640** (training terminal **0.1501944**), but still do
+not pass the controller threshold. The preserved report is
+`reports/controller_provider_pca_2026-08-03/joint20_train8x16_validation16x16.json`;
+the next attempt must add temporal/context features or a stronger joint model.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and
@@ -1117,7 +1142,7 @@ scientific exit criterion has passed.
 | 1. Inspection, tracing, exact MLP decomposition, oracle experiment | Complete | Complete for the fixture and exercised on SmolLM2 |
 | 2. Semantic package, routing, quantization, Python substitution runtime | Source-bound native-BitNet DIP and OLMoE learned-expert routes, authenticated packages, CPU kernels, native token runtimes, and causal evaluators exist | **Native-BitNet passed** by postmortem adjudication and **OLMoE Q7 formally passed** an authenticated frozen complete-native 8×32 protocol. The matched W128 8×128 control passes every band and attributes the later sustained failure to attention, preserving the Q7/M2 decision. Generic dense-Llama conversion and broader replication remain incomplete |
 | 3. Local/recurrent/retrieval attention and hybrid episodic memory | Bounded W=16/C=8/K=4 streaming hybrid, stateful C++20 cache/rerank kernel, incremental package integration, exact per-layer/per-head native policy ABIs, an exact episodic K/V bank, and learned content/phase selectors implemented | The earlier W16 policy fails sustained older-context quality, but the prospective W128/per-vector-INT8 local-cache replay now passes all 1,024 semantic positions at 25% logical attention traffic (protocol `953b83ce…33bda7`, report `7cd55514…d17df80`). This clears the sustained attention-quality boundary. Package metadata/default integration, broader corpora, and end-to-end speedup remain. |
-| 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, standalone CPU controller-only replay, authenticated package installation, persistent native stage state, one-call 30-stage C++ runner, and evaluator-only native factorized recurrence implemented | The held-out state-transition replay passes (terminal normalized MSE 0.0000208009; zero decoder-layer calls). Rank-128 and rank-256 causal fits fail free-run validation; the authenticated package remains exact-residual (`step_scale == 0`) until a provider and correction pass causal quality/generalization |
+| 4. Shared recurrent controller, adapters, adaptive cycles, transformer-free Python runtime | Versioned exact residual controller, standalone CPU controller-only replay, explicit provider seam, joint projection adaptation, authenticated package installation, persistent native stage state, one-call 30-stage C++ runner, and evaluator-only native factorized recurrence implemented | The held-out state-transition replay passes (terminal normalized MSE 0.0000208009; zero decoder-layer calls). Learned provider/joint adaptation remains above the causal threshold (best terminal MSE 0.1970640); the authenticated package remains exact-residual (`step_scale == 0`) until provider and correction quality/generalization pass |
 | 5. Vocabulary index, transition cache, corrections, compiler, validation, generation CLI | Generic infrastructure plus native-BitNet package compiler, validator, native vocabulary argmax, evaluator recurrent-correction dispatch, and generation CLI implemented | Native-BitNet package excludes all source MLP tensors and passes source/package parity; authenticated nonzero-controller package assembly and full semantic-controller promotion remain gated |
 | 6. C++ runtime, scalar/AVX2 paths, mmap, parity, generation, benchmarks | Fixture runtime, memory-mapped BitNet DIP/projection kernels, streaming attention, native shell operators, authenticated C++ package mapping, manifest-derived model configuration/EOS, token-step control, greedy argmax, reset, standalone generation, and a versioned shared ABI implemented | **Partial**: model execution is native and chat uses the shared handle; tokenizer/template/history orchestration remains Python-side, the compressed INT8 attention path is opt-in, and AVX2 tuning plus hardware-counter traffic remain |
 | 7. Evaluation, ablations, tuning, documentation, final report | In progress | Many negative ablations exist; no successful reproducible final report |

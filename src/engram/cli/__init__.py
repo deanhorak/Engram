@@ -59,6 +59,7 @@ from engram.evaluation.controller_substitution import (
     evaluate_native_bitnet_controller_substitution,
 )
 from engram.evaluation.controller_only import evaluate_controller_only_trace
+from engram.evaluation.controller_provider import evaluate_controller_provider_trace
 from engram.evaluation.native_attention_benchmark import (
     benchmark_native_streaming_attention,
 )
@@ -129,6 +130,7 @@ from engram.runtime import (
     validate_native_bitnet_package,
     OLMoENativeTokenRuntime,
 )
+from engram.runtime.operator_stream import fit_operator_stream_provider
 from engram.runtime.validation import benchmark_runtime, validate_package
 from engram.evaluation.end_to_end import evaluate_end_to_end
 from engram.evaluation.controller_gate import evaluate_controller_gate
@@ -137,6 +139,7 @@ from engram.training import (
     build_distillation_tail_holdout,
     capture_native_bitnet_controller_traces,
     distill_factorized_controller,
+    joint_distill_operator_provider,
     evaluate_native_gate_channel_shadow,
     evaluate_native_gate_residual_shadow,
     evaluate_structured_expert_shadow,
@@ -971,6 +974,49 @@ def _parser() -> argparse.ArgumentParser:
     controller_only.add_argument("--controller", required=True, type=Path)
     controller_only.add_argument("--out", required=True, type=Path)
     controller_only.add_argument(
+        "--allow-correction",
+        action="store_true",
+        help="allow an unauthenticated nonzero factorized correction",
+    )
+
+    fit_operator_provider = commands.add_parser(
+        "fit-operator-provider",
+        help=(
+            "fit a compact CPU operator-stream provider from a controller trace"
+        ),
+    )
+    fit_operator_provider.add_argument("--trace", required=True, type=Path)
+    fit_operator_provider.add_argument("--out", required=True, type=Path)
+    fit_operator_provider.add_argument("--output-rank", type=int, default=16)
+    fit_operator_provider.add_argument("--ridge", type=float, default=1e-2)
+    fit_operator_provider.add_argument(
+        "--target", choices=("streams", "combined_delta"), default="streams"
+    )
+
+    distill_operator_provider = commands.add_parser(
+        "distill-operator-provider",
+        help="jointly adapt provider projections through a frozen controller",
+    )
+    distill_operator_provider.add_argument("--provider", required=True, type=Path)
+    distill_operator_provider.add_argument("--controller", required=True, type=Path)
+    distill_operator_provider.add_argument("--trace", required=True, type=Path)
+    distill_operator_provider.add_argument("--validation-trace", type=Path)
+    distill_operator_provider.add_argument("--out", required=True, type=Path)
+    distill_operator_provider.add_argument("--steps", type=int, default=100)
+    distill_operator_provider.add_argument("--batch-size", type=int, default=4)
+    distill_operator_provider.add_argument("--learning-rate", type=float, default=1e-3)
+    distill_operator_provider.add_argument("--seed", type=int, default=37)
+    distill_operator_provider.add_argument("--device", default="cpu")
+
+    evaluate_operator_provider = commands.add_parser(
+        "evaluate-controller-provider",
+        help="evaluate a learned operator provider with a transformer-free controller",
+    )
+    evaluate_operator_provider.add_argument("--trace", required=True, type=Path)
+    evaluate_operator_provider.add_argument("--provider", required=True, type=Path)
+    evaluate_operator_provider.add_argument("--controller", required=True, type=Path)
+    evaluate_operator_provider.add_argument("--out", required=True, type=Path)
+    evaluate_operator_provider.add_argument(
         "--allow-correction",
         action="store_true",
         help="allow an unauthenticated nonzero factorized correction",
@@ -2678,6 +2724,38 @@ def main(argv: Sequence[str] | None = None) -> int:
     elif args.command == "evaluate-controller-only":
         result = evaluate_controller_only_trace(
             args.trace,
+            args.controller,
+            out=args.out,
+            allow_correction=args.allow_correction,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "fit-operator-provider":
+        result = fit_operator_stream_provider(
+            args.trace,
+            args.out,
+            output_rank=args.output_rank,
+            ridge=args.ridge,
+            target=args.target,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "distill-operator-provider":
+        result = joint_distill_operator_provider(
+            args.provider,
+            args.controller,
+            args.trace,
+            args.out,
+            validation_trace=args.validation_trace,
+            steps=args.steps,
+            batch_size=args.batch_size,
+            learning_rate=args.learning_rate,
+            seed=args.seed,
+            device=args.device,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "evaluate-controller-provider":
+        result = evaluate_controller_provider_trace(
+            args.trace,
+            args.provider,
             args.controller,
             out=args.out,
             allow_correction=args.allow_correction,

@@ -3,6 +3,7 @@ from .controller_distillation import (
     capture_native_bitnet_controller_traces,
     distill_factorized_controller,
 )
+from .provider_distillation import joint_distill_operator_provider
 from .activation_aware_aq import train_activation_aware_aq_boundaries
 from .budget_native_ternary import (
     confidence_weighted_kl,
@@ -183,6 +184,7 @@ __all__ = [
     "validate_fully_sparse_artifact_cpu",
     "train_intrinsic_sparse_boundaries",
     "distill_factorized_controller",
+    "joint_distill_operator_provider",
     "train_activation_aware_aq_boundaries",
     "train_budget_native_ternary_student",
     "train_projection_aq_layers",

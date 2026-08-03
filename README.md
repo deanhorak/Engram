@@ -113,6 +113,21 @@ capacity or the operator-stream provider.
 The matched rank-256 capacity arm also fails (terminal normalized MSE
 **0.2710301**), so rank expansion alone is not the next direction.
 
+The provider seam is now executable and versioned. `engram fit-operator-provider`
+creates a CPU/NumPy PCA-ridge provider conditioned on the current controller
+state and token embedding; `engram evaluate-controller-provider` replays it
+without a Transformers model or decoder-layer calls. The trace provider is
+explicitly replay-only. The first learned rank-16 provider reaches held-out
+terminal normalized MSE **0.2536094** (hidden MSE **0.8770986**) and therefore
+fails the 0.0225 causal gate. Rank-64 and rank-128 providers also fail, so
+these artifacts are research evidence rather than package inputs. The next
+controller experiment must add temporal/context features or jointly optimize
+provider and controller against the causal objective.
+The first bounded joint projection adaptation improved the held-out terminal
+MSE to **0.1970640** after 20 CPU steps, but remains well above the gate; its
+report is retained under
+`reports/controller_provider_pca_2026-08-03/joint20_train8x16_validation16x16.json`.
+
 ### Milestone 2 ledger
 
 ### Current Milestone 3 attention boundary (2026-08-03)

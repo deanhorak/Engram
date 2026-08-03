@@ -15,6 +15,13 @@ from .native_bitnet_attention import aggregate_native_attention_metrics
 from .native_projection import NativeTernaryProjectionKernel
 from .native_bitnet_chat import run_native_bitnet_chat
 from .controller_only import ControllerOnlyResult, ControllerOnlyRuntime
+from .operator_stream import (
+    OPERATOR_PROVIDER_FORMAT,
+    OPERATOR_PROVIDER_VERSION,
+    OperatorStreamProvider,
+    PCAOperatorStreamProvider,
+    TraceOperatorStreamProvider,
+)
 from .olmoe_native import (
     OLMoENativePackageRuntime,
     OLMoENativeRuntimeError,
@@ -48,6 +55,11 @@ __all__ = [
     "run_native_bitnet_chat",
     "ControllerOnlyResult",
     "ControllerOnlyRuntime",
+    "OPERATOR_PROVIDER_FORMAT",
+    "OPERATOR_PROVIDER_VERSION",
+    "OperatorStreamProvider",
+    "PCAOperatorStreamProvider",
+    "TraceOperatorStreamProvider",
     "load_olmoe_selector_policy",
     "validate_native_bitnet_package",
 ]
