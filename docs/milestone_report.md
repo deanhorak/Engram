@@ -176,6 +176,12 @@ thresholds.
 3. The protected replay and authenticated opt-in package boundary now pass.
    Keep native defaults selector-disabled while deciding whether to implement
    full runtime policy consumption and broader end-to-end benchmarking.
+4. Keep the exact operator-residual controller as the production boundary.
+   The native factorized correction path is implemented and measurable, but
+   the existing nonzero artifact scored 0.0% token agreement on the eight-
+   prompt development screen. Do not tune that artifact further; the next
+   M4 experiment should co-train the sparse semantic/attention teacher and
+   controller against causal logits, with a fresh held-out split.
 
 ## Verification
 
