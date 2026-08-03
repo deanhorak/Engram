@@ -1,0 +1,169 @@
+{
+  "causal_objective": {
+    "decoder_layers_loaded": false,
+    "enabled": true,
+    "lm_head": "/home/dean/repos/engram/work/controller_distillation/bitnet_causal_smoke_1x4_k8/lm_head_f16.npy",
+    "norm_weight": "/home/dean/repos/engram/work/controller_distillation/bitnet_causal_smoke_1x4_k8/norm_f16.npy",
+    "target": "teacher_topk_logits_and_next_token",
+    "weight": 0.1
+  },
+  "controller": {
+    "adapter_rank": 1,
+    "format": "engram.controller.factorized_residual",
+    "input_dim": 7680,
+    "num_stages": 30,
+    "operator": "factorized_residual_gate_stage_adapter",
+    "parameter_count": 266270,
+    "rank": 2,
+    "schema_version": 1,
+    "serialized_bytes": 1065080,
+    "state_dim": 2560,
+    "state_normalization": "per_token_rms",
+    "storage_dtype": "float32",
+    "tensor_layout": {
+      "adapter_down": [
+        30,
+        2560,
+        1
+      ],
+      "adapter_up": [
+        30,
+        1,
+        2560
+      ],
+      "bias": [
+        5120
+      ],
+      "gate_up": [
+        2,
+        5120
+      ],
+      "input_down": [
+        7680,
+        2
+      ],
+      "recurrent_down": [
+        2560,
+        2
+      ],
+      "stage_embeddings": [
+        30,
+        2560
+      ],
+      "step_scale": [
+        30
+      ]
+    }
+  },
+  "cpu_reload_parity": {
+    "max_absolute_error": 2.384185791015625e-06,
+    "mean_absolute_error": 1.2237853752594674e-07,
+    "passed": true,
+    "records": 2,
+    "runtime_device": "cpu",
+    "torch_required_by_serialized_runtime": false
+  },
+  "experiment": "shared_controller_distillation",
+  "fixed_substitution_gate": {
+    "actual": 1.9661005735397339,
+    "metric": "protected_validation_terminal_normalized_mse",
+    "passed": false,
+    "threshold": 0.0225
+  },
+  "inference_device": "cpu",
+  "initial_controller": null,
+  "initial_validation": {
+    "causal_target_ce": 0.0,
+    "causal_topk_kl": 10.39111852645874,
+    "cosine_loss": 0.969941645860672,
+    "delta_normalized_mse": 1.0000097751617432,
+    "hidden_normalized_mse": 1.9398842453956604,
+    "loss": 5.298031330108643,
+    "terminal_normalized_mse": 1.9720385670661926
+  },
+  "optimizer_device": "cpu",
+  "protected_validation": true,
+  "records": {
+    "training": 4,
+    "validation": 4
+  },
+  "scope": {
+    "compiled_episodic_operator_substitution_tested": false,
+    "compiled_semantic_operator_substitution_tested": false,
+    "controller_inputs": [
+      "token_embedding",
+      "semantic_output",
+      "episodic_output"
+    ],
+    "end_to_end_generation_qualified": false,
+    "original_transformer_layers_removed_from_controller_runtime": true,
+    "teacher_operator_outputs_used": true
+  },
+  "source_model_hash": "8143ae115ed6babe5e5ada8fb8c5b769d8f417802b2db042ad98b4f7ed73975b",
+  "status": "development_result",
+  "teacher_device": "cpu",
+  "teacher_runtime": "packaged_native_bitnet_cpu",
+  "torch_required_for_inference": false,
+  "trace": "/home/dean/repos/engram/work/controller_distillation/bitnet_causal_smoke_1x4_k8",
+  "training": {
+    "batch_size": 2,
+    "causal_weight": 0.1,
+    "elapsed_seconds": 0.41108230300596915,
+    "history": [
+      {
+        "causal_target_ce": 0.0,
+        "causal_topk_kl": 9.275126457214355,
+        "cosine_loss": 0.9875884652137756,
+        "delta_normalized_mse": 0.9999987483024597,
+        "hidden_normalized_mse": 1.9751673936843872,
+        "loss": 5.270998477935791,
+        "step": 1,
+        "teacher_forcing": 0.0,
+        "terminal_normalized_mse": 2.0195600986480713
+      }
+    ],
+    "initial_metrics": {
+      "causal_target_ce": 0.0,
+      "causal_topk_kl": 16.265388011932373,
+      "cosine_loss": 0.9648853838443756,
+      "delta_normalized_mse": 1.0000008344650269,
+      "hidden_normalized_mse": 1.9297613501548767,
+      "loss": 5.8930604457855225,
+      "terminal_normalized_mse": 1.9902713298797607
+    },
+    "learning_rate": 0.001,
+    "metrics": {
+      "causal_target_ce": 0.0,
+      "causal_topk_kl": 18.66483736038208,
+      "cosine_loss": 0.9436604678630829,
+      "delta_normalized_mse": 0.9997490346431732,
+      "hidden_normalized_mse": 1.88731187582016,
+      "loss": 6.037224054336548,
+      "terminal_normalized_mse": 1.939124882221222
+    },
+    "seed": 37,
+    "steps": 1,
+    "teacher_forcing_schedule": "none",
+    "weight_decay": 0.0001
+  },
+  "trajectory_development_gate_passed": true,
+  "validation": {
+    "causal_target_ce": 0.0,
+    "causal_topk_kl": 10.118908286094666,
+    "cosine_loss": 0.9677156209945679,
+    "delta_normalized_mse": 0.9999552369117737,
+    "hidden_normalized_mse": 1.935431957244873,
+    "loss": 5.260183572769165,
+    "terminal_normalized_mse": 1.9661005735397339
+  },
+  "validation_improvement": {
+    "causal_target_ce": 0.0,
+    "causal_topk_kl": 0.2722102403640747,
+    "cosine_loss": 0.002226024866104126,
+    "delta_normalized_mse": 5.453824996948242e-05,
+    "hidden_normalized_mse": 0.0044522881507873535,
+    "loss": 0.03784775733947754,
+    "terminal_normalized_mse": 0.00593799352645874
+  },
+  "validation_trace": "/home/dean/repos/engram/work/controller_distillation/bitnet_causal_smoke_val_other_1x4_k8"
+}

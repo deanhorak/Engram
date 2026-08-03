@@ -66,6 +66,14 @@ synthetic CPU smoke exercised backpropagation and reload parity. This does not
 qualify the gate until real BitNet causal traces and an independent held-out
 run are captured.
 
+A real CPU smoke now exercises the complete path on two sequence-disjoint
+1-sequence/4-position BitNet traces with top-8 logits. The rank-2 one-step fit
+consumed the frozen vocabulary head and passed CPU reload parity, but failed
+the fixed controller gate (validation terminal normalized MSE **1.96610**,
+top-k KL **10.11891**). It is execution evidence only:
+`reports/controller_causal_smoke_2026-08-03/training_report.json` (SHA-256
+`c42501f4ae6896dba3704a66fedbf6b9dd88468b073592f3d360eba197b938b6`).
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and

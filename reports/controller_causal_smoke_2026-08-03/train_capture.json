@@ -1,0 +1,15 @@
+{
+  "batch_size": 1,
+  "batches": 1,
+  "causal_top_k": 8,
+  "elapsed_seconds": 41.360063546017045,
+  "hidden_size": 2560,
+  "num_stages": 30,
+  "optimizer_device": null,
+  "record_offset": 0,
+  "sequences": 1,
+  "split": "training",
+  "teacher_device": "cpu",
+  "token_positions": 4,
+  "trace": "/home/dean/repos/engram/work/controller_distillation/bitnet_causal_smoke_1x4_k8"
+}

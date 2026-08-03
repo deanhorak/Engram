@@ -34,6 +34,15 @@ serialized controller still reloads with parity. No real BitNet causal trace
 has been captured in this boundary, so this is plumbing evidence rather than a
 semantic gate result.
 
+A real CPU smoke now exercises the complete path: two sequence-disjoint
+1-sequence/4-position BitNet traces with top-8 logits were captured (about 41 s
+per sequence), and a rank-2 one-step controller fit consumed the frozen
+vocabulary head. The causal objective ran and CPU reload parity passed, but the
+tiny arm failed the fixed controller gate (validation terminal normalized MSE
+**1.96610**, top-k KL **10.11891**). It is retained as execution evidence only:
+`reports/controller_causal_smoke_2026-08-03/training_report.json` (SHA-256
+`c42501f4ae6896dba3704a66fedbf6b9dd88468b073592f3d360eba197b938b6`).
+
 ## Native recurrent-controller implementation boundary
 
 The native token runtime now has a direct implementation of the schema-v3
