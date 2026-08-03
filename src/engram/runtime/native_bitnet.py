@@ -600,6 +600,9 @@ class NativeBitNetRuntime:
             controller = self.controller_path
         if not isinstance(controller, FactorizedRecurrentController):
             controller = FactorizedRecurrentController.load(controller)
+        controller_correction_enabled = any(
+            float(value) != 0.0 for value in controller.step_scale
+        )
         self.enable_bounded_attention(
             library=attention_library,
             shell_library=self.kernel.library_path,
@@ -701,7 +704,11 @@ class NativeBitNetRuntime:
             stopped_on_eos=bool(generated and self._is_eos(generated[-1])),
             prefill_seconds=prefill_seconds,
             decode_seconds=decode_seconds,
-            controller_mode="native_exact_operator_residual",
+            controller_mode=(
+                "native_factorized_recurrent_correction"
+                if controller_correction_enabled
+                else "native_exact_operator_residual"
+            ),
             controller_seconds=controller_seconds,
             controller_state_bytes=controller_state_bytes,
             decoder_layer_forward_calls=runner.decoder_layer_forward_calls,
