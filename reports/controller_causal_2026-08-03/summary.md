@@ -25,3 +25,10 @@ provider/model capacity or objective rather than add blind epochs.
 Machine-readable report:
 `rank128_8x16_500cpu.json` (SHA-256
 `47a1c94ae4797c9e0653f1b88d129620db691f3ad3306ca1ed85f2c234267a32`).
+
+A rank-256/adapter-8 capacity arm was then run for the same 500 CPU steps. It
+also passes reload parity but is no better: validation terminal normalized MSE
+**0.2710301**, hidden MSE **0.7289818**, and top-k KL **8.9769297**. Increasing
+rank alone is therefore rejected as the next direction. Its report is
+`rank256_8x16_500cpu.json` (SHA-256
+`c5bdcdcc090314ea246e1fde51f67644e97e483e6dcd80781b39d1d01ceb3bf9`).

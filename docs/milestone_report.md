@@ -52,6 +52,10 @@ controller configuration for promotion; more epochs of the same objective are
 not justified. Report:
 `reports/controller_causal_2026-08-03/rank128_8x16_500cpu.json` (SHA-256
 `47a1c94ae4797c9e0653f1b88d129620db691f3ad3306ca1ed85f2c234267a32`).
+A rank-256/adapter-8 arm at the same 500-step budget is no better: terminal
+normalized MSE **0.2710301**, hidden MSE **0.7289818**, and top-k KL
+**8.9769297**. Capacity alone is therefore rejected; the next change must
+co-adapt or replace the operator-stream provider.
 
 ## Native recurrent-controller implementation boundary
 

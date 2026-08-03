@@ -1,0 +1,279 @@
+{
+  "causal_objective": {
+    "decoder_layers_loaded": false,
+    "enabled": true,
+    "lm_head": "/home/dean/repos/engram/work/controller_distillation/bitnet_causal_smoke_1x4_k8/lm_head_f16.npy",
+    "norm_weight": "/home/dean/repos/engram/work/controller_distillation/bitnet_causal_smoke_1x4_k8/norm_f16.npy",
+    "target": "teacher_topk_logits_and_next_token",
+    "weight": 0.1
+  },
+  "controller": {
+    "adapter_rank": 8,
+    "format": "engram.controller.factorized_residual",
+    "input_dim": 7680,
+    "num_stages": 30,
+    "operator": "factorized_residual_gate_stage_adapter",
+    "parameter_count": 5242910,
+    "rank": 256,
+    "schema_version": 1,
+    "serialized_bytes": 20971640,
+    "state_dim": 2560,
+    "state_normalization": "per_token_rms",
+    "storage_dtype": "float32",
+    "tensor_layout": {
+      "adapter_down": [
+        30,
+        2560,
+        8
+      ],
+      "adapter_up": [
+        30,
+        8,
+        2560
+      ],
+      "bias": [
+        5120
+      ],
+      "gate_up": [
+        256,
+        5120
+      ],
+      "input_down": [
+        7680,
+        256
+      ],
+      "recurrent_down": [
+        2560,
+        256
+      ],
+      "stage_embeddings": [
+        30,
+        2560
+      ],
+      "step_scale": [
+        30
+      ]
+    }
+  },
+  "cpu_reload_parity": {
+    "max_absolute_error": 1.0728836059570312e-05,
+    "mean_absolute_error": 3.95206001257975e-07,
+    "passed": true,
+    "records": 2,
+    "runtime_device": "cpu",
+    "torch_required_by_serialized_runtime": false
+  },
+  "experiment": "shared_controller_distillation",
+  "fixed_substitution_gate": {
+    "actual": 0.27103013079613447,
+    "metric": "protected_validation_terminal_normalized_mse",
+    "passed": false,
+    "threshold": 0.0225
+  },
+  "inference_device": "cpu",
+  "initial_controller": null,
+  "initial_validation": {
+    "causal_target_ce": 25.944734394550323,
+    "causal_topk_kl": 48.34475016593933,
+    "cosine_loss": 0.9703642390668392,
+    "delta_normalized_mse": 1.0000082552433014,
+    "hidden_normalized_mse": 1.9407289773225784,
+    "loss": 9.757028579711914,
+    "terminal_normalized_mse": 1.986167699098587
+  },
+  "optimizer_device": "cpu",
+  "protected_validation": true,
+  "records": {
+    "training": 128,
+    "validation": 256
+  },
+  "scope": {
+    "compiled_episodic_operator_substitution_tested": false,
+    "compiled_semantic_operator_substitution_tested": false,
+    "controller_inputs": [
+      "token_embedding",
+      "semantic_output",
+      "episodic_output"
+    ],
+    "end_to_end_generation_qualified": false,
+    "original_transformer_layers_removed_from_controller_runtime": true,
+    "teacher_operator_outputs_used": true
+  },
+  "source_model_hash": "8143ae115ed6babe5e5ada8fb8c5b769d8f417802b2db042ad98b4f7ed73975b",
+  "status": "development_result",
+  "teacher_device": "cpu",
+  "teacher_runtime": "packaged_native_bitnet_cpu",
+  "torch_required_for_inference": false,
+  "trace": "/home/dean/repos/engram/work/controller_distillation/bitnet_train_causal_8x16_k32",
+  "training": {
+    "batch_size": 16,
+    "causal_weight": 0.1,
+    "elapsed_seconds": 180.91853783398983,
+    "history": [
+      {
+        "causal_target_ce": 1.5634865760803223,
+        "causal_topk_kl": 3.4811553955078125,
+        "cosine_loss": 0.07280893623828888,
+        "delta_normalized_mse": 1.0000208616256714,
+        "hidden_normalized_mse": 0.14561744034290314,
+        "loss": 0.8469245433807373,
+        "step": 1,
+        "teacher_forcing": 1.0,
+        "terminal_normalized_mse": 0.056818295270204544
+      },
+      {
+        "causal_target_ce": 0.23664425313472748,
+        "causal_topk_kl": 2.911344289779663,
+        "cosine_loss": 0.04138500988483429,
+        "delta_normalized_mse": 0.7292219996452332,
+        "hidden_normalized_mse": 0.08276954293251038,
+        "loss": 0.6041581630706787,
+        "step": 50,
+        "teacher_forcing": 1.0,
+        "terminal_normalized_mse": 0.037894107401371
+      },
+      {
+        "causal_target_ce": 1.2339190244674683,
+        "causal_topk_kl": 2.895951509475708,
+        "cosine_loss": 0.03759918361902237,
+        "delta_normalized_mse": 0.7268001437187195,
+        "hidden_normalized_mse": 0.07519802451133728,
+        "loss": 0.6099485158920288,
+        "step": 100,
+        "teacher_forcing": 1.0,
+        "terminal_normalized_mse": 0.028847426176071167
+      },
+      {
+        "causal_target_ce": 0.2190011441707611,
+        "causal_topk_kl": 2.891496181488037,
+        "cosine_loss": 0.03321768343448639,
+        "delta_normalized_mse": 0.5699536204338074,
+        "hidden_normalized_mse": 0.06643518805503845,
+        "loss": 0.5349156856536865,
+        "step": 150,
+        "teacher_forcing": 1.0,
+        "terminal_normalized_mse": 0.028045665472745895
+      },
+      {
+        "causal_target_ce": 0.0,
+        "causal_topk_kl": 2.929567575454712,
+        "cosine_loss": 0.03455417603254318,
+        "delta_normalized_mse": 0.6200245022773743,
+        "hidden_normalized_mse": 0.06910811364650726,
+        "loss": 0.5488412380218506,
+        "step": 200,
+        "teacher_forcing": 1.0,
+        "terminal_normalized_mse": 0.02831479348242283
+      },
+      {
+        "causal_target_ce": 0.24900147318840027,
+        "causal_topk_kl": 2.866881847381592,
+        "cosine_loss": 0.03726641461253166,
+        "delta_normalized_mse": 0.4895302951335907,
+        "hidden_normalized_mse": 0.07453255355358124,
+        "loss": 0.5147079825401306,
+        "step": 250,
+        "teacher_forcing": 0.7525050100200401,
+        "terminal_normalized_mse": 0.02115299366414547
+      },
+      {
+        "causal_target_ce": 0.0,
+        "causal_topk_kl": 3.1773688793182373,
+        "cosine_loss": 0.0578078031539917,
+        "delta_normalized_mse": 0.6351572871208191,
+        "hidden_normalized_mse": 0.11561562120914459,
+        "loss": 0.6368385553359985,
+        "step": 300,
+        "teacher_forcing": 0.502004008016032,
+        "terminal_normalized_mse": 0.03891591355204582
+      },
+      {
+        "causal_target_ce": 0.6050959825515747,
+        "causal_topk_kl": 3.2089908123016357,
+        "cosine_loss": 0.08917755633592606,
+        "delta_normalized_mse": 0.61738520860672,
+        "hidden_normalized_mse": 0.17835471034049988,
+        "loss": 0.7703027725219727,
+        "step": 350,
+        "teacher_forcing": 0.251503006012024,
+        "terminal_normalized_mse": 0.09265752136707306
+      },
+      {
+        "causal_target_ce": 9.536734069115482e-07,
+        "causal_topk_kl": 9.594782829284668,
+        "cosine_loss": 0.2825345993041992,
+        "delta_normalized_mse": 0.7395731806755066,
+        "hidden_normalized_mse": 0.5650691986083984,
+        "loss": 2.095106840133667,
+        "step": 400,
+        "teacher_forcing": 0.0010020040080160886,
+        "terminal_normalized_mse": 0.3574126362800598
+      },
+      {
+        "causal_target_ce": 1.6807425022125244,
+        "causal_topk_kl": 5.142614841461182,
+        "cosine_loss": 0.25450199842453003,
+        "delta_normalized_mse": 0.8066316843032837,
+        "hidden_normalized_mse": 0.5090034604072571,
+        "loss": 1.5219290256500244,
+        "step": 450,
+        "teacher_forcing": 0.0,
+        "terminal_normalized_mse": 0.22953729331493378
+      },
+      {
+        "causal_target_ce": 0.08626630902290344,
+        "causal_topk_kl": 3.827768325805664,
+        "cosine_loss": 0.21076105535030365,
+        "delta_normalized_mse": 0.7272607684135437,
+        "hidden_normalized_mse": 0.42152145504951477,
+        "loss": 1.1763956546783447,
+        "step": 500,
+        "teacher_forcing": 0.0,
+        "terminal_normalized_mse": 0.16704943776130676
+      }
+    ],
+    "initial_metrics": {
+      "causal_target_ce": 35.758365750312805,
+      "causal_topk_kl": 45.85573625564575,
+      "cosine_loss": 0.9695547968149185,
+      "delta_normalized_mse": 1.0000109672546387,
+      "hidden_normalized_mse": 1.9391078799962997,
+      "loss": 9.749163389205933,
+      "terminal_normalized_mse": 1.9835645109415054
+    },
+    "learning_rate": 0.0003,
+    "metrics": {
+      "causal_target_ce": 1.7938702870160341,
+      "causal_topk_kl": 4.326122522354126,
+      "cosine_loss": 0.2226800788193941,
+      "delta_normalized_mse": 0.7396877780556679,
+      "hidden_normalized_mse": 0.4453599601984024,
+      "loss": 1.3022368401288986,
+      "terminal_normalized_mse": 0.1722278892993927
+    },
+    "seed": 37,
+    "steps": 500,
+    "teacher_forcing_schedule": "scheduled",
+    "weight_decay": 0.001
+  },
+  "trajectory_development_gate_passed": true,
+  "validation": {
+    "causal_target_ce": 3.849265068769455,
+    "causal_topk_kl": 8.976929664611816,
+    "cosine_loss": 0.3644908871501684,
+    "delta_normalized_mse": 0.8715103529393673,
+    "hidden_normalized_mse": 0.7289817668497562,
+    "loss": 2.24826318025589,
+    "terminal_normalized_mse": 0.27103013079613447
+  },
+  "validation_improvement": {
+    "causal_target_ce": 22.09546932578087,
+    "causal_topk_kl": 39.367820501327515,
+    "cosine_loss": 0.6058733519166708,
+    "delta_normalized_mse": 0.1284979023039341,
+    "hidden_normalized_mse": 1.2117472104728222,
+    "loss": 7.508765399456024,
+    "terminal_normalized_mse": 1.7151375683024526
+  },
+  "validation_trace": "/home/dean/repos/engram/work/controller_distillation/bitnet_validation_causal_16x16_k32"
+}

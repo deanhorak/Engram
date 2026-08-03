@@ -110,6 +110,8 @@ teacher logits, rank 128, 500 steps). It preserves CPU serialization parity but
 fails free-run validation (terminal normalized MSE **0.2624663**), so this
 factorized controller is not promoted and the next experiment must change
 capacity or the operator-stream provider.
+The matched rank-256 capacity arm also fails (terminal normalized MSE
+**0.2710301**), so rank expansion alone is not the next direction.
 
 ### Milestone 2 ledger
 
