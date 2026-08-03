@@ -1,6 +1,6 @@
 # Engram milestone and gate report
 
-Status date: 2026-08-02
+Status date: 2026-08-03
 
 ## Executive result
 
@@ -25,13 +25,28 @@ attention reads falling from 710,667,264 to 702,166,336 bytes (1.1962%); the
 older-candidate scoring stage falls 7.3733%. This is a real semantic and
 locality result, but not yet a convincing end-to-end speedup.
 
+The required long-context CPU scaling boundary is now measured on development
+record 0.  The exact same native package was run unmasked and masked at 512
+and 2,048 positions (the first 128 positions remain the authenticated
+selector window; later positions repeat tokens with episodic directives
+disabled).  Answer quality remains 100% top-1 agreement with mean hidden/logit
+relative L2 0.008138/0.003919 and NLL delta −0.001520.  At 512 positions the
+masked logical-read fraction is 0.997079 (3.04 versus 3.09 tokens/s); at 2,048
+it is 0.999275 (3.083 versus 3.085 tokens/s).  Peak resident set was 6.28 GiB
+and did not grow with the repeated context.  These results establish bounded
+state and honest scaling, but do not claim a speedup: the selector saves a
+fixed 8.55 MiB of logical attention reads while the rest of the full model
+continues to run.  The report is
+`work/olmoe_q7/retrieval_episodic_long_context_rank16_pool6.json`, SHA-256
+`fa205bd2ab4c91de27170247e7669f44c9def8bccea22d94558f8caa4b26bf71`.
+
 ## Milestones
 
 | Milestone | Status | Evidence and remaining work |
 |---|---|---|
 | 1. Repository, inspection, fixtures, teacher traces, exact MLP decomposition, oracle top-K, tests | Complete | Build system, source inspection, teacher traces, exact SwiGLU/MLP decomposition, oracle experiments, and regression reports are present. |
-| 2. Semantic memory, practical routing, quantization, Python runtime, substituted-MLP evaluation | Gate passed; promotion pending | The train-to-development causal semantic gate now passes on CPU. Package promotion still requires long-context traffic/latency measurements and a protected evaluation. |
-| 3. Attention analysis, local/recurrent/retrieval heads, hybrid episodic memory, attention substitution | In progress | Native W16/C8/K4 attention, episodic cache, Q/K candidate tracing, compressed selection, and exact reranking are implemented. Long-context performance and protected substitution remain. |
+| 2. Semantic memory, practical routing, quantization, Python runtime, substituted-MLP evaluation | Gate passed; bounded-runtime evidence complete | The train-to-development causal semantic gate and the 512/2,048-position CPU scaling boundary pass. The evaluator-only selector still needs a separately authorized protected evaluation before package promotion. |
+| 3. Attention analysis, local/recurrent/retrieval heads, hybrid episodic memory, attention substitution | In progress | Native W16/C8/K4 attention, episodic cache, Q/K candidate tracing, compressed selection, exact reranking, and long-context scaling are implemented. Protected substitution and kernel-level speedup remain. |
 | 4. Shared recurrent controller and layer-free Engram runtime | Partial | Controller training, intermediate-state checks, adaptive-cycle experiments, and incremental dispatch exist. Broad generalization and fully promoted layer-free generation remain. |
 | 5. Vocabulary/transition/correction artifacts, compiler, validation and CLI | Partial/usable | Native package generation, mapped weights, correction paths, validation, greedy generation, and chat CLI work. Full semantic-controller package promotion remains gated. |
 | 6. Native C++ runtime, kernels, mapping, parity, generation, benchmarks | Partial/usable | CPU scalar/vector kernels, memory mapping, C ABI parity, native generation, and tests are operational. End-to-end long-context benchmarks and optimization remain. |
@@ -55,14 +70,12 @@ thresholds.
 
 ## Next development order
 
-1. Benchmark the frozen selector at 512, 2,048, and longer contexts, reporting
-   wall time, logical bytes, native counters, and peak memory.
-2. Run a development-only rank/pool sweep (especially pool 4 versus pool 6)
+1. Run a development-only rank/pool sweep (especially pool 4 versus pool 6)
    to quantify the quality/traffic frontier without refitting.
-3. If the frontier remains near a 1% total-read reduction, keep the selector
+2. If the frontier remains near a 1% total-read reduction, keep the selector
    as a validated research path and prioritize fused projection/MLP kernels or
    a more aggressive learned residual selector.
-4. Only after that decision, authorize protected evaluation and package-level
+3. Only after that decision, authorize protected evaluation and package-level
    integration.
 
 ## Verification

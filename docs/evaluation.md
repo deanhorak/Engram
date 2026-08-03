@@ -1902,8 +1902,8 @@ causal thresholds.  The authenticated result is
 `0c5cb2273f63b930148c78070da68ae57bb821969a68e2a6a038ee7ac5d04bb6`).
 
 The six-slot pool retains 75% of the eight older-candidate slots, so the
-current traffic result is scoped to that episodic older-candidate stage; full
-long-context wall-clock and DRAM measurements remain separate work.
+current traffic result is scoped to that episodic older-candidate stage; the
+separate long-context CPU scaling result is reported below.
 
 Native counters show why the scope matters.  Mean logical attention reads
 fall from **710,667,264** to **702,166,336** bytes (**1.1962%** reduction),
@@ -1911,3 +1911,25 @@ while older candidate entries scored fall from **222,208** to **205,824**
 (**7.3733%** reduction).  Episodic value reads and the dominant local,
 projection, and Q7 work are unchanged, so this is a validated semantic/local
 traffic boundary rather than a claimed end-to-end speedup.
+
+### Long-context CPU scaling
+
+The frozen rank-16/pool-6 selector was then measured on development record 0
+at 512 and 2,048 positions with the native CPU package. The first 128
+positions are the authenticated selector window; later positions repeat the
+deterministic token stream with episodic directives disabled. This isolates
+bounded-state scaling from any unsupported claim that the selector has learned
+new retrieval behavior at longer contexts. The answer window remains at
+100% top-1 agreement, with mean hidden/logit relative L2 0.008138/0.003919
+and NLL delta −0.001520. Masked/unmasked logical-read fractions are 0.997079
+at 512 positions and 0.999275 at 2,048, with 3.04/3.09 and 3.083/3.085
+tokens/s. Peak resident memory was 6.28 GiB and did not grow with the
+repeated context. The reproducible report is
+`work/olmoe_q7/retrieval_episodic_long_context_rank16_pool6.json` (SHA-256
+`fa205bd2ab4c91de27170247e7669f44c9def8bccea22d94558f8caa4b26bf71`).
+
+This completes the long-context boundary for Milestone 2, but it is not an
+end-to-end speedup claim: the selector removes a fixed older-candidate slice,
+while projection, MLP, local attention, and episodic value reads remain. A
+protected evaluation must still be separately authorized before the
+evaluator-only mask is promoted into the packaged runtime.

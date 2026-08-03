@@ -1532,8 +1532,19 @@ thresholds.  The development report is
 
 This closes the train-to-development semantic gate for the bounded selector.
 It still does not promote the evaluator-only mask to the packaged runtime:
-the remaining boundary is measured end-to-end traffic/latency at longer
-contexts, followed by a separately authorized protected evaluation.
+the remaining boundary is a separately authorized protected evaluation. The
+long-context CPU scaling boundary is now complete.
+
+The frozen rank-16/pool-6 selector was replayed on development record 0 at
+512 and 2,048 positions. The first 128 positions remain the authenticated
+selector window; later positions repeat the deterministic token stream with
+episodic directives disabled. Answer quality remains 100% top-1 agreement,
+with mean hidden/logit relative L2 0.008138/0.003919 and NLL delta −0.001520.
+Masked/unmasked logical-read fractions are 0.997079 at 512 positions and
+0.999275 at 2,048, with 3.04/3.09 and 3.083/3.085 tokens/s. Peak resident
+memory was 6.28 GiB and did not grow with context. Report:
+`work/olmoe_q7/retrieval_episodic_long_context_rank16_pool6.json` (SHA-256
+`fa205bd2ab4c91de27170247e7669f44c9def8bccea22d94558f8caa4b26bf71`).
 
 The same development replay now records native counters.  Mean logical
 attention reads fall from **710,667,264** bytes unmasked to **702,166,336**

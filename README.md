@@ -1897,8 +1897,25 @@ report is
 `0c5cb2273f63b930148c78070da68ae57bb821969a68e2a6a038ee7ac5d04bb6`).
 
 This closes the train-to-development semantic gate for the bounded selector.
-The selector remains evaluator-only until long-context traffic and latency
-are measured and a protected evaluation is separately authorized.
+The selector remains evaluator-only until a protected evaluation is separately
+authorized; the required long-context CPU scaling boundary is now complete.
+
+### Long-context CPU scaling
+
+The frozen rank-16/pool-6 selector was replayed on development record 0 at
+512 and 2,048 positions using the native CPU package. The first 128 positions
+are the authenticated selector window; later positions repeat the deterministic
+token stream with episodic directives disabled, so this is a bounded-state
+scaling measurement rather than a new retrieval claim. Answer quality remains
+100% top-1 agreement (mean hidden/logit relative L2 0.008138/0.003919; NLL
+delta −0.001520). The masked/unmasked logical-read fractions are 0.997079 at
+512 positions and 0.999275 at 2,048, with 3.04/3.09 and 3.083/3.085 tokens/s
+respectively. Peak resident memory was 6.28 GiB and did not grow with the
+repeated context. The selector therefore has authenticated semantics and
+bounded state, but not yet a demonstrated end-to-end speedup: most model work
+is unchanged. Reproducible report:
+`work/olmoe_q7/retrieval_episodic_long_context_rank16_pool6.json` (SHA-256
+`fa205bd2ab4c91de27170247e7669f44c9def8bccea22d94558f8caa4b26bf71`).
 
 The replay's native counters show the current tradeoff: mean logical
 attention reads fall from 710,667,264 to 702,166,336 bytes (1.1962%), while
