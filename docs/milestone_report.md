@@ -131,6 +131,16 @@ context correction screens regress to **0.4178558**, **0.3247504**, and
 validation mean normalized MSE. The negative results are
 preserved in `reports/controller_provider_pca_2026-08-03/context_and_retrieval_screens.json`.
 
+The next provider architecture is a diagonal state-space recurrence with a
+64-wide token memory and rank-16 stage heads. Starting from the linear
+provider and running 80 free-running CPU optimization steps lowers held-out
+terminal normalized MSE to **0.1926129** (training **0.1439981**). This is a
+material but insufficient improvement over the **0.0225** gate. The
+`StateSpaceOperatorStreamProvider` class now serializes the memory, decay,
+projection, and output tensors with checksums, making longer training and
+CPU-only replay reproducible. The screen remains unpromoted:
+`reports/controller_provider_pca_2026-08-03/state_space_screen.json`.
+
 ## Native recurrent-controller implementation boundary
 
 The native token runtime now has a direct implementation of the schema-v3

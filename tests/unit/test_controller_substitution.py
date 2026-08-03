@@ -9,6 +9,7 @@ from engram.runtime.controller_only import ControllerOnlyRuntime
 from engram.runtime.operator_stream import (
     PCAOperatorStreamProvider,
     RecurrentContextProvider,
+    StateSpaceOperatorStreamProvider,
     TraceOperatorStreamProvider,
     TraceSequenceOperatorStreamProvider,
 )
@@ -234,3 +235,42 @@ def test_sequence_trace_provider_roundtrip_is_checksum_authenticated(tmp_path):
     payload.write_bytes(payload.read_bytes() + b"tamper")
     with pytest.raises(ValueError, match="checksum mismatch"):
         TraceSequenceOperatorStreamProvider.load(path)
+
+
+def test_state_space_provider_roundtrip_and_sequence_execution(tmp_path):
+    rng = np.random.default_rng(107)
+    stages, width, memory, projection, rank = 2, 4, 3, 2, 1
+    provider = StateSpaceOperatorStreamProvider(
+        memory_input=rng.normal(size=(width, memory)).astype(np.float32),
+        decay=np.full(memory, 0.8, dtype=np.float32),
+        state_projection=rng.normal(size=(width, projection)).astype(np.float32),
+        token_projection=rng.normal(size=(width, projection)).astype(np.float32),
+        stage_head=rng.normal(
+            size=(stages, 2 * projection + memory + 1, 2 * rank)
+        ).astype(np.float32),
+        semantic_mean=rng.normal(size=(stages, width)).astype(np.float32),
+        semantic_basis=rng.normal(size=(stages, rank, width)).astype(np.float32),
+        episodic_mean=rng.normal(size=(stages, width)).astype(np.float32),
+        episodic_basis=rng.normal(size=(stages, rank, width)).astype(np.float32),
+        metadata_payload={"learned": True, "architecture": "diagonal_state_space"},
+    )
+    path = provider.save(tmp_path / "state-space-provider")
+    restored = StateSpaceOperatorStreamProvider.load(path)
+    initial = rng.normal(size=(2, 3, width)).astype(np.float32)
+    token = rng.normal(size=(2, 3, width)).astype(np.float32)
+    controller = FactorizedRecurrentController.initialize(
+        input_dim=3 * width,
+        state_dim=width,
+        num_stages=stages,
+        rank=2,
+        adapter_rank=1,
+        operator_residual=True,
+        seed=109,
+    )
+    tensors = controller.tensors()
+    tensors["step_scale"][:] = 0.0
+    runtime = ControllerOnlyRuntime(FactorizedRecurrentController(**tensors))
+    expected = runtime.run_sequence_provider(initial, token, provider)
+    actual = runtime.run_sequence_provider(initial, token, restored)
+    np.testing.assert_allclose(actual.stage_states, expected.stage_states)
+    assert restored.metadata()["provider_kind"] == "state_space_pca"

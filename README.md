@@ -159,6 +159,13 @@ correction were rejected after worse held-out results. The current learned
 provider therefore remains outside the authenticated package until the
 0.0225 causal gate is met.
 
+The next architecture screen is a diagonal state-space provider: a 64-wide
+token memory feeds rank-16 semantic/episodic stage heads. Initialized from
+the linear provider, 80 free-running CPU steps reach held-out terminal
+normalized MSE **0.1926129**. This is measurable progress but not a
+promotion; `StateSpaceOperatorStreamProvider` is serialized for longer
+distillation while the **0.0225** causal gate remains open.
+
 ### Milestone 2 ledger
 
 ### Current Milestone 3 attention boundary (2026-08-03)

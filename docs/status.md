@@ -146,6 +146,16 @@ respectively). These screens are preserved in
 `reports/controller_provider_pca_2026-08-03/context_and_retrieval_screens.json`;
 none is a promotion artifact.
 
+The next architecture screen is a diagonal state-space provider with a
+64-wide persistent memory and rank-16 stage output heads. Initialized from the
+best linear provider and optimized for 80 free-running CPU steps, it lowers
+held-out terminal normalized MSE to **0.1926129** (training **0.1439981**), a
+real improvement but still far above **0.0225**. The provider is now a
+serialized/tested runtime class (`StateSpaceOperatorStreamProvider`) so a
+longer CUDA-assisted distillation run can resume from a durable artifact; the
+80-step screen itself remains unpromoted. Report:
+`reports/controller_provider_pca_2026-08-03/state_space_screen.json`.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and

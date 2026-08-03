@@ -1,0 +1,24 @@
+{
+  "experiment": "diagonal_state_space_operator_provider",
+  "status": "development_result",
+  "training_trace": "work/controller_distillation/bitnet_train_64x16_b4",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "initialization": "rank16 PCA provider projected into a 64-wide diagonal state-space memory",
+  "memory_dim": 64,
+  "projection_width": 64,
+  "output_rank": 16,
+  "training_steps": 80,
+  "optimizer_device": "cpu",
+  "inference_device": "cpu",
+  "transformers_model_loaded": false,
+  "decoder_layer_forward_calls": 0,
+  "training_seconds": 249.4963,
+  "metrics": {
+    "validation_terminal_normalized_mse": 0.1926129162,
+    "validation_max_terminal_normalized_mse": 1.3912037611,
+    "training_terminal_normalized_mse": 0.1439981163,
+    "gate_threshold": 0.0225,
+    "passed": false
+  },
+  "decision": "retain as the next resumable provider architecture; do not promote"
+}

@@ -670,6 +670,207 @@ class RecurrentContextProvider:
         }
 
 
+@dataclass
+class StateSpaceOperatorStreamProvider:
+    """Learned diagonal state-space provider with low-rank stage outputs.
+
+    The token memory is updated once per token with a diagonal recurrence,
+    while each depth stage reads the same memory and predicts semantic and
+    episodic PCA latents.  The artifact contains only NumPy tensors and can be
+    executed by the sequence runtime without a Transformer model.  It is a
+    research provider until its causal held-out result passes the promotion
+    threshold.
+    """
+
+    memory_input: np.ndarray
+    decay: np.ndarray
+    state_projection: np.ndarray
+    token_projection: np.ndarray
+    stage_head: np.ndarray
+    semantic_mean: np.ndarray
+    semantic_basis: np.ndarray
+    episodic_mean: np.ndarray
+    episodic_basis: np.ndarray
+    metadata_payload: dict[str, Any]
+    provider_kind: str = "state_space_pca"
+    _memory: np.ndarray | None = None
+
+    def __post_init__(self) -> None:
+        arrays = {
+            "memory_input": _finite(self.memory_input, "memory_input"),
+            "decay": _finite(self.decay, "decay"),
+            "state_projection": _finite(self.state_projection, "state_projection"),
+            "token_projection": _finite(self.token_projection, "token_projection"),
+            "stage_head": _finite(self.stage_head, "stage_head"),
+            "semantic_mean": _finite(self.semantic_mean, "semantic_mean"),
+            "semantic_basis": _finite(self.semantic_basis, "semantic_basis"),
+            "episodic_mean": _finite(self.episodic_mean, "episodic_mean"),
+            "episodic_basis": _finite(self.episodic_basis, "episodic_basis"),
+        }
+        if arrays["memory_input"].ndim != 2:
+            raise ValueError("memory_input must have shape [state_dim, memory_dim]")
+        state_dim, memory_dim = arrays["memory_input"].shape
+        if arrays["decay"].shape != (memory_dim,):
+            raise ValueError("decay must match memory_dim")
+        for name in ("state_projection", "token_projection"):
+            if arrays[name].ndim != 2 or arrays[name].shape[0] != state_dim:
+                raise ValueError(f"{name} must have shape [state_dim, projection_width]")
+        projection_width = arrays["state_projection"].shape[1]
+        if arrays["token_projection"].shape[1] != projection_width:
+            raise ValueError("state and token projection widths differ")
+        if arrays["semantic_mean"].ndim != 2:
+            raise ValueError("semantic_mean must have shape [stages, state_dim]")
+        stages = arrays["semantic_mean"].shape[0]
+        if arrays["semantic_mean"].shape != (stages, state_dim):
+            raise ValueError("semantic_mean has incompatible dimensions")
+        if arrays["episodic_mean"].shape != (stages, state_dim):
+            raise ValueError("episodic_mean has incompatible dimensions")
+        for prefix in ("semantic", "episodic"):
+            basis = arrays[f"{prefix}_basis"]
+            if basis.ndim != 3 or basis.shape[0] != stages or basis.shape[2] != state_dim:
+                raise ValueError(f"{prefix}_basis has incompatible dimensions")
+        rank = arrays["semantic_basis"].shape[1]
+        if arrays["episodic_basis"].shape[1] != rank:
+            raise ValueError("semantic and episodic output ranks differ")
+        expected_head = (stages, 2 * projection_width + memory_dim + 1, 2 * rank)
+        if arrays["stage_head"].shape != expected_head:
+            raise ValueError(f"stage_head must have shape {expected_head}")
+        for name, value in arrays.items():
+            value.setflags(write=False)
+            object.__setattr__(self, name, value)
+        if not isinstance(self.metadata_payload, dict):
+            raise ValueError("provider metadata must be an object")
+
+    @property
+    def state_dim(self) -> int:
+        return int(self.memory_input.shape[0])
+
+    @property
+    def memory_dim(self) -> int:
+        return int(self.memory_input.shape[1])
+
+    @property
+    def projection_width(self) -> int:
+        return int(self.state_projection.shape[1])
+
+    @property
+    def num_stages(self) -> int:
+        return int(self.stage_head.shape[0])
+
+    @property
+    def output_rank(self) -> int:
+        return int(self.semantic_basis.shape[1])
+
+    def reset(self, batch_shape: tuple[int, ...]) -> None:
+        if not isinstance(batch_shape, tuple) or any(
+            isinstance(value, bool) or not isinstance(value, (int, np.integer)) or value <= 0
+            for value in batch_shape
+        ):
+            raise ValueError("batch_shape must contain positive integer dimensions")
+        self._memory = np.zeros((*batch_shape, self.memory_dim), dtype=np.float32)
+
+    def begin_token(self, token_embedding: np.ndarray) -> None:
+        token = _finite(token_embedding, "token_embedding")
+        if token.ndim < 1 or token.shape[-1] != self.state_dim:
+            raise ValueError("token_embedding has incompatible width")
+        if self._memory is None or self._memory.shape[:-1] != token.shape[:-1]:
+            raise ValueError("reset must be called with the token batch shape first")
+        self._memory = np.tanh(
+            self._memory * self.decay + token @ self.memory_input
+        ).astype(np.float32, copy=False)
+
+    def step(
+        self, state: np.ndarray, token_embedding: np.ndarray, stage: int
+    ) -> tuple[np.ndarray, np.ndarray]:
+        if self._memory is None:
+            raise ValueError("reset and begin_token must precede provider.step")
+        state = _finite(state, "state")
+        token = _finite(token_embedding, "token_embedding")
+        if state.shape != token.shape or state.shape[:-1] != self._memory.shape[:-1]:
+            raise ValueError("provider state, token, and memory shapes differ")
+        if not isinstance(stage, (int, np.integer)) or isinstance(stage, bool):
+            raise ValueError("stage must be an integer")
+        if stage < 0 or stage >= self.num_stages:
+            raise ValueError("stage is outside the provider")
+        features = np.concatenate(
+            (
+                state @ self.state_projection,
+                token @ self.token_projection,
+                self._memory,
+                np.ones((*state.shape[:-1], 1), dtype=np.float32),
+            ),
+            axis=-1,
+        )
+        latent = features @ self.stage_head[stage]
+        semantic = self.semantic_mean[stage] + latent[..., : self.output_rank] @ self.semantic_basis[stage]
+        episodic = self.episodic_mean[stage] + latent[..., self.output_rank :] @ self.episodic_basis[stage]
+        return np.asarray(semantic, dtype=np.float32), np.asarray(episodic, dtype=np.float32)
+
+    def metadata(self) -> dict[str, Any]:
+        return {
+            **self.metadata_payload,
+            "format": OPERATOR_PROVIDER_FORMAT,
+            "version": OPERATOR_PROVIDER_VERSION,
+            "provider_kind": self.provider_kind,
+            "state_dim": self.state_dim,
+            "num_stages": self.num_stages,
+            "memory_dim": self.memory_dim,
+            "projection_width": self.projection_width,
+            "output_rank": self.output_rank,
+            "learned": bool(self.metadata_payload.get("learned", True)),
+            "transformer_layers_loaded": False,
+        }
+
+    def save(self, path: str | Path) -> Path:
+        target = Path(path)
+        target.mkdir(parents=True, exist_ok=True)
+        arrays = {
+            "memory_input": self.memory_input,
+            "decay": self.decay,
+            "state_projection": self.state_projection,
+            "token_projection": self.token_projection,
+            "stage_head": self.stage_head,
+            "semantic_mean": self.semantic_mean,
+            "semantic_basis": self.semantic_basis,
+            "episodic_mean": self.episodic_mean,
+            "episodic_basis": self.episodic_basis,
+        }
+        inventory: dict[str, dict[str, Any]] = {}
+        for name, value in arrays.items():
+            file_path = target / f"{name}.npy"
+            np.save(file_path, value, allow_pickle=False)
+            inventory[file_path.name] = {
+                "bytes": file_path.stat().st_size,
+                "sha256": sha256_file(file_path),
+                "shape": list(value.shape),
+                "dtype": str(value.dtype),
+            }
+        manifest = self.metadata()
+        manifest["files"] = inventory
+        atomic_json(target / "manifest.json", manifest)
+        return target
+
+    @classmethod
+    def load(cls, path: str | Path) -> "StateSpaceOperatorStreamProvider":
+        target = Path(path)
+        manifest = json.loads((target / "manifest.json").read_text(encoding="utf-8"))
+        if manifest.get("format") != OPERATOR_PROVIDER_FORMAT or manifest.get("version") != OPERATOR_PROVIDER_VERSION or manifest.get("provider_kind") != "state_space_pca":
+            raise ValueError("unsupported state-space operator provider")
+        files = manifest.get("files")
+        if not isinstance(files, dict):
+            raise ValueError("state-space provider manifest has no file inventory")
+        arrays: dict[str, np.ndarray] = {}
+        for name, info in files.items():
+            file_path = target / name
+            if not file_path.is_file() or file_path.stat().st_size != info.get("bytes") or sha256_file(file_path) != info.get("sha256"):
+                raise ValueError(f"state-space provider checksum mismatch: {name}")
+            arrays[Path(name).stem] = np.load(file_path, allow_pickle=False)
+        return cls(
+            **arrays,
+            metadata_payload={key: value for key, value in manifest.items() if key != "files"},
+        )
+
+
 def _fit_stream(
     features: np.ndarray,
     outputs: np.ndarray,
@@ -789,5 +990,6 @@ __all__ = [
     "TraceSequenceOperatorStreamProvider",
     "PCAOperatorStreamProvider",
     "RecurrentContextProvider",
+    "StateSpaceOperatorStreamProvider",
     "fit_operator_stream_provider",
 ]
