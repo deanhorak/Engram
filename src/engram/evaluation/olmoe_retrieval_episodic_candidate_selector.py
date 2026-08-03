@@ -785,6 +785,140 @@ def build_query_key_exact_rerank_masks(
     return np.ascontiguousarray(masks)
 
 
+def fit_query_key_pca_basis(
+    train_candidate_keys: np.ndarray,
+    *,
+    rank: int = 16,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Fit the train-only per-layer/head key PCA used by the selector.
+
+    The returned ``centers`` and ``components`` are sufficient to apply the
+    frozen candidate-pool stage without retaining the training traces.  They
+    are deliberately evaluator artifacts: this function does not fit on
+    evaluation records and does not alter native attention policy.
+    """
+
+    keys = np.ascontiguousarray(train_candidate_keys, dtype=np.float64)
+    expected_tail = (
+        _READS,
+        _LAYERS,
+        _HEADS,
+        _CANDIDATES,
+        _HEAD_DIMENSION,
+    )
+    if (
+        keys.ndim != 6
+        or keys.shape[1:] != expected_tail
+        or keys.shape[0] == 0
+        or not isinstance(rank, int)
+        or isinstance(rank, bool)
+        or not 0 < rank <= _HEAD_DIMENSION
+        or not np.isfinite(keys).all()
+    ):
+        raise ValueError("query-key PCA training inputs are invalid")
+    centers = np.empty((_LAYERS, _HEADS, _HEAD_DIMENSION), dtype=np.float64)
+    components = np.empty(
+        (_LAYERS, _HEADS, _HEAD_DIMENSION, rank), dtype=np.float64
+    )
+    for layer in range(_LAYERS):
+        for head in range(_HEADS):
+            matrix = keys[:, :, layer, head].reshape(-1, _HEAD_DIMENSION)
+            center = matrix.mean(axis=0)
+            covariance = (matrix - center).T @ (matrix - center)
+            eigenvalues, basis = np.linalg.eigh(covariance)
+            order = np.argsort(eigenvalues)[::-1]
+            centers[layer, head] = center
+            components[layer, head] = basis[:, order[:rank]]
+    return np.ascontiguousarray(centers), np.ascontiguousarray(components)
+
+
+def build_query_key_masks_from_pca_basis(
+    evaluation_queries_pre_rope: np.ndarray,
+    evaluation_candidate_keys: np.ndarray,
+    positions: np.ndarray,
+    centers: np.ndarray,
+    components: np.ndarray,
+    *,
+    pool_size: int = 6,
+) -> np.ndarray:
+    """Apply a frozen train PCA basis to evaluation query/key features."""
+
+    queries = np.ascontiguousarray(evaluation_queries_pre_rope, dtype=np.float64)
+    keys = np.ascontiguousarray(evaluation_candidate_keys, dtype=np.float64)
+    position_values = np.ascontiguousarray(positions, dtype=np.int64)
+    means = np.ascontiguousarray(centers, dtype=np.float64)
+    basis = np.ascontiguousarray(components, dtype=np.float64)
+    rank = basis.shape[-1] if basis.ndim == 4 else 0
+    expected_query_tail = (_READS, _LAYERS, _HEADS, _HEAD_DIMENSION)
+    expected_key_tail = (
+        _READS,
+        _LAYERS,
+        _HEADS,
+        _CANDIDATES,
+        _HEAD_DIMENSION,
+    )
+    if (
+        queries.ndim != 5
+        or queries.shape[1:] != expected_query_tail
+        or keys.ndim != 6
+        or keys.shape[1:] != expected_key_tail
+        or means.shape != (_LAYERS, _HEADS, _HEAD_DIMENSION)
+        or basis.shape != (_LAYERS, _HEADS, _HEAD_DIMENSION, rank)
+        or not 0 < rank <= _HEAD_DIMENSION
+        or position_values.shape != (_READS,)
+        or not np.array_equal(position_values, qk.full._READ_POSITIONS)
+        or not 0 < pool_size <= _CANDIDATES
+        or not np.isfinite(queries).all()
+        or not np.isfinite(keys).all()
+        or not np.isfinite(means).all()
+        or not np.isfinite(basis).all()
+        or np.any(position_values < 0)
+        or np.any(position_values >= _POSITIONS)
+    ):
+        raise ValueError("query-key PCA application inputs are invalid")
+    half = _HEAD_DIMENSION // 2
+    frequencies = np.power(
+        10000.0,
+        -2.0 * np.arange(half, dtype=np.float64) / _HEAD_DIMENSION,
+    )
+    rotated = queries.copy()
+    for read, position in enumerate(position_values):
+        cosine = np.cos(float(position) * frequencies)
+        sine = np.sin(float(position) * frequencies)
+        first = queries[:, read, :, :, :half].copy()
+        second = queries[:, read, :, :, half:].copy()
+        rotated[:, read, :, :, :half] = first * cosine - second * sine
+        rotated[:, read, :, :, half:] = second * cosine + first * sine
+    masks = np.ones(
+        (queries.shape[0], _POSITIONS, _LAYERS, _HEADS, _CANDIDATES),
+        dtype=np.uint8,
+    )
+    scale = 1.0 / np.sqrt(float(_HEAD_DIMENSION))
+    for layer in range(_LAYERS):
+        for head in range(_HEADS):
+            center = means[layer, head]
+            basis_head = basis[layer, head]
+            original = keys[:, :, layer, head]
+            reconstructed = (
+                (original - center) @ basis_head
+            ) @ basis_head.T + center
+            predicted = (
+                np.einsum(
+                    "nrd,nrcd->nrc",
+                    rotated[:, :, layer, head],
+                    reconstructed,
+                    optimize=True,
+                )
+                * scale
+            )
+            pools = np.argsort(-predicted, axis=-1, kind="stable")[:, :, :pool_size]
+            for record in range(queries.shape[0]):
+                for read, position in enumerate(position_values):
+                    masks[record, int(position), layer, head, :] = 0
+                    masks[record, int(position), layer, head, pools[record, read]] = 1
+    return np.ascontiguousarray(masks)
+
+
 def build_query_key_cross_split_masks(
     train_queries_pre_rope: np.ndarray,
     train_candidate_keys: np.ndarray,

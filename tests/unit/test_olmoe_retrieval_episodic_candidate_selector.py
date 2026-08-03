@@ -128,3 +128,40 @@ def test_cross_split_masks_do_not_require_evaluation_fit(
     )
     assert masks.shape == (2, 4, 1, 1, 8)
     assert np.all(np.sum(masks[:, :2], axis=-1) == 4)
+
+
+def test_frozen_pca_basis_replays_cross_split_masks(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(selector, "_RECORDS", 2)
+    monkeypatch.setattr(selector, "_READS", 2)
+    monkeypatch.setattr(selector, "_LAYERS", 1)
+    monkeypatch.setattr(selector, "_HEADS", 1)
+    monkeypatch.setattr(selector, "_HEAD_DIMENSION", 4)
+    monkeypatch.setattr(selector, "_CANDIDATES", 8)
+    monkeypatch.setattr(selector, "_POSITIONS", 4)
+    monkeypatch.setattr(selector.qk.full, "_READ_POSITIONS", np.array([0, 1]))
+    rng = np.random.default_rng(17)
+    train_keys = rng.normal(size=(2, 2, 1, 1, 8, 4)).astype(np.float32)
+    evaluation_queries = rng.normal(size=(2, 2, 1, 1, 4)).astype(np.float32)
+    evaluation_keys = rng.normal(size=(2, 2, 1, 1, 8, 4)).astype(np.float32)
+    positions = np.array([0, 1], dtype=np.int64)
+    centers, components = selector.fit_query_key_pca_basis(train_keys, rank=2)
+    actual = selector.build_query_key_masks_from_pca_basis(
+        evaluation_queries,
+        evaluation_keys,
+        positions,
+        centers,
+        components,
+        pool_size=4,
+    )
+    expected = selector.build_query_key_cross_split_masks(
+        evaluation_queries,
+        train_keys,
+        evaluation_queries,
+        evaluation_keys,
+        positions,
+        rank=2,
+        pool_size=4,
+    )
+    np.testing.assert_array_equal(actual, expected)

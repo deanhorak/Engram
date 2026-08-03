@@ -1933,3 +1933,15 @@ end-to-end speedup claim: the selector removes a fixed older-candidate slice,
 while projection, MLP, local attention, and episodic value reads remain. A
 protected evaluation must still be separately authorized before the
 evaluator-only mask is promoted into the packaged runtime.
+
+### Disabled-by-default policy artifact
+
+The frozen train PCA basis and rank-16/pool-6/top-4 geometry are now compiled
+into a local evaluator-only policy artifact.  The runtime loader verifies the
+policy schema, source/validation bindings, basis digest, tensor shapes, and
+the explicit `enabled_by_default: false` contract.  Rebuilding development
+masks from the loaded artifact is bit-for-bit identical to the existing
+cross-split selector.  This makes package integration testable without
+changing native defaults or opening protected data.  The compiler and loader
+are `engram.compiler.olmoe_selector_policy` and
+`engram.runtime.olmoe_selector_policy`.

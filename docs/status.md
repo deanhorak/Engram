@@ -1546,6 +1546,12 @@ memory was 6.28 GiB and did not grow with context. Report:
 `work/olmoe_q7/retrieval_episodic_long_context_rank16_pool6.json` (SHA-256
 `fa205bd2ab4c91de27170247e7669f44c9def8bccea22d94558f8caa4b26bf71`).
 
+The selected train-fitted policy is also serialized as a disabled-by-default
+evaluator artifact containing its rank-16 key PCA basis and rank-16/pool-6
+geometry. The loader reproduces the development mask tensor bit-for-bit and
+fails closed if the artifact is enabled by default or its basis digest changes.
+Native package defaults remain unmodified.
+
 The same development replay now records native counters.  Mean logical
 attention reads fall from **710,667,264** bytes unmasked to **702,166,336**
 bytes masked (**98.8038%** retained, **1.1962%** reduction); older candidate

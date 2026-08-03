@@ -20,6 +20,11 @@ from .olmoe_native import (
     OLMoENativeTokenResult,
     OLMoENativeTokenRuntime,
 )
+from .olmoe_selector_policy import (
+    OLMoESelectorPolicy,
+    OLMoESelectorPolicyError,
+    load_olmoe_selector_policy,
+)
 from .reference import EngramRuntime, GenerationToken
 
 __all__ = [
@@ -36,7 +41,10 @@ __all__ = [
     "OLMoENativePackageRuntime",
     "OLMoENativeTokenResult",
     "OLMoENativeTokenRuntime",
+    "OLMoESelectorPolicy",
+    "OLMoESelectorPolicyError",
     "aggregate_native_attention_metrics",
     "run_native_bitnet_chat",
+    "load_olmoe_selector_policy",
     "validate_native_bitnet_package",
 ]

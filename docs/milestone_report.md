@@ -51,12 +51,25 @@ intervention); its report is
 SHA-256
 `b170625c9802019a62be0c88a64799bef35bc8246befc000637dcb75e864f0ce`.
 
+The selected policy is now serialized as a disabled-by-default evaluator
+artifact.  It contains the train-only per-layer/head rank-16 key PCA basis,
+the rank-16/pool-6/top-4 geometry, source hashes, and validation report hashes;
+it contains no protected data.  Loading the artifact and rebuilding all
+development masks reproduces the previous cross-split masks bit-for-bit
+(shape `[8, 128, 16, 16, 8]`).  The local artifact is
+`work/olmoe_q7/selector_policy_rank16_pool6_2026-08-03/` with policy SHA-256
+`6d22205b543fd2d2ef986dd1a60b3f517b95a1c1218f1fd834c5cb3a6f16f46b` and basis
+SHA-256
+`1897767a6b22801faad4267c22152b5029285091e53fc3f36078ad6aa849f813`.
+The loader deliberately refuses any artifact that is not evaluator-only and
+disabled by default; native package defaults remain unchanged.
+
 ## Milestones
 
 | Milestone | Status | Evidence and remaining work |
 |---|---|---|
 | 1. Repository, inspection, fixtures, teacher traces, exact MLP decomposition, oracle top-K, tests | Complete | Build system, source inspection, teacher traces, exact SwiGLU/MLP decomposition, oracle experiments, and regression reports are present. |
-| 2. Semantic memory, practical routing, quantization, Python runtime, substituted-MLP evaluation | Gate passed; bounded-runtime evidence complete | The train-to-development causal semantic gate and the 512/2,048-position CPU scaling boundary pass. The evaluator-only selector still needs a separately authorized protected evaluation before package promotion. |
+| 2. Semantic memory, practical routing, quantization, Python runtime, substituted-MLP evaluation | Gate passed; bounded-runtime evidence complete | The train-to-development causal semantic gate, 512/2,048-position CPU scaling boundary, frozen pool frontier, and disabled-by-default policy artifact pass. The evaluator-only selector still needs a separately authorized protected evaluation before package promotion. |
 | 3. Attention analysis, local/recurrent/retrieval heads, hybrid episodic memory, attention substitution | In progress | Native W16/C8/K4 attention, episodic cache, Q/K candidate tracing, compressed selection, exact reranking, and long-context scaling are implemented. Protected substitution and kernel-level speedup remain. |
 | 4. Shared recurrent controller and layer-free Engram runtime | Partial | Controller training, intermediate-state checks, adaptive-cycle experiments, and incremental dispatch exist. Broad generalization and fully promoted layer-free generation remain. |
 | 5. Vocabulary/transition/correction artifacts, compiler, validation and CLI | Partial/usable | Native package generation, mapped weights, correction paths, validation, greedy generation, and chat CLI work. Full semantic-controller package promotion remains gated. |
