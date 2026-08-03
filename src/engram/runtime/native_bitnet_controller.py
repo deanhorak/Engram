@@ -82,6 +82,26 @@ class _NativeStageDescriptor(ctypes.Structure):
     ]
 
 
+class _NativeControllerWeights(ctypes.Structure):
+    _fields_ = [
+        ("input_dim", ctypes.c_size_t),
+        ("state_dim", ctypes.c_size_t),
+        ("rank", ctypes.c_size_t),
+        ("adapter_rank", ctypes.c_size_t),
+        ("input_adapter_rank", ctypes.c_size_t),
+        ("input_down", ctypes.c_void_p),
+        ("recurrent_down", ctypes.c_void_p),
+        ("gate_up", ctypes.c_void_p),
+        ("bias", ctypes.c_void_p),
+        ("stage_embedding", ctypes.c_void_p),
+        ("adapter_down", ctypes.c_void_p),
+        ("adapter_up", ctypes.c_void_p),
+        ("input_adapter_down", ctypes.c_void_p),
+        ("input_adapter_up", ctypes.c_void_p),
+        ("step_scale", ctypes.c_float),
+    ]
+
+
 class NativeOperatorResidual:
     """ctypes binding to the float32 exact residual/RMS kernel."""
 
@@ -376,6 +396,16 @@ class NativeStageState:
             ctypes.c_size_t,
         ]
         lib.engram_native_stage_accept_semantic_bf16.restype = ctypes.c_int
+        lib.engram_native_stage_accept_controller_f32.argtypes = [
+            ctypes.c_void_p,
+            ctypes.c_void_p,
+            ctypes.c_float,
+            ctypes.c_float,
+            ctypes.POINTER(_NativeControllerWeights),
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        lib.engram_native_stage_accept_controller_f32.restype = ctypes.c_int
         lib.engram_native_stage_copy_state_f32.argtypes = [
             ctypes.c_void_p,
             ctypes.c_void_p,
@@ -509,6 +539,64 @@ class NativeStageState:
             ctypes.c_void_p(source.data_ptr()),
             float(semantic_scale),
             float(episodic_scale),
+        )
+
+    def accept_controller(
+        self,
+        output,
+        controller: FactorizedRecurrentController,
+        *,
+        stage: int,
+        semantic_scale: float,
+        episodic_scale: float,
+    ) -> None:
+        """Apply a schema-v3 factorized correction in the native stage state."""
+
+        source = output.contiguous().view(self.vectors, self.width)
+        input_down = np.ascontiguousarray(controller.input_down, dtype=np.float32)
+        recurrent_down = np.ascontiguousarray(
+            controller.recurrent_down, dtype=np.float32
+        )
+        gate_up = np.ascontiguousarray(controller.gate_up, dtype=np.float32)
+        bias = np.ascontiguousarray(controller.bias, dtype=np.float32)
+        stage_embedding = np.ascontiguousarray(
+            controller.stage_embeddings[stage], dtype=np.float32
+        )
+        adapter_down = np.ascontiguousarray(
+            controller.adapter_down[stage], dtype=np.float32
+        )
+        adapter_up = np.ascontiguousarray(
+            controller.adapter_up[stage], dtype=np.float32
+        )
+        input_adapter_down = np.ascontiguousarray(
+            controller.input_adapter_down[stage], dtype=np.float32
+        )
+        input_adapter_up = np.ascontiguousarray(
+            controller.input_adapter_up[stage], dtype=np.float32
+        )
+        weights = _NativeControllerWeights(
+            input_dim=controller.input_dim,
+            state_dim=controller.state_dim,
+            rank=controller.rank,
+            adapter_rank=controller.adapter_rank,
+            input_adapter_rank=controller.input_adapter_rank,
+            input_down=input_down.ctypes.data,
+            recurrent_down=recurrent_down.ctypes.data,
+            gate_up=gate_up.ctypes.data,
+            bias=bias.ctypes.data,
+            stage_embedding=stage_embedding.ctypes.data,
+            adapter_down=adapter_down.ctypes.data,
+            adapter_up=adapter_up.ctypes.data,
+            input_adapter_down=input_adapter_down.ctypes.data,
+            input_adapter_up=input_adapter_up.ctypes.data,
+            step_scale=float(controller.step_scale[stage]),
+        )
+        self._call(
+            "engram_native_stage_accept_controller_f32",
+            ctypes.c_void_p(source.data_ptr()),
+            float(semantic_scale),
+            float(episodic_scale),
+            ctypes.byref(weights),
         )
 
     def run_semantic(
@@ -847,10 +935,6 @@ class ControllerDrivenBitNet:
             raise ValueError("controller state width does not match BitNet")
         if not controller.has_operator_residual:
             raise ValueError("controller must preserve operator residuals")
-        if np.any(controller.step_scale != 0.0):
-            raise ValueError(
-                "controller-driven runtime currently requires zero correction"
-            )
         self.model = model
         self.controller = controller
         self.native_residual = (
@@ -918,7 +1002,7 @@ class ControllerDrivenBitNet:
                     and hasattr(layer.mlp, "kernel")
                     for layer in layers
                 )
-                if fully_native:
+                if fully_native and not np.any(self.controller.step_scale != 0.0):
                     controller_seconds = stage_state.run_stages(
                         layers,
                         position_ids,
@@ -960,7 +1044,10 @@ class ControllerDrivenBitNet:
                         episodic_scale = float(
                             self.controller.operator_residual_scale[stage, 1]
                         )
-                        if hasattr(layer.mlp, "kernel"):
+                        if (
+                            hasattr(layer.mlp, "kernel")
+                            and not np.any(self.controller.step_scale != 0.0)
+                        ):
                             controller_seconds += stage_state.run_semantic(
                                 layer.mlp,
                                 layer.post_attention_layernorm.weight,
@@ -975,11 +1062,20 @@ class ControllerDrivenBitNet:
                                 layer.post_attention_layernorm.variance_epsilon,
                             ).view_as(embedded)
                             semantic_output = layer.mlp(semantic_input)
-                            stage_state.accept_semantic(
-                                semantic_output,
-                                semantic_scale=semantic_scale,
-                                episodic_scale=episodic_scale,
-                            )
+                            if np.any(self.controller.step_scale != 0.0):
+                                stage_state.accept_controller(
+                                    semantic_output,
+                                    self.controller,
+                                    stage=stage,
+                                    semantic_scale=semantic_scale,
+                                    episodic_scale=episodic_scale,
+                                )
+                            else:
+                                stage_state.accept_semantic(
+                                    semantic_output,
+                                    semantic_scale=semantic_scale,
+                                    episodic_scale=episodic_scale,
+                                )
                             controller_seconds += (
                                 time.perf_counter() - controller_started
                             )

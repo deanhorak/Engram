@@ -21,6 +21,14 @@ execution only—no semantic quality, held-out generalization, or package
 promotion claim. A trained nonzero artifact and an independently sealed
 causal gate remain required for the layer-free Milestone 4 boundary.
 
+The Python `ControllerDrivenBitNet` path now dispatches nonzero corrections
+through the same native stage ABI. A one-prompt bounded development run with
+zero operator scales and an existing nonzero controller changed the selected
+token from `12366` to `36306`, spent 9.69 seconds in controller stages, and
+made zero decoder-layer calls. This validates the cross-language dispatch but
+also demonstrates why the correction remains unpromoted: the run is not a
+quality or held-out generalization gate.
+
 ## Executive result
 
 The latest Milestone 3 attention-substitution boundary is now a passing

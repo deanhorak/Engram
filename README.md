@@ -198,6 +198,13 @@ trained controller completed a short six-position CPU smoke run through this
 path; that is execution evidence only, not a semantic gate or production
 deployment.
 
+The Python `ControllerDrivenBitNet` path also uses this ABI for nonzero
+corrections. In a one-prompt bounded comparison, an existing nonzero
+development controller changed the selected token from `12366` (exact
+residual) to `36306`, used 9.69 seconds of controller-stage work, and made zero
+decoder-layer calls. This confirms the native dispatch while exposing the
+quality risk; it is intentionally not a gate result.
+
 Milestone 2 now has three source-track outcomes that should not be conflated:
 
 | Deliverable | Native-BitNet | OLMoE Q7 | Generic dense Llama |

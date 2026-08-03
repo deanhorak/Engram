@@ -26,6 +26,14 @@ production deployment path.  A trained correction artifact must still pass
 causal, held-out, and generalization gates before it can replace the exact
 residual package boundary.
 
+The Python `ControllerDrivenBitNet` path now uses the same native stage ABI for
+nonzero corrections instead of rejecting them.  A one-prompt bounded native
+comparison executed with zero semantic residual scales and an existing
+nonzero controller: the exact package selected token `12366`, while the
+correction selected `36306`; the correction path spent 9.69 s in controller
+stages and made zero decoder-layer calls.  This confirms dispatch and exposes
+the expected quality risk; it is deliberately not counted as a gate pass.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and
