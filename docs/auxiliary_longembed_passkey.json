@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "kind": "engram.auxiliary_benchmark",
+  "status": "frozen_auxiliary_not_protected",
+  "dataset": {
+    "name": "LongEmbed",
+    "configuration": "passkey",
+    "provider": "Hugging Face Datasets",
+    "repository": "dwzhu/LongEmbed",
+    "url": "https://huggingface.co/datasets/dwzhu/LongEmbed",
+    "revision": "10039a580487dacecf79db69166e17ace3ede392",
+    "revision_type": "git_commit",
+    "upstream_paper": "https://arxiv.org/abs/2404.12096"
+  },
+  "files": [
+    {
+      "path": "passkey/corpus.jsonl",
+      "bytes": 23227066,
+      "sha256": "0b75d2ecd00324b40949ecd7d5d343908a057ac0df83f4bd49a33bac698b0bbe",
+      "git_blob": "f16b0fda151e4651cd75100bb4b9be4a084b82f9",
+      "lfs_sha256": "0b75d2ecd00324b40949ecd7d5d343908a057ac0df83f4bd49a33bac698b0bbe"
+    },
+    {
+      "path": "passkey/qrels.jsonl",
+      "bytes": 35912,
+      "sha256": "d67c04043d14b08c4dec2878644edb37db9ecfda6cd8cf4ee99e5cfbbb66af0c",
+      "git_blob": "eb2f3b0f5bc91fa1719df404d30b7de134674578",
+      "lfs_sha256": "d67c04043d14b08c4dec2878644edb37db9ecfda6cd8cf4ee99e5cfbbb66af0c"
+    },
+    {
+      "path": "passkey/queries.jsonl",
+      "bytes": 45875,
+      "sha256": "bd4bc56a14f7a5a8da36753fc3c1ae48a0ba811bdfcb1594ea5515ef501dec65",
+      "git_blob": "afcafd643450b2a9bc340d348e5f14ac6e9c6a2a"
+    }
+  ],
+  "contents": {
+    "corpus_rows": 800,
+    "query_rows": 400,
+    "qrel_rows": 400,
+    "context_lengths": [256, 512, 1024, 2048, 4096, 8192, 16384, 32768],
+    "documents_per_context_length": 100,
+    "queries_per_context_length": 50,
+    "documents_per_query": 100
+  },
+  "engram_contract": {
+    "role": "auxiliary_external_stress_test",
+    "evaluation_only": true,
+    "allowed_for_selector_training": false,
+    "protected_gate": false,
+    "tokenizer_bound": false,
+    "source_model_bound": false,
+    "requires_adapter_and_fresh_native_traces": true
+  },
+  "verification": {
+    "downloaded_revision": "10039a580487dacecf79db69166e17ace3ede392",
+    "sha256_verified": true,
+    "verified_date": "2026-08-03"
+  }
+}

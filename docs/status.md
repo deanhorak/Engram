@@ -1531,9 +1531,11 @@ thresholds.  The development report is
 `0c5cb2273f63b930148c78070da68ae57bb821969a68e2a6a038ee7ac5d04bb6`).
 
 This closes the train-to-development semantic gate for the bounded selector.
-It still does not promote the evaluator-only mask to the packaged runtime:
-the remaining boundary is a separately authorized protected evaluation. The
-long-context CPU scaling boundary is now complete.
+The separately authorized protected replay has now passed as well.  The
+authenticated opt-in package boundary has now been validated; native defaults
+remain selector-disabled.  The long-context CPU scaling boundary is now
+complete.  Any change to the ordinary runtime default still requires a
+separate production decision and broader end-to-end benchmarking.
 
 The frozen rank-16/pool-6 selector was replayed on development record 0 at
 512 and 2,048 positions. The first 128 positions remain the authenticated
@@ -1556,6 +1558,30 @@ The serialized policy has now driven the native masked ABI on development
 record 0 with 100% answer top-1 agreement and the expected logical-read
 reduction (710,668,288 to 702,124,544 bytes). The opt-in package compiler also
 copied and authenticated the policy and PCA basis.
+
+The separately authorized protected replay has now been completed against the
+exact protocol-defined split. The split was regenerated from the frozen
+tokenizer/seed/generator and matched its expected SHA-256
+`c74aa6532e94bfa4dd10bbc1e13c27a06c35f79edbc9bc921a4219409f903baa` before
+native traces were captured. Using the required authenticated post-QNorm/
+pre-RoPE query representation, the frozen rank-16/pool-6 policy passed all
+eight protected records: aggregate answer top-1 **1.000000**, hidden relative
+L2 **0.009133**, logit relative L2 **0.004416**, and answer NLL delta
+**−0.000460** (maximum +0.005879). Candidate-pool and exact-rerank recall
+were 99.8501% mean and 100% p10. Logical attention reads fell 1.1958%.
+The report is
+`work/olmoe_q7/retrieval_episodic_protected_replay_rank16_pool6_2026-08-03/replay.json`
+(SHA-256
+`526202b68e2a283482f73a018479f75057435b8576b4784573caa8459b18176a`).
+The selector remains disabled by default; explicit package opt-in is now
+authorized.
+
+The opt-in package was assembled and validated at
+`work/olmoe_q7/package_selector_optin_2026-08-03` (manifest SHA-256
+`3c014679f2c626b68f73f8eebadbde8cb2421d4e174d8d69c27ebac774f3383c`).  Native
+one-token generation for `Hello` returned token ID 13 (`,`) through both the
+opt-in and ordinary packages; the parity record is
+`work/olmoe_q7/selector_package_optin_generation_2026-08-03.json`.
 
 The same development replay now records native counters.  Mean logical
 attention reads fall from **710,667,264** bytes unmasked to **702,166,336**

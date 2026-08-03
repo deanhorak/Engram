@@ -79,7 +79,7 @@ boundary without silently enabling the policy in ordinary generation.
 | Milestone | Status | Evidence and remaining work |
 |---|---|---|
 | 1. Repository, inspection, fixtures, teacher traces, exact MLP decomposition, oracle top-K, tests | Complete | Build system, source inspection, teacher traces, exact SwiGLU/MLP decomposition, oracle experiments, and regression reports are present. |
-| 2. Semantic memory, practical routing, quantization, Python runtime, substituted-MLP evaluation | Gate passed; bounded-runtime evidence complete | The train-to-development causal semantic gate, 512/2,048-position CPU scaling boundary, frozen pool frontier, and disabled-by-default policy artifact pass. The evaluator-only selector still needs a separately authorized protected evaluation before package promotion. |
+| 2. Semantic memory, practical routing, quantization, Python runtime, substituted-MLP evaluation | Protected promotion passed; opt-in only | Train-to-development causal replay, 512/2,048-position CPU scaling, frozen pool frontier, authenticated opt-in package generation, and the separately authorized protected rank-16/pool-6 replay pass. Protected aggregate: 100% top-1, hidden L2 0.009133, logit L2 0.004416, NLL delta −0.000460. The policy remains disabled by default and requires explicit package opt-in. |
 | 3. Attention analysis, local/recurrent/retrieval heads, hybrid episodic memory, attention substitution | In progress | Native W16/C8/K4 attention, episodic cache, Q/K candidate tracing, compressed selection, exact reranking, and long-context scaling are implemented. Protected substitution and kernel-level speedup remain. |
 | 4. Shared recurrent controller and layer-free Engram runtime | Partial | Controller training, intermediate-state checks, adaptive-cycle experiments, and incremental dispatch exist. Broad generalization and fully promoted layer-free generation remain. |
 | 5. Vocabulary/transition/correction artifacts, compiler, validation and CLI | Partial/usable | Native package generation, mapped weights, correction paths, validation, greedy generation, and chat CLI work. Full semantic-controller package promotion remains gated. |
@@ -109,8 +109,9 @@ thresholds.
 2. If the frontier remains near a 1% total-read reduction, keep the selector
    as a validated research path and prioritize fused projection/MLP kernels or
    a more aggressive learned residual selector.
-3. Only after that decision, authorize protected evaluation and package-level
-   integration.
+3. The protected replay and authenticated opt-in package boundary now pass.
+   Keep native defaults selector-disabled while deciding whether to implement
+   full runtime policy consumption and broader end-to-end benchmarking.
 
 ## Verification
 

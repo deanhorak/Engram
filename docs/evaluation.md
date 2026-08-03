@@ -1930,9 +1930,9 @@ repeated context. The reproducible report is
 
 This completes the long-context boundary for Milestone 2, but it is not an
 end-to-end speedup claim: the selector removes a fixed older-candidate slice,
-while projection, MLP, local attention, and episodic value reads remain. A
-protected evaluation must still be separately authorized before the
-evaluator-only mask is promoted into the packaged runtime.
+while projection, MLP, local attention, and episodic value reads remain. The
+protected replay below has now passed; the evaluator-only mask remains
+disabled by default and requires explicit authenticated package opt-in.
 
 ### Disabled-by-default policy artifact
 
@@ -1956,5 +1956,50 @@ The serialized artifact has also driven the native masked ABI on development
 record 0: answer top-1 agreement remained **100%**, and logical attention reads
 fell from **710,668,288** to **702,124,544** bytes.  The corresponding tiny
 package copied and authenticated both selector files.  This validates the
-implementation boundary; it does not authorize protected evaluation or claim
-that the default native generation path is now selector-enabled.
+implementation boundary; it does not silently enable the selector in ordinary
+packages.  The separately authorized protected replay below is the evidence
+for opt-in eligibility.
+
+### Protected replay: promotion passed
+
+The protocol-defined protected split was recovered deterministically from the
+already-frozen tokenizer, seed, code-token partition, and record generator. Its
+serialized bytes matched the protocol descriptor exactly:
+
+```text
+c74aa6532e94bfa4dd10bbc1e13c27a06c35f79edbc9bc921a4219409f903baa
+```
+
+No protected row entered PCA fitting or policy selection. Native CPU query/key
+traces were then captured and the frozen rank-16/pool-6 policy was replayed
+against the unmasked native runtime on all eight records. A preliminary local
+attempt used raw input-normalization vectors as queries; that representation
+violated the frozen selector contract and is explicitly discarded rather than
+used as promotion evidence.
+
+The corrected causal result used the authenticated post-QNorm/pre-RoPE query
+representation required by the frozen selector contract. All eight records
+passed: answer top-1 agreement **100%**, mean hidden relative L2 **0.009133**,
+mean logit relative L2 **0.004416**, and mean answer NLL delta **−0.000460**
+(maximum **+0.005879**). Candidate-pool and exact-rerank membership recall
+were **99.8501%** mean and **100% p10**. Logical attention reads fell from
+710,664,576 to 702,166,784 bytes (**1.1958%**), and older candidate entries
+scored fell 7.3733%. The authenticated report is
+`work/olmoe_q7/retrieval_episodic_protected_replay_rank16_pool6_2026-08-03/replay.json`
+(SHA-256
+`526202b68e2a283482f73a018479f75057435b8576b4784573caa8459b18176a`).
+
+The rank-16/pool-6 policy therefore passes the separately protected semantic
+promotion gate. It remains disabled by default in ordinary packages; promotion
+is an explicit opt-in package operation bound to this report and its policy
+hash.
+
+The authenticated package boundary was then exercised directly.  The compiler
+assembled the policy and PCA basis into
+`work/olmoe_q7/package_selector_optin_2026-08-03` with manifest SHA-256
+`3c014679f2c626b68f73f8eebadbde8cb2421d4e174d8d69c27ebac774f3383c`.
+Manifest validation confirmed CPU-only execution, no Transformers dependency,
+and `enabled_by_default: false`.  A one-token native generation for `Hello`
+produced token ID 13 (`,`) through both the opt-in and ordinary packages.
+The reproducible parity record is
+`work/olmoe_q7/selector_package_optin_generation_2026-08-03.json`.

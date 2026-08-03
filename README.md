@@ -29,6 +29,11 @@ The long-term systems target is a substantial reduction in DRAM traffic—ideall
 retaining useful model quality. That target is a hypothesis, not a result. Engram will not claim
 success from random fixtures, synthetic tasks, proxy byte counts, or a runnable compiler alone.
 
+For an external, reproducible stress test, the project also freezes the public
+[LongEmbed Passkey auxiliary benchmark](docs/auxiliary_benchmarks.md) at an upstream Git revision
+and SHA-256 manifest. This benchmark is evaluation-only and explicitly does **not** replace or
+authorize the separately protected Engram gate.
+
 ## Two levels of control
 
 Engram's compiled runtime and its longer-term system architecture solve different problems. The
@@ -1810,8 +1815,8 @@ the eight older candidates before native top-K truncation.  The authenticated
 tensor is `[8, 32, 16, 16, 8, 128]` and lives in the separate
 `work/olmoe_q7/retrieval_episodic_blockwise_qk_candidate_keys_2026-07-31/`
 artifact.  It is a shadow trace only: normal attention output and traffic are
-unchanged, reset replay is exact, and the protected confirmation split remains
-closed.
+unchanged, reset replay is exact.  The separately authorized protected replay
+now passes for the frozen policy; this trace remains an evaluator artifact.
 
 An offline per-layer/head PCA audit gives a concrete compression boundary:
 rank 16 has 0.99% mean normalized key error (4.50% p95) with 6.69% modeled
@@ -1897,8 +1902,18 @@ report is
 `0c5cb2273f63b930148c78070da68ae57bb821969a68e2a6a038ee7ac5d04bb6`).
 
 This closes the train-to-development semantic gate for the bounded selector.
-The selector remains evaluator-only until a protected evaluation is separately
-authorized; the required long-context CPU scaling boundary is now complete.
+The separately authorized protected replay has now passed for the frozen
+rank-16/pool-6 policy: all eight records reached 100% answer top-1 agreement,
+0.009133 mean hidden relative L2, 0.004416 mean logit relative L2, and
+−0.000460 mean answer NLL delta (maximum +0.005879). Candidate-pool and
+exact-rerank recall were 99.8501% mean and 100% p10. The authenticated report
+is
+`work/olmoe_q7/retrieval_episodic_protected_replay_rank16_pool6_2026-08-03/replay.json`.
+The selector remains disabled by default and is now eligible only for explicit
+authenticated package opt-in. An authenticated opt-in package was then built
+and native-generated successfully; its manifest SHA-256 is
+`3c014679f2c626b68f73f8eebadbde8cb2421d4e174d8d69c27ebac774f3383c`. A one-token
+`Hello` generation matched the ordinary package exactly (token ID 13, `,`).
 
 ### Long-context CPU scaling
 
