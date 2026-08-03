@@ -280,3 +280,64 @@ def test_native_stage_state_matches_exact_operator_residual():
         rms, initial_rms * expected_rms, rtol=2e-6, atol=2e-6
     )
     stage.close()
+
+
+def test_native_stage_state_applies_factorized_controller_correction():
+    torch = pytest.importorskip("torch")
+    library = Path("build/libengram_bitnet.so")
+    if not library.is_file():
+        pytest.skip("native BitNet library has not been built")
+    controller = FactorizedRecurrentController.initialize(
+        input_dim=6,
+        state_dim=2,
+        num_stages=1,
+        rank=1,
+        adapter_rank=1,
+        operator_residual=True,
+        seed=67,
+    )
+    tensors = controller.tensors()
+    for name in (
+        "input_down",
+        "recurrent_down",
+        "gate_up",
+        "bias",
+        "adapter_down",
+        "adapter_up",
+        "operator_residual_scale",
+    ):
+        tensors[name][:] = 0.0
+    tensors["stage_embeddings"][0] = np.array([1.0, -1.0], dtype=np.float32)
+    tensors["step_scale"][:] = 0.25
+    controller = FactorizedRecurrentController(**tensors)
+
+    embedding = torch.tensor([[[3.0, 4.0]]], dtype=torch.bfloat16)
+    attention = torch.tensor([[[1.0, 0.0]]], dtype=torch.bfloat16)
+    semantic = torch.tensor([[[0.0, 1.0]]], dtype=torch.bfloat16)
+    stage = NativeStageState(library, vectors=1, width=2)
+    stage.begin(embedding)
+    stage.accept_attention(attention)
+    stage.accept_controller(
+        semantic,
+        controller,
+        stage=0,
+        semantic_scale=1.0,
+        episodic_scale=1.0,
+    )
+    state, rms = stage.copy_state(tuple(embedding.shape))
+
+    initial_rms = np.sqrt(12.5)
+    residual = np.array(
+        [3.0 / initial_rms + 1.0 / initial_rms,
+         4.0 / initial_rms + 1.0 / initial_rms],
+        dtype=np.float32,
+    )
+    delta = 0.125 * np.tanh(1.0)
+    residual += np.array([delta, -delta], dtype=np.float32)
+    relative_rms = np.sqrt(np.mean(np.square(residual)))
+    expected_state = residual / np.sqrt(relative_rms**2 + 1e-6)
+    np.testing.assert_allclose(state.reshape(-1), expected_state, rtol=2e-6, atol=2e-6)
+    np.testing.assert_allclose(
+        rms.reshape(-1), [initial_rms * relative_rms], rtol=2e-6, atol=2e-6
+    )
+    stage.close()
