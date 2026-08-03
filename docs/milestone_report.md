@@ -40,6 +40,17 @@ continues to run.  The report is
 `work/olmoe_q7/retrieval_episodic_long_context_rank16_pool6.json`, SHA-256
 `fa205bd2ab4c91de27170247e7669f44c9def8bccea22d94558f8caa4b26bf71`.
 
+The follow-up frozen development rank/pool sweep confirms the operating point:
+rank-16/pool-4 falls to 95.1389% exact membership recall at 50% of the older
+slots, while rank-16/pool-6 reaches 99.8192% at 75%; rank-16/pool-8 is exact
+but reads all eight slots. Increasing rank to 32 or 64 changes pool-6 recall
+only to 99.8867% and 99.9367%, respectively, so the extra projection cost has
+no current causal justification. This is a feature-only sweep (no native
+intervention); its report is
+`work/olmoe_q7/retrieval_episodic_development_pool_sweep_rank16_pool6.json`,
+SHA-256
+`b170625c9802019a62be0c88a64799bef35bc8246befc000637dcb75e864f0ce`.
+
 ## Milestones
 
 | Milestone | Status | Evidence and remaining work |
@@ -70,8 +81,8 @@ thresholds.
 
 ## Next development order
 
-1. Run a development-only rank/pool sweep (especially pool 4 versus pool 6)
-   to quantify the quality/traffic frontier without refitting.
+1. Keep rank-16/pool-6 as the frozen research point: pool 4 is below the
+   desired recall margin and higher ranks do not materially improve it.
 2. If the frontier remains near a 1% total-read reduction, keep the selector
    as a validated research path and prioritize fused projection/MLP kernels or
    a more aggressive learned residual selector.
