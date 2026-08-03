@@ -1,0 +1,15 @@
+{
+  "batch_size": 4,
+  "batches": 4,
+  "causal_top_k": 32,
+  "elapsed_seconds": 402.1300197200035,
+  "hidden_size": 2560,
+  "num_stages": 30,
+  "optimizer_device": null,
+  "record_offset": 0,
+  "sequences": 16,
+  "split": "validation",
+  "teacher_device": "cpu",
+  "token_positions": 256,
+  "trace": "/home/dean/repos/engram/work/controller_distillation/bitnet_validation_causal_16x16_k32"
+}

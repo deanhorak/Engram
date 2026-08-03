@@ -62,9 +62,8 @@ The controller trace format also now supports an opt-in causal extension:
 `trace-native-bitnet-controller --causal-top-k K` records teacher top-k logits
 and next-token targets, and `distill-controller` accepts a frozen vocabulary
 matrix plus final RMSNorm vector for a decoder-layer-free causal objective. A
-synthetic CPU smoke exercised backpropagation and reload parity. This does not
-qualify the gate until real BitNet causal traces and an independent held-out
-run are captured.
+synthetic CPU smoke exercised backpropagation and reload parity. It does not
+qualify the gate by itself.
 
 A real CPU smoke now exercises the complete path on two sequence-disjoint
 1-sequence/4-position BitNet traces with top-8 logits. The rank-2 one-step fit
@@ -73,6 +72,15 @@ the fixed controller gate (validation terminal normalized MSE **1.96610**,
 top-k KL **10.11891**). It is execution evidence only:
 `reports/controller_causal_smoke_2026-08-03/training_report.json` (SHA-256
 `c42501f4ae6896dba3704a66fedbf6b9dd88468b073592f3d360eba197b938b6`).
+
+The first evidence-sized causal fit is now complete: 8 training sequences/128
+records, 16 held-out sequences/256 positions, top-32 teacher logits, and 500
+CPU steps at rank 128. CPU reload parity passes, but free-run validation fails
+with terminal normalized MSE **0.2624663**, hidden MSE **0.7221664**, and top-k
+KL **8.7518297**. This factorized controller configuration is rejected for
+promotion; more epochs of the same objective are not justified. Report:
+`reports/controller_causal_2026-08-03/rank128_8x16_500cpu.json` (SHA-256
+`47a1c94ae4797c9e0653f1b88d129620db691f3ad3306ca1ed85f2c234267a32`).
 
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible

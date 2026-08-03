@@ -31,8 +31,8 @@ teacher top-k logits and next-token IDs, while `distill-controller` can consume
 those fields with a frozen vocabulary matrix and final RMSNorm vector. A
 synthetic CPU smoke confirmed that the objective backpropagates and the
 serialized controller still reloads with parity. No real BitNet causal trace
-has been captured in this boundary, so this is plumbing evidence rather than a
-semantic gate result.
+was used for promotion at that point, so the smoke was plumbing evidence rather
+than a semantic gate result.
 
 A real CPU smoke now exercises the complete path: two sequence-disjoint
 1-sequence/4-position BitNet traces with top-8 logits were captured (about 41 s
@@ -42,6 +42,16 @@ tiny arm failed the fixed controller gate (validation terminal normalized MSE
 **1.96610**, top-k KL **10.11891**). It is retained as execution evidence only:
 `reports/controller_causal_smoke_2026-08-03/training_report.json` (SHA-256
 `c42501f4ae6896dba3704a66fedbf6b9dd88468b073592f3d360eba197b938b6`).
+
+The first evidence-sized causal fit is now also complete. It uses 8 training
+sequences/128 records, 16 held-out sequences/256 positions, top-32 teacher
+logits, and 500 CPU steps at rank 128. CPU reload parity passes, but free-run
+validation fails badly: terminal normalized MSE **0.2624663**, hidden MSE
+**0.7221664**, and top-k KL **8.7518297**. The result rejects this factorized
+controller configuration for promotion; more epochs of the same objective are
+not justified. Report:
+`reports/controller_causal_2026-08-03/rank128_8x16_500cpu.json` (SHA-256
+`47a1c94ae4797c9e0653f1b88d129620db691f3ad3306ca1ed85f2c234267a32`).
 
 ## Native recurrent-controller implementation boundary
 
@@ -219,10 +229,10 @@ thresholds.
    full runtime policy consumption and broader end-to-end benchmarking.
 4. Keep the exact operator-residual controller as the production boundary.
    The standalone controller-only replay now passes the state-transition
-   threshold, but the existing nonzero artifact scored 0.0% token agreement
-   on the eight-prompt development screen. Do not tune that artifact further;
-   the next M4 experiment should co-train the sparse semantic/attention
-   provider and controller against causal logits, with a fresh held-out split.
+   threshold, but both the existing nonzero artifact and the new evidence-sized
+   rank-128 causal fit fail quality. Do not add blind epochs to this factorized
+   controller; the next M4 experiment must change the sparse semantic/attention
+   provider or controller capacity and repeat the causal split.
 
 ## Verification
 

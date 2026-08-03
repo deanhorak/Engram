@@ -104,6 +104,13 @@ and records zero decoder-layer calls. This is a state-transition pass, not yet
 layer-free generation: an independent semantic/episodic provider and a
 causally qualified learned correction are still required.
 
+The first evidence-sized causal controller trial has now been run on CPU
+(8-sequence training split, 16-sequence/256-position held-out split, top-32
+teacher logits, rank 128, 500 steps). It preserves CPU serialization parity but
+fails free-run validation (terminal normalized MSE **0.2624663**), so this
+factorized controller is not promoted and the next experiment must change
+capacity or the operator-stream provider.
+
 ### Milestone 2 ledger
 
 ### Current Milestone 3 attention boundary (2026-08-03)
