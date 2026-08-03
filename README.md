@@ -166,6 +166,10 @@ normalized MSE **0.1926129**. This is measurable progress but not a
 promotion; `StateSpaceOperatorStreamProvider` is serialized for longer
 distillation while the **0.0225** causal gate remains open.
 
+The resumable training command is `engram distill-state-space-provider`; it
+can use CUDA for optimization when available, while the resulting provider
+artifact and sequence runtime remain NumPy/CPU-only.
+
 ### Milestone 2 ledger
 
 ### Current Milestone 3 attention boundary (2026-08-03)

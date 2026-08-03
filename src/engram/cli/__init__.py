@@ -142,6 +142,7 @@ from engram.training import (
     build_distillation_tail_holdout,
     capture_native_bitnet_controller_traces,
     distill_factorized_controller,
+    distill_state_space_operator_provider,
     joint_distill_operator_provider,
     evaluate_native_gate_channel_shadow,
     evaluate_native_gate_residual_shadow,
@@ -1010,6 +1011,23 @@ def _parser() -> argparse.ArgumentParser:
     distill_operator_provider.add_argument("--learning-rate", type=float, default=1e-3)
     distill_operator_provider.add_argument("--seed", type=int, default=37)
     distill_operator_provider.add_argument("--device", default="cpu")
+
+    distill_state_space = commands.add_parser(
+        "distill-state-space-provider",
+        help="distill a causal diagonal state-space operator provider",
+    )
+    distill_state_space.add_argument("--provider", required=True, type=Path)
+    distill_state_space.add_argument("--controller", required=True, type=Path)
+    distill_state_space.add_argument("--trace", required=True, type=Path)
+    distill_state_space.add_argument("--validation-trace", type=Path)
+    distill_state_space.add_argument("--out", required=True, type=Path)
+    distill_state_space.add_argument("--steps", type=int, default=80)
+    distill_state_space.add_argument("--batch-size", type=int, default=8)
+    distill_state_space.add_argument("--memory-dim", type=int, default=64)
+    distill_state_space.add_argument("--projection-width", type=int, default=64)
+    distill_state_space.add_argument("--learning-rate", type=float, default=2e-3)
+    distill_state_space.add_argument("--seed", type=int, default=81)
+    distill_state_space.add_argument("--device", default="cpu")
 
     evaluate_operator_provider = commands.add_parser(
         "evaluate-controller-provider",
@@ -2759,6 +2777,22 @@ def main(argv: Sequence[str] | None = None) -> int:
             validation_trace=args.validation_trace,
             steps=args.steps,
             batch_size=args.batch_size,
+            learning_rate=args.learning_rate,
+            seed=args.seed,
+            device=args.device,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "distill-state-space-provider":
+        result = distill_state_space_operator_provider(
+            args.provider,
+            args.controller,
+            args.trace,
+            args.out,
+            validation_trace=args.validation_trace,
+            steps=args.steps,
+            batch_size=args.batch_size,
+            memory_dim=args.memory_dim,
+            projection_width=args.projection_width,
             learning_rate=args.learning_rate,
             seed=args.seed,
             device=args.device,

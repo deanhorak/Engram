@@ -3,7 +3,10 @@ from .controller_distillation import (
     capture_native_bitnet_controller_traces,
     distill_factorized_controller,
 )
-from .provider_distillation import joint_distill_operator_provider
+from .provider_distillation import (
+    distill_state_space_operator_provider,
+    joint_distill_operator_provider,
+)
 from .activation_aware_aq import train_activation_aware_aq_boundaries
 from .budget_native_ternary import (
     confidence_weighted_kl,

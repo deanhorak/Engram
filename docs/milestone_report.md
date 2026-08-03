@@ -140,6 +140,10 @@ material but insufficient improvement over the **0.0225** gate. The
 projection, and output tensors with checksums, making longer training and
 CPU-only replay reproducible. The screen remains unpromoted:
 `reports/controller_provider_pca_2026-08-03/state_space_screen.json`.
+The reproducible training entry point is `engram distill-state-space-provider`;
+a one-step CPU smoke produced a checksummed reloadable artifact and recorded
+zero decoder-layer calls. CUDA may accelerate distillation when available,
+but the serialized inference path remains CPU-only.
 
 ## Native recurrent-controller implementation boundary
 

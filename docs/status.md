@@ -155,6 +155,10 @@ serialized/tested runtime class (`StateSpaceOperatorStreamProvider`) so a
 longer CUDA-assisted distillation run can resume from a durable artifact; the
 80-step screen itself remains unpromoted. Report:
 `reports/controller_provider_pca_2026-08-03/state_space_screen.json`.
+The reproducible entry point is `engram distill-state-space-provider`; a
+one-step CPU smoke completed with reloadable artifact output and zero
+decoder-layer calls. CUDA is optional for this training command and is never
+required by the serialized CPU runtime.
 
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
