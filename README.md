@@ -128,6 +128,12 @@ MSE to **0.1970640** after 20 CPU steps, but remains well above the gate; its
 report is retained under
 `reports/controller_provider_pca_2026-08-03/joint20_train8x16_validation16x16.json`.
 
+The runtime also has a sequence-preserving provider path: it resets context
+once, advances it once per token, and then runs all controller stages. The
+trace-backed reference reproduces the exact 16-sequence replay at terminal
+MSE **0.0000208009**, but it is explicitly replay-only; a learned recurrent
+provider still needs to pass the causal gate.
+
 ### Milestone 2 ledger
 
 ### Current Milestone 3 attention boundary (2026-08-03)

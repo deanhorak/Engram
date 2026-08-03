@@ -26,6 +26,15 @@ class ControllerOnlyResult:
     normalized_initial: np.ndarray
 
 
+@dataclass(frozen=True)
+class ControllerOnlySequenceResult:
+    """Sequence trajectory from a stateful provider and depth controller."""
+
+    final_states: np.ndarray
+    stage_states: np.ndarray
+    normalized_initial: np.ndarray
+
+
 class ControllerOnlyRuntime:
     """Run a serialized factorized controller using only operator streams.
 
@@ -186,5 +195,75 @@ class ControllerOnlyRuntime:
             normalized_initial=normalized,
         )
 
+    def run_sequence_provider(
+        self,
+        initial_states: np.ndarray,
+        token_embeddings: np.ndarray,
+        provider,
+        *,
+        initial_is_normalized: bool = False,
+        stage_offset: int = 0,
+    ) -> ControllerOnlySequenceResult:
+        """Run a stateful provider across a batch of token sequences.
 
-__all__ = ["ControllerOnlyResult", "ControllerOnlyRuntime"]
+        ``initial_states`` and ``token_embeddings`` have shape
+        ``[batch, sequence, state_dim]``. The provider is reset once, advanced
+        once per token, and then queried for every depth stage. This is the
+        execution contract needed for a persistent semantic-memory/controller
+        runtime; it prevents accidental reinitialization of context at every
+        token.
+        """
+
+        initial = np.asarray(initial_states, dtype=np.float32)
+        token = np.asarray(token_embeddings, dtype=np.float32)
+        if initial.ndim != 3 or initial.shape[-1] != self.controller.state_dim:
+            raise ValueError("initial_states must have shape [batch, sequence, state_dim]")
+        if token.shape != initial.shape:
+            raise ValueError("token_embeddings must match initial_states")
+        if provider.state_dim != self.controller.state_dim:
+            raise ValueError("provider width does not match controller")
+        if provider.num_stages != self.controller.num_stages:
+            raise ValueError("provider stage count does not match controller")
+        if isinstance(stage_offset, bool) or not isinstance(stage_offset, (int, np.integer)):
+            raise ValueError("stage_offset must be an integer")
+        if stage_offset < 0:
+            raise ValueError("stage_offset must be non-negative")
+        if not hasattr(provider, "reset") or not hasattr(provider, "begin_token"):
+            raise TypeError("sequence execution requires a stateful operator provider")
+        normalized = (
+            np.ascontiguousarray(initial, dtype=np.float32)
+            if initial_is_normalized
+            else self._normalize_initial(initial)
+        )
+        provider.reset((initial.shape[0],))
+        all_states = []
+        for position in range(initial.shape[1]):
+            token_row = np.ascontiguousarray(token[:, position], dtype=np.float32)
+            provider.begin_token(token_row)
+            state = normalized[:, position].copy()
+            stage_states = []
+            for cycle in range(self.controller.num_stages):
+                stage = (stage_offset + cycle) % self.controller.num_stages
+                semantic, episodic = provider.step(state, token_row, stage)
+                semantic = np.asarray(semantic, dtype=np.float32)
+                episodic = np.asarray(episodic, dtype=np.float32)
+                expected = (initial.shape[0], self.controller.state_dim)
+                if semantic.shape != expected or episodic.shape != expected:
+                    raise ValueError("stateful provider returned an incompatible shape")
+                supplied = np.concatenate((token_row, semantic, episodic), axis=-1)
+                state = self.controller.step(state, supplied, stage=stage)
+                stage_states.append(state)
+            all_states.append(np.stack(stage_states, axis=1))
+        stages = np.stack(all_states, axis=1).astype(np.float32, copy=False)
+        return ControllerOnlySequenceResult(
+            final_states=stages[:, :, -1],
+            stage_states=stages,
+            normalized_initial=normalized,
+        )
+
+
+__all__ = [
+    "ControllerOnlyResult",
+    "ControllerOnlySequenceResult",
+    "ControllerOnlyRuntime",
+]

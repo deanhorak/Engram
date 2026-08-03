@@ -84,9 +84,32 @@ terminal MSE to **0.1970640** from **0.2536094**, while the training terminal
 reaches **0.1501944**; the gate still fails. The retained adaptation report is
 `reports/controller_provider_pca_2026-08-03/joint20_train8x16_validation16x16.json`
 (SHA-256 `7edd36f97fbbeb196869e3e5b5d4cc435c94bbf3c475c036c86790371844b1d7`).
+Resuming from that checkpoint for another 20 steps with a different seed
+regresses slightly to **0.1997519**, so the adaptation is not a monotonic path
+to promotion. That retained result is
+`reports/controller_provider_pca_2026-08-03/joint20_resume_seed101.json`
+(SHA-256 `ec461fe948a059d4d9926e6c5a65e10c1b173a06310432a857e2bb29e0b47cbb`).
 The next M4 attempt must add temporal/context features or a stronger jointly
 trained provider/controller model; another isolated rank sweep is not
 justified.
+
+### Stateful sequence-provider boundary (2026-08-03)
+
+The runtime now exposes `run_sequence_provider`, which resets a provider once
+per sequence batch, advances token context exactly once per token, and then
+executes all depth stages against that persistent context. The
+`RecurrentContextProvider` defines the CPU artifact contract for a compact
+token-memory state, while `TraceSequenceOperatorStreamProvider` provides an
+explicit replay-only reference implementation.
+
+On the 16-sequence/256-position validation trace, sequence-preserving replay
+matches the earlier flat replay at terminal normalized MSE **0.0000208009**,
+with zero decoder-layer calls and CPU-only execution. This proves cache/state
+advancement and sequence boundaries, not learned-provider quality: the
+provider is backed by captured teacher streams and remains excluded from
+promotion. Evidence:
+`reports/controller_provider_pca_2026-08-03/sequence_trace_replay.json`
+(SHA-256 `eec4ebda338cbd604bd7c47ac3ea64801da5457bfe573d3f39282ece379725fa`).
 
 ## Native recurrent-controller implementation boundary
 

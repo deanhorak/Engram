@@ -111,6 +111,18 @@ not pass the controller threshold. The preserved report is
 `reports/controller_provider_pca_2026-08-03/joint20_train8x16_validation16x16.json`;
 the next attempt must add temporal/context features or a stronger joint model.
 
+### Stateful sequence-provider boundary
+
+`ControllerOnlyRuntime.run_sequence_provider` now maintains the provider
+context across a token sequence: reset once, advance once per token, then run
+all depth stages. `RecurrentContextProvider` defines the compact CPU state
+contract, and `TraceSequenceOperatorStreamProvider` supplies a replay-only
+reference. On the 16-sequence/256-position validation trace, sequence replay
+matches the flat exact-residual result at terminal normalized MSE **0.0000208009**
+with zero decoder-layer calls. This validates state/cache advancement only;
+the learned provider still fails causal quality and is not promoted. Report:
+`reports/controller_provider_pca_2026-08-03/sequence_trace_replay.json`.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and

@@ -14,13 +14,20 @@ from .native_attention import (
 from .native_bitnet_attention import aggregate_native_attention_metrics
 from .native_projection import NativeTernaryProjectionKernel
 from .native_bitnet_chat import run_native_bitnet_chat
-from .controller_only import ControllerOnlyResult, ControllerOnlyRuntime
+from .controller_only import (
+    ControllerOnlyResult,
+    ControllerOnlySequenceResult,
+    ControllerOnlyRuntime,
+)
 from .operator_stream import (
     OPERATOR_PROVIDER_FORMAT,
     OPERATOR_PROVIDER_VERSION,
     OperatorStreamProvider,
     PCAOperatorStreamProvider,
+    RecurrentContextProvider,
+    StatefulOperatorStreamProvider,
     TraceOperatorStreamProvider,
+    TraceSequenceOperatorStreamProvider,
 )
 from .olmoe_native import (
     OLMoENativePackageRuntime,
@@ -54,12 +61,16 @@ __all__ = [
     "aggregate_native_attention_metrics",
     "run_native_bitnet_chat",
     "ControllerOnlyResult",
+    "ControllerOnlySequenceResult",
     "ControllerOnlyRuntime",
     "OPERATOR_PROVIDER_FORMAT",
     "OPERATOR_PROVIDER_VERSION",
     "OperatorStreamProvider",
     "PCAOperatorStreamProvider",
+    "RecurrentContextProvider",
+    "StatefulOperatorStreamProvider",
     "TraceOperatorStreamProvider",
+    "TraceSequenceOperatorStreamProvider",
     "load_olmoe_selector_policy",
     "validate_native_bitnet_package",
 ]

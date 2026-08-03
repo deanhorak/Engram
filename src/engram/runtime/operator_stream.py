@@ -40,6 +40,11 @@ def _finite(value: np.ndarray, name: str) -> np.ndarray:
     return result
 
 
+def _silu(value: np.ndarray) -> np.ndarray:
+    clipped = np.clip(value, -30.0, 30.0)
+    return value / (1.0 + np.exp(-clipped))
+
+
 class OperatorStreamProvider(Protocol):
     """Protocol consumed by the transformer-free controller runtime."""
 
@@ -51,6 +56,16 @@ class OperatorStreamProvider(Protocol):
         self, state: np.ndarray, token_embedding: np.ndarray, stage: int
     ) -> tuple[np.ndarray, np.ndarray]:
         """Return semantic and episodic vectors for one stage."""
+
+
+class StatefulOperatorStreamProvider(OperatorStreamProvider, Protocol):
+    """Provider seam for token-by-token persistent context."""
+
+    def reset(self, batch_shape: tuple[int, ...]) -> None:
+        """Discard token history and allocate state for a new sequence batch."""
+
+    def begin_token(self, token_embedding: np.ndarray) -> None:
+        """Advance the provider's token context exactly once."""
 
 
 @dataclass(frozen=True)
@@ -127,6 +142,110 @@ class TraceOperatorStreamProvider:
             "provider_kind": self.provider_kind,
             "trace_sha256": self.trace_sha256,
             "records": self.records,
+            "state_dim": self.state_dim,
+            "num_stages": self.num_stages,
+            "learned": False,
+            "transformer_layers_loaded": False,
+        }
+
+
+@dataclass
+class TraceSequenceOperatorStreamProvider:
+    """Sequence-preserving replay provider for persistent-runtime parity."""
+
+    semantic_outputs: np.ndarray
+    episodic_outputs: np.ndarray
+    trace_sha256: str = ""
+    provider_kind: str = "trace_sequence_replay"
+    _position: int = -1
+
+    def __post_init__(self) -> None:
+        semantic = _finite(self.semantic_outputs, "semantic_outputs")
+        episodic = _finite(self.episodic_outputs, "episodic_outputs")
+        if semantic.ndim != 4 or semantic.shape != episodic.shape:
+            raise ValueError(
+                "sequence streams must have shape [batch, sequence, stages, state_dim]"
+            )
+        if semantic.shape[0] == 0 or semantic.shape[1] == 0:
+            raise ValueError("sequence provider cannot be empty")
+        semantic.setflags(write=False)
+        episodic.setflags(write=False)
+        object.__setattr__(self, "semantic_outputs", semantic)
+        object.__setattr__(self, "episodic_outputs", episodic)
+
+    @property
+    def state_dim(self) -> int:
+        return int(self.semantic_outputs.shape[-1])
+
+    @property
+    def num_stages(self) -> int:
+        return int(self.semantic_outputs.shape[2])
+
+    @property
+    def sequence_length(self) -> int:
+        return int(self.semantic_outputs.shape[1])
+
+    @classmethod
+    def from_trace(cls, trace: str | Path) -> "TraceSequenceOperatorStreamProvider":
+        from engram.training.controller_distillation import _load_trajectories
+
+        path = Path(trace).resolve()
+        data = _load_trajectories(path)
+        sample_ids = np.asarray(data.sample_id, dtype=np.int64)
+        unique = np.unique(sample_ids)
+        counts = [int(np.sum(sample_ids == sample)) for sample in unique]
+        if not counts or len(set(counts)) != 1:
+            raise ValueError("sequence trace records must have equal sample lengths")
+        order = np.concatenate(
+            [np.flatnonzero(sample_ids == sample) for sample in unique]
+        )
+        sequence = counts[0]
+        return cls(
+            data.semantic_outputs[order].reshape(
+                len(unique), sequence, data.num_stages, data.hidden_size
+            ),
+            data.episodic_outputs[order].reshape(
+                len(unique), sequence, data.num_stages, data.hidden_size
+            ),
+            trace_sha256=sha256_file(path / "manifest.json"),
+        )
+
+    def reset(self, batch_shape: tuple[int, ...]) -> None:
+        if batch_shape != (self.semantic_outputs.shape[0],):
+            raise ValueError("trace sequence provider batch shape does not match trace")
+        self._position = -1
+
+    def begin_token(self, token_embedding: np.ndarray) -> None:
+        token = _finite(token_embedding, "token_embedding")
+        if token.shape != (self.semantic_outputs.shape[0], self.state_dim):
+            raise ValueError("trace sequence token batch shape does not match trace")
+        self._position += 1
+        if self._position >= self.sequence_length:
+            raise ValueError("trace sequence provider advanced past its sequence")
+
+    def step(
+        self, state: np.ndarray, token_embedding: np.ndarray, stage: int
+    ) -> tuple[np.ndarray, np.ndarray]:
+        del state, token_embedding
+        if self._position < 0:
+            raise ValueError("begin_token must precede provider.step")
+        if not isinstance(stage, (int, np.integer)) or isinstance(stage, bool):
+            raise ValueError("stage must be an integer")
+        if stage < 0 or stage >= self.num_stages:
+            raise ValueError("stage is outside the provider")
+        return (
+            self.semantic_outputs[:, self._position, stage],
+            self.episodic_outputs[:, self._position, stage],
+        )
+
+    def metadata(self) -> dict[str, Any]:
+        return {
+            "format": OPERATOR_PROVIDER_FORMAT,
+            "version": OPERATOR_PROVIDER_VERSION,
+            "provider_kind": self.provider_kind,
+            "trace_sha256": self.trace_sha256,
+            "records": int(np.prod(self.semantic_outputs.shape[:2])),
+            "sequence_length": self.sequence_length,
             "state_dim": self.state_dim,
             "num_stages": self.num_stages,
             "learned": False,
@@ -313,6 +432,176 @@ class PCAOperatorStreamProvider:
         )
 
 
+@dataclass
+class RecurrentContextProvider:
+    """Small stateful provider for sequence-level layer-free execution.
+
+    The provider keeps a compact token-history state and updates it once per
+    token.  Depth stages then read that same context while the controller
+    advances through semantic/episodic stages.  This separates sequence
+    recurrence from depth recurrence, which a memoryless token provider cannot
+    represent.
+
+    This class is an executable architecture fixture until its weights are
+    learned against the protected causal split; ``initialize`` intentionally
+    produces deterministic random weights and is never a promotion artifact.
+    """
+
+    memory_input: np.ndarray
+    output_down: np.ndarray
+    semantic_up: np.ndarray
+    episodic_up: np.ndarray
+    metadata_payload: dict[str, Any]
+    provider_kind: str = "recurrent_context_fixture"
+    _memory: np.ndarray | None = None
+
+    def __post_init__(self) -> None:
+        arrays = {
+            "memory_input": _finite(self.memory_input, "memory_input"),
+            "output_down": _finite(self.output_down, "output_down"),
+            "semantic_up": _finite(self.semantic_up, "semantic_up"),
+            "episodic_up": _finite(self.episodic_up, "episodic_up"),
+        }
+        if arrays["memory_input"].ndim != 2 or arrays["output_down"].ndim != 2:
+            raise ValueError("recurrent provider projections must be rank-2")
+        memory_dim = arrays["memory_input"].shape[1]
+        state_dim = arrays["memory_input"].shape[0] - memory_dim - 1
+        if state_dim <= 0:
+            raise ValueError("memory_input has no positive token width")
+        output_width = 2 * state_dim + memory_dim + 1
+        if arrays["output_down"].shape[0] != output_width:
+            raise ValueError("output_down has incompatible input width")
+        rank = arrays["output_down"].shape[1]
+        for name in ("semantic_up", "episodic_up"):
+            value = arrays[name]
+            if value.ndim != 3 or value.shape[1:] != (rank, state_dim):
+                raise ValueError(f"{name} has incompatible dimensions")
+        if arrays["semantic_up"].shape != arrays["episodic_up"].shape:
+            raise ValueError("semantic and episodic stage projections differ")
+        for name, value in arrays.items():
+            value.setflags(write=False)
+            object.__setattr__(self, name, value)
+        if not isinstance(self.metadata_payload, dict):
+            raise ValueError("provider metadata must be an object")
+
+    @property
+    def state_dim(self) -> int:
+        return int(self.memory_input.shape[0] - self.memory_dim - 1)
+
+    @property
+    def memory_dim(self) -> int:
+        return int(self.memory_input.shape[1])
+
+    @property
+    def num_stages(self) -> int:
+        return int(self.semantic_up.shape[0])
+
+    @property
+    def output_rank(self) -> int:
+        return int(self.output_down.shape[1])
+
+    @classmethod
+    def initialize(
+        cls,
+        *,
+        state_dim: int,
+        num_stages: int,
+        memory_dim: int = 32,
+        output_rank: int = 8,
+        seed: int = 0,
+    ) -> "RecurrentContextProvider":
+        if min(state_dim, num_stages, memory_dim, output_rank) <= 0:
+            raise ValueError("recurrent provider dimensions must be positive")
+        rng = np.random.default_rng(seed)
+        memory_input = rng.normal(
+            scale=1.0 / np.sqrt(state_dim + memory_dim),
+            size=(state_dim + memory_dim + 1, memory_dim),
+        ).astype(np.float32)
+        output_down = rng.normal(
+            scale=1.0 / np.sqrt(2 * state_dim + memory_dim),
+            size=(2 * state_dim + memory_dim + 1, output_rank),
+        ).astype(np.float32)
+        semantic_up = rng.normal(
+            scale=1e-3, size=(num_stages, output_rank, state_dim)
+        ).astype(np.float32)
+        episodic_up = rng.normal(
+            scale=1e-3, size=(num_stages, output_rank, state_dim)
+        ).astype(np.float32)
+        return cls(
+            memory_input=memory_input,
+            output_down=output_down,
+            semantic_up=semantic_up,
+            episodic_up=episodic_up,
+            metadata_payload={
+                "format": OPERATOR_PROVIDER_FORMAT,
+                "version": OPERATOR_PROVIDER_VERSION,
+                "learned": False,
+                "transformer_layers_loaded": False,
+                "state_dim": state_dim,
+                "num_stages": num_stages,
+                "memory_dim": memory_dim,
+                "output_rank": output_rank,
+                "architecture": "shared_token_memory_plus_stage_low_rank_outputs",
+            },
+        )
+
+    def reset(self, batch_shape: tuple[int, ...]) -> None:
+        if not isinstance(batch_shape, tuple) or any(
+            isinstance(value, bool) or not isinstance(value, (int, np.integer)) or value <= 0
+            for value in batch_shape
+        ):
+            raise ValueError("batch_shape must contain positive integer dimensions")
+        self._memory = np.zeros((*batch_shape, self.memory_dim), dtype=np.float32)
+
+    def begin_token(self, token_embedding: np.ndarray) -> None:
+        token = _finite(token_embedding, "token_embedding")
+        if token.ndim < 1 or token.shape[-1] != self.state_dim:
+            raise ValueError("token_embedding has incompatible width")
+        if self._memory is None or self._memory.shape[:-1] != token.shape[:-1]:
+            raise ValueError("reset must be called with the token batch shape first")
+        memory_input = np.concatenate(
+            (self._memory, token, np.ones((*token.shape[:-1], 1), dtype=np.float32)),
+            axis=-1,
+        )
+        self._memory = np.tanh(memory_input @ self.memory_input).astype(
+            np.float32, copy=False
+        )
+
+    def step(
+        self, state: np.ndarray, token_embedding: np.ndarray, stage: int
+    ) -> tuple[np.ndarray, np.ndarray]:
+        if self._memory is None:
+            raise ValueError("reset and begin_token must precede provider.step")
+        state = _finite(state, "state")
+        token = _finite(token_embedding, "token_embedding")
+        if state.shape != token.shape or state.shape[:-1] != self._memory.shape[:-1]:
+            raise ValueError("provider state, token, and memory shapes differ")
+        if not isinstance(stage, (int, np.integer)) or isinstance(stage, bool):
+            raise ValueError("stage must be an integer")
+        if stage < 0 or stage >= self.num_stages:
+            raise ValueError("stage is outside the provider")
+        features = np.concatenate(
+            (state, token, self._memory, np.ones((*state.shape[:-1], 1), dtype=np.float32)),
+            axis=-1,
+        )
+        hidden = _silu(features @ self.output_down)
+        semantic = hidden @ self.semantic_up[stage]
+        episodic = hidden @ self.episodic_up[stage]
+        return semantic.astype(np.float32, copy=False), episodic.astype(
+            np.float32, copy=False
+        )
+
+    def metadata(self) -> dict[str, Any]:
+        return {
+            **self.metadata_payload,
+            "format": OPERATOR_PROVIDER_FORMAT,
+            "version": OPERATOR_PROVIDER_VERSION,
+            "provider_kind": self.provider_kind,
+            "learned": bool(self.metadata_payload.get("learned", False)),
+            "transformer_layers_loaded": False,
+        }
+
+
 def _fit_stream(
     features: np.ndarray,
     outputs: np.ndarray,
@@ -427,7 +716,10 @@ __all__ = [
     "OPERATOR_PROVIDER_FORMAT",
     "OPERATOR_PROVIDER_VERSION",
     "OperatorStreamProvider",
+    "StatefulOperatorStreamProvider",
     "TraceOperatorStreamProvider",
+    "TraceSequenceOperatorStreamProvider",
     "PCAOperatorStreamProvider",
+    "RecurrentContextProvider",
     "fit_operator_stream_provider",
 ]

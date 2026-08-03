@@ -1,0 +1,40 @@
+{
+  "decoder_layer_forward_calls": 0,
+  "experiment": "controller_sequence_trace_replay",
+  "gate": {
+    "end_to_end_generation": false,
+    "layer_free_cpu_replay": true,
+    "metric": "terminal_normalized_mse",
+    "passed": true,
+    "provider_is_replay_only": true,
+    "threshold": 0.0225
+  },
+  "hidden_size": 2560,
+  "inference_device": "cpu",
+  "metrics": {
+    "maximum_absolute_error": 0.31882762908935547,
+    "maximum_stage_normalized_mse": 2.2630254534306005e-05,
+    "mean_stage_normalized_mse": 1.768504262145143e-05,
+    "terminal_normalized_mse": 2.08008787012659e-05
+  },
+  "num_stages": 30,
+  "provider": {
+    "format": "engram.operator_stream_provider",
+    "learned": false,
+    "num_stages": 30,
+    "provider_kind": "trace_sequence_replay",
+    "records": 256,
+    "sequence_length": 16,
+    "state_dim": 2560,
+    "trace_sha256": "aa3a4c24a74c346702c01235896545018c36cbf5bb02b939f5a70a6bcd38018d",
+    "transformer_layers_loaded": false,
+    "version": 1
+  },
+  "records": 256,
+  "sequence_length": 16,
+  "sequences": 16,
+  "status": "development_result",
+  "trace": "/home/dean/repos/engram/work/controller_distillation/bitnet_validation_causal_16x16_k32",
+  "trace_manifest_sha256": "aa3a4c24a74c346702c01235896545018c36cbf5bb02b939f5a70a6bcd38018d",
+  "transformers_model_loaded": false
+}
