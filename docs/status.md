@@ -1,6 +1,6 @@
 # Project status
 
-Snapshot date: **2026-07-30**
+Snapshot date: **2026-08-03**
 
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
@@ -24,13 +24,24 @@ elapsed time, so the kernel is 14.49% slower; latency was disclosed but was
 not part of the frozen semantic gate. The dense-Llama conversion track remains
 blocked.
 
-For OLMoE, Milestone 2 remains passed. The Milestone 3 train-only
-same-state-capacity prerequisite passed at 0.6653937751, but both learned
-successors failed: the rank-4 query-content-plus-mass selector recovered
-0.25422074198 in BF16 and the phase-conditioned mass selector recovered
-0.2618728353. Both passed their systems, parity, and authentication checks.
-Neither authorized native promotion, development, or confirmation, and
-Milestone 3 remains blocked.
+The OLMoE rank-16/pool-6 selector has now also passed its separately
+authorized protected semantic replay. The exact protocol-defined split was
+regenerated and hash-matched before capture; all eight native CPU records pass
+with 100% answer-token agreement, 0.009133 hidden relative L2, 0.004416 logit
+relative L2, −0.000460 mean answer NLL delta (maximum +0.005879), and 99.8501%
+mean candidate/exact-rerank recall. An authenticated CPU-only opt-in package
+was assembled and one-token native generation matched the ordinary package.
+The policy remains disabled by default, and this result is not an end-to-end
+speedup claim.
+
+For OLMoE, the earlier Milestone 3 train-only same-state-capacity prerequisite
+passed at 0.6653937751, but both of its learned successors failed: the rank-4
+query-content-plus-mass selector recovered 0.25422074198 in BF16 and the
+phase-conditioned mass selector recovered 0.2618728353. Both passed their
+systems, parity, and authentication checks, but neither authorized progression
+of that Milestone 3 controller path; Milestone 3 remains blocked. The separate
+rank-16/pool-6 retrieval selector is the later protected Milestone 2 result
+summarized above.
 
 ### Compiled native OLMoE Q7 source track
 

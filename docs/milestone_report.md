@@ -20,10 +20,21 @@ The authenticated result is
 SHA-256
 `0c5cb2273f63b930148c78070da68ae57bb821969a68e2a6a038ee7ac5d04bb6`.
 
-The selector is still evaluator-only. Native counters show mean logical
-attention reads falling from 710,667,264 to 702,166,336 bytes (1.1962%); the
-older-candidate scoring stage falls 7.3733%. This is a real semantic and
-locality result, but not yet a convincing end-to-end speedup.
+The selector remains an evaluator-only artifact and is disabled by default in
+ordinary packages. The separately authorized protected replay now passes all
+eight records: 100% answer-token agreement, 0.009133 mean hidden relative L2,
+0.004416 mean logit relative L2, −0.000460 mean answer NLL delta (maximum
++0.005879), and 99.8501% mean candidate/exact-rerank recall. Native counters
+show mean logical attention reads falling from 710,664,576 to 702,166,784
+bytes (1.1958%); the older-candidate scoring stage falls 7.3733%. This is a
+real semantic and locality result, but not yet a convincing end-to-end
+speedup.
+
+The protected policy was also copied into an authenticated CPU-only opt-in
+package and validated. A one-token `Hello` generation produced the same token
+ID 13 (`,`) through the opt-in and ordinary packages. This proves package
+assembly and native parity without silently changing the ordinary runtime
+default.
 
 The required long-context CPU scaling boundary is now measured on development
 record 0.  The exact same native package was run unmasked and masked at 512
@@ -84,7 +95,7 @@ boundary without silently enabling the policy in ordinary generation.
 | 4. Shared recurrent controller and layer-free Engram runtime | Partial | Controller training, intermediate-state checks, adaptive-cycle experiments, and incremental dispatch exist. Broad generalization and fully promoted layer-free generation remain. |
 | 5. Vocabulary/transition/correction artifacts, compiler, validation and CLI | Partial/usable | Native package generation, mapped weights, correction paths, validation, greedy generation, and chat CLI work. Full semantic-controller package promotion remains gated. |
 | 6. Native C++ runtime, kernels, mapping, parity, generation, benchmarks | Partial/usable | CPU scalar/vector kernels, memory mapping, C ABI parity, native generation, and tests are operational. End-to-end long-context benchmarks and optimization remain. |
-| 7. Comprehensive evaluation, ablations, tuning, documentation, final report | In progress | Documentation and reproducible reports are being maintained. Protected evaluation, broad model/task coverage, and final performance study remain. |
+| 7. Comprehensive evaluation, ablations, tuning, documentation, final report | In progress | Protected promotion and its documentation are complete. Broad model/task coverage, end-to-end performance tuning, ablations, and the reproducible final study remain. |
 
 ## Goals versus current reality
 
