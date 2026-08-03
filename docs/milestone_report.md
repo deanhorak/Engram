@@ -111,6 +111,25 @@ promotion. Evidence:
 `reports/controller_provider_pca_2026-08-03/sequence_trace_replay.json`
 (SHA-256 `eec4ebda338cbd604bd7c47ac3ea64801da5457bfe573d3f39282ece379725fa`).
 
+The replay boundary is now durable. A serialized `trace_sequence_replay`
+provider records both sequence-shaped operator arrays with per-file hashes,
+and `engram evaluate-controller-sequence` reloads it, reconstructs the
+sample ordering, and runs the persistent reset/advance contract without a
+Transformer model. The CLI report reproduces terminal normalized MSE
+**0.0000208009**, with zero decoder-layer calls and provider SHA-256
+`cdd5f27c503491d02083878d823804a9e76fb5917d8478201b1c4b2748237313`:
+`reports/controller_provider_pca_2026-08-03/sequence_provider_cli_replay.json`.
+The artifact is marked `learned: false`; this is a durable replay/package
+boundary, not a learned-provider promotion.
+
+The 64-sequence fit was also measured. Rank-16 state/token regression reaches
+held-out terminal normalized MSE **0.2127623**, and 20-step free-running
+projection adaptation reaches **0.2120011**, both failing the **0.0225**
+causal gate. Previous-state context, nearest-neighbor retrieval, and residual
+context correction screens regress to **0.4178558**, **0.3247504**, and
+**0.4624460** validation mean normalized MSE. The negative results are
+preserved in `reports/controller_provider_pca_2026-08-03/context_and_retrieval_screens.json`.
+
 ## Native recurrent-controller implementation boundary
 
 The native token runtime now has a direct implementation of the schema-v3

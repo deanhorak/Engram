@@ -59,7 +59,10 @@ from engram.evaluation.controller_substitution import (
     evaluate_native_bitnet_controller_substitution,
 )
 from engram.evaluation.controller_only import evaluate_controller_only_trace
-from engram.evaluation.controller_provider import evaluate_controller_provider_trace
+from engram.evaluation.controller_provider import (
+    evaluate_controller_provider_trace,
+    evaluate_controller_sequence_replay,
+)
 from engram.evaluation.native_attention_benchmark import (
     benchmark_native_streaming_attention,
 )
@@ -1021,6 +1024,15 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="allow an unauthenticated nonzero factorized correction",
     )
+
+    evaluate_sequence_provider = commands.add_parser(
+        "evaluate-controller-sequence",
+        help="validate persistent sequence replay without a Transformer model",
+    )
+    evaluate_sequence_provider.add_argument("--trace", required=True, type=Path)
+    evaluate_sequence_provider.add_argument("--provider", required=True, type=Path)
+    evaluate_sequence_provider.add_argument("--controller", required=True, type=Path)
+    evaluate_sequence_provider.add_argument("--out", required=True, type=Path)
 
     attention_benchmark = commands.add_parser(
         "benchmark-native-attention",
@@ -2759,6 +2771,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.controller,
             out=args.out,
             allow_correction=args.allow_correction,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "evaluate-controller-sequence":
+        result = evaluate_controller_sequence_replay(
+            args.trace,
+            args.provider,
+            args.controller,
+            out=args.out,
         )
         print(json.dumps(result, indent=2, sort_keys=True))
     elif args.command == "benchmark-native-attention":

@@ -252,6 +252,74 @@ class TraceSequenceOperatorStreamProvider:
             "transformer_layers_loaded": False,
         }
 
+    def save(self, path: str | Path) -> Path:
+        """Serialize the sequence replay provider with an authenticated manifest.
+
+        This is deliberately a replay artifact, not a learned provider.  The
+        explicit format is useful for validating the layer-free sequence
+        runtime after the source model and its decoder layers are gone.
+        """
+
+        target = Path(path)
+        target.mkdir(parents=True, exist_ok=True)
+        arrays = {
+            "semantic_outputs": self.semantic_outputs,
+            "episodic_outputs": self.episodic_outputs,
+        }
+        inventory: dict[str, dict[str, Any]] = {}
+        for name, value in arrays.items():
+            file_path = target / f"{name}.npy"
+            np.save(file_path, value, allow_pickle=False)
+            inventory[file_path.name] = {
+                "bytes": file_path.stat().st_size,
+                "sha256": sha256_file(file_path),
+                "shape": list(value.shape),
+                "dtype": str(value.dtype),
+            }
+        manifest = self.metadata()
+        manifest.update(
+            {
+                "source_trace": self.trace_sha256,
+                "files": inventory,
+            }
+        )
+        atomic_json(target / "manifest.json", manifest)
+        return target
+
+    @classmethod
+    def load(cls, path: str | Path) -> "TraceSequenceOperatorStreamProvider":
+        """Load and checksum a serialized sequence replay provider."""
+
+        target = Path(path)
+        manifest_path = target / "manifest.json"
+        if not manifest_path.is_file():
+            raise ValueError("sequence provider has no manifest")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if (
+            manifest.get("format") != OPERATOR_PROVIDER_FORMAT
+            or manifest.get("version") != OPERATOR_PROVIDER_VERSION
+            or manifest.get("provider_kind") != "trace_sequence_replay"
+        ):
+            raise ValueError("unsupported sequence replay provider")
+        files = manifest.get("files")
+        if not isinstance(files, dict):
+            raise ValueError("sequence provider manifest has no file inventory")
+        arrays: dict[str, np.ndarray] = {}
+        for name, info in files.items():
+            file_path = target / name
+            if (
+                not file_path.is_file()
+                or file_path.stat().st_size != info.get("bytes")
+                or sha256_file(file_path) != info.get("sha256")
+            ):
+                raise ValueError(f"sequence provider checksum mismatch: {name}")
+            arrays[Path(name).stem] = np.load(file_path, allow_pickle=False)
+        return cls(
+            semantic_outputs=arrays["semantic_outputs"],
+            episodic_outputs=arrays["episodic_outputs"],
+            trace_sha256=str(manifest.get("source_trace", "")),
+        )
+
 
 @dataclass(frozen=True)
 class PCAOperatorStreamProvider:

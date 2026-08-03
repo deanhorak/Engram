@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from engram.controller import FactorizedRecurrentController
 from engram.evaluation.controller_substitution import (
@@ -215,3 +216,21 @@ def test_sequence_trace_provider_matches_flat_operator_replay():
         )
         expected.append(result.stage_states)
     np.testing.assert_allclose(sequence.stage_states, np.stack(expected, axis=0))
+
+
+def test_sequence_trace_provider_roundtrip_is_checksum_authenticated(tmp_path):
+    semantic = np.arange(2 * 3 * 2 * 4, dtype=np.float32).reshape(2, 3, 2, 4)
+    episodic = semantic + 0.5
+    provider = TraceSequenceOperatorStreamProvider(
+        semantic, episodic, trace_sha256="trace-manifest"
+    )
+    path = provider.save(tmp_path / "sequence-provider")
+    restored = TraceSequenceOperatorStreamProvider.load(path)
+    assert restored.metadata()["provider_kind"] == "trace_sequence_replay"
+    np.testing.assert_array_equal(restored.semantic_outputs, semantic)
+    np.testing.assert_array_equal(restored.episodic_outputs, episodic)
+
+    payload = path / "semantic_outputs.npy"
+    payload.write_bytes(payload.read_bytes() + b"tamper")
+    with pytest.raises(ValueError, match="checksum mismatch"):
+        TraceSequenceOperatorStreamProvider.load(path)

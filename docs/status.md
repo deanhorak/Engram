@@ -123,6 +123,28 @@ with zero decoder-layer calls. This validates state/cache advancement only;
 the learned provider still fails causal quality and is not promoted. Report:
 `reports/controller_provider_pca_2026-08-03/sequence_trace_replay.json`.
 
+The boundary is now durable rather than an in-memory test. A serialized
+`trace_sequence_replay` provider stores both `[sequence, stage, hidden]`
+operator streams in a checksummed NumPy artifact, and
+`engram evaluate-controller-sequence` reloads that artifact, restores sample
+ordering, advances context once per token, and checks the complete sequence
+against the trace. The CLI replay reproduces terminal normalized MSE
+**0.0000208009** with zero decoder-layer calls (provider SHA-256
+`cdd5f27c503491d02083878d823804a9e76fb5917d8478201b1c4b2748237313`). This
+closes the durable layer-free replay/package boundary; the provider is
+explicitly marked `learned: false` and cannot promote Milestone 4.
+
+The larger 64-sequence training corpus was also evaluated before changing the
+provider architecture. A rank-16 state/token provider improves held-out
+terminal normalized MSE from **0.2536094** (8-sequence fit) to **0.2127623**;
+20 steps of free-running projection adaptation reach **0.2120011**. Both
+remain far above the **0.0225** threshold. A compact previous-state context
+screen, a nearest-neighbor operator lookup, and a residual context correction
+were all worse (validation mean normalized MSE **0.4178558**, **0.3247504**,
+and **0.4624460**, respectively). These screens are preserved in
+`reports/controller_provider_pca_2026-08-03/context_and_retrieval_screens.json`;
+none is a promotion artifact.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and

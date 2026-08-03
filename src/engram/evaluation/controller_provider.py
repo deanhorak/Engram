@@ -10,7 +10,10 @@ from typing import Any
 import numpy as np
 
 from engram.runtime.controller_only import ControllerOnlyRuntime
-from engram.runtime.operator_stream import PCAOperatorStreamProvider
+from engram.runtime.operator_stream import (
+    PCAOperatorStreamProvider,
+    TraceSequenceOperatorStreamProvider,
+)
 from engram.training.controller_distillation import _load_trajectories
 from engram.utils import atomic_json, sha256_file
 
@@ -115,4 +118,94 @@ def evaluate_controller_provider_trace(
     return report
 
 
-__all__ = ["evaluate_controller_provider_trace"]
+def evaluate_controller_sequence_replay(
+    trace: str | Path,
+    provider: str | Path,
+    controller: str | Path,
+    *,
+    out: str | Path,
+) -> dict[str, Any]:
+    """Validate persistent sequence replay against a captured trace.
+
+    The provider is intentionally required to be the serialized
+    ``trace_sequence_replay`` artifact.  This command proves ordering,
+    reset/advance semantics, and CPU state-transition parity; it cannot
+    promote a learned provider.
+    """
+
+    trace_path = Path(trace).resolve()
+    provider_path = Path(provider).resolve()
+    controller_path = Path(controller).resolve()
+    data = _load_trajectories(trace_path)
+    loaded_provider = TraceSequenceOperatorStreamProvider.load(provider_path)
+    unique = np.unique(data.sample_id)
+    counts = [int(np.sum(data.sample_id == sample)) for sample in unique]
+    if not counts or len(set(counts)) != 1:
+        raise ValueError("sequence replay trace records must have equal sample lengths")
+    if loaded_provider.semantic_outputs.shape[:2] != (len(unique), counts[0]):
+        raise ValueError("serialized sequence provider shape does not match trace")
+    order = np.concatenate(
+        [np.flatnonzero(data.sample_id == sample) for sample in unique]
+    )
+    initial = data.teacher_states[order, 0].astype(np.float32).reshape(
+        len(unique), counts[0], data.hidden_size
+    )
+    token = data.token_embedding[order].astype(np.float32).reshape(
+        len(unique), counts[0], data.hidden_size
+    )
+    target = data.teacher_states[order, 1:].astype(np.float32).reshape(
+        len(unique), counts[0], data.num_stages, data.hidden_size
+    )
+    runtime = ControllerOnlyRuntime(controller_path)
+    started = time.perf_counter()
+    result = runtime.run_sequence_provider(
+        initial, token, loaded_provider, initial_is_normalized=True
+    )
+    elapsed = time.perf_counter() - started
+    error = result.stage_states - target
+    stage_mse = np.mean(np.square(error), axis=(0, 1, 3))
+    report = {
+        "experiment": "controller_sequence_trace_replay",
+        "status": "replay_boundary",
+        "trace": str(trace_path),
+        "trace_manifest_sha256": sha256_file(trace_path / "manifest.json"),
+        "provider": str(provider_path),
+        "provider_sha256": _directory_sha256(provider_path),
+        "provider_metadata": loaded_provider.metadata(),
+        "controller": str(controller_path),
+        "controller_sha256": _directory_sha256(controller_path),
+        "sequences": len(unique),
+        "sequence_length": counts[0],
+        "records": data.records,
+        "hidden_size": data.hidden_size,
+        "num_stages": data.num_stages,
+        "elapsed_seconds": elapsed,
+        "inference_device": "cpu",
+        "transformers_model_loaded": False,
+        "decoder_layer_forward_calls": 0,
+        "metrics": {
+            "mean_stage_normalized_mse": float(np.mean(stage_mse)),
+            "maximum_stage_normalized_mse": float(np.max(stage_mse)),
+            "terminal_normalized_mse": float(stage_mse[-1]),
+            "stage_normalized_mse": [float(value) for value in stage_mse],
+            "hidden_mse": float(np.mean(np.square(error))),
+            "maximum_absolute_error": float(np.max(np.abs(error))),
+        },
+        "gate": {
+            "metric": "terminal_normalized_mse",
+            "threshold": 0.0225,
+            "passed": bool(stage_mse[-1] <= 0.0225),
+            "provider_is_learned": False,
+            "layer_free_cpu_replay": True,
+            "persistent_sequence_state": True,
+            "end_to_end_generation": False,
+        },
+    }
+    atomic_json(Path(out), report)
+    return report
+
+
+__all__ = [
+    "evaluate_controller_provider_trace",
+    "evaluate_controller_sequence_replay",
+]

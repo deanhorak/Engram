@@ -134,6 +134,21 @@ trace-backed reference reproduces the exact 16-sequence replay at terminal
 MSE **0.0000208009**, but it is explicitly replay-only; a learned recurrent
 provider still needs to pass the causal gate.
 
+The replay provider is now a durable, checksummed artifact. For a frozen
+trace, `engram evaluate-controller-sequence` reloads the sequence-shaped
+semantic/episodic arrays, restores sample ordering, and executes the
+transformer-free controller with one context advance per token. The CLI
+reproduces terminal normalized MSE **0.0000208009** and zero decoder-layer
+calls. This proves package/state durability, not learned generalization; the
+artifact is explicitly marked `learned: false`.
+
+The larger 64-sequence provider fit and 20-step causal adaptation were also
+screened (terminal normalized MSE **0.2127623** and **0.2120011**). Compact
+previous-state context, nearest-neighbor retrieval, and residual context
+correction were rejected after worse held-out results. The current learned
+provider therefore remains outside the authenticated package until the
+0.0225 causal gate is met.
+
 ### Milestone 2 ledger
 
 ### Current Milestone 3 attention boundary (2026-08-03)

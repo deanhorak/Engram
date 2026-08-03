@@ -1,0 +1,47 @@
+{
+  "experiment": "layer_free_provider_context_and_retrieval_screens",
+  "status": "development_failures",
+  "controller_gate": {
+    "metric": "terminal_normalized_mse",
+    "threshold": 0.0225
+  },
+  "training_trace": "work/controller_distillation/bitnet_train_8x16_b2",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "screens": [
+    {
+      "name": "previous_final_state_random_projection",
+      "context_width": 64,
+      "output_rank": 16,
+      "validation_mean_normalized_mse": 0.4178557979,
+      "validation_max_normalized_mse": 1.5363208055,
+      "decision": "reject"
+    },
+    {
+      "name": "nearest_operator_state",
+      "projection_width": 64,
+      "neighbors": 1,
+      "validation_mean_normalized_mse": 0.3307734989,
+      "validation_max_normalized_mse": 1.3012459278,
+      "decision": "reject"
+    },
+    {
+      "name": "nearest_operator_state",
+      "projection_width": 64,
+      "neighbors": 4,
+      "validation_mean_normalized_mse": 0.3247503573,
+      "validation_max_normalized_mse": 1.3821327686,
+      "decision": "reject"
+    },
+    {
+      "name": "previous_state_residual_correction",
+      "context_width": 64,
+      "output_rank": 16,
+      "validation_mean_normalized_mse": 0.4624459783,
+      "validation_max_normalized_mse": 2.2082419395,
+      "decision": "reject"
+    }
+  ],
+  "transformers_model_loaded": false,
+  "decoder_layer_forward_calls": 0,
+  "interpretation": "Temporal context and retrieval do not repair the current provider; no artifact is promoted."
+}
