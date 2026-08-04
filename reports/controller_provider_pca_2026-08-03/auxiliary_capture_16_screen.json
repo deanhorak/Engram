@@ -1,6 +1,6 @@
 {
   "experiment": "auxiliary_native_projection_capture_16x16",
-  "status": "host_terminated_partial_capture",
+  "status": "dataset_cardinality_limited_complete_capture",
   "model": "work/native_bitnet/model.engram-bitnet",
   "dataset": "/tmp/engram_aux_bitnet_fineweb_train.jsonl",
   "dataset_sha256": "51f5fe5e1df729be0f9bebf6fc09b6d5bc2dd55eef79d3249a06b5d526e19fe9",
@@ -8,11 +8,12 @@
   "max_tokens": 16,
   "threads": 4,
   "native_projections": true,
-  "completed_samples": 4,
-  "completed_records": 64,
+  "available_samples": 8,
+  "completed_samples": 8,
+  "completed_records": 128,
   "trace": "/tmp/bitnet_aux_trace_train16_native_proj",
-  "partial_manifest_sha256": "e48f85e61f3e3a8f82ad7ac91b0f6ccbce5c79205705fd924303179d4cb051d5",
-  "manifest_complete": false,
+  "manifest_sha256": "1d94d3790f3e5f368ff2152b1ad43b1b9b2722bfe0116343662e7a56c818c0f1",
+  "manifest_complete": true,
   "quality_evaluated": false,
-  "decision": "resource_boundary_no_promotion_claim"
+  "decision": "no_larger_corpus_available_no_promotion_claim"
 }

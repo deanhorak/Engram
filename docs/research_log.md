@@ -2505,18 +2505,18 @@ causal corpus.
   AVX2 specialization, lower-memory packaging, longer generation sweeps, and
   an apples-to-apples `llama.cpp` performance study remain open.
 
-## 2026-08-04: larger auxiliary capture hits host boundary
+## 2026-08-04: auxiliary capture confirms corpus-cardinality boundary
 
 - The next sequence-aware experiment requested a 16-sequence, 16-token
   independent BitNet trace using the native-projection capture path.  The
   source-compatible non-DIP package was used because the DIP package is a
   token-runtime artifact and correctly rejects the Python trace hook.
-- Four sequences (64 records) completed before host-level termination.  The
-  partial manifest is checksummed at
-  `e48f85e61f3e3a8f82ad7ac91b0f6ccbce5c79205705fd924303179d4cb051d5` and is
-  marked `complete: false`; no provider was fitted and no quality number was
-  produced.
-- Decision: do not treat the partial capture as corpus evidence.  A larger
-  independent causal corpus remains the justified M4 requirement, but this
-  host cannot complete it through the current teacher loader without a further
-  low-memory export/capture redesign.
+- The authorized JSONL contains only eight records, so the request for 16
+  sequences cannot increase the corpus.  All eight records (128 positions)
+  completed through the native-projection path; the complete manifest is
+  checksummed at
+  `1d94d3790f3e5f368ff2152b1ad43b1b9b2722bfe0116343662e7a56c818c0f1`.
+- No provider was fitted from this repeat and no new quality number was
+  produced.  Decision: the current low-memory capture path is adequate for the
+  available auxiliary slice, but a genuinely larger independent corpus is
+  still required for the next M4 quality attempt.
