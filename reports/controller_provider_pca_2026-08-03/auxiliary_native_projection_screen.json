@@ -1,0 +1,48 @@
+{
+  "experiment": "auxiliary_native_projection_provider_screen",
+  "status": "development_failure",
+  "corpus_role": "auxiliary_benchmark_only",
+  "protected_gate_claim": false,
+  "source_repository": "microsoft/bitnet-b1.58-2B-4T",
+  "source_revision": "04c3b9ad9361b824064a1f25ea60a8be9599b127",
+  "source_model_hash": "8143ae115ed6babe5e5ada8fb8c5b769d8f417802b2db042ad98b4f7ed73975b",
+  "capture_path": "native_projections",
+  "capture_contract": "engram.controller.teacher_trajectory",
+  "capture_max_tokens": 16,
+  "training_corpus_sha256": "51f5fe5e1df729be0f9bebf6fc09b6d5bc2dd55eef79d3249a06b5d526e19fe9",
+  "validation_corpus_sha256": "f893175c14f9a483fa78ca9bd1419df205ba6c67ef97540693769f29117955ee",
+  "training_trace": "/tmp/bitnet_aux_trace_train8_native_proj",
+  "training_trace_manifest_sha256": "0162efe34dd298b758cdd10470513c19e972fcb8c7e7830fc5eaee73d732139a",
+  "validation_trace": "/tmp/bitnet_aux_trace_val8_native_proj",
+  "validation_trace_manifest_sha256": "5d3a7561514b59cd9f4d33ecf99f03c729ecb7403a7dde934ad3ebeb23b5f822",
+  "training_sequences": 8,
+  "validation_sequences": 8,
+  "sequence_length": 16,
+  "provider_screen": {
+    "kind": "pca_state_token",
+    "target": "streams",
+    "output_rank": 16,
+    "ridge": 1.0,
+    "provider_sha256": "2a658f51896464ba1acae08461d2bc27ed87677143323080a8655f05381b61b6",
+    "terminal_normalized_mse": 0.2467537373304367,
+    "mean_stage_normalized_mse": 0.839118242263794,
+    "gate_passed": false
+  },
+  "nonlinear_screen": {
+    "hidden_width": 128,
+    "stage_width": 32,
+    "steps": 60,
+    "teacher_forcing_steps": 15,
+    "terminal_normalized_mse": 0.253060482442379,
+    "mean_stage_normalized_mse": 0.7437174439740678,
+    "provider_sha256": "dacf3761311dd31544fd8798f9e58cebbc61126bd86e198e75ac2619f0c3f3f1",
+    "gate_passed": false
+  },
+  "promotion_threshold": 0.0225,
+  "decision": "reject",
+  "notes": [
+    "The native-projection capture option reduced teacher-capture memory pressure and completed both auxiliary traces.",
+    "The auxiliary provider results are substantially above the M4 causal threshold and do not authorize package promotion.",
+    "Temporary trace/provider paths are outside the repository; only manifests, hashes, and results are retained here."
+  ]
+}

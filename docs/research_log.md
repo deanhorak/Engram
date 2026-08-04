@@ -2451,3 +2451,24 @@ causal corpus.
 - Decision: reject this context representation and do not add it to the
   authenticated package.  Evidence:
   `reports/controller_provider_pca_2026-08-03/prefix_context_screen.json`.
+
+## 2026-08-04: native-projection auxiliary capture completed, provider gate still fails
+
+- The controller-trace command now exposes `--native-projections`, which
+  keeps packaged Q/K/V/O tensors in the existing native CPU projection kernel
+  instead of materializing dense projection matrices.  This lowered the
+  teacher-capture memory boundary enough to complete two disjoint 8-sequence,
+  16-token auxiliary traces.
+- The auxiliary input files have distinct SHA-256 values
+  `51f5fe5e1df729be0f9bebf6fc09b6d5bc2dd55eef79d3249a06b5d526e19fe9` and
+  `f893175c14f9a483fa78ca9bd1419df205ba6c67ef97540693769f29117955ee`.
+  Their trace manifests are recorded in the accompanying report.
+- A rank-16 PCA state/token provider reached terminal normalized MSE
+  **0.2467537** on the auxiliary validation trace.  A 128-wide nonlinear
+  residual adapter with 15 teacher-forced steps reached **0.2530605**.  Both
+  fail the fixed **0.0225** M4 threshold by more than an order of magnitude.
+- Decision: reject the auxiliary provider arms.  The native-projection flag is
+  retained as a capture/deployment improvement, but no learned provider enters
+  the authenticated package and the protected promotion status is unchanged.
+  Evidence:
+  `reports/controller_provider_pca_2026-08-03/auxiliary_native_projection_screen.json`.

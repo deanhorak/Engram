@@ -185,6 +185,7 @@ def capture_native_bitnet_controller_traces(
     seed: int = 31,
     library: str | Path | None = None,
     threads: int | None = None,
+    native_projections: bool = False,
     resume: bool = False,
 ) -> dict[str, Any]:
     """Capture stage-by-stage BitNet teacher trajectories on CPU.
@@ -219,7 +220,12 @@ def capture_native_bitnet_controller_traces(
         if sample_id not in captured_sample_ids
     ]
     started = time.perf_counter()
-    with NativeBitNetRuntime(package_path, library=library, threads=threads) as runtime:
+    with NativeBitNetRuntime(
+        package_path,
+        library=library,
+        threads=threads,
+        native_projections=native_projections,
+    ) as runtime:
         model = runtime.model
         layers = model.model.layers
         manifest_model = runtime.manifest["model"]

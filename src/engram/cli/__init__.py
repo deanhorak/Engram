@@ -792,6 +792,14 @@ def _parser() -> argparse.ArgumentParser:
     controller_trace.add_argument("--library", type=Path)
     controller_trace.add_argument("--threads", type=int)
     controller_trace.add_argument(
+        "--native-projections",
+        action="store_true",
+        help=(
+            "keep packaged Q/K/V/O projections in the native CPU kernel "
+            "during teacher capture instead of materializing dense tensors"
+        ),
+    )
+    controller_trace.add_argument(
         "--resume",
         action="store_true",
         help="continue a checksummed incomplete capture without duplicate samples",
@@ -2773,6 +2781,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             seed=args.seed,
             library=args.library,
             threads=args.threads,
+            native_projections=args.native_projections,
             resume=args.resume,
         )
         print(json.dumps(result, indent=2, sort_keys=True))
