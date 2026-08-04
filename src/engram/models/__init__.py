@@ -38,6 +38,14 @@ from .native_bitnet import (
     repack_native_bitnet_model,
     save_native_bitnet_artifact,
 )
+from .qwen3 import (
+    QWEN3_ARCHITECTURE,
+    QWEN3_MODEL_TYPE,
+    Qwen3SourceAudit,
+    Qwen3ValidationError,
+    audit_qwen3_source,
+    qwen3_mlp_tensor_names,
+)
 
 __all__ = [
     "LoadedNativeBitNetArtifact",
@@ -50,8 +58,13 @@ __all__ = [
     "NativeBitNetLayerWeights",
     "NativeBitNetSourceAudit",
     "NativeBitNetValidationError",
+    "QWEN3_ARCHITECTURE",
+    "QWEN3_MODEL_TYPE",
+    "Qwen3SourceAudit",
+    "Qwen3ValidationError",
     "audit_native_bitnet_source",
     "audit_olmoe_source",
+    "audit_qwen3_source",
     "create_tiny_fixture",
     "create_tiny_olmoe_fixture",
     "decode_native_bitnet_layer",
@@ -70,5 +83,6 @@ __all__ = [
     "repack_olmoe_non_mlp_weights",
     "resolve_model_path",
     "required_olmoe_tensor_shapes",
+    "qwen3_mlp_tensor_names",
     "save_native_bitnet_artifact",
 ]

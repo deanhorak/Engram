@@ -2,6 +2,40 @@
 
 Status date: 2026-08-04
 
+## Alternative dense-teacher boundary (Qwen3, 2026-08-04)
+
+The protected learned-provider gate remains failed, and the pinned WikiText-2
+screen showed that a modest ordinary-prose expansion does not close it. We
+therefore changed the teacher family before changing another rank, ridge, or
+cache parameter. The official `Qwen/Qwen3-0.6B` checkpoint was frozen at Hub
+revision `c1899de289a04d12100db370d81485cdf75e47ca`; its 1,503,300,328-byte
+weights have SHA-256
+`f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b`.
+
+Engram's dense inspector now accepts `model_type: qwen3`, and
+`engram audit-qwen3` performs a Qwen-specific fail-closed audit. It validates
+the `Qwen3ForCausalLM` architecture, hidden/intermediate dimensions
+1024/3072, 28 layers, 16 query heads, 8 KV heads, head dimension 128, RoPE
+theta 1,000,000, tied embeddings, bias-free SiLU, and all canonical MLP
+projection names. The adapter reports exact generic teacher-trace support and
+CPU execution, while explicitly reporting that the current native BitNet
+compiler cannot emit a dense Qwen3 package.
+
+The real checkpoint then passed the first structural trace gate on CPU: two
+sequences × eight positions, layers 0/13/27, 16 records, and 12 threads. The
+capture took 16.41 seconds. Independent reconstruction from the serialized
+Qwen3 projections matched the hooked Hugging Face MLP outputs with maximum
+relative L2 `6.1929e-7` and maximum absolute error `1.8311e-4`. This is source
+and trace evidence only. It does not pass Milestone 2: no Qwen3 controller or
+provider was trained, no causal holdout was evaluated, and no native Qwen3
+runtime exists. The full frozen record is
+`reports/qwen3_teacher_trace_2026-08-04.json`.
+
+The adapter and Qwen3 structural test additions leave the full regression
+suite clean: **1,139 Python tests passed, 1 skipped**, and native CTest remains
+**20/20** (27.50 seconds). The one skip is the pre-existing CUDA-only query
+feature test on this host.
+
 ## Transformer-free controller replay boundary
 
 The exact schema-v3 controller now has a standalone CPU runtime and CLI:
@@ -570,9 +604,10 @@ thresholds.
 
 ## Verification
 
-- Python: 1,135 passed, 1 skipped (CUDA unavailable on the test runner).
-- Native CTest: 20/20 passed outside the sandbox in 27.44 s (including the
-  27.32 s C ABI lifecycle test).
+- Python: 1,139 passed, 1 skipped (the CUDA-only query feature test is
+  unavailable on this host).
+- Native CTest: 20/20 passed outside the sandbox in 27.50 s (including the
+  native C ABI lifecycle test).
 - Lint and `git diff --check`: passed.
 ### Auxiliary learned-provider corpus screen (2026-08-04)
 

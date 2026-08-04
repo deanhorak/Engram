@@ -134,6 +134,42 @@ trace-backed reference reproduces the exact 16-sequence replay at terminal
 MSE **0.0000208009**, but it is explicitly replay-only; a learned recurrent
 provider still needs to pass the causal gate.
 
+### Qwen3 as an alternative dense teacher
+
+The original generic path was described as “Llama-compatible,” but the
+semantic extraction contract is actually the canonical bias-free SiLU/SwiGLU
+block: `down_proj(silu(gate_proj(x)) * up_proj(x))` with tensors named
+`model.layers.<n>.mlp.{gate,up,down}_proj.weight`. Qwen3 uses that same block,
+so Engram now has a separate, fail-closed Qwen3 source audit and does not
+pretend that Qwen3 is a BitNet package.
+
+The first pinned source experiment used the official
+`Qwen/Qwen3-0.6B` revision
+`c1899de289a04d12100db370d81485cdf75e47ca`. The CPU teacher has hidden size
+1024, intermediate size 3072, 28 layers, 16 query heads, 8 KV heads, head
+dimension 128, vocabulary 151,936, and RoPE theta 1,000,000. A two-sequence,
+eight-position trace at layers 0/13/27 reconstructed the hooked Hugging Face
+MLP outputs to maximum relative L2 **6.1929e-7**. This is a structural
+source/trace pass only: no Qwen3 controller, causal quality result, or native
+Qwen3 runtime exists, and the native BitNet compiler still rejects dense Qwen3
+as a source.
+
+Run the audit on a local downloaded checkpoint with:
+
+```bash
+PYTHONPATH=src python -m engram.cli audit-qwen3 \
+  --model /path/to/Qwen3-0.6B \
+  --out reports/qwen3_audit.json
+```
+
+The captured evidence and immutable hashes are in
+`reports/qwen3_teacher_trace_2026-08-04.json`. The next defensible step is a
+larger frozen Qwen3 causal trace and a teacher-family comparison against the
+failed BitNet provider—not another isolated provider rank sweep.
+
+The Qwen3 adapter is covered by the full current regression checkpoint:
+**1,139 Python tests passed, 1 skipped**, and native CTest **20/20 passed**.
+
 The replay provider is now a durable, checksummed artifact. For a frozen
 trace, `engram evaluate-controller-sequence` reloads the sequence-shaped
 semantic/episodic arrays, restores sample ordering, and executes the

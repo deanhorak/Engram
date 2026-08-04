@@ -106,6 +106,7 @@ from engram.models.olmoe_q7 import (
     repack_olmoe_q7_model,
 )
 from engram.models.olmoe_native import repack_olmoe_non_mlp_weights
+from engram.models.qwen3 import audit_qwen3_source
 from engram.semantic.oracle import analyze_magnitude_oracle
 from engram.semantic.evaluate import evaluate_practical_routing
 from engram.semantic.memory import build_semantic_package
@@ -184,11 +185,22 @@ def _parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
 
     inspect = commands.add_parser(
-        "inspect", help="validate a local or Hugging Face Llama-compatible model"
+        "inspect", help="validate a local or Hugging Face dense decoder model"
     )
     inspect.add_argument("--model", required=True)
     inspect.add_argument("--no-weight-hash", action="store_true")
     inspect.add_argument("--out", type=Path)
+
+    qwen3_audit = commands.add_parser(
+        "audit-qwen3",
+        help=(
+            "audit a local Qwen3 checkpoint for exact dense SwiGLU teacher tracing; "
+            "native BitNet compilation remains unsupported"
+        ),
+    )
+    qwen3_audit.add_argument("--model", required=True, type=Path)
+    qwen3_audit.add_argument("--no-weight-hash", action="store_true")
+    qwen3_audit.add_argument("--out", type=Path)
 
     bitnet_audit = commands.add_parser(
         "audit-native-bitnet",
@@ -2277,6 +2289,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.out.parent.mkdir(parents=True, exist_ok=True)
             args.out.write_text(payload, encoding="utf-8")
         print(payload, end="")
+    elif args.command == "audit-qwen3":
+        result = audit_qwen3_source(
+            args.model, hash_weights=not args.no_weight_hash
+        ).to_dict()
+        payload = json.dumps(result, indent=2, sort_keys=True) + "\n"
+        if args.out:
+            atomic_json(args.out, result)
+        print(payload, end="")
+        return 0
     elif args.command == "audit-native-bitnet":
         result = audit_native_bitnet_source(
             args.model,

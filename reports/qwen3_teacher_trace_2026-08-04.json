@@ -1,0 +1,77 @@
+{
+  "experiment": "qwen3_dense_teacher_structural_trace",
+  "date": "2026-08-04",
+  "status": "structural_gate_passed",
+  "decision": "proceed_to_qwen3_causal_distillation_only_after_a_separate_quality_protocol_is_frozen",
+  "source": {
+    "repo": "Qwen/Qwen3-0.6B",
+    "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "revision_source": "Hugging Face model_info API",
+    "config_sha256": "660db3b73d788119c04535e48cf9be5f55bc3100841a718637ae695b442f27dd",
+    "weights_file": "model.safetensors",
+    "weights_bytes": 1503300328,
+    "weights_sha256": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
+    "engram_source_hash": "c1c0f97824fd775a6f100741fa5ad93ae637a36a69dbff37b8d4597781f1b9ae"
+  },
+  "configuration": {
+    "model_type": "qwen3",
+    "architecture": "Qwen3ForCausalLM",
+    "hidden_size": 1024,
+    "intermediate_size": 3072,
+    "num_hidden_layers": 28,
+    "num_attention_heads": 16,
+    "num_key_value_heads": 8,
+    "head_dim": 128,
+    "vocab_size": 151936,
+    "max_position_embeddings": 40960,
+    "rope_theta": 1000000.0,
+    "tie_word_embeddings": true,
+    "activation": "silu",
+    "mlp_bias": false,
+    "attention_bias": false
+  },
+  "capture": {
+    "device": "cpu",
+    "threads": 12,
+    "sequences": 2,
+    "positions_per_sequence": 8,
+    "records": 16,
+    "selected_layers": [0, 13, 27],
+    "included_boundaries": ["mlp"],
+    "dataset_sha256": "4101c691595b2c3c991c79a2de4c7e9279faf11a65cdc760ffe1f0f6450662a7",
+    "trace_manifest_sha256": "6bfa1934b5383df6d495b246b9c6c7974278ad1d8d96419c355bd8588f9db76f",
+    "trace_model_hash": "c1c0f97824fd775a6f100741fa5ad93ae637a36a69dbff37b8d4597781f1b9ae",
+    "elapsed_seconds": 16.410033174965065
+  },
+  "exact_mlp_reconstruction": {
+    "layers": [0, 13, 27],
+    "max_absolute_error": 0.00018310546875,
+    "max_relative_l2": 6.192884711708757e-07,
+    "tolerance": {
+      "relative_l2": 0.00001,
+      "absolute": 0.001
+    },
+    "passed": true
+  },
+  "capabilities": {
+    "exact_swiglu_decomposition": true,
+    "generic_hf_teacher_trace": true,
+    "cpu_teacher_execution": true,
+    "native_bitnet_compilation": false,
+    "native_qwen3_runtime": false
+  },
+  "limitations": [
+    "The checkpoint is an alternative dense teacher, not a protected Engram gate corpus.",
+    "Only three MLP layers and sixteen token states were captured in this structural experiment.",
+    "No sparse routing, controller distillation, causal quality, or native Qwen3 package has been evaluated.",
+    "The Qwen3 checkpoint remains outside the authenticated native BitNet package format."
+  ],
+  "test_commands": [
+    "env PYTHONPATH=src python -m pytest -q tests/unit/test_qwen3.py tests/integration/test_local_hf_qwen3.py"
+  ],
+  "test_result": "4 passed",
+  "regression": {
+    "python": "1139 passed, 1 skipped",
+    "native_ctest": "20/20 passed"
+  }
+}

@@ -2651,3 +2651,39 @@ token and traffic parity but increased semantic time from **16.84 s** to
 thread-scaling win; semantic optimization now requires a fused/SIMD design,
 not another task-level split. See
 `reports/native_bitnet_semantic_parallel_screen_2026-08-04.json`.
+
+## 2026-08-04 — Qwen3 alternative-teacher structural gate
+
+The learned provider failed decisively on both the protected BitNet traces and
+the pinned WikiText-2 auxiliary corpus. The next defensible change was
+therefore a different dense teacher, not another rank or ridge sweep. We
+selected the official `Qwen/Qwen3-0.6B` checkpoint at immutable revision
+`c1899de289a04d12100db370d81485cdf75e47ca`. Its 1,503,300,328-byte
+`model.safetensors` file has SHA-256
+`f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b`.
+
+Engram now accepts `model_type: qwen3` in the dense inspector and exposes a
+fail-closed `audit-qwen3` command. The new adapter checks the
+`Qwen3ForCausalLM` architecture, 16/8 query/KV heads, explicit head dimension,
+RoPE configuration, bias-free SiLU MLP, and the canonical
+`model.layers.<n>.mlp.{gate,up,down}_proj.weight` tensors. It reports exact
+SwiGLU teacher-trace support and CPU execution, but explicitly reports native
+BitNet compilation as unsupported; this avoids conflating source traceability
+with a compiled package.
+
+The actual checkpoint was loaded on CPU and traced through the existing
+Hugging Face hook path for two sequences, eight positions each, at layers 0,
+13, and 27. All 16 records were written as checksummed trace shards in 16.41
+seconds with 12 CPU threads. Recomputing
+`down_proj(silu(gate_proj(x))*up_proj(x))` from the serialized projections
+matched the captured module outputs with maximum relative L2
+`6.1929e-7` (maximum absolute error `1.8311e-4`). This passes the structural
+source/trace gate and proves Qwen3 is not blocked by the old Llama-only model
+type check.
+
+This is deliberately not a semantic or Milestone 2 promotion: the capture is
+small, no Qwen3 controller/provider was trained, no causal holdout was run,
+and no native Qwen3 runtime exists. The machine-readable record is
+`reports/qwen3_teacher_trace_2026-08-04.json`. The next experiment must freeze
+a larger Qwen3 causal trace protocol and test whether the controller/provider
+failure is teacher-family-specific before attempting any Qwen3 compilation.

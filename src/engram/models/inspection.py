@@ -10,7 +10,11 @@ import numpy as np
 from engram.utils import sha256_file, sha256_json
 
 
-SUPPORTED_MODEL_TYPES = {"llama", "mistral", "engram_tiny_llama"}
+# Dense decoder families that expose the canonical Engram MLP boundary.  This
+# list is deliberately separate from the native compiler's source families:
+# accepting a checkpoint here only means that it can be inspected/traced, not
+# that it can already be compiled into a native package.
+SUPPORTED_MODEL_TYPES = {"llama", "mistral", "qwen3", "engram_tiny_llama"}
 HUGGING_FACE_MODEL_PATTERNS = ("*.json", "*.model", "*.safetensors", "*.bin", "*.txt")
 
 
