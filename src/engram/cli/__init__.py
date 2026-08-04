@@ -144,6 +144,7 @@ from engram.training import (
     build_distillation_corpus,
     build_distillation_tail_holdout,
     capture_native_bitnet_controller_traces,
+    merge_controller_traces,
     distill_factorized_controller,
     distill_nonlinear_residual_provider,
     distill_causal_attention_operator_provider,
@@ -804,6 +805,16 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="continue a checksummed incomplete capture without duplicate samples",
     )
+
+    merge_controller_trace = commands.add_parser(
+        "merge-controller-traces",
+        help="merge disjoint checksummed CPU controller-trace chunks",
+    )
+    merge_controller_trace.add_argument(
+        "--traces", nargs="+", required=True, type=Path,
+        help="two or more complete controller trace directories",
+    )
+    merge_controller_trace.add_argument("--out", required=True, type=Path)
 
     controller_distill = commands.add_parser(
         "distill-controller",
@@ -2784,6 +2795,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             native_projections=args.native_projections,
             resume=args.resume,
         )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "merge-controller-traces":
+        result = merge_controller_traces(args.traces, args.out)
         print(json.dumps(result, indent=2, sort_keys=True))
     elif args.command == "distill-controller":
         result = distill_factorized_controller(

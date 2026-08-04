@@ -2552,3 +2552,10 @@ causal corpus.
   recorded as a resource boundary in
   `reports/controller_provider_pca_2026-08-03/auxiliary_stage_causal_attempt.json`,
   not as a quality result.
+
+- Added `merge-controller-traces`, a strict low-memory trace assembly command.
+  It verifies shared model/dataset/split/seed contracts, rejects overlapping
+  sample IDs, preserves all checksummed shard fields, and emits a new complete
+  trace plus merge report.  The command is covered by unit tests and is an
+  infrastructure improvement only; it does not convert the existing 8/8 slice
+  into new evidence.

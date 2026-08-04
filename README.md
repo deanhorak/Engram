@@ -1698,6 +1698,12 @@ PYTHONPATH=src python -m engram.cli trace-native-bitnet-controller \
   --split validation --samples 16 --max-tokens 64 --batch-size 2 \
   --library build/libengram_bitnet.so --threads 12
 
+# On memory-constrained CPU hosts, capture independent chunks and merge only
+# after their authenticated contracts and sample IDs have been checked.
+PYTHONPATH=src python -m engram.cli merge-controller-traces \
+  --traces work/controller/train-chunk0 work/controller/train-chunk1 \
+  --out work/controller/train-trace
+
 PYTHONPATH=src python -m engram.cli distill-controller \
   --trace work/controller/train-trace \
   --validation-trace work/controller/validation-trace \

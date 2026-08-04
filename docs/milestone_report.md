@@ -564,7 +564,9 @@ thresholds.
    prefix-context, and independent auxiliary-corpus screens are now negative.
    The next M4 attempt must be a materially different jointly trained
    provider/controller or a different teacher/export model; isolated rank,
-   context-feature, or epoch sweeps are closed.
+   context-feature, or epoch sweeps are closed.  The `merge-controller-traces`
+   CLI now permits future low-memory corpus expansion by combining independently
+   authenticated chunks without changing the protected split contract.
 
 ## Verification
 

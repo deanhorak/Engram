@@ -12,7 +12,7 @@ import math
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 import numpy as np
 
@@ -455,6 +455,122 @@ def capture_native_bitnet_controller_traces(
         },
     )
     return result
+
+
+def merge_controller_traces(
+    traces: Sequence[str | Path], out: str | Path
+) -> dict[str, Any]:
+    """Merge independently captured, checksummed controller-trace chunks.
+
+    Chunked capture is useful on CPU hosts where loading the native teacher and
+    retaining a large batch of trace tensors in one process is unsafe.  The
+    merger is intentionally strict: all inputs must share the same model,
+    dataset, split, seed, and trace contract, and sample IDs may not overlap.
+    It emits a new authenticated trace with the original shard fields and no
+    source-model tensors beyond the captured boundary arrays.
+    """
+
+    paths = [Path(value).resolve() for value in traces]
+    target = Path(out).resolve()
+    if len(paths) < 2:
+        raise ValueError("at least two controller traces are required to merge")
+    if len(set(paths)) != len(paths):
+        raise ValueError("controller trace inputs must be distinct")
+    if target in paths:
+        raise ValueError("merge output must differ from every input trace")
+    if target.exists():
+        raise FileExistsError(f"merge output already exists: {target}")
+
+    readers = [TraceReader(path) for path in paths]
+    first = readers[0].manifest
+    contract_fields = (
+        "schema_version",
+        "engram_version",
+        "model_hash",
+        "dataset_hash",
+        "split",
+        "seed",
+    )
+    for path, reader in zip(paths[1:], readers[1:]):
+        for field in contract_fields:
+            if reader.manifest.get(field) != first.get(field):
+                raise ValueError(
+                    f"controller trace {path} differs in contract field {field}"
+                )
+
+    def normalized_metadata(manifest: dict[str, Any]) -> dict[str, Any]:
+        metadata = dict(manifest.get("metadata", {}))
+        # These fields are expected to differ for offset-based chunks.
+        metadata.pop("record_offset", None)
+        metadata.pop("requested_samples", None)
+        return metadata
+
+    expected_metadata = normalized_metadata(first)
+    for path, reader in zip(paths[1:], readers[1:]):
+        if normalized_metadata(reader.manifest) != expected_metadata:
+            raise ValueError(f"controller trace {path} metadata contract differs")
+
+    all_sample_ids: set[int] = set()
+    shard_counts: list[int] = []
+    for path, reader in zip(paths, readers):
+        for shard in reader.iter_shards(fields=["sample_id"]):
+            sample_ids = np.asarray(shard["sample_id"], dtype=np.int64)
+            if sample_ids.ndim != 1:
+                raise ValueError(f"sample_id field is not one-dimensional in {path}")
+            unique = {int(value) for value in np.unique(sample_ids)}
+            overlap = unique.intersection(all_sample_ids)
+            if overlap:
+                raise ValueError(
+                    f"controller trace sample IDs overlap: {sorted(overlap)[:8]}"
+                )
+            all_sample_ids.update(unique)
+            shard_counts.append(int(sample_ids.shape[0]))
+    if not all_sample_ids:
+        raise ValueError("controller traces contain no records")
+
+    metadata = dict(first.get("metadata", {}))
+    metadata["record_offset"] = 0
+    metadata["requested_samples"] = len(all_sample_ids)
+    metadata["merged_trace_chunks"] = len(paths)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    writer = TraceWriter(
+        target,
+        model_hash=str(first["model_hash"]),
+        dataset_hash=str(first["dataset_hash"]),
+        split=str(first["split"]),
+        seed=int(first["seed"]),
+        metadata=metadata,
+    )
+    try:
+        for reader in readers:
+            for shard in reader.iter_shards():
+                writer.append(shard)
+    finally:
+        writer.close()
+
+    manifest_path = target / "manifest.json"
+    report = {
+        "experiment": "merge_controller_traces",
+        "status": "complete",
+        "inputs": [
+            {
+                "trace": str(path),
+                "manifest_sha256": sha256_file(path / "manifest.json"),
+            }
+            for path in paths
+        ],
+        "output": str(target),
+        "output_manifest_sha256": sha256_file(manifest_path),
+        "chunks": len(paths),
+        "records": int(sum(shard_counts)),
+        "sample_count": len(all_sample_ids),
+        "model_hash": first["model_hash"],
+        "dataset_hash": first["dataset_hash"],
+        "split": first["split"],
+        "sample_ids_disjoint": True,
+    }
+    atomic_json(target / "merge_report.json", report)
+    return report
 
 
 @dataclass(frozen=True)
@@ -1204,5 +1320,6 @@ __all__ = [
     "CONTROLLER_SUBSTITUTION_NMSE_GATE",
     "CONTROLLER_TRACE_CONTRACT",
     "capture_native_bitnet_controller_traces",
+    "merge_controller_traces",
     "distill_factorized_controller",
 ]

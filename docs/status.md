@@ -1998,6 +1998,13 @@ result, not protected-gate evidence.  Report:
 The same auxiliary report now includes the rank-128 capacity arm at terminal
 MSE **0.2438876**, which also fails.
 
+The CLI now provides `merge-controller-traces` for future low-memory corpus
+expansion.  It merges complete independently captured chunks only when their
+model, dataset, split, seed, and trace metadata contracts match and sample IDs
+are disjoint, then emits a new checksummed trace and merge report.  Unit tests
+cover both successful merging and overlap rejection; this infrastructure does
+not relax any causal-gate policy.
+
 ### Native CPU token generation benchmark (2026-08-04)
 
 The transformer-free C++ token runtime now has a complete package-level

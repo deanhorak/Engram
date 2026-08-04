@@ -2,6 +2,7 @@ from .corpus import build_distillation_corpus, build_distillation_tail_holdout
 from .controller_distillation import (
     capture_native_bitnet_controller_traces,
     distill_factorized_controller,
+    merge_controller_traces,
 )
 from .provider_distillation import (
     adapt_controller_correction_for_provider,
