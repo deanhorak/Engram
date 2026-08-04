@@ -592,3 +592,11 @@ Python **1,135 passed, 1 skipped** and native CTest **20/20**. This confirms
 the current CPU runtime and authenticated package paths remain regression-free.
 The checkpoint is not evidence that the learned controller/provider passed its
 causal gate and is not a `llama.cpp` comparison.
+### Native thread sweep (2026-08-04)
+
+The authenticated DIP token runtime produced identical eight-token IDs at 1,
+2, 4, 8, and 12 threads. Wall speedup reached 1.47x and attention speedup
+2.32x at 12 threads, while semantic time remained flat. The result confirms
+that the native runtime is genuinely multithreaded in attention and points to
+semantic-kernel parallelism as the next optimization boundary; it is not a
+learned-controller promotion or a llama.cpp comparison.

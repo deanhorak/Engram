@@ -47,6 +47,43 @@
     "semantic_speedup_threads12_over_threads1": 0.9801,
     "interpretation": "At eight generated tokens, attention benefits materially from threading while the semantic kernel remains effectively flat."
   },
+  "thread_sweep": [
+    {
+      "threads": 2,
+      "generated_token_ids": [11, 220, 15, 11, 220, 15, 11, 220],
+      "semantic_seconds": 17.5141,
+      "attention_seconds": 33.6853,
+      "elapsed_seconds": 69.30,
+      "maximum_resident_set_kbytes": 1297536,
+      "cpu_percent": 150,
+      "exit_status": 0
+    },
+    {
+      "threads": 4,
+      "generated_token_ids": [11, 220, 15, 11, 220, 15, 11, 220],
+      "semantic_seconds": 17.1882,
+      "attention_seconds": 28.2323,
+      "elapsed_seconds": 62.60,
+      "maximum_resident_set_kbytes": 1297536,
+      "cpu_percent": 236,
+      "exit_status": 0
+    },
+    {
+      "threads": 8,
+      "generated_token_ids": [11, 220, 15, 11, 220, 15, 11, 220],
+      "semantic_seconds": 16.6963,
+      "attention_seconds": 21.0785,
+      "elapsed_seconds": 54.58,
+      "maximum_resident_set_kbytes": 1297152,
+      "cpu_percent": 365,
+      "exit_status": 0
+    }
+  ],
+  "thread_sweep_speedups_vs_threads1": {
+    "wall": {"2": 1.0706, "4": 1.1855, "8": 1.3592, "12": 1.4718},
+    "attention": {"2": 1.1111, "4": 1.3258, "8": 1.7756, "12": 2.3205},
+    "semantic": {"2": 0.9474, "4": 0.9654, "8": 0.9939, "12": 0.9801}
+  },
   "verification": {
     "exit_status": 0,
     "reset_verification": false,

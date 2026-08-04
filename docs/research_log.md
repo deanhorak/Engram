@@ -2610,3 +2610,16 @@ documentation checkpoint did not regress the CPU runtime. It is an
 implementation result, not a learned-controller promotion or a broad
 llama.cpp comparison. The machine-readable record is
 `reports/validation/native_runtime_checkpoint_2026-08-04.json`.
+## 2026-08-04 — native CPU thread sweep
+
+The authenticated `model.engram-bitnet-dip` package was run for the same
+eight-token prompt at 1, 2, 4, 8, and 12 native threads. Every run produced
+the identical token IDs `[11, 220, 15, 11, 220, 15, 11, 220]`, with peak RSS
+approximately 1.30 GiB. Relative to the one-thread baseline, wall speedups
+were **1.07x**, **1.19x**, **1.36x**, and **1.47x** at 2/4/8/12 threads;
+attention speedups were **1.11x**, **1.33x**, **1.78x**, and **2.32x**. The
+semantic kernel remained effectively flat (0.95x–0.99x), identifying it as
+the next CPU optimization target rather than a missing thread-pool hook. This
+is a systems result for the exact-residual native package, not a quality
+promotion or a `llama.cpp` comparison. The extended report is
+`reports/native_bitnet_cpu_generation_2026-08-04_long.json`.

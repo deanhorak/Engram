@@ -2089,3 +2089,12 @@ native CTest **20/20**. The single skip is the existing deterministic-CUBLAS
 workspace test on this host. This is a clean implementation checkpoint; it
 does not change the learned-provider gate or create a llama.cpp comparison.
 See `reports/validation/native_runtime_checkpoint_2026-08-04.json`.
+### Native CPU thread sweep (2026-08-04)
+
+The eight-token authenticated native package run was repeated at 2, 4, 8,
+and 12 threads, with identical generated IDs at every setting. Wall speedup
+over one thread was 1.07x/1.19x/1.36x/1.47x; attention speedup was
+1.11x/1.33x/1.78x/2.32x. Semantic time stayed essentially flat, so further
+systems work should target semantic-kernel coordinate/record parallelism.
+This does not change the learned-controller gate or establish a llama.cpp
+comparison.
