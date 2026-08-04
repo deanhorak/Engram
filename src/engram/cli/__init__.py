@@ -1521,6 +1521,18 @@ def _parser() -> argparse.ArgumentParser:
     hybrid_chat.add_argument("--temperature", type=float, default=0.0)
     hybrid_chat.add_argument("--timeout", type=float, default=120.0)
     hybrid_chat.add_argument(
+        "--think",
+        action="store_true",
+        default=None,
+        help="ask Ollama reasoning-capable models to spend tokens on thinking",
+    )
+    hybrid_chat.add_argument(
+        "--no-think",
+        dest="think",
+        action="store_false",
+        help="disable Ollama reasoning so the response uses the answer content field",
+    )
+    hybrid_chat.add_argument(
         "--api-key-env",
         default="ENGRAM_HYBRID_API_KEY",
         help="environment variable containing an optional bearer token",
@@ -1548,6 +1560,8 @@ def _parser() -> argparse.ArgumentParser:
     hybrid_benchmark.add_argument("--max-tokens", type=int, default=128)
     hybrid_benchmark.add_argument("--temperature", type=float, default=0.0)
     hybrid_benchmark.add_argument("--timeout", type=float, default=120.0)
+    hybrid_benchmark.add_argument("--think", action="store_true", default=None)
+    hybrid_benchmark.add_argument("--no-think", dest="think", action="store_false")
     hybrid_benchmark.add_argument("--api-key-env", default="ENGRAM_HYBRID_API_KEY")
     hybrid_benchmark.add_argument(
         "--mode", choices=("baseline", "hybrid", "both"), default="both"
@@ -3512,6 +3526,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.endpoint,
             api_key=os.environ.get(args.api_key_env),
             timeout_seconds=args.timeout,
+            think=args.think,
         )
         runtime = HybridChatRuntime(
             client,
@@ -3562,6 +3577,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.endpoint,
             api_key=os.environ.get(args.api_key_env),
             timeout_seconds=args.timeout,
+            think=args.think,
         )
         prompts: list[dict[str, str]] = []
         with args.prompts.open("r", encoding="utf-8") as handle:

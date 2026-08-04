@@ -252,7 +252,7 @@ class ChatCompletionClient(Protocol):
 
 
 class OpenAICompatibleClient:
-    """Minimal standard-library client for llama.cpp server and similar hosts."""
+    """Standard-library client for OpenAI-compatible or Ollama chat endpoints."""
 
     def __init__(
         self,
@@ -260,6 +260,7 @@ class OpenAICompatibleClient:
         *,
         api_key: str | None = None,
         timeout_seconds: float = 120.0,
+        think: bool | None = None,
     ) -> None:
         if not endpoint.startswith(("http://", "https://")):
             raise ValueError("endpoint must be an http:// or https:// URL")
@@ -268,6 +269,7 @@ class OpenAICompatibleClient:
         self.endpoint = endpoint.rstrip("/")
         self.api_key = api_key
         self.timeout_seconds = timeout_seconds
+        self.think = think
 
     def complete(
         self,
@@ -279,15 +281,26 @@ class OpenAICompatibleClient:
     ) -> tuple[str, Mapping[str, Any]]:
         if max_tokens <= 0:
             raise ValueError("max_tokens must be positive")
-        payload = json.dumps(
-            {
-                "model": model,
-                "messages": [dict(message) for message in messages],
-                "max_tokens": max_tokens,
+        is_ollama_native = self.endpoint.rstrip("/").endswith("/api/chat")
+        body: dict[str, Any] = {
+            "model": model,
+            "messages": [dict(message) for message in messages],
+            "stream": False,
+        }
+        if is_ollama_native:
+            body["options"] = {
+                "num_predict": max_tokens,
                 "temperature": temperature,
-                "stream": False,
             }
-        ).encode("utf-8")
+        else:
+            body["max_tokens"] = max_tokens
+            body["temperature"] = temperature
+        if self.think is not None:
+            # Ollama's OpenAI-compatible endpoint accepts this extension for
+            # reasoning-capable models such as Qwen3. Other compatible hosts
+            # may ignore it; omitting it remains the default for the library.
+            body["think"] = self.think
+        payload = json.dumps(body).encode("utf-8")
         headers = {"Content-Type": "application/json"}
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
@@ -309,12 +322,29 @@ class OpenAICompatibleClient:
         except json.JSONDecodeError as error:  # pragma: no cover
             raise HybridError("hybrid host returned invalid JSON") from error
         try:
-            text = decoded["choices"][0]["message"]["content"]
+            if is_ollama_native:
+                text = decoded["message"]["content"]
+            else:
+                text = decoded["choices"][0]["message"]["content"]
         except (KeyError, IndexError, TypeError) as error:  # pragma: no cover
             raise HybridError("hybrid host response has no assistant message") from error
         if not isinstance(text, str):  # pragma: no cover
             raise HybridError("hybrid host assistant content is not text")
-        usage = dict(decoded.get("usage", {})) if isinstance(decoded, Mapping) else {}
+        if is_ollama_native:
+            usage = {
+                key: decoded[key]
+                for key in (
+                    "prompt_eval_count",
+                    "eval_count",
+                    "total_duration",
+                    "load_duration",
+                    "prompt_eval_duration",
+                    "eval_duration",
+                )
+                if key in decoded
+            }
+        else:
+            usage = dict(decoded.get("usage", {})) if isinstance(decoded, Mapping) else {}
         usage.setdefault("client_elapsed_seconds", elapsed)
         return text, usage
 

@@ -55,6 +55,18 @@ PYTHONPATH=src python -m engram.cli chat-hybrid \
   --max-tokens 128
 ```
 
+Ollama's native endpoint is also supported. For reasoning-capable Qwen3
+models, `--no-think` makes the endpoint return answer content within the
+requested token budget:
+
+```bash
+PYTHONPATH=src python -m engram.cli chat-hybrid \
+  --endpoint http://127.0.0.1:11434/api/chat \
+  --model qwen3:latest \
+  --memory path/to/memory.jsonl \
+  --no-think
+```
+
 Each memory line is an object such as
 `{"id":"project-goal","text":"...","metadata":{"source":"notes"}}`.
 Use `--mode baseline` to bypass retrieval while keeping the same host and conversation loop.
@@ -207,7 +219,7 @@ for a larger frozen Qwen3 causal trace and a teacher-family comparison against
 the failed BitNet provider—not another isolated provider rank sweep.
 
 The Qwen3 adapter is covered by the full current regression checkpoint:
-**1,144 Python tests passed, 1 skipped**, and native CTest **20/20 passed**.
+**1,145 Python tests passed, 1 skipped**, and native CTest **20/20 passed**.
 
 That causal comparison is now complete. The new `trace-hf-controller` command
 captured all 28 Qwen3 stages for disjoint 8-sequence/128-record training and

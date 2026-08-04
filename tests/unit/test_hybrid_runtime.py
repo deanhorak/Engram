@@ -5,11 +5,13 @@ from pathlib import Path
 
 import pytest
 
+import engram.runtime.hybrid as hybrid_module
 from engram.runtime.hybrid import (
     HybridChatRuntime,
     HybridMemoryIndex,
     HybridMemoryRecord,
     HybridPromptPolicy,
+    OpenAICompatibleClient,
 )
 
 
@@ -76,3 +78,41 @@ def test_runtime_can_run_baseline_and_augmented_modes_without_model_shell() -> N
     assert len(client.calls) == 2
     assert "memory:m" not in client.calls[0][0]["content"]
     assert "memory:m" in client.calls[1][0]["content"]
+
+
+def test_ollama_native_endpoint_uses_options_and_parses_usage(monkeypatch) -> None:
+    class _Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            return False
+
+        def read(self):
+            return json.dumps(
+                {
+                    "message": {"role": "assistant", "content": "hello"},
+                    "prompt_eval_count": 4,
+                    "eval_count": 2,
+                }
+            ).encode("utf-8")
+
+    captured = {}
+
+    def _urlopen(request, timeout):
+        captured["body"] = json.loads(request.data)
+        captured["timeout"] = timeout
+        return _Response()
+
+    monkeypatch.setattr(hybrid_module.urllib_request, "urlopen", _urlopen)
+    client = OpenAICompatibleClient("http://ollama/api/chat", think=False)
+    text, usage = client.complete(
+        [{"role": "user", "content": "hello"}],
+        model="qwen3:latest",
+        max_tokens=12,
+        temperature=0.0,
+    )
+    assert text == "hello"
+    assert usage["prompt_eval_count"] == 4
+    assert captured["body"]["think"] is False
+    assert captured["body"]["options"]["num_predict"] == 12

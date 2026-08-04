@@ -8,7 +8,8 @@ The project now has a practical fallback path that does not depend on the
 unproven layer-free controller/provider. `engram chat-hybrid` and
 `engram benchmark-hybrid` keep a conventional host model in charge of
 generation and expose an OpenAI-compatible endpoint, including a local
-`llama.cpp` server. Engram contributes only a bounded retrieval sidecar:
+`llama.cpp` server; the client also understands Ollama's native `/api/chat`
+protocol. Engram contributes only a bounded retrieval sidecar:
 JSONL records are indexed with a deterministic CPU hashing encoder, selected
 records are capped by count and characters, and the prompt marks them as
 untrusted reference material. Baseline mode uses the same host and history

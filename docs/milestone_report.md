@@ -50,7 +50,7 @@ runtime exists. The full structural record is
 `reports/qwen3_teacher_trace_2026-08-04.json`.
 
 The adapter and Qwen3 structural test additions leave the full regression
-suite clean: **1,144 Python tests passed, 1 skipped**, and native CTest remains
+suite clean: **1,145 Python tests passed, 1 skipped**, and native CTest remains
 **20/20** (27.50 seconds). The one skip is the pre-existing CUDA-only query
 feature test on this host.
 
@@ -680,7 +680,7 @@ thresholds.
 
 ## Verification
 
-- Python: 1,144 passed, 1 skipped (the CUDA-only query feature test is
+- Python: 1,145 passed, 1 skipped (the CUDA-only query feature test is
   unavailable on this host).
 - Native CTest: 20/20 passed outside the sandbox in 27.50 s (including the
   native C ABI lifecycle test).

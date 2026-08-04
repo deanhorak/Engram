@@ -1,0 +1,46 @@
+{
+  "format": "engram-hybrid-benchmark",
+  "version": 1,
+  "host": {
+    "provider": "ollama",
+    "endpoint": "http://127.0.0.1:11434/api/chat",
+    "model": "qwen3:latest",
+    "model_digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+    "think": false
+  },
+  "memory": {
+    "records": 3,
+    "encoder": "signed_blake2b_token_hashing",
+    "top_k": 3,
+    "minimum_score": 0.05,
+    "maximum_context_characters": 1200
+  },
+  "prompts": [
+    {
+      "id": "architecture",
+      "baseline_wall_seconds": 1.6360567520,
+      "hybrid_wall_seconds": 1.3306660259,
+      "baseline_prompt_tokens": 33,
+      "hybrid_prompt_tokens": 99,
+      "baseline_completion_tokens": 48,
+      "hybrid_completion_tokens": 37,
+      "hybrid_memory_hits": ["milestone-status"]
+    },
+    {
+      "id": "cpu",
+      "baseline_wall_seconds": 1.6311821400,
+      "hybrid_wall_seconds": 1.7000027979,
+      "baseline_prompt_tokens": 36,
+      "hybrid_prompt_tokens": 166,
+      "baseline_completion_tokens": 48,
+      "hybrid_completion_tokens": 48,
+      "hybrid_memory_hits": ["cpu-policy", "engram-goal"]
+    }
+  ],
+  "summary": {
+    "baseline_mean_wall_seconds": 1.6336194460,
+    "hybrid_mean_wall_seconds": 1.5153344119,
+    "quality_claim": "not_established",
+    "note": "Local smoke only; no independent answer rubric was applied."
+  }
+}

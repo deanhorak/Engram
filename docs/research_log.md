@@ -19,6 +19,14 @@ retrieved record IDs while explicitly setting `quality_claim` to
 sidecar is therefore a practical integration boundary, not a semantic-gate
 promotion or a claim that hashed retrieval is the final memory representation.
 
+The first live smoke used the host's Ollama `qwen3:latest` GGUF through its
+native `/api/chat` endpoint. With `think=false`, baseline and augmented calls
+both returned answer text; the augmented call retrieved the expected project
+memory. A two-prompt baseline/augmented screen completed without downloads.
+The checked-in machine report is
+`reports/hybrid_ollama_smoke_2026-08-04.json`; it is execution evidence only: its `quality_claim` remains
+`not_established` because no independent answer rubric was applied.
+
 ## 2026-07-27 — Complete native OLMoE token boundary passes
 
 - Added a streaming compiler for the exact 131-tensor BF16 non-MLP inventory.
