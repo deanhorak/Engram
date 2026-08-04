@@ -1,0 +1,38 @@
+{
+  "experiment": "causal_key_value_context_teacher_forcing_screen",
+  "status": "development_failure",
+  "training_trace": "work/controller_distillation/bitnet_train_8x16_b2",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "base_provider": "/tmp/provider_train64_rank64_randomized",
+  "artifact": "/tmp/causal_attention_provider_10tf10free",
+  "artifact_sha256": "3ed03c6b5080f84d495842e06f60f7415dd741af86e64b411734e81e6250a358",
+  "architecture": {
+    "provider": "causal key/value memory plus stage-conditioned query residual",
+    "key_dim": 16,
+    "value_dim": 32,
+    "query_width": 32,
+    "output_rank": 64,
+    "teacher_forcing_steps": 10,
+    "free_running_steps": 10,
+    "batch_size": 8,
+    "learning_rate": 0.0003,
+    "seed": 420,
+    "optimizer_device": "cpu",
+    "inference_device": "cpu",
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0
+  },
+  "validation": {
+    "initial_terminal_normalized_mse": 0.1767018139,
+    "final_terminal_normalized_mse": 0.1764556468,
+    "final_maximum_terminal_normalized_mse": 1.3775799274,
+    "protected_validation": true,
+    "reload_evaluator": "evaluate-controller-stateful-provider"
+  },
+  "gate": {
+    "metric": "terminal_normalized_mse",
+    "threshold": 0.0225,
+    "passed": false
+  },
+  "decision": "reject; teacher-forced warm-up followed by free-running fine-tuning does not materially improve the causal key/value screen"
+}

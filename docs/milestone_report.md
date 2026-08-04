@@ -290,6 +290,10 @@ stateful evaluator and authenticated loader pass CPU reload parity, but a
 MSE only from **0.1767018** to **0.1758242**. The provider is therefore
 retained as an implemented research boundary, not promoted; evidence:
 `reports/controller_provider_pca_2026-08-03/causal_attention_provider_screen.json`.
+Adding a 10-step teacher-forced warm-up before 10 free-running steps reaches
+**0.1764556**, slightly worse than the all-free-running screen; that result is
+preserved in
+`reports/controller_provider_pca_2026-08-03/causal_attention_teacher_forcing_screen.json`.
 
 ## Native recurrent-controller implementation boundary
 

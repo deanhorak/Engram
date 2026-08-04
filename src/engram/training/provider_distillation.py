@@ -1179,6 +1179,7 @@ def distill_causal_attention_operator_provider(
     *,
     validation_trace: str | Path | None = None,
     steps: int = 100,
+    teacher_forcing_steps: int = 0,
     batch_size: int = 8,
     key_dim: int = 32,
     value_dim: int = 64,
@@ -1198,12 +1199,15 @@ def distill_causal_attention_operator_provider(
 
     if (
         steps < 0
+        or teacher_forcing_steps < 0
         or batch_size <= 0
         or key_dim <= 0
         or value_dim <= 0
         or query_width <= 0
     ):
-        raise ValueError("steps and context dimensions must be non-negative/positive")
+        raise ValueError(
+            "steps and teacher_forcing_steps must be non-negative; context dimensions positive"
+        )
     if learning_rate <= 0.0 or not np.isfinite(learning_rate):
         raise ValueError("learning_rate must be finite and positive")
     torch, TorchFactorizedController = _torch_controller_class()
@@ -1303,7 +1307,7 @@ def distill_causal_attention_operator_provider(
         )
     }
 
-    def rollout(states, tokens):
+    def rollout(states, tokens, *, teacher_forcing: bool = False):
         keys = tokens @ key_projection
         values = tokens @ value_projection
         stage_losses = []
@@ -1314,8 +1318,9 @@ def distill_causal_attention_operator_provider(
             history_keys = keys[:, : position + 1]
             history_values = values[:, : position + 1]
             for stage in range(stages):
+                source = states[:, position, stage] if teacher_forcing else state
                 features = torch.cat(
-                    (state, token, torch.ones((states.shape[0], 1), device=device)), dim=-1
+                    (source, token, torch.ones((states.shape[0], 1), device=device)), dim=-1
                 )
                 base_semantic = tensors["semantic_mean"][stage] + (
                     features @ tensors["semantic_projection"][stage]
@@ -1325,7 +1330,7 @@ def distill_causal_attention_operator_provider(
                 ) @ tensors["episodic_basis"][stage]
                 query_features = torch.cat(
                     (
-                        state @ state_query_projection,
+                        source @ state_query_projection,
                         token @ token_query_projection,
                     ),
                     dim=-1,
@@ -1346,7 +1351,7 @@ def distill_causal_attention_operator_provider(
                 semantic = base_semantic + correction[:, :rank] @ tensors["semantic_basis"][stage]
                 episodic = base_episodic + correction[:, rank:] @ tensors["episodic_basis"][stage]
                 state = controller_module.step(
-                    state,
+                    source,
                     torch.cat((token, semantic, episodic), dim=-1),
                     stage,
                 )
@@ -1390,23 +1395,29 @@ def distill_causal_attention_operator_provider(
     started = time.perf_counter()
     history = []
     train_rng = np.random.default_rng(seed)
-    for step in range(steps):
+    total_steps = teacher_forcing_steps + steps
+    for step in range(total_steps):
+        teacher_forcing = step < teacher_forcing_steps
         indices = train_rng.choice(
             train_states.shape[0], size=batch_size, replace=train_states.shape[0] < batch_size
         )
         states = torch.as_tensor(train_states[indices], dtype=torch.float32, device=device)
         tokens = torch.as_tensor(train_tokens[indices], dtype=torch.float32, device=device)
         optimizer.zero_grad(set_to_none=True)
-        loss, terminals = rollout(states, tokens)
+        loss, terminals = rollout(states, tokens, teacher_forcing=teacher_forcing)
         if not bool(torch.isfinite(loss)):
             raise RuntimeError(f"causal-attention provider loss became non-finite at step {step}")
         loss.backward()
         torch.nn.utils.clip_grad_norm_(trainable, max_norm=1.0)
         optimizer.step()
-        if step in {0, steps - 1} or (step + 1) % max(steps // 5, 1) == 0:
+        if (
+            step in {0, total_steps - 1, teacher_forcing_steps - 1}
+            or (step + 1) % max(total_steps // 5, 1) == 0
+        ):
             history.append(
                 {
                     "step": step + 1,
+                    "phase": "teacher_forcing" if teacher_forcing else "free_running",
                     "loss": float(loss.detach().cpu()),
                     "terminal_normalized_mse": float(
                         ((terminals[-1] - states[:, -1, -1]).square().mean(dim=-1)
@@ -1439,6 +1450,7 @@ def distill_causal_attention_operator_provider(
             "architecture": "causal_key_value_context_over_pca_residual",
             "learned": True,
             "training_steps": steps,
+            "teacher_forcing_steps": teacher_forcing_steps,
             "training_batch_size": batch_size,
             "training_seed": seed,
             "optimizer_device": device,
@@ -1468,6 +1480,7 @@ def distill_causal_attention_operator_provider(
         },
         "training": {
             "steps": steps,
+            "teacher_forcing_steps": teacher_forcing_steps,
             "batch_size": batch_size,
             "learning_rate": learning_rate,
             "seed": seed,

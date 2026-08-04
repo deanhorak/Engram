@@ -1114,6 +1114,7 @@ def _parser() -> argparse.ArgumentParser:
     causal_attention_provider.add_argument("--validation-trace", type=Path)
     causal_attention_provider.add_argument("--out", required=True, type=Path)
     causal_attention_provider.add_argument("--steps", type=int, default=100)
+    causal_attention_provider.add_argument("--teacher-forcing-steps", type=int, default=0)
     causal_attention_provider.add_argument("--batch-size", type=int, default=8)
     causal_attention_provider.add_argument("--key-dim", type=int, default=32)
     causal_attention_provider.add_argument("--value-dim", type=int, default=64)
@@ -2970,6 +2971,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.out,
             validation_trace=args.validation_trace,
             steps=args.steps,
+            teacher_forcing_steps=args.teacher_forcing_steps,
             batch_size=args.batch_size,
             key_dim=args.key_dim,
             value_dim=args.value_dim,

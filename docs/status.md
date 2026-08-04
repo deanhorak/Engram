@@ -278,6 +278,9 @@ token keys/values instead of compressing them into one diagonal state, but the
 20-step protected screen reaches only **0.1758242** terminal MSE. This is a
 valid CPU serialization/reload boundary, not a Milestone 4 promotion; report:
 `reports/controller_provider_pca_2026-08-03/causal_attention_provider_screen.json`.
+Teacher-forced warm-up does not rescue the architecture: 10 teacher-forced
+steps followed by 10 free-running steps reach **0.1764556**. Evidence:
+`reports/controller_provider_pca_2026-08-03/causal_attention_teacher_forcing_screen.json`.
 
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
