@@ -208,8 +208,11 @@ small co-adaptation arm is also closed. Unfreezing every controller tensor
 reaches **0.1714721**, also a null result. The provider/controller class is
 closed for this model. Repeating the latent screen with all 64 training
 sequences reaches **0.1707001**, still far above the gate; the full-corpus
-rank-256 arm remains best at **0.1692925**. The next justified attempt requires
-a materially different model or an independent causal corpus.
+rank-256 arm remains best at **0.1692925**. A larger nonlinear rank-256
+residual reaches **0.1666128**, but still fails the gate; report:
+`reports/controller_provider_pca_2026-08-03/nonlinear_rank256_h256_full.json`.
+The current provider-only capacity family is closed; the next justified
+attempt requires a materially different model or an independent causal corpus.
 
 ```bash
 PYTHONPATH=src python -m engram.cli distill-causal-attention-provider \

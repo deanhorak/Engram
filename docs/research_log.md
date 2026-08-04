@@ -2378,3 +2378,10 @@ causal corpus.
   is a modest data effect, but it remains 7.59× above the fixed threshold and
   does not alter the decision: the full-corpus rank-256 arm at **0.1692925**
   remains the frontier, and a materially different model or corpus is needed.
+- A larger shared nonlinear residual (hidden width 256, stage width 32,
+  rank-256 output) was then trained on the full 64-sequence corpus.  After 20
+  teacher-forced and 80 free-running CPU steps, held-out terminal MSE reached
+  **0.1666128**.  This is a real 2.6% improvement, but remains 7.4× above
+  **0.0225**; the provider-only capacity family is closed and the artifact is
+  not promoted.  Evidence:
+  `reports/controller_provider_pca_2026-08-03/nonlinear_rank256_h256_full.json`.

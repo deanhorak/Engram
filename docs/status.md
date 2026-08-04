@@ -303,7 +303,11 @@ class is therefore closed for this model.  Repeating the latent screen with
 all 64 training sequences improves it to **0.1707001**, but remains far above
 the gate; the full-corpus rank-256 arm remains best at **0.1692925**.  Only a
 materially different model or an independently sourced causal corpus is
-justified next.
+justified next.  A larger nonlinear rank-256 residual (hidden width 256,
+stage width 32, 80 free-running steps after 20 teacher-forced steps) reaches
+**0.1666128**, a 2.6% improvement but still 7.4× above the gate.  This closes
+the current provider-only capacity family; report:
+`reports/controller_provider_pca_2026-08-03/nonlinear_rank256_h256_full.json`.
 
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible

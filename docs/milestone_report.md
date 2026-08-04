@@ -57,7 +57,11 @@ effectively unchanged.  Unfreezing every controller tensor reaches
 different model or expand the independent causal corpus.  Repeating the
 latent stage-local fit with all 64 training sequences reaches **0.1707001**,
 which is a modest data effect but still fails decisively; the rank-256
-full-corpus arm remains best at **0.1692925**.
+full-corpus arm remains best at **0.1692925**.  A larger nonlinear rank-256
+residual (hidden width 256, stage width 32) reaches **0.1666128** after 80
+free-running steps, still 7.4× above the threshold.  This closes the current
+provider-only capacity family; evidence is recorded in
+`reports/controller_provider_pca_2026-08-03/nonlinear_rank256_h256_full.json`.
 
 The trace contract now has an opt-in causal extension: `--causal-top-k` stores
 teacher top-k logits and next-token IDs, while `distill-controller` can consume
@@ -342,8 +346,9 @@ hashes are in
 This closes provider-only cache/rank sweeps; joint controller/provider
 training at the small-adapter capacity was screened (0.1714471), followed by
 full-controller training (0.1714721), followed by the full 64-sequence latent
-screen (0.1707001); none is sufficient.  A materially different model or
-independent causal corpus is required next.
+screen (0.1707001) and the larger nonlinear residual (0.1666128); none is
+sufficient.  A materially different model or independent causal corpus is
+required next.
 
 ## Native recurrent-controller implementation boundary
 

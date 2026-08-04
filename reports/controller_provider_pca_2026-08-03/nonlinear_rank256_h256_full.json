@@ -1,0 +1,34 @@
+{
+  "experiment": "nonlinear_rank256_h256_full_corpus",
+  "status": "rejected",
+  "provider": "/tmp/provider_train64_rank256",
+  "adapted_provider": "/tmp/nonlinear_rank256_h256_full",
+  "adapted_provider_sha256": "02c8b55d18b9cd018c22d438e9e23fa1b5558cc547e4e24a3b539608e4f46dc9",
+  "controller": "work/controller_distillation/bitnet_rank128_operator_residual_1024x256_exact/controller",
+  "training_trace": "work/controller_distillation/bitnet_train_64x16_b4",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "training_records": 1024,
+  "validation_records": 256,
+  "architecture": {
+    "hidden_width": 256,
+    "stage_width": 32,
+    "output_rank": 256,
+    "teacher_forcing_steps": 20,
+    "free_running_steps": 80,
+    "device": "cpu",
+    "decoder_layer_forward_calls": 0
+  },
+  "initial_validation_terminal_normalized_mse": 0.17103145294822752,
+  "validation_terminal_normalized_mse": 0.1666128379292786,
+  "validation_maximum_stage_normalized_mse": 1.2133643124252558,
+  "relative_improvement": 0.025835,
+  "gate": {
+    "metric": "terminal_normalized_mse",
+    "threshold": 0.0225,
+    "passed": false,
+    "protected_validation": true,
+    "layer_free_cpu_replay": true,
+    "end_to_end_generation": false
+  },
+  "decision": "A larger nonlinear latent residual and the full 64-sequence training corpus produce a small held-out improvement, but remain 7.4x above the causal threshold. This closes the current provider-only capacity family; do not promote the artifact."
+}
