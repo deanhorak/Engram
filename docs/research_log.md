@@ -2641,3 +2641,13 @@ match token IDs, selected records, semantic cache-line bytes, and positions on
 the eight-token package run. Native CTest remains 20/20. This closes only the
 zero-step ABI parity boundary; nonzero learned-controller promotion remains
 failed. See `reports/native_bitnet_controller_zero_step_parity_2026-08-04.json`.
+## 2026-08-04 — rejected semantic decode parallelism
+
+The thread sweep identified semantic work as flat, so an opt-in source screen
+parallelized selected down-record accumulation for one-row decode. It preserved
+token and traffic parity but increased semantic time from **16.84 s** to
+**26.51 s**, wall time from **49.86 s** to **60.83 s**, and peak RSS by about
+41 MiB. The source change was reverted. Attention remains the only measured
+thread-scaling win; semantic optimization now requires a fused/SIMD design,
+not another task-level split. See
+`reports/native_bitnet_semantic_parallel_screen_2026-08-04.json`.

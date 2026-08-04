@@ -611,3 +611,9 @@ both production and evaluator-controller modes. The frozen eight-token run
 matches generated IDs, selected records, traffic counters, and positions in
 both modes. The fix closes the native systems parity boundary while leaving
 the separate nonzero learned-controller causal gate unchanged.
+### Semantic-kernel thread screen (2026-08-04)
+
+One-row decode down-record parallelism was tested and rejected: output parity
+held, but semantic time rose 57%, wall time 22%, and peak RSS about 41 MiB.
+The source change was reverted; the negative result is retained as a systems
+boundary in the machine-readable report.

@@ -1,0 +1,30 @@
+{
+  "experiment": "native_bitnet_decode_semantic_parallel_screen",
+  "status": "rejected_negative_systems_arm",
+  "package": "work/native_bitnet/model.engram-bitnet-dip",
+  "prompt_token_ids": [128000],
+  "max_new_tokens": 8,
+  "threads": 12,
+  "baseline": {
+    "generated_token_ids": [11, 220, 15, 11, 220, 15, 11, 220],
+    "selected_records": 341159,
+    "semantic_seconds": 16.8447,
+    "attention_seconds": 16.6455,
+    "wall_seconds": 49.86,
+    "maximum_resident_set_kbytes": 1296576
+  },
+  "parallel_down_screen": {
+    "generated_token_ids": [11, 220, 15, 11, 220, 15, 11, 220],
+    "selected_records": 341159,
+    "semantic_seconds": 26.513,
+    "attention_seconds": 17.5253,
+    "wall_seconds": 60.83,
+    "maximum_resident_set_kbytes": 1339008
+  },
+  "parity": {
+    "token_ids_match": true,
+    "traffic_match": true
+  },
+  "decision": "rejected",
+  "interpretation": "Parallelizing selected down-record accumulation for one-row decode preserved output parity but increased semantic time by 57.4%, wall time by 22.0%, and peak RSS by about 41 MiB. The change was reverted; attention remains the only demonstrated thread-scaling win."
+}

@@ -2111,3 +2111,9 @@ mode in token IDs, selected records, semantic traffic counters, and positions.
 This fixes a real native parity issue; it does not promote nonzero learned
 controller corrections. The sealed result is
 `reports/native_bitnet_controller_zero_step_parity_2026-08-04.json`.
+### Rejected semantic decode parallelism (2026-08-04)
+
+An opt-in one-row semantic down-record parallelism screen preserved output
+parity but made semantic and wall time worse and increased RSS. It was
+reverted. The next semantic optimization boundary is fused/SIMD work rather
+than more thread-pool tasks.
