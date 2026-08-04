@@ -1,0 +1,31 @@
+{
+  "experiment": "gated_stage_transition_screen",
+  "status": "development_result",
+  "training_trace": "work/controller_distillation/bitnet_train_8x16_b2",
+  "training_trace_manifest_sha256": "f8a492d17c7d19531bf0c8a1225272262c4964ba6fd4b26f2a5272da8d785a58",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "validation_trace_manifest_sha256": "bc9730300886f65611777a9ddccc9d2fa2daaf3bab3b873758beabdefca5adf6",
+  "architecture": {
+    "kind": "stage_conditioned_gated_residual_transition",
+    "inputs": ["controller_state", "token_embedding", "stage_embedding"],
+    "hidden_width": 128,
+    "stage_width": 32,
+    "gate": "scalar_sigmoid",
+    "updates": 60,
+    "teacher_forced_updates": 30,
+    "batch_size": 2,
+    "optimizer_device": "cpu",
+    "inference_device": "cpu",
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0
+  },
+  "validation": {
+    "initial_terminal_normalized_mse": 1.9863383555784822,
+    "final_terminal_normalized_mse": 1.111541323363781,
+    "final_mean_stage_normalized_mse": 1.3083398178142185,
+    "threshold": 0.0225,
+    "passed": false
+  },
+  "artifact_written": false,
+  "decision": "reject_gated_transition_capacity_family"
+}

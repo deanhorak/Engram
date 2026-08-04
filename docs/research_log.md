@@ -2493,6 +2493,14 @@ causal corpus.
   another rank or hidden-width sweep.  The exact operator-residual
   state-transition pass and the authenticated package are unchanged.
 
+- A scalar-gated residual transition was screened as a stability alternative.
+  Sixty CPU updates (30 teacher-forced, batch size 2) reached held-out terminal
+  normalized MSE **1.1115413**, from **1.9863384** initially.  It remains 49×
+  above the **0.0225** threshold and produced no artifact.
+- Decision: reject the low-capacity gated-transition family.  The remaining
+  M4 direction is explicit sequence memory with a genuinely larger corpus or a
+  different teacher/export model.
+
 ## 2026-08-04: native systems verification completed
 
 - The full native CTest suite was rerun outside the sandbox with

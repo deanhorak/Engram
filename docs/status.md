@@ -233,6 +233,13 @@ A wider pilot was stopped by the host after its 100-update checkpoint at
 family for the current corpus; a future M4 attempt needs explicit sequence
 memory and a larger independent corpus, not another capacity-only sweep.
 
+A scalar-gated residual transition was also screened for stability.  Sixty CPU
+updates (30 teacher-forced) reached held-out terminal normalized MSE
+**1.1115413** from **1.9863384** initially, still far above **0.0225**; no
+artifact was promoted.  This closes the current gated-transition capacity
+family.  Evidence:
+`reports/controller_provider_pca_2026-08-03/gated_transition_screen.json`.
+
 The strongest learned-provider arm now combines the train-64 randomized
 rank-64 base with the nonlinear residual. It improves held-out terminal MSE
 from **0.1767018** to **0.1731798**, but still fails the **0.0225** gate by a

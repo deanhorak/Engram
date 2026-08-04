@@ -144,6 +144,13 @@ produced a promotion artifact.  The direct-transition family is rejected until
 a model with explicit sequence memory and a larger independent corpus is
 available; this result does not alter the exact state-transition pass.
 
+A scalar-gated residual transition was screened as a stability alternative.
+After 60 CPU updates (30 teacher-forced), held-out terminal normalized MSE was
+**1.1115413** from an initial **1.9863384**; it remains 49× above the fixed
+threshold and produced no artifact.  This closes the current low-capacity
+gated-transition family.  Evidence is recorded in
+`reports/controller_provider_pca_2026-08-03/gated_transition_screen.json`.
+
 ### Stateful sequence-provider boundary (2026-08-03)
 
 The runtime now exposes `run_sequence_provider`, which resets a provider once
