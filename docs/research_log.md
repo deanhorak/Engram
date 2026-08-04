@@ -2385,3 +2385,18 @@ causal corpus.
   **0.0225**; the provider-only capacity family is closed and the artifact is
   not promoted.  Evidence:
   `reports/controller_provider_pca_2026-08-03/nonlinear_rank256_h256_full.json`.
+
+## 2026-08-04: provider reload memory boundary
+
+- Authenticated provider loaders now use read-only NumPy memory mapping for
+  serialized arrays.  This applies to PCA, state-space, residual, nonlinear,
+  causal, and stage-causal providers; checksum verification still reads the
+  exact file bytes before construction.
+- A 14-test provider parity run and a 29-test controller/provider regression
+  run passed.  The explicit test confirms that basis and projection tensors
+  remain `np.memmap` instances after reload and produce the same stage outputs
+  as the in-memory artifact.
+- This closes a CPU deployment-memory issue for large learned artifacts.  It is
+  a Milestone 6 systems improvement only: the best causal learned-provider
+  result remains **0.1666128**, so the Milestone 4 **0.0225** quality gate is
+  still not passed.
