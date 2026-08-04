@@ -25,16 +25,36 @@ The real checkpoint then passed the first structural trace gate on CPU: two
 sequences × eight positions, layers 0/13/27, 16 records, and 12 threads. The
 capture took 16.41 seconds. Independent reconstruction from the serialized
 Qwen3 projections matched the hooked Hugging Face MLP outputs with maximum
-relative L2 `6.1929e-7` and maximum absolute error `1.8311e-4`. This is source
-and trace evidence only. It does not pass Milestone 2: no Qwen3 controller or
-provider was trained, no causal holdout was evaluated, and no native Qwen3
-runtime exists. The full frozen record is
+relative L2 `6.1929e-7` and maximum absolute error `1.8311e-4`. This
+structural record alone did not pass Milestone 2: it had not yet trained a
+Qwen3 controller/provider or evaluated a causal holdout, and no native Qwen3
+runtime exists. The full structural record is
 `reports/qwen3_teacher_trace_2026-08-04.json`.
 
 The adapter and Qwen3 structural test additions leave the full regression
-suite clean: **1,139 Python tests passed, 1 skipped**, and native CTest remains
+suite clean: **1,140 Python tests passed, 1 skipped**, and native CTest remains
 **20/20** (27.50 seconds). The one skip is the pre-existing CUDA-only query
 feature test on this host.
+
+### Qwen3 causal controller/provider screen
+
+The new `engram trace-hf-controller` path emits the same normalized,
+sequence-preserving controller trajectory contract as the native-BitNet
+capture, while loading the dense teacher only during CPU capture. On the
+pinned Qwen3 source we froze 8 training and 8 validation sequences, 16
+positions each, all 28 stages, and top-32 causal targets. The rank-16,
+schema-v3 operator-residual controller reloaded with maximum error `5.72e-6`
+and exactly replayed the validation state transition at terminal normalized MSE
+`6.9056e-8`.
+
+That exact residual result is not a learned-provider pass. A rank-16
+state/token PCA provider trained on the Qwen3 training trace reached held-out
+terminal normalized MSE **0.4191557**, far above the fixed **0.0225** provider
+threshold. The evaluator used CPU-only execution and made zero decoder-layer
+calls. This closes the hypothesis that changing from the BitNet teacher to a
+conventional dense Qwen3 teacher alone resolves the layer-free provider seam;
+isolated rank expansion is no longer justified. Evidence:
+`reports/qwen3_controller_provider_screen_2026-08-04.json`.
 
 ## Transformer-free controller replay boundary
 
@@ -604,7 +624,7 @@ thresholds.
 
 ## Verification
 
-- Python: 1,139 passed, 1 skipped (the CUDA-only query feature test is
+- Python: 1,140 passed, 1 skipped (the CUDA-only query feature test is
   unavailable on this host).
 - Native CTest: 20/20 passed outside the sandbox in 27.50 s (including the
   native C ABI lifecycle test).

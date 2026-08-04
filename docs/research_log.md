@@ -2684,6 +2684,35 @@ type check.
 This is deliberately not a semantic or Milestone 2 promotion: the capture is
 small, no Qwen3 controller/provider was trained, no causal holdout was run,
 and no native Qwen3 runtime exists. The machine-readable record is
-`reports/qwen3_teacher_trace_2026-08-04.json`. The next experiment must freeze
-a larger Qwen3 causal trace protocol and test whether the controller/provider
-failure is teacher-family-specific before attempting any Qwen3 compilation.
+`reports/qwen3_teacher_trace_2026-08-04.json`. The next experiment was to
+freeze a larger Qwen3 causal trace protocol and test whether the
+controller/provider failure is teacher-family-specific before attempting any
+Qwen3 compilation; that follow-up is recorded below.
+
+## 2026-08-04 — Qwen3 controller/provider comparison
+
+The dense-teacher path now emits the same normalized
+`engram.controller.teacher_trajectory` contract as the native-BitNet capture
+through `engram trace-hf-controller`. The capture is CPU-only, preserves
+sequence IDs and one token position per record, and can optionally store
+teacher top-k logits/next-token targets without retaining decoder layers in the
+serialized artifact. A two-sequence Qwen3 integration test verifies all state,
+semantic, episodic, and causal fields.
+
+Using the pinned Qwen3 source, we froze an auxiliary 8-sequence/128-record
+training split and disjoint 8-sequence/128-record validation split over the
+same 16-position WikiText-2 subsets, capturing all 28 layers and top-32 causal
+targets. A rank-16/schema-v3 operator-residual controller trained for 250 CPU
+steps reloaded with maximum parity error `5.72e-6`; its exact residual path
+replayed the validation states at terminal normalized MSE
+`6.9056e-8`, below the `0.0225` state-transition threshold.
+
+The learned seam remained the blocker. A rank-16 state/token PCA provider fit
+on the training trace reached validation terminal normalized MSE
+`0.4191557467`, versus the fixed `0.0225` learned-provider threshold. The
+layer-free evaluator made zero decoder-layer calls and ran entirely on CPU,
+but the provider gate failed by a wide margin. This is a teacher-family
+comparison, not a protected Engram promotion. It closes the hypothesis that
+changing from BitNet to a conventional dense Qwen3 teacher alone fixes the
+provider; another isolated rank sweep is not justified. The complete machine
+record is `reports/qwen3_controller_provider_screen_2026-08-04.json`.

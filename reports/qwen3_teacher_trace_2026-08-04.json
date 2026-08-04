@@ -71,7 +71,7 @@
   ],
   "test_result": "4 passed",
   "regression": {
-    "python": "1139 passed, 1 skipped",
+    "python": "1140 passed, 1 skipped",
     "native_ctest": "20/20 passed"
   }
 }

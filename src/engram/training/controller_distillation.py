@@ -17,6 +17,7 @@ from typing import Any, Sequence
 import numpy as np
 
 from engram.controller import FactorizedRecurrentController
+from engram.models.inspection import inspect_model, resolve_model_path
 from engram.runtime.native_bitnet import NativeBitNetRuntime
 from engram.tracing.format import TraceReader, TraceWriter
 from engram.utils import atomic_json, sha256_file
@@ -442,6 +443,308 @@ def capture_native_bitnet_controller_traces(
         "elapsed_seconds": time.perf_counter() - started,
         "teacher_device": "cpu",
         "optimizer_device": None,
+    }
+    atomic_json(output_path / "capture_report.json", result)
+    atomic_json(
+        output_path / "capture_progress.json",
+        {
+            "complete": True,
+            "completed_batches": result["batches"],
+            "completed_sequences": result["sequences"],
+            "requested_sequences": result["sequences"],
+            "elapsed_seconds": result["elapsed_seconds"],
+        },
+    )
+    return result
+
+
+def capture_hf_controller_traces(
+    model: str | Path,
+    dataset: str | Path,
+    out: str | Path,
+    *,
+    split: str,
+    samples: int = 8,
+    max_tokens: int = 64,
+    causal_top_k: int = 0,
+    batch_size: int = 1,
+    record_offset: int = 0,
+    seed: int = 31,
+    resume: bool = False,
+) -> dict[str, Any]:
+    """Capture the controller trajectory contract from a dense HF teacher.
+
+    This is the source-family comparison path for Qwen3 and other dense
+    decoder checkpoints accepted by :func:`inspect_model`.  It deliberately
+    runs the untouched teacher on CPU and writes the same normalized fields as
+    the qualified native-BitNet capture.  It does not make the dense source
+    compilable, and it does not alter the protected BitNet trace protocol.
+    """
+
+    if samples <= 0 or max_tokens <= 0 or batch_size <= 0:
+        raise ValueError("samples, max_tokens, and batch_size must be positive")
+    if causal_top_k < 0:
+        raise ValueError("causal_top_k must be non-negative")
+    if record_offset < 0:
+        raise ValueError("record_offset must be non-negative")
+    model_path = resolve_model_path(model)
+    inspection = inspect_model(model_path)
+    dataset_path = Path(dataset).resolve()
+    all_records = _load_jsonl(dataset_path)
+    selected = list(
+        enumerate(
+            all_records[record_offset : record_offset + samples],
+            start=record_offset,
+        )
+    )
+    if not selected:
+        raise ValueError("record_offset is beyond the controller trace dataset")
+    output_path = Path(out)
+    captured_sample_ids = _captured_sample_ids(output_path) if resume else set()
+    pending = [
+        (sample_id, record)
+        for sample_id, record in selected
+        if sample_id not in captured_sample_ids
+    ]
+    started = time.perf_counter()
+
+    try:
+        import torch
+        import transformers.utils as transformers_utils
+        import transformers.utils.import_utils as transformers_imports
+
+        if transformers_imports.is_sklearn_available():
+            try:
+                import sklearn  # noqa: F401
+            except ImportError:
+
+                def sklearn_unavailable() -> bool:
+                    return False
+
+                transformers_imports.is_sklearn_available = sklearn_unavailable
+                transformers_utils.is_sklearn_available = sklearn_unavailable
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+    except ImportError as exc:
+        raise RuntimeError(
+            "install engram-lm[conversion] to capture dense Hugging Face controller traces"
+        ) from exc
+
+    tokenizer = None
+    if any("input_ids" not in record for _, record in pending):
+        tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
+    teacher = AutoModelForCausalLM.from_pretrained(
+        model_path,
+        local_files_only=True,
+        dtype=torch.float32,
+        device_map=None,
+    )
+    teacher.eval()
+    layers = getattr(getattr(teacher, "model", None), "layers", None)
+    if layers is None or len(layers) != inspection.num_hidden_layers:
+        raise RuntimeError(
+            "dense teacher does not expose model.layers with the inspected layer count"
+        )
+    hidden_size = inspection.hidden_size
+    layer_count = inspection.num_hidden_layers
+    layer_inputs: dict[int, Any] = {}
+    layer_outputs: dict[int, Any] = {}
+    attention_outputs: dict[int, Any] = {}
+    mlp_outputs: dict[int, Any] = {}
+    hooks = []
+
+    def pre_hook(index: int):
+        def capture(_module, args, kwargs):
+            hidden = args[0] if args else kwargs.get("hidden_states")
+            layer_inputs[index] = _hidden_tensor(hidden)
+
+        return capture
+
+    def output_hook(destination: dict[int, Any], index: int):
+        def capture(_module, _args, output):
+            destination[index] = _hidden_tensor(output)
+
+        return capture
+
+    for layer_index, layer in enumerate(layers):
+        hooks.append(
+            layer.register_forward_pre_hook(pre_hook(layer_index), with_kwargs=True)
+        )
+        hooks.append(layer.register_forward_hook(output_hook(layer_outputs, layer_index)))
+        hooks.append(
+            layer.self_attn.register_forward_hook(
+                output_hook(attention_outputs, layer_index)
+            )
+        )
+        hooks.append(
+            layer.mlp.register_forward_hook(output_hook(mlp_outputs, layer_index))
+        )
+
+    try:
+        with (
+            TraceWriter(
+                output_path,
+                model_hash=inspection.source_hash,
+                dataset_hash=sha256_file(dataset_path),
+                split=split,
+                seed=seed,
+                metadata={
+                    "contract": CONTROLLER_TRACE_CONTRACT,
+                    "contract_version": CONTROLLER_TRACE_CONTRACT_VERSION,
+                    "source_model": str(model_path),
+                    "source_model_type": inspection.model_type,
+                    "source_architecture": inspection.architecture,
+                    "teacher_runtime": "transformers_dense_cpu",
+                    "teacher_device": "cpu",
+                    "hidden_size": hidden_size,
+                    "num_stages": layer_count,
+                    "input_order": list(CONTROLLER_INPUT_ORDER),
+                    "boundary_dtype": "float16",
+                    "state_normalization": "per_token_rms",
+                    "operator_normalization": "divide_by_stage_input_rms",
+                    "max_tokens": max_tokens,
+                    "batch_size": batch_size,
+                    "record_offset": record_offset,
+                    "requested_samples": samples,
+                    "causal_top_k": causal_top_k,
+                    "sequence_boundaries_preserved": True,
+                    "native_package_compilation": False,
+                },
+                resume=resume,
+            ) as writer,
+            torch.inference_mode(),
+        ):
+            encoded: list[tuple[int, list[int]]] = []
+            for sample_id, record in pending:
+                if "input_ids" in record:
+                    raw_ids = record["input_ids"]
+                    if not isinstance(raw_ids, list) or not all(
+                        isinstance(value, int) for value in raw_ids
+                    ):
+                        raise ValueError(f"record {sample_id} input_ids must be integers")
+                    token_ids = [int(value) for value in raw_ids]
+                else:
+                    assert tokenizer is not None
+                    token_ids = tokenizer(
+                        str(record.get("text", "")), add_special_tokens=True
+                    )["input_ids"]
+                if len(token_ids) > max_tokens:
+                    record_rng = np.random.default_rng(seed + sample_id)
+                    start = int(
+                        record_rng.integers(0, len(token_ids) - max_tokens + 1)
+                    )
+                    token_ids = token_ids[start : start + max_tokens]
+                if not token_ids:
+                    raise ValueError(f"record {sample_id} tokenized to an empty sequence")
+                encoded.append((sample_id, token_ids))
+
+            pad_token = getattr(tokenizer, "pad_token_id", None) if tokenizer else None
+            if pad_token is None:
+                pad_token = getattr(tokenizer, "eos_token_id", None) if tokenizer else 0
+            if isinstance(pad_token, (tuple, list)):
+                pad_token = pad_token[0]
+            if pad_token is None:
+                pad_token = 0
+            completed_batches = writer.shard_count
+            for batch_start in range(0, len(encoded), batch_size):
+                batch = encoded[batch_start : batch_start + batch_size]
+                sample_ids = [sample_id for sample_id, _ in batch]
+                maximum = max(len(token_ids) for _, token_ids in batch)
+                input_ids = torch.full(
+                    (len(batch), maximum), int(pad_token), dtype=torch.long
+                )
+                attention_mask = torch.zeros(
+                    (len(batch), maximum), dtype=torch.long
+                )
+                for row, (_, token_ids) in enumerate(batch):
+                    length = len(token_ids)
+                    input_ids[row, :length] = torch.as_tensor(token_ids, dtype=torch.long)
+                    attention_mask[row, :length] = 1
+                layer_inputs.clear()
+                layer_outputs.clear()
+                attention_outputs.clear()
+                mlp_outputs.clear()
+                model_output = teacher(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    use_cache=False,
+                    return_dict=True,
+                )
+                causal_top_ids = None
+                causal_top_logits = None
+                causal_target_ids = None
+                if causal_top_k:
+                    logits = (
+                        model_output.logits
+                        if hasattr(model_output, "logits")
+                        else model_output[0]
+                    )
+                    width = min(causal_top_k, int(logits.shape[-1]))
+                    causal_top_logits, causal_top_ids = torch.topk(
+                        logits.float(), width, dim=-1
+                    )
+                    causal_target_ids = torch.full_like(input_ids, -1)
+                    if input_ids.shape[1] > 1:
+                        causal_target_ids[:, :-1] = input_ids[:, 1:]
+                expected = set(range(layer_count))
+                for label, captured in (
+                    ("layer inputs", layer_inputs),
+                    ("layer outputs", layer_outputs),
+                    ("attention outputs", attention_outputs),
+                    ("MLP outputs", mlp_outputs),
+                ):
+                    if set(captured) != expected:
+                        raise RuntimeError(f"dense teacher did not capture all {label}")
+                writer.append(
+                    _controller_trace_arrays(
+                        torch,
+                        input_ids=input_ids,
+                        attention_mask=attention_mask,
+                        sample_ids=sample_ids,
+                        layer_inputs=layer_inputs,
+                        layer_outputs=layer_outputs,
+                        attention_outputs=attention_outputs,
+                        mlp_outputs=mlp_outputs,
+                        layer_count=layer_count,
+                        hidden_size=hidden_size,
+                        causal_top_ids=causal_top_ids,
+                        causal_top_logits=causal_top_logits,
+                        causal_target_ids=causal_target_ids,
+                    )
+                )
+                completed_batches += 1
+                captured_sample_ids.update(sample_ids)
+                atomic_json(
+                    output_path / "capture_progress.json",
+                    {
+                        "complete": False,
+                        "completed_batches": completed_batches,
+                        "completed_sequences": len(captured_sample_ids),
+                        "requested_sequences": len(selected),
+                        "last_sample_ids": sample_ids,
+                        "elapsed_seconds": time.perf_counter() - started,
+                    },
+                )
+    finally:
+        for hook in hooks:
+            hook.remove()
+        del teacher
+    manifest = json.loads((output_path / "manifest.json").read_text(encoding="utf-8"))
+    result = {
+        "trace": str(output_path.resolve()),
+        "split": split,
+        "sequences": len(selected),
+        "batches": len(manifest["shards"]),
+        "batch_size": batch_size,
+        "record_offset": record_offset,
+        "causal_top_k": causal_top_k,
+        "token_positions": sum(int(shard["records"]) for shard in manifest["shards"]),
+        "hidden_size": hidden_size,
+        "num_stages": layer_count,
+        "elapsed_seconds": time.perf_counter() - started,
+        "teacher_device": "cpu",
+        "optimizer_device": None,
+        "source_model_type": inspection.model_type,
+        "source_hash": inspection.source_hash,
     }
     atomic_json(output_path / "capture_report.json", result)
     atomic_json(

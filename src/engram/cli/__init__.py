@@ -145,6 +145,7 @@ from engram.training import (
     build_distillation_corpus,
     build_distillation_tail_holdout,
     capture_native_bitnet_controller_traces,
+    capture_hf_controller_traces,
     merge_controller_traces,
     distill_factorized_controller,
     distill_nonlinear_residual_provider,
@@ -813,6 +814,31 @@ def _parser() -> argparse.ArgumentParser:
         ),
     )
     controller_trace.add_argument(
+        "--resume",
+        action="store_true",
+        help="continue a checksummed incomplete capture without duplicate samples",
+    )
+
+    hf_controller_trace = commands.add_parser(
+        "trace-hf-controller",
+        help=(
+            "capture the shared-controller trajectory contract from a dense "
+            "Hugging Face teacher on CPU"
+        ),
+    )
+    hf_controller_trace.add_argument("--model", required=True, type=Path)
+    hf_controller_trace.add_argument("--dataset", required=True, type=Path)
+    hf_controller_trace.add_argument("--out", required=True, type=Path)
+    hf_controller_trace.add_argument(
+        "--split", required=True, choices=("training", "validation", "test")
+    )
+    hf_controller_trace.add_argument("--samples", type=int, default=8)
+    hf_controller_trace.add_argument("--max-tokens", type=int, default=64)
+    hf_controller_trace.add_argument("--causal-top-k", type=int, default=0)
+    hf_controller_trace.add_argument("--batch-size", type=int, default=1)
+    hf_controller_trace.add_argument("--record-offset", type=int, default=0)
+    hf_controller_trace.add_argument("--seed", type=int, default=31)
+    hf_controller_trace.add_argument(
         "--resume",
         action="store_true",
         help="continue a checksummed incomplete capture without duplicate samples",
@@ -2814,6 +2840,21 @@ def main(argv: Sequence[str] | None = None) -> int:
             library=args.library,
             threads=args.threads,
             native_projections=args.native_projections,
+            resume=args.resume,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "trace-hf-controller":
+        result = capture_hf_controller_traces(
+            args.model,
+            args.dataset,
+            args.out,
+            split=args.split,
+            samples=args.samples,
+            max_tokens=args.max_tokens,
+            causal_top_k=args.causal_top_k,
+            batch_size=args.batch_size,
+            record_offset=args.record_offset,
+            seed=args.seed,
             resume=args.resume,
         )
         print(json.dumps(result, indent=2, sort_keys=True))

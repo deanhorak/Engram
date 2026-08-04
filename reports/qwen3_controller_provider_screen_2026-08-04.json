@@ -1,0 +1,73 @@
+{
+  "experiment": "qwen3_dense_controller_provider_screen",
+  "date": "2026-08-04",
+  "status": "learned_provider_gate_failed",
+  "decision": "teacher_family_change_alone_does_not_close_the_provider_gate",
+  "source": {
+    "repo": "Qwen/Qwen3-0.6B",
+    "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "model_hash": "c1c0f97824fd775a6f100741fa5ad93ae637a36a69dbff37b8d4597781f1b9ae",
+    "weights_sha256": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b"
+  },
+  "protocol": {
+    "training_sequences": 8,
+    "validation_sequences": 8,
+    "positions_per_sequence": 16,
+    "training_records": 128,
+    "validation_records": 128,
+    "layers": 28,
+    "causal_top_k": 32,
+    "device": "cpu",
+    "training_dataset_hash": "04deca3fde7f82eb0b0efb244b5dda61324b7324a341e7460bc7d9aa2051a488",
+    "validation_dataset_hash": "6e6f913904d1a11a8638c8ef291bc1124ed97e93e0e66c22e8ccb72d5fc8c9e8",
+    "training_trace_manifest_sha256": "251a785f4ab6fcf04a2067a75a63af742cda15f8656e16a500c39ece216f0341",
+    "validation_trace_manifest_sha256": "a45bde750a4a5dc84d0257e6dbdac908f2b871c759fc85694f8a3b787dc41f0b"
+  },
+  "controller": {
+    "rank": 16,
+    "adapter_rank": 8,
+    "operator_residual": true,
+    "steps": 250,
+    "training_report_sha256": "0fd9a30b1313769279d599a6034f27626bf58c782929c19aad150571b77465af",
+    "controller_metadata_sha256": "ade2898412103c1ae71cb1f429f40095cff7e60ed9306105e75600f045170958",
+    "cpu_reload_parity": {
+      "passed": true,
+      "max_absolute_error": 5.7220458984375e-06
+    },
+    "exact_operator_residual_gate": {
+      "terminal_normalized_mse": 6.905617766506111e-08,
+      "threshold": 0.0225,
+      "passed": true
+    }
+  },
+  "provider": {
+    "kind": "pca_state_token",
+    "target": "streams",
+    "output_rank": 16,
+    "ridge": 0.01,
+    "provider_directory_sha256": "3b9ff003c0ef00ab4bffc723b280f8239380f409e8208fe9df6f0682d0f41d69",
+    "provider_manifest_sha256": "9c0d28fd629a798167301ed44fdbcca9c3a9cf68692cda65fbdb0490b3cc8978"
+  },
+  "held_out_evaluation": {
+    "report_sha256": "da0c501791a45d2aa56fe717febaf0b8e2a21baf438fcb569fc750d1de446d8b",
+    "terminal_normalized_mse": 0.4191557466983795,
+    "mean_stage_normalized_mse": 0.8297827839851379,
+    "hidden_mse": 0.8297827839851379,
+    "threshold": 0.0225,
+    "passed": false,
+    "decoder_layer_forward_calls": 0,
+    "inference_device": "cpu",
+    "provider_training_and_validation_datasets_disjoint": true
+  },
+  "interpretation": [
+    "Qwen3 can supply the exact controller trajectory format without constructing a native package.",
+    "The zero-correction operator-residual state transition is numerically exact on this split.",
+    "A compact learned provider fails decisively even with a different dense teacher family.",
+    "This is auxiliary evidence and does not alter the protected Engram BitNet gate.",
+    "Further isolated provider-rank sweeps are not justified; the next experiment needs causal supervision or a materially different provider/controller architecture."
+  ],
+  "regression": {
+    "python": "1140 passed, 1 skipped",
+    "native_ctest": "20/20 passed"
+  }
+}

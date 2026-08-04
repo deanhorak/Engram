@@ -163,12 +163,23 @@ PYTHONPATH=src python -m engram.cli audit-qwen3 \
 ```
 
 The captured evidence and immutable hashes are in
-`reports/qwen3_teacher_trace_2026-08-04.json`. The next defensible step is a
-larger frozen Qwen3 causal trace and a teacher-family comparison against the
-failed BitNet provider—not another isolated provider rank sweep.
+`reports/qwen3_teacher_trace_2026-08-04.json`. That structural result called
+for a larger frozen Qwen3 causal trace and a teacher-family comparison against
+the failed BitNet provider—not another isolated provider rank sweep.
 
 The Qwen3 adapter is covered by the full current regression checkpoint:
-**1,139 Python tests passed, 1 skipped**, and native CTest **20/20 passed**.
+**1,140 Python tests passed, 1 skipped**, and native CTest **20/20 passed**.
+
+That causal comparison is now complete. The new `trace-hf-controller` command
+captured all 28 Qwen3 stages for disjoint 8-sequence/128-record training and
+validation splits, preserving normalized controller states, semantic and
+episodic outputs, and top-32 causal targets. A rank-16 operator-residual
+controller exactly replays the validation transition (terminal normalized MSE
+**6.91e-8**), but its rank-16 state/token PCA provider reaches **0.41916** on
+the held-out terminal MSE versus the **0.0225** provider gate. This is a
+CPU-only, zero-decoder-layer evaluation and a decisive negative result for
+“change the teacher family only”; it does not alter the protected BitNet gate.
+See `reports/qwen3_controller_provider_screen_2026-08-04.json`.
 
 The replay provider is now a durable, checksummed artifact. For a frozen
 trace, `engram evaluate-controller-sequence` reloads the sequence-shaped

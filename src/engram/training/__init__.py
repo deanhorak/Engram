@@ -1,5 +1,6 @@
 from .corpus import build_distillation_corpus, build_distillation_tail_holdout
 from .controller_distillation import (
+    capture_hf_controller_traces,
     capture_native_bitnet_controller_traces,
     distill_factorized_controller,
     merge_controller_traces,
@@ -132,6 +133,7 @@ __all__ = [
     "build_distillation_corpus",
     "build_distillation_tail_holdout",
     "capture_native_bitnet_controller_traces",
+    "capture_hf_controller_traces",
     "BudgetNativeTernaryLayerWeights",
     "budget_native_ternary_forward",
     "budget_native_ternary_traffic",
