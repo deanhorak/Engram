@@ -2716,3 +2716,26 @@ comparison, not a protected Engram promotion. It closes the hypothesis that
 changing from BitNet to a conventional dense Qwen3 teacher alone fixes the
 provider; another isolated rank sweep is not justified. The complete machine
 record is `reports/qwen3_controller_provider_screen_2026-08-04.json`.
+
+## 2026-08-04 — Qwen3 causal top-k supervision screen
+
+The Qwen3 controller traces include frozen top-32 teacher logits and next-token
+targets, so a causal objective could be tested without loading decoder layers
+during optimization. We extracted the immutable Qwen3 `lm_head` and final
+RMSNorm tensors, then trained the same rank-16/schema-v3 operator-residual
+controller for 250 CPU steps with causal-loss weight 0.25.
+
+CPU reload parity passed (`3.81e-6` maximum absolute error). On the held-out
+trace, terminal state MSE rose from the exact residual baseline
+`6.75e-8` to `0.0014356`, while top-k KL worsened from `2.24974` to `2.27380`.
+Target-only cross-entropy improved slightly (`2.02078` to `2.00508`), so the
+objective is wired correctly but does not preserve the teacher distribution.
+Running the same rank-16 provider with the causal controller reached terminal
+provider MSE `0.422263`, worse than the exact-controller provider result
+`0.419156` and far above `0.0225`.
+
+This closes the isolated top-k-loss hypothesis. The complete record is
+`reports/qwen3_causal_supervision_screen_2026-08-04.json`. A future attempt must
+jointly train provider and controller against the causal objective or replace
+the representation; adding this loss to the existing controller and provider
+seams is not a defensible promotion path.

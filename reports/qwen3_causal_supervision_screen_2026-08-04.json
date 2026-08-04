@@ -1,0 +1,74 @@
+{
+  "experiment": "qwen3_causal_controller_supervision_screen",
+  "date": "2026-08-04",
+  "status": "causal_supervision_screen_failed_to_improve_provider",
+  "decision": "topk_distillation_alone_does_not_close_the_learned_provider_gate",
+  "source": {
+    "repo": "Qwen/Qwen3-0.6B",
+    "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "model_hash": "c1c0f97824fd775a6f100741fa5ad93ae637a36a69dbff37b8d4597781f1b9ae",
+    "lm_head_tensor_sha256": "5ba42421977c523d43286820cd09a9c960af5018a07d8ad1ba542b530c75714e",
+    "final_rmsnorm_tensor_sha256": "050ab1c7f386475749fd005b2349098bd257dfe319340ce49178366dd1640c63"
+  },
+  "protocol": {
+    "training_trace_manifest_sha256": "251a785f4ab6fcf04a2067a75a63af742cda15f8656e16a500c39ece216f0341",
+    "validation_trace_manifest_sha256": "a45bde750a4a5dc84d0257e6dbdac908f2b871c759fc85694f8a3b787dc41f0b",
+    "training_records": 128,
+    "validation_records": 128,
+    "causal_top_k": 32,
+    "device": "cpu",
+    "rank": 16,
+    "adapter_rank": 8,
+    "steps": 250,
+    "causal_weight": 0.25,
+    "teacher_forcing": "scheduled"
+  },
+  "controller": {
+    "operator_residual": true,
+    "training_report_sha256": "6e5eb8911c69b91a6effb38e384fd02bd7a3e8acfc67edf5a6c230d13c06c9e9",
+    "controller_metadata_sha256": "ade2898412103c1ae71cb1f429f40095cff7e60ed9306105e75600f045170958",
+    "cpu_reload_parity": {
+      "passed": true,
+      "max_absolute_error": 3.814697265625e-06
+    },
+    "state_transition": {
+      "initial_terminal_normalized_mse": 6.751486303357979e-08,
+      "final_terminal_normalized_mse": 0.0014356225437950343,
+      "threshold": 0.0225,
+      "passed": true,
+      "trajectory_development_gate_passed": false
+    }
+  },
+  "causal_metrics": {
+    "initial_validation_topk_kl": 2.2497419714927673,
+    "final_validation_topk_kl": 2.273801863193512,
+    "topk_kl_change": 0.02405989170074463,
+    "initial_validation_target_ce": 2.020779609680176,
+    "final_validation_target_ce": 2.005080819129944,
+    "target_ce_change": -0.015698790550231934,
+    "interpretation": "target CE improved slightly but the teacher top-k distribution did not"
+  },
+  "provider_follow_up": {
+    "provider_kind": "pca_state_token",
+    "provider_output_rank": 16,
+    "provider_manifest_sha256": "9c0d28fd629a798167301ed44fdbcca9c3a9cf68692cda65fbdb0490b3cc8978",
+    "provider_training_directory_sha256_before_evaluation": "3b9ff003c0ef00ab4bffc723b280f8239380f409e8208fe9df6f0682d0f41d69",
+    "exact_residual_controller_terminal_mse": 0.4191557466983795,
+    "causal_controller_terminal_mse": 0.422262579202652,
+    "provider_gate_threshold": 0.0225,
+    "provider_gate_passed": false,
+    "decoder_layer_forward_calls": 0,
+    "inference_device": "cpu"
+  },
+  "interpretation": [
+    "The top-k objective is executable from serialized Qwen3 vocabulary tensors without loading decoder layers.",
+    "A conservative causal loss slightly improves target cross-entropy but worsens the full teacher top-k distribution and state replay.",
+    "Applying the causal controller to the learned provider does not improve the provider gate.",
+    "This auxiliary result does not alter the protected Engram gate or authorize a package.",
+    "The next experiment must jointly train a causal provider/controller or change the representation, rather than adding another isolated loss or rank sweep."
+  ],
+  "regression": {
+    "python": "1140 passed, 1 skipped",
+    "native_ctest": "20/20 passed"
+  }
+}

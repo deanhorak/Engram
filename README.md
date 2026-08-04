@@ -181,6 +181,14 @@ CPU-only, zero-decoder-layer evaluation and a decisive negative result for
 “change the teacher family only”; it does not alter the protected BitNet gate.
 See `reports/qwen3_controller_provider_screen_2026-08-04.json`.
 
+The remaining isolated causal-supervision test also failed to move this
+boundary. A rank-16 controller trained with Qwen3 top-k loss (weight 0.25)
+kept CPU reload parity, but held-out top-k KL changed from **2.24974** to
+**2.27380** and the learned provider reached **0.42226** terminal MSE. This
+is worse than the exact-controller provider's **0.41916**, so adding a causal
+loss without jointly changing the provider is closed. See
+`reports/qwen3_causal_supervision_screen_2026-08-04.json`.
+
 The replay provider is now a durable, checksummed artifact. For a frozen
 trace, `engram evaluate-controller-sequence` reloads the sequence-shaped
 semantic/episodic arrays, restores sample ordering, and executes the

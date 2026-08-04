@@ -56,6 +56,24 @@ conventional dense Qwen3 teacher alone resolves the layer-free provider seam;
 isolated rank expansion is no longer justified. Evidence:
 `reports/qwen3_controller_provider_screen_2026-08-04.json`.
 
+### Qwen3 causal top-k supervision screen
+
+The Qwen3 trajectory also carries top-32 teacher logits and next-token IDs.
+Using serialized Qwen3 `lm_head` and final RMSNorm tensors, a rank-16
+operator-residual controller was trained for 250 CPU steps with causal-loss
+weight 0.25. CPU reload parity passed (`3.81e-6` maximum absolute error), but
+held-out top-k KL worsened from **2.24974** to **2.27380** and terminal state
+MSE rose to **0.0014356** from the exact `6.75e-8` baseline. Target-only CE
+improved slightly, from **2.02078** to **2.00508**, which confirms execution
+without demonstrating teacher-distribution preservation. The same rank-16
+provider with the causal controller reached terminal MSE **0.422263**, worse
+than the exact-controller provider's **0.419156** and far above **0.0225**.
+
+This closes the isolated top-k-loss hypothesis. It does not alter Milestone 2
+or authorize a package. The machine-readable result is
+`reports/qwen3_causal_supervision_screen_2026-08-04.json`; a future attempt
+must jointly train the provider/controller or replace their representation.
+
 ## Transformer-free controller replay boundary
 
 The exact schema-v3 controller now has a standalone CPU runtime and CLI:
