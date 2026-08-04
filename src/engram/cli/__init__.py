@@ -147,6 +147,7 @@ from engram.training import (
     distill_factorized_controller,
     distill_nonlinear_residual_provider,
     distill_causal_attention_operator_provider,
+    distill_stage_causal_attention_operator_provider,
     distill_state_space_operator_provider,
     distill_state_space_residual_provider,
     joint_distill_operator_provider,
@@ -1122,6 +1123,30 @@ def _parser() -> argparse.ArgumentParser:
     causal_attention_provider.add_argument("--learning-rate", type=float, default=3e-4)
     causal_attention_provider.add_argument("--seed", type=int, default=417)
     causal_attention_provider.add_argument("--device", default="cpu")
+
+    stage_causal_attention_provider = commands.add_parser(
+        "distill-stage-causal-attention-provider",
+        help="distill a stage-specific causal key/value context provider over a PCA provider",
+    )
+    stage_causal_attention_provider.add_argument("--provider", required=True, type=Path)
+    stage_causal_attention_provider.add_argument("--controller", required=True, type=Path)
+    stage_causal_attention_provider.add_argument("--trace", required=True, type=Path)
+    stage_causal_attention_provider.add_argument("--validation-trace", type=Path)
+    stage_causal_attention_provider.add_argument("--out", required=True, type=Path)
+    stage_causal_attention_provider.add_argument("--steps", type=int, default=100)
+    stage_causal_attention_provider.add_argument("--teacher-forcing-steps", type=int, default=0)
+    stage_causal_attention_provider.add_argument("--batch-size", type=int, default=8)
+    stage_causal_attention_provider.add_argument("--key-dim", type=int, default=16)
+    stage_causal_attention_provider.add_argument("--value-dim", type=int, default=32)
+    stage_causal_attention_provider.add_argument("--query-width", type=int, default=32)
+    stage_causal_attention_provider.add_argument(
+        "--direct-hidden-correction",
+        action="store_true",
+        help="emit direct 2*hidden-size residual streams instead of PCA-latent corrections",
+    )
+    stage_causal_attention_provider.add_argument("--learning-rate", type=float, default=3e-4)
+    stage_causal_attention_provider.add_argument("--seed", type=int, default=422)
+    stage_causal_attention_provider.add_argument("--device", default="cpu")
 
     evaluate_operator_provider = commands.add_parser(
         "evaluate-controller-provider",
@@ -2976,6 +3001,25 @@ def main(argv: Sequence[str] | None = None) -> int:
             key_dim=args.key_dim,
             value_dim=args.value_dim,
             query_width=args.query_width,
+            learning_rate=args.learning_rate,
+            seed=args.seed,
+            device=args.device,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "distill-stage-causal-attention-provider":
+        result = distill_stage_causal_attention_operator_provider(
+            args.provider,
+            args.controller,
+            args.trace,
+            args.out,
+            validation_trace=args.validation_trace,
+            steps=args.steps,
+            teacher_forcing_steps=args.teacher_forcing_steps,
+            batch_size=args.batch_size,
+            key_dim=args.key_dim,
+            value_dim=args.value_dim,
+            query_width=args.query_width,
+            direct_hidden_correction=args.direct_hidden_correction,
             learning_rate=args.learning_rate,
             seed=args.seed,
             device=args.device,

@@ -1,0 +1,81 @@
+{
+  "experiment": "stage_causal_attention_provider_screens",
+  "status": "rejected",
+  "source_provider": "/tmp/provider_train64_rank64_randomized",
+  "source_provider_rank256_arm": "/tmp/provider_train64_rank256",
+  "controller": "work/controller_distillation/bitnet_rank128_operator_residual_1024x256_exact/controller",
+  "training_trace": "work/controller_distillation/bitnet_train_8x16_b2",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "source_model_hash": "8143ae115ed6babe5e5ada8fb8c5b769d8f417802b2db042ad98b4f7ed73975b",
+  "training_dataset_hash": "887f4246205ca43c8f35f015509f57524019ecb56ecf6e78767172ef13ddda14",
+  "validation_is_disjoint": true,
+  "gate": {
+    "metric": "terminal_normalized_mse",
+    "threshold": 0.0225,
+    "passed": false,
+    "layer_free_cpu_replay": true,
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0
+  },
+  "screens": [
+    {
+      "name": "stage_local_latent_rank64_20steps_tf10",
+      "provider": "/tmp/stage_causal_20",
+      "provider_sha256": "a8c7ec4267cda33edf9a58ee7fde481d1394dd1908b49dabf3c4f08ce31cc683",
+      "key_dim": 16,
+      "value_dim": 32,
+      "query_width": 32,
+      "teacher_forcing_steps": 10,
+      "free_running_steps": 20,
+      "initial_validation_terminal_normalized_mse": 0.17670181393623352,
+      "validation_terminal_normalized_mse": 0.1714501678943634,
+      "maximum_validation_terminal_normalized_mse": 1.3545548915863037,
+      "relative_improvement": 0.029155296
+    },
+    {
+      "name": "stage_local_latent_rank256_10steps_tf5",
+      "provider": "/tmp/stage_causal_rank256_10",
+      "provider_sha256": "21927c06b0d8b748b728b2f9378cf6898b6a876ecd3f499957a6e9c24c24f9d5",
+      "key_dim": 16,
+      "value_dim": 32,
+      "query_width": 32,
+      "teacher_forcing_steps": 5,
+      "free_running_steps": 10,
+      "initial_validation_terminal_normalized_mse": 0.17103144526481628,
+      "validation_terminal_normalized_mse": 0.16929246485233307,
+      "maximum_validation_terminal_normalized_mse": 1.3492095470428467,
+      "relative_improvement": 0.01016515
+    },
+    {
+      "name": "stage_local_direct_hidden_10steps_tf5",
+      "provider": "/tmp/stage_causal_direct_10",
+      "provider_sha256": "641f0725400f6d1229e1439fea801498e95e94d07f54d26007c8752470068645",
+      "key_dim": 16,
+      "value_dim": 32,
+      "query_width": 32,
+      "teacher_forcing_steps": 5,
+      "free_running_steps": 10,
+      "learning_rate": 0.0003,
+      "initial_validation_terminal_normalized_mse": 0.17670181393623352,
+      "validation_terminal_normalized_mse": 0.1817166805267334,
+      "maximum_validation_terminal_normalized_mse": 1.356046438217163,
+      "relative_improvement": -0.028375
+    },
+    {
+      "name": "stage_local_direct_hidden_20steps_tf10_lr1e4",
+      "provider": "/tmp/stage_causal_direct_20lr1e4",
+      "provider_sha256": "cfaad343b40598ba9e3d467622da723b2139ee6fb724ab053af00d6b86e53dae",
+      "key_dim": 16,
+      "value_dim": 32,
+      "query_width": 32,
+      "teacher_forcing_steps": 10,
+      "free_running_steps": 20,
+      "learning_rate": 0.0001,
+      "initial_validation_terminal_normalized_mse": 0.17670181393623352,
+      "validation_terminal_normalized_mse": 0.1770537942647934,
+      "maximum_validation_terminal_normalized_mse": 1.344658374786377,
+      "relative_improvement": -0.001991
+    }
+  ],
+  "decision": "Stage-local causal K/V memory is a valid CPU-serializable implementation and gives a small latent-rank improvement, but every independent screen remains far above the fixed promotion threshold. Direct hidden corrections overfit or destabilize the protected split. Do not promote a learned provider or claim Milestone 4 causal completion."
+}

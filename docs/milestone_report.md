@@ -26,6 +26,33 @@ streams are still supplied by a captured/compiled provider, so it is not yet a
 layer-free end-to-end generator and does not promote a learned nonzero
 correction.
 
+### Stage-local causal-memory follow-up (2026-08-03)
+
+The first token-level causal provider used one shared K/V memory for every
+controller stage.  That is not structurally faithful: each stage consumes a
+different hidden state and has a different operator boundary.  The follow-up
+`stage_causal_attention_pca` provider therefore keeps one compact key/value
+prefix per stage, attends over that prefix, and emits a residual before
+recording the current stage state.  It is serialized with checksummed NumPy
+arrays and runs through the existing CPU-only stateful evaluator.
+
+The protected 8-sequence/128-record training and 16-sequence/256-record
+validation split was held fixed.  Twenty free-running steps after ten
+teacher-forced steps reduced terminal normalized MSE from **0.1767018** to
+**0.1714502** for a rank-64 latent residual.  Replacing the base with the
+full-corpus rank-256 provider reached **0.1692925**, but this is still 7.52×
+above the fixed **0.0225** gate.  Direct 2×hidden-size residual heads were
+also screened: the 10-step arm reached **0.1817167** and the lower-rate
+20-step arm **0.1770538**, showing overfit/instability rather than a route to
+the gate.  No Transformers model or decoder layer was loaded in any arm.
+
+The authenticated screen record is
+`reports/controller_provider_pca_2026-08-03/stage_causal_attention_screens.json`.
+The stage-local latent artifact is useful implementation progress, but all
+learned-provider promotion remains blocked.  More isolated cache-shape, rank,
+or teacher-forcing sweeps are closed; the next experiment must jointly train
+the controller/provider or expand the independent causal corpus.
+
 The trace contract now has an opt-in causal extension: `--causal-top-k` stores
 teacher top-k logits and next-token IDs, while `distill-controller` can consume
 those fields with a frozen vocabulary matrix and final RMSNorm vector. A
@@ -295,6 +322,20 @@ Adding a 10-step teacher-forced warm-up before 10 free-running steps reaches
 preserved in
 `reports/controller_provider_pca_2026-08-03/causal_attention_teacher_forcing_screen.json`.
 
+The stage-local follow-up keeps a separate compact K/V prefix for each of the
+30 controller stages.  This is the correct cache topology for stage-specific
+hidden states and is implemented as the CPU-serializable
+`stage_causal_attention_pca` provider.  On the same protected split, 20
+free-running steps after 10 teacher-forced steps reduce terminal MSE from
+**0.1767018** to **0.1714502** at rank 64; a full-rank-256 base reaches
+**0.1692925**.  Both remain 7.52× above **0.0225**.  Direct hidden-size
+residual heads reach **0.1817167** and **0.1770538** in two scheduled arms,
+so they overfit rather than improve generalization.  The complete screen and
+hashes are in
+`reports/controller_provider_pca_2026-08-03/stage_causal_attention_screens.json`.
+This closes provider-only cache/rank sweeps; joint controller/provider
+training or a larger independent causal corpus is required next.
+
 ## Native recurrent-controller implementation boundary
 
 The native token runtime now has a direct implementation of the schema-v3
@@ -438,7 +479,7 @@ boundary without silently enabling the policy in ordinary generation.
 | 1. Repository, inspection, fixtures, teacher traces, exact MLP decomposition, oracle top-K, tests | Complete | Build system, source inspection, teacher traces, exact SwiGLU/MLP decomposition, oracle experiments, and regression reports are present. |
 | 2. Semantic memory, practical routing, quantization, Python runtime, substituted-MLP evaluation | Protected promotion passed; opt-in only | Train-to-development causal replay, 512/2,048-position CPU scaling, frozen pool frontier, authenticated opt-in package generation, and the separately authorized protected rank-16/pool-6 replay pass. Protected aggregate: 100% top-1, hidden L2 0.009133, logit L2 0.004416, NLL delta −0.000460. The policy remains disabled by default and requires explicit package opt-in. |
 | 3. Attention analysis, local/recurrent/retrieval heads, hybrid episodic memory, attention substitution | Sustained quality gate passed; promotion pending | W128 full-context local attention with per-vector INT8 K/V and FP32 scales passes all frozen bands at 25% logical attention traffic on CPU. Deployable package policy integration, broader corpora, and end-to-end speedup remain. |
-| 4. Shared recurrent controller and layer-free Engram runtime | Partial; state-transition gate passed | The standalone CPU controller runtime replays exact semantic/episodic streams with zero decoder-layer calls and terminal normalized MSE 0.0000208009 on the held-out trajectory. The explicit learned provider seam and causal adaptation experiments are implemented, but the best held-out learned-provider terminal MSE is 0.1710317 (rank-256 full-corpus screen), so causal provider/controller promotion remains blocked. |
+| 4. Shared recurrent controller and layer-free Engram runtime | Partial; state-transition gate passed | The standalone CPU controller runtime replays exact semantic/episodic streams with zero decoder-layer calls and terminal normalized MSE 0.0000208009 on the held-out trajectory. Stage-local causal K/V memory is now serialized and evaluated, but the best held-out learned-provider terminal MSE is 0.1692925 (rank-256 stage-local screen), so causal provider/controller promotion remains blocked. |
 | 5. Vocabulary/transition/correction artifacts, compiler, validation and CLI | Partial/usable | Native package generation, mapped weights, evaluator recurrent-correction dispatch, validation, greedy generation, and chat CLI work. Authenticated nonzero-controller package promotion remains gated. |
 | 6. Native C++ runtime, kernels, mapping, parity, generation, benchmarks | Partial/usable | CPU scalar/vector kernels, memory mapping, C ABI parity, native generation, and tests are operational. End-to-end long-context benchmarks and optimization remain. |
 | 7. Comprehensive evaluation, ablations, tuning, documentation, final report | In progress | Protected promotion and its documentation are complete. Broad model/task coverage, end-to-end performance tuning, ablations, and the reproducible final study remain. |
@@ -472,14 +513,15 @@ thresholds.
 4. Keep the exact operator-residual controller as the production boundary.
    The standalone controller-only replay now passes the state-transition
    threshold, but learned provider and joint adaptation arms remain far above
-   the causal threshold. Rank-256, persistent-memory, full-corpus, and smooth
-   scheduled-sampling screens are now also negative. The next M4 experiment
+   the causal threshold. Rank-256, persistent-memory, stage-local K/V,
+   direct-hidden, full-corpus, and smooth scheduled-sampling screens are now
+   also negative. The next M4 experiment
    must add an explicit context representation or a stronger jointly trained
    provider/controller model and repeat the causal split; isolated rank or
    epoch sweeps are closed.
 
 ## Verification
 
-- Python: 1,129 passed, 1 skipped (CUDA unavailable on the test runner).
+- Python: 1,131 passed, 1 skipped (CUDA unavailable on the test runner).
 - Native CTest: 20/20 passed.
 - Lint and `git diff --check`: passed.

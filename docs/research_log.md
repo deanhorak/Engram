@@ -2335,3 +2335,29 @@
   model-selection outcomes; no native integration, development,
   confirmation, package promotion, or Milestone 3 progression was
   authorized. The next directional class is a blockwise-QK feature controller.
+
+## 2026-08-03: stage-local causal provider screen remains negative
+
+- Replaced the earlier shared token-level K/V cache with a stage-local cache:
+  each of the 30 controller stages now owns compact key/value projections and
+  its own causal prefix.  The provider is checksummed, CPU-serializable, and
+  evaluated through the protected stateful controller runtime with no
+  Transformers model or decoder-layer calls.
+- The fixed split was 8 training sequences/128 records and 16 disjoint
+  validation sequences/256 records.  A rank-64 latent screen (key 16, value
+  32, query width 32; 10 teacher-forced and 20 free-running steps) improved
+  terminal normalized MSE from **0.1767018** to **0.1714502**.  The full-rank-
+  256 base reached **0.1692925** after 5 teacher-forced and 10 free-running
+  steps.  The latter is the best learned-provider result, but remains 7.52×
+  above the fixed **0.0225** gate.
+- Two direct 2×hidden-size correction screens were negative: **0.1817167**
+  at 10 steps and **0.1770538** at 20 steps with a lower learning rate.
+  They reduce teacher-forced loss but overfit or destabilize free-running
+  validation, so direct hidden correction is not promoted.
+- Screen record and artifact hashes:
+  `reports/controller_provider_pca_2026-08-03/stage_causal_attention_screens.json`.
+  Decision: stage-local cache topology is accepted as an implementation
+  boundary, but provider-only cache/rank/teacher-forcing sweeps are closed.
+  The next justified M4 attempt must jointly train the controller/provider or
+  obtain a larger independent causal corpus; no learned provider enters the
+  authenticated package.

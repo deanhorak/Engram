@@ -193,6 +193,18 @@ low-rank residual over the PCA streams. It is CPU-serializable and evaluated
 with the stateful command below, but its bounded protected screen reaches only
 **0.1758242**, so it remains research-only.
 
+The follow-up stage-local provider keeps a separate causal K/V prefix for each
+of the 30 controller stages, matching their distinct hidden-state and operator
+spaces. Its rank-64 latent screen reaches **0.1714502** after 20 free-running
+CPU steps (from **0.1767018**); using the full-rank-256 base reaches
+**0.1692925**. Both remain far above **0.0225**. A direct hidden-size residual
+head does not generalize on this split (**0.1817167** and **0.1770538** in two
+scheduled screens), so it is not promoted. Results and artifact hashes are
+recorded in
+`reports/controller_provider_pca_2026-08-03/stage_causal_attention_screens.json`.
+The provider-only cache/rank sweep is now closed; the next justified attempt
+is a jointly trained controller/provider or a larger independent causal corpus.
+
 ```bash
 PYTHONPATH=src python -m engram.cli distill-causal-attention-provider \
   --provider work/provider_train8_rank64 \

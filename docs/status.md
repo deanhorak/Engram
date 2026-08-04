@@ -282,6 +282,21 @@ Teacher-forced warm-up does not rescue the architecture: 10 teacher-forced
 steps followed by 10 free-running steps reach **0.1764556**. Evidence:
 `reports/controller_provider_pca_2026-08-03/causal_attention_teacher_forcing_screen.json`.
 
+The next architecture keeps a separate causal key/value prefix for every
+controller stage, matching the fact that each stage has its own state and
+operator boundary.  The new `distill-stage-causal-attention-provider` command
+and `stage_causal_attention_pca` artifact are CPU-serializable and are checked
+by the same protected stateful evaluator.  A 20-step rank-64 latent screen
+improves held-out terminal MSE from **0.1767018** to **0.1714502**.  A
+full-rank-256 base reaches **0.1692925**, the current learned-provider best,
+but remains 7.52x above the fixed **0.0225** threshold.  Direct hidden-size
+residual heads overfit this split (0.1817167 at 10 steps and 0.1770538 at a
+lower-rate 20-step arm).  These are negative promotion results, not a gate
+pass.  The complete screen record is
+`reports/controller_provider_pca_2026-08-03/stage_causal_attention_screens.json`.
+Further cache-shape and rank sweeps are closed; the next defensible direction
+is joint controller/provider training or a larger independent causal corpus.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and

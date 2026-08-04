@@ -1499,6 +1499,262 @@ class CausalAttentionOperatorStreamProvider:
         )
 
 
+@dataclass
+class StageCausalAttentionOperatorStreamProvider:
+    """Stage-specific causal key/value memory over a PCA provider.
+
+    Each controller stage keeps its own prefix of compact keys and values
+    derived from the current stage state.  This mirrors a transformer cache:
+    the provider queries the prior prefix, emits its operator streams, and
+    then records the current state for the next token.
+    """
+
+    base_provider: PCAOperatorStreamProvider
+    key_projection: np.ndarray
+    value_projection: np.ndarray
+    state_query_projection: np.ndarray
+    token_query_projection: np.ndarray
+    query_head: np.ndarray
+    correction_head: np.ndarray
+    metadata_payload: dict[str, Any]
+    provider_kind: str = "stage_causal_attention_pca"
+    _keys: list[np.ndarray] | None = None
+    _values: list[np.ndarray] | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.base_provider, PCAOperatorStreamProvider):
+            raise TypeError("base_provider must be a PCAOperatorStreamProvider")
+        arrays = {
+            name: _finite(getattr(self, name), name)
+            for name in (
+                "key_projection",
+                "value_projection",
+                "state_query_projection",
+                "token_query_projection",
+                "query_head",
+                "correction_head",
+            )
+        }
+        width = self.base_provider.state_dim
+        stages = self.base_provider.num_stages
+        rank = self.base_provider.output_rank
+        if arrays["key_projection"].ndim != 3 or arrays["key_projection"].shape[0] != stages or arrays["key_projection"].shape[1] != width:
+            raise ValueError("key_projection must have shape [stages, state_dim, key_dim]")
+        key_dim = arrays["key_projection"].shape[2]
+        if arrays["value_projection"].shape[:2] != (stages, width) or arrays["value_projection"].ndim != 3:
+            raise ValueError("value_projection must have shape [stages, state_dim, value_dim]")
+        value_dim = arrays["value_projection"].shape[2]
+        if arrays["state_query_projection"].ndim != 2 or arrays["state_query_projection"].shape[0] != width:
+            raise ValueError("state_query_projection must have shape [state_dim, query_width]")
+        query_width = arrays["state_query_projection"].shape[1]
+        if arrays["token_query_projection"].shape != (width, query_width):
+            raise ValueError("token_query_projection must match state query width")
+        if arrays["query_head"].shape != (stages, 2 * query_width, key_dim):
+            raise ValueError("query_head has incompatible dimensions")
+        correction_prefix = (stages, 2 * query_width + value_dim + 1)
+        expected_correction = (correction_prefix[0], correction_prefix[1], 2 * rank)
+        direct_correction = (correction_prefix[0], correction_prefix[1], 2 * width)
+        if arrays["correction_head"].shape not in {expected_correction, direct_correction}:
+            raise ValueError(
+                "correction_head must have shape "
+                f"{expected_correction} (PCA) or {direct_correction} (direct hidden)"
+            )
+        if not isinstance(self.metadata_payload, dict):
+            raise ValueError("provider metadata must be an object")
+        for name, value in arrays.items():
+            value.setflags(write=False)
+            object.__setattr__(self, name, value)
+
+    @property
+    def state_dim(self) -> int:
+        return self.base_provider.state_dim
+
+    @property
+    def num_stages(self) -> int:
+        return self.base_provider.num_stages
+
+    @property
+    def output_rank(self) -> int:
+        return self.base_provider.output_rank
+
+    @property
+    def key_dim(self) -> int:
+        return int(self.key_projection.shape[2])
+
+    @property
+    def value_dim(self) -> int:
+        return int(self.value_projection.shape[2])
+
+    @property
+    def query_width(self) -> int:
+        return int(self.state_query_projection.shape[1])
+
+    @property
+    def direct_hidden_correction(self) -> bool:
+        """Whether the learned residual bypasses the PCA output subspace."""
+
+        return self.correction_head.shape[-1] == 2 * self.state_dim
+
+    def reset(self, batch_shape: tuple[int, ...]) -> None:
+        if not isinstance(batch_shape, tuple) or len(batch_shape) != 1:
+            raise ValueError("stage causal provider requires a one-dimensional batch shape")
+        if any(isinstance(value, bool) or not isinstance(value, (int, np.integer)) or value <= 0 for value in batch_shape):
+            raise ValueError("batch_shape must contain positive integer dimensions")
+        self._keys = [
+            np.empty((batch_shape[0], 0, self.key_dim), dtype=np.float32)
+            for _ in range(self.num_stages)
+        ]
+        self._values = [
+            np.empty((batch_shape[0], 0, self.value_dim), dtype=np.float32)
+            for _ in range(self.num_stages)
+        ]
+
+    def begin_token(self, token_embedding: np.ndarray) -> None:
+        token = _finite(token_embedding, "token_embedding")
+        if token.ndim != 2 or token.shape[1] != self.state_dim:
+            raise ValueError("token_embedding must have shape [batch, state_dim]")
+        if self._keys is None or self._values is None:
+            raise ValueError("reset must precede begin_token")
+        if token.shape[0] != self._keys[0].shape[0]:
+            raise ValueError("token batch does not match provider reset")
+
+    def step(
+        self, state: np.ndarray, token_embedding: np.ndarray, stage: int
+    ) -> tuple[np.ndarray, np.ndarray]:
+        if self._keys is None or self._values is None:
+            raise ValueError("reset and begin_token must precede provider.step")
+        state = _finite(state, "state")
+        token = _finite(token_embedding, "token_embedding")
+        if state.shape != token.shape or state.ndim != 2 or state.shape[1] != self.state_dim:
+            raise ValueError("state and token_embedding must have shape [batch, state_dim]")
+        if not isinstance(stage, (int, np.integer)) or isinstance(stage, bool):
+            raise ValueError("stage must be an integer")
+        if stage < 0 or stage >= self.num_stages:
+            raise ValueError("stage is outside the provider")
+        current_key = state @ self.key_projection[stage]
+        current_value = state @ self.value_projection[stage]
+        history_keys = np.concatenate((self._keys[stage], current_key[:, None, :]), axis=1)
+        history_values = np.concatenate((self._values[stage], current_value[:, None, :]), axis=1)
+        query_features = np.concatenate(
+            (state @ self.state_query_projection, token @ self.token_query_projection),
+            axis=-1,
+        )
+        query = query_features @ self.query_head[stage]
+        scores = np.sum(history_keys * query[:, None, :], axis=-1) / np.sqrt(self.key_dim)
+        scores -= np.max(scores, axis=-1, keepdims=True)
+        weights = np.exp(np.clip(scores, -30.0, 30.0))
+        weights /= np.sum(weights, axis=-1, keepdims=True)
+        context = np.sum(weights[..., None] * history_values, axis=1)
+        features = np.concatenate(
+            (query_features, context, np.ones((state.shape[0], 1), dtype=np.float32)),
+            axis=-1,
+        )
+        correction = features @ self.correction_head[stage]
+        semantic, episodic = self.base_provider.step(state, token, stage)
+        if self.direct_hidden_correction:
+            semantic = semantic + correction[:, : self.state_dim]
+            episodic = episodic + correction[:, self.state_dim :]
+        else:
+            semantic = semantic + correction[:, : self.output_rank] @ self.base_provider.semantic_basis[stage]
+            episodic = episodic + correction[:, self.output_rank :] @ self.base_provider.episodic_basis[stage]
+        self._keys[stage] = history_keys
+        self._values[stage] = history_values
+        return np.asarray(semantic, dtype=np.float32), np.asarray(episodic, dtype=np.float32)
+
+    def metadata(self) -> dict[str, Any]:
+        return {
+            **self.metadata_payload,
+            "format": OPERATOR_PROVIDER_FORMAT,
+            "version": OPERATOR_PROVIDER_VERSION,
+            "provider_kind": self.provider_kind,
+            "state_dim": self.state_dim,
+            "num_stages": self.num_stages,
+            "output_rank": self.output_rank,
+            "key_dim": self.key_dim,
+            "value_dim": self.value_dim,
+            "query_width": self.query_width,
+            "correction_mode": "direct_hidden" if self.direct_hidden_correction else "pca_latent",
+            "base_provider_kind": self.base_provider.provider_kind,
+            "base_provider_metadata": self.base_provider.metadata(),
+            "learned": bool(self.metadata_payload.get("learned", True)),
+            "transformer_layers_loaded": False,
+        }
+
+    def save(self, path: str | Path) -> Path:
+        target = Path(path)
+        target.mkdir(parents=True, exist_ok=True)
+        arrays = {
+            "key_projection": self.key_projection,
+            "value_projection": self.value_projection,
+            "state_query_projection": self.state_query_projection,
+            "token_query_projection": self.token_query_projection,
+            "query_head": self.query_head,
+            "correction_head": self.correction_head,
+            "base_semantic_mean": self.base_provider.semantic_mean,
+            "base_semantic_basis": self.base_provider.semantic_basis,
+            "base_semantic_projection": self.base_provider.semantic_projection,
+            "base_episodic_mean": self.base_provider.episodic_mean,
+            "base_episodic_basis": self.base_provider.episodic_basis,
+            "base_episodic_projection": self.base_provider.episodic_projection,
+        }
+        inventory: dict[str, dict[str, Any]] = {}
+        for name, value in arrays.items():
+            file_path = target / f"{name}.npy"
+            np.save(file_path, value, allow_pickle=False)
+            inventory[file_path.name] = {
+                "bytes": file_path.stat().st_size,
+                "sha256": sha256_file(file_path),
+                "shape": list(value.shape),
+                "dtype": str(value.dtype),
+            }
+        manifest = self.metadata()
+        manifest["files"] = inventory
+        atomic_json(target / "manifest.json", manifest)
+        return target
+
+    @classmethod
+    def load(cls, path: str | Path) -> "StageCausalAttentionOperatorStreamProvider":
+        target = Path(path)
+        manifest = json.loads((target / "manifest.json").read_text(encoding="utf-8"))
+        if (
+            manifest.get("format") != OPERATOR_PROVIDER_FORMAT
+            or manifest.get("version") != OPERATOR_PROVIDER_VERSION
+            or manifest.get("provider_kind") != "stage_causal_attention_pca"
+        ):
+            raise ValueError("unsupported stage causal-attention provider")
+        files = manifest.get("files")
+        if not isinstance(files, dict):
+            raise ValueError("stage causal provider manifest has no file inventory")
+        arrays: dict[str, np.ndarray] = {}
+        for name, info in files.items():
+            file_path = target / name
+            if (
+                not file_path.is_file()
+                or file_path.stat().st_size != info.get("bytes")
+                or sha256_file(file_path) != info.get("sha256")
+            ):
+                raise ValueError(f"stage causal provider checksum mismatch: {name}")
+            arrays[Path(name).stem] = np.load(file_path, allow_pickle=False)
+        base = PCAOperatorStreamProvider(
+            semantic_mean=arrays.pop("base_semantic_mean"),
+            semantic_basis=arrays.pop("base_semantic_basis"),
+            semantic_projection=arrays.pop("base_semantic_projection"),
+            episodic_mean=arrays.pop("base_episodic_mean"),
+            episodic_basis=arrays.pop("base_episodic_basis"),
+            episodic_projection=arrays.pop("base_episodic_projection"),
+            metadata_payload=dict(manifest.get("base_provider_metadata", {})),
+        )
+        return cls(
+            base_provider=base,
+            **arrays,
+            metadata_payload={
+                key: value
+                for key, value in manifest.items()
+                if key not in {"files", "base_provider_metadata"}
+            },
+        )
+
+
 def _fit_stream(
     features: np.ndarray,
     outputs: np.ndarray,
@@ -1632,6 +1888,7 @@ def load_operator_stream_provider(path: str | Path) -> OperatorStreamProvider:
         "state_space_residual_pca": ResidualStateSpaceOperatorStreamProvider.load,
         "nonlinear_residual_pca": NonlinearResidualOperatorStreamProvider.load,
         "causal_attention_pca": CausalAttentionOperatorStreamProvider.load,
+        "stage_causal_attention_pca": StageCausalAttentionOperatorStreamProvider.load,
     }
     loader = loaders.get(kind)
     if loader is None:
@@ -1652,6 +1909,7 @@ __all__ = [
     "ResidualStateSpaceOperatorStreamProvider",
     "NonlinearResidualOperatorStreamProvider",
     "CausalAttentionOperatorStreamProvider",
+    "StageCausalAttentionOperatorStreamProvider",
     "load_operator_stream_provider",
     "fit_operator_stream_provider",
 ]
