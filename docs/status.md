@@ -267,6 +267,11 @@ sole blocker: terminal MSE improves to **0.1710317**, still **7.6x** above the
 **0.0225** threshold. Evidence:
 `reports/controller_provider_pca_2026-08-03/rank256_fullcorpus_screen.json`.
 
+The direct state-space alternative is also negative: a 256-wide memory with
+rank-64 stage heads reaches **0.2416596** after 20 CPU steps, worse than the
+PCA baseline. Its report is
+`reports/controller_provider_pca_2026-08-03/state_space_direct_memory256_screen.json`.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and

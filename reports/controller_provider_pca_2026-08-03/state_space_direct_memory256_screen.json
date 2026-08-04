@@ -1,0 +1,33 @@
+{
+  "experiment": "direct_state_space_provider_capacity_screen",
+  "status": "development_failure",
+  "training_trace": "work/controller_distillation/bitnet_train_8x16_b2",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "base_provider": "/tmp/provider_train64_rank64_randomized",
+  "architecture": {
+    "provider": "direct diagonal state-space operator heads",
+    "memory_dim": 256,
+    "projection_width": 128,
+    "output_rank": 64,
+    "steps": 20,
+    "batch_size": 8,
+    "learning_rate": 0.002,
+    "seed": 414,
+    "optimizer_device": "cpu",
+    "inference_device": "cpu",
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0
+  },
+  "validation": {
+    "initial_terminal_normalized_mse": 0.5126386881,
+    "final_terminal_normalized_mse": 0.2416595519,
+    "final_maximum_terminal_normalized_mse": 1.4413180351,
+    "protected_validation": true
+  },
+  "gate": {
+    "metric": "terminal_normalized_mse",
+    "threshold": 0.0225,
+    "passed": false
+  },
+  "decision": "reject; direct state-space heads are substantially worse than the rank64 PCA baseline at this bounded capacity and are not a promotion path"
+}

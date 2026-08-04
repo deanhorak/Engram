@@ -276,6 +276,13 @@ the gate. This rules out rank-64 truncation as the sole cause; the protected
 screen is preserved in
 `reports/controller_provider_pca_2026-08-03/rank256_fullcorpus_screen.json`.
 
+A direct state-space provider with 256 memory dimensions and rank-64 heads
+was also screened for 20 CPU steps. It improves its own untrained validation
+baseline from **0.5126387** to **0.2416596**, but is materially worse than the
+rank-64 PCA provider and fails the gate. This closes the “residual adapter
+placement” hypothesis for this capacity; evidence:
+`reports/controller_provider_pca_2026-08-03/state_space_direct_memory256_screen.json`.
+
 ## Native recurrent-controller implementation boundary
 
 The native token runtime now has a direct implementation of the schema-v3
@@ -419,7 +426,7 @@ boundary without silently enabling the policy in ordinary generation.
 | 1. Repository, inspection, fixtures, teacher traces, exact MLP decomposition, oracle top-K, tests | Complete | Build system, source inspection, teacher traces, exact SwiGLU/MLP decomposition, oracle experiments, and regression reports are present. |
 | 2. Semantic memory, practical routing, quantization, Python runtime, substituted-MLP evaluation | Protected promotion passed; opt-in only | Train-to-development causal replay, 512/2,048-position CPU scaling, frozen pool frontier, authenticated opt-in package generation, and the separately authorized protected rank-16/pool-6 replay pass. Protected aggregate: 100% top-1, hidden L2 0.009133, logit L2 0.004416, NLL delta −0.000460. The policy remains disabled by default and requires explicit package opt-in. |
 | 3. Attention analysis, local/recurrent/retrieval heads, hybrid episodic memory, attention substitution | Sustained quality gate passed; promotion pending | W128 full-context local attention with per-vector INT8 K/V and FP32 scales passes all frozen bands at 25% logical attention traffic on CPU. Deployable package policy integration, broader corpora, and end-to-end speedup remain. |
-| 4. Shared recurrent controller and layer-free Engram runtime | Partial; state-transition gate passed | The standalone CPU controller runtime replays exact semantic/episodic streams with zero decoder-layer calls and terminal normalized MSE 0.0000208009 on the held-out trajectory. The explicit learned provider seam and joint projection adaptation are implemented, but the best held-out terminal MSE is 0.1970640, so causal provider/controller promotion remains blocked. |
+| 4. Shared recurrent controller and layer-free Engram runtime | Partial; state-transition gate passed | The standalone CPU controller runtime replays exact semantic/episodic streams with zero decoder-layer calls and terminal normalized MSE 0.0000208009 on the held-out trajectory. The explicit learned provider seam and causal adaptation experiments are implemented, but the best held-out learned-provider terminal MSE is 0.1710317 (rank-256 full-corpus screen), so causal provider/controller promotion remains blocked. |
 | 5. Vocabulary/transition/correction artifacts, compiler, validation and CLI | Partial/usable | Native package generation, mapped weights, evaluator recurrent-correction dispatch, validation, greedy generation, and chat CLI work. Authenticated nonzero-controller package promotion remains gated. |
 | 6. Native C++ runtime, kernels, mapping, parity, generation, benchmarks | Partial/usable | CPU scalar/vector kernels, memory mapping, C ABI parity, native generation, and tests are operational. End-to-end long-context benchmarks and optimization remain. |
 | 7. Comprehensive evaluation, ablations, tuning, documentation, final report | In progress | Protected promotion and its documentation are complete. Broad model/task coverage, end-to-end performance tuning, ablations, and the reproducible final study remain. |
@@ -453,9 +460,11 @@ thresholds.
 4. Keep the exact operator-residual controller as the production boundary.
    The standalone controller-only replay now passes the state-transition
    threshold, but learned provider and joint adaptation arms remain far above
-   the causal threshold. The next M4 experiment must add temporal/context
-   features or a stronger joint provider/controller model and repeat the causal
-   split; isolated rank or epoch sweeps are closed.
+   the causal threshold. Rank-256, persistent-memory, full-corpus, and smooth
+   scheduled-sampling screens are now also negative. The next M4 experiment
+   must add an explicit context representation or a stronger jointly trained
+   provider/controller model and repeat the causal split; isolated rank or
+   epoch sweeps are closed.
 
 ## Verification
 
