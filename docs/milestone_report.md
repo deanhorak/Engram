@@ -155,6 +155,17 @@ fails the **0.0225** causal gate. The resumable artifact is
 `work/controller_provider_state_space_residual_train64_ridge1_40`; report:
 `reports/controller_provider_pca_2026-08-03/residual_state_space_train64_ridge1_40.json`.
 
+Keeping that λ=1 provider fixed, correction-only adaptation of the factorized
+controller (`step_scale`, stage embeddings, low-rank adapters, and operator
+scales) reaches held-out terminal normalized MSE **0.1759220** after 50 CPU
+steps (training **0.1336495**). Jointly adapting provider projections is
+worse (**0.1810400**) and is rejected. The command is
+`engram adapt-controller-correction`; the resulting nonzero controller is
+retained as evaluator-only evidence in
+`work/controller_provider_ridge1_controller_correction50` and
+`reports/controller_provider_pca_2026-08-03/controller_correction_ridge1_50.json`.
+It does not pass the **0.0225** promotion gate.
+
 ## Native recurrent-controller implementation boundary
 
 The native token runtime now has a direct implementation of the schema-v3

@@ -172,6 +172,18 @@ gate. The durable artifact and reports are
 `reports/controller_provider_pca_2026-08-03/residual_state_space_train64_ridge1_40.json`;
 the provider remains unpromoted.
 
+With the λ=1 provider fixed, a separate correction-only adaptation unfreezes
+the factorized controller's `step_scale`, stage embeddings, low-rank adapters,
+and operator scales while leaving provider projections untouched. Fifty
+free-running CPU steps reduce held-out terminal normalized MSE to **0.1759220**
+(training **0.1336495**), better than provider-only adaptation; jointly
+unfreezing provider projections regresses to **0.1810400** and is rejected.
+The resumable command is `engram adapt-controller-correction`, and the
+development artifact/report are
+`work/controller_provider_ridge1_controller_correction50` and
+`reports/controller_provider_pca_2026-08-03/controller_correction_ridge1_50.json`.
+The nonzero correction remains evaluator-only and does not pass promotion.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and

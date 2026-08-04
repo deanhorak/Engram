@@ -138,6 +138,7 @@ from engram.runtime.validation import benchmark_runtime, validate_package
 from engram.evaluation.end_to_end import evaluate_end_to_end
 from engram.evaluation.controller_gate import evaluate_controller_gate
 from engram.training import (
+    adapt_controller_correction_for_provider,
     build_distillation_corpus,
     build_distillation_tail_holdout,
     capture_native_bitnet_controller_traces,
@@ -1045,6 +1046,21 @@ def _parser() -> argparse.ArgumentParser:
     distill_state_space_residual.add_argument("--learning-rate", type=float, default=2e-3)
     distill_state_space_residual.add_argument("--seed", type=int, default=91)
     distill_state_space_residual.add_argument("--device", default="cpu")
+
+    adapt_controller = commands.add_parser(
+        "adapt-controller-correction",
+        help="adapt only controller correction tensors over fixed provider streams",
+    )
+    adapt_controller.add_argument("--provider", required=True, type=Path)
+    adapt_controller.add_argument("--controller", required=True, type=Path)
+    adapt_controller.add_argument("--trace", required=True, type=Path)
+    adapt_controller.add_argument("--validation-trace", type=Path)
+    adapt_controller.add_argument("--out", required=True, type=Path)
+    adapt_controller.add_argument("--steps", type=int, default=50)
+    adapt_controller.add_argument("--batch-size", type=int, default=8)
+    adapt_controller.add_argument("--learning-rate", type=float, default=2e-3)
+    adapt_controller.add_argument("--seed", type=int, default=55)
+    adapt_controller.add_argument("--device", default="cpu")
 
     evaluate_operator_provider = commands.add_parser(
         "evaluate-controller-provider",
@@ -2825,6 +2841,20 @@ def main(argv: Sequence[str] | None = None) -> int:
             steps=args.steps,
             batch_size=args.batch_size,
             memory_dim=args.memory_dim,
+            learning_rate=args.learning_rate,
+            seed=args.seed,
+            device=args.device,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "adapt-controller-correction":
+        result = adapt_controller_correction_for_provider(
+            args.provider,
+            args.controller,
+            args.trace,
+            args.out,
+            validation_trace=args.validation_trace,
+            steps=args.steps,
+            batch_size=args.batch_size,
             learning_rate=args.learning_rate,
             seed=args.seed,
             device=args.device,

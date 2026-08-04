@@ -177,6 +177,11 @@ Forty free-running CPU steps reach held-out terminal normalized MSE
 `engram distill-state-space-residual-provider`, but remains outside the
 authenticated package until the **0.0225** causal gate is met.
 
+Correction-only adaptation over the fixed λ=1 provider reaches held-out
+terminal normalized MSE **0.1759220** after 50 CPU steps. It is available as
+`engram adapt-controller-correction`; the nonzero controller is retained for
+evaluation only and is not an authenticated promotion artifact.
+
 ### Milestone 2 ledger
 
 ### Current Milestone 3 attention boundary (2026-08-03)

@@ -594,8 +594,156 @@ def distill_state_space_residual_provider(
     return report
 
 
+def adapt_controller_correction_for_provider(
+    provider: str | Path,
+    controller: str | Path,
+    trace: str | Path,
+    out: str | Path,
+    *,
+    validation_trace: str | Path | None = None,
+    steps: int = 50,
+    batch_size: int = 8,
+    learning_rate: float = 2e-3,
+    seed: int = 55,
+    device: str = "cpu",
+) -> dict[str, Any]:
+    """Adapt only the factorized controller correction over fixed provider streams."""
+
+    if steps < 0 or batch_size <= 0 or learning_rate <= 0.0:
+        raise ValueError("steps, batch_size, and learning_rate must be positive")
+    torch, TorchFactorizedController = _torch_controller_class()
+    if device.startswith("cuda") and not torch.cuda.is_available():
+        raise RuntimeError("controller correction CUDA training requested but unavailable")
+    if not device.startswith("cuda"):
+        torch.set_num_threads(min(4, torch.get_num_threads()))
+    torch.manual_seed(seed)
+    if device.startswith("cuda"):
+        torch.cuda.manual_seed_all(seed)
+    training = _load_trajectories(trace)
+    validation = _load_trajectories(validation_trace) if validation_trace else training
+    loaded_provider = PCAOperatorStreamProvider.load(provider)
+    controller_obj = FactorizedRecurrentController.load(controller)
+    if loaded_provider.state_dim != training.hidden_size or loaded_provider.num_stages != training.num_stages:
+        raise ValueError("provider and trace dimensions differ")
+    if controller_obj.state_dim != training.hidden_size or controller_obj.num_stages != training.num_stages:
+        raise ValueError("controller and trace dimensions differ")
+    if validation.hidden_size != training.hidden_size or validation.num_stages != training.num_stages:
+        raise ValueError("validation trace dimensions differ")
+    module = TorchFactorizedController(controller_obj).to(device).eval()
+    for parameter in module.parameters():
+        parameter.requires_grad_(False)
+    trainable_names = (
+        "step_scale",
+        "adapter_down",
+        "adapter_up",
+        "stage_embeddings",
+        "operator_residual_scale",
+    )
+    trainable = []
+    for name in trainable_names:
+        parameter = getattr(module, name)
+        parameter.requires_grad_(True)
+        trainable.append(parameter)
+    tensors = {
+        name: torch.as_tensor(
+            np.array(getattr(loaded_provider, name), copy=True),
+            dtype=torch.float32,
+            device=device,
+        )
+        for name in (
+            "semantic_mean",
+            "semantic_basis",
+            "semantic_projection",
+            "episodic_mean",
+            "episodic_basis",
+            "episodic_projection",
+        )
+    }
+    optimizer = torch.optim.AdamW(trainable, lr=learning_rate, weight_decay=1e-4)
+
+    def rollout(data, indices):
+        target = torch.as_tensor(data.teacher_states[indices], dtype=torch.float32, device=device)
+        token = torch.as_tensor(data.token_embedding[indices], dtype=torch.float32, device=device)
+        state = target[:, 0]
+        losses = []
+        for stage in range(data.num_stages):
+            features = torch.cat((state, token, torch.ones((len(indices), 1), device=device)), dim=-1)
+            semantic = tensors["semantic_mean"][stage] + (features @ tensors["semantic_projection"][stage]) @ tensors["semantic_basis"][stage]
+            episodic = tensors["episodic_mean"][stage] + (features @ tensors["episodic_projection"][stage]) @ tensors["episodic_basis"][stage]
+            state = module.step(state, torch.cat((token, semantic, episodic), dim=-1), stage)
+            rms = target[:, stage + 1].square().mean(dim=-1, keepdim=True).sqrt().clamp_min(1e-4)
+            losses.append(((state - target[:, stage + 1]) / rms).square().mean())
+        return torch.stack(losses).mean(), state
+
+    def evaluate(data):
+        values = []
+        stage_values = np.zeros(data.num_stages, dtype=np.float64)
+        records = 0
+        with torch.inference_mode():
+            for start in range(0, data.records, batch_size):
+                indices = np.arange(start, min(start + batch_size, data.records))
+                _, state = rollout(data, indices)
+                target = torch.as_tensor(data.teacher_states[indices, 1:], dtype=torch.float32, device=device)
+                # The rollout state is terminal; the stage trajectory is
+                # recomputed only for the scalar gate to keep this evaluator
+                # consistent with evaluate-controller-provider.
+                terminal_rms = target[:, -1].square().mean(dim=-1).clamp_min(1e-8)
+                values.append((state - target[:, -1]).square().mean(dim=-1).div(terminal_rms).cpu().numpy())
+                records += len(indices)
+        terminal = np.concatenate(values)
+        return {
+            "terminal_normalized_mse": float(terminal.mean()),
+            "maximum_terminal_normalized_mse": float(terminal.max()),
+            "records": records,
+        }
+
+    initial_validation = evaluate(validation)
+    initial_training = evaluate(training)
+    started = time.perf_counter()
+    history = []
+    rng = np.random.default_rng(seed)
+    for step in range(steps):
+        indices = rng.choice(training.records, size=batch_size, replace=training.records < batch_size)
+        optimizer.zero_grad(set_to_none=True)
+        loss, _ = rollout(training, indices)
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(trainable, max_norm=1.0)
+        optimizer.step()
+        if step == 0 or step == steps - 1 or (step + 1) % max(steps // 5, 1) == 0:
+            history.append({"step": step + 1, "loss": float(loss.detach().cpu())})
+    final_validation = evaluate(validation)
+    final_training = evaluate(training)
+    adapted = module.to("cpu").export()
+    target = Path(out)
+    adapted.save(target)
+    report = {
+        "experiment": "adapt_controller_correction_for_provider",
+        "status": "development_result",
+        "provider": str(Path(provider).resolve()),
+        "provider_sha256": _directory_sha256(Path(provider).resolve()),
+        "controller": str(Path(controller).resolve()),
+        "adapted_controller": str(target.resolve()),
+        "adapted_controller_sha256": _directory_sha256(target),
+        "training_trace": str(Path(trace).resolve()),
+        "validation_trace": str(Path(validation_trace).resolve()) if validation_trace else None,
+        "optimizer_device": device,
+        "inference_device": "cpu",
+        "transformers_model_loaded": False,
+        "decoder_layer_forward_calls": 0,
+        "trainable_parameters": list(trainable_names),
+        "training": {"steps": steps, "batch_size": batch_size, "learning_rate": learning_rate, "seed": seed, "elapsed_seconds": time.perf_counter() - started, "history": history, "initial": initial_training, "final": final_training},
+        "initial_validation": initial_validation,
+        "validation": final_validation,
+        "gate": {"metric": "terminal_normalized_mse", "threshold": 0.0225, "actual": final_validation["terminal_normalized_mse"], "passed": bool(final_validation["terminal_normalized_mse"] <= 0.0225), "layer_free_cpu_replay": True, "end_to_end_generation": False},
+    }
+    target.parent.mkdir(parents=True, exist_ok=True)
+    atomic_json(target.parent / f"{target.name}_training_report.json", report)
+    return report
+
+
 __all__ = [
     "joint_distill_operator_provider",
     "distill_state_space_operator_provider",
     "distill_state_space_residual_provider",
+    "adapt_controller_correction_for_provider",
 ]

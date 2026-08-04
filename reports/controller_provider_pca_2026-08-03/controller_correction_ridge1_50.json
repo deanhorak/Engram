@@ -1,0 +1,83 @@
+{
+  "adapted_controller": "/tmp/controller_correction50",
+  "adapted_controller_sha256": "db0fb3607b77d86baabece0bd499c3c7d12295161e3906e86a8a1a2bc98e7672",
+  "controller": "/home/dean/repos/engram/work/controller_distillation/bitnet_rank128_operator_residual_1024x256_exact/controller",
+  "decoder_layer_forward_calls": 0,
+  "experiment": "adapt_controller_correction_for_provider",
+  "gate": {
+    "actual": 0.1759219765663147,
+    "end_to_end_generation": false,
+    "layer_free_cpu_replay": true,
+    "metric": "terminal_normalized_mse",
+    "passed": false,
+    "threshold": 0.0225
+  },
+  "inference_device": "cpu",
+  "initial_validation": {
+    "maximum_terminal_normalized_mse": 1.3839330673217773,
+    "records": 256,
+    "terminal_normalized_mse": 0.17893444001674652
+  },
+  "optimizer_device": "cpu",
+  "provider": "/tmp/provider64_ridge1",
+  "provider_sha256": "e3aabf94133628770e1685e6dc1af74d0143a3ae94ed6274392ba3bf909ff4b3",
+  "status": "development_result",
+  "trainable_parameters": [
+    "step_scale",
+    "adapter_down",
+    "adapter_up",
+    "stage_embeddings",
+    "operator_residual_scale"
+  ],
+  "training": {
+    "batch_size": 8,
+    "elapsed_seconds": 28.575787415000377,
+    "final": {
+      "maximum_terminal_normalized_mse": 0.8437364101409912,
+      "records": 1024,
+      "terminal_normalized_mse": 0.13364949822425842
+    },
+    "history": [
+      {
+        "loss": 0.5043357014656067,
+        "step": 1
+      },
+      {
+        "loss": 0.6638163924217224,
+        "step": 10
+      },
+      {
+        "loss": 0.6570424437522888,
+        "step": 20
+      },
+      {
+        "loss": 0.6720930933952332,
+        "step": 30
+      },
+      {
+        "loss": 0.5973265171051025,
+        "step": 40
+      },
+      {
+        "loss": 0.5451593399047852,
+        "step": 50
+      }
+    ],
+    "initial": {
+      "maximum_terminal_normalized_mse": 0.8772366642951965,
+      "records": 1024,
+      "terminal_normalized_mse": 0.13527178764343262
+    },
+    "learning_rate": 0.002,
+    "seed": 55,
+    "steps": 50
+  },
+  "training_trace": "/home/dean/repos/engram/work/controller_distillation/bitnet_train_64x16_b4",
+  "transformers_model_loaded": false,
+  "validation": {
+    "maximum_terminal_normalized_mse": 1.3778327703475952,
+    "records": 256,
+    "terminal_normalized_mse": 0.1759219765663147
+  },
+  "validation_trace": "/home/dean/repos/engram/work/controller_distillation/bitnet_validation_16x16_b4"
+}

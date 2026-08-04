@@ -25,5 +25,25 @@
     "transformers_model_loaded": false,
     "decoder_layer_forward_calls": 0,
     "decision": "retain as a resumable artifact; still far above the causal gate"
+  },
+  "controller_correction": {
+    "base_ridge": 1.0,
+    "steps": 50,
+    "validation_terminal_normalized_mse": 0.1759219766,
+    "training_terminal_normalized_mse": 0.1336494982,
+    "optimizer_device": "cpu",
+    "trainable_parameters": [
+      "step_scale",
+      "adapter_down",
+      "adapter_up",
+      "stage_embeddings",
+      "operator_residual_scale"
+    ],
+    "decision": "retain evaluator-only; promotion gate fails"
+  },
+  "joint_provider_controller_rejection": {
+    "steps": 50,
+    "validation_terminal_normalized_mse": 0.1810399890,
+    "decision": "reject"
   }
 }
