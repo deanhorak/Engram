@@ -2530,6 +2530,12 @@ causal corpus.
   time remains flat. The current bottleneck is therefore the native attention
   path at this sequence length, not proof of an overall CPU advantage.
 
+- The source-independent authenticated DIP package was revalidated through the
+  Python CLI: all 18 files and checksums passed with zero errors.  This closes
+  the current package-validation evidence gap for Milestone 5; nonzero learned
+  controller promotion remains separately gated.  Evidence:
+  `reports/native_bitnet_package_validation_2026-08-04.json`.
+
 ## 2026-08-04: auxiliary capture confirms corpus-cardinality boundary
 
 - The next sequence-aware experiment requested a 16-sequence, 16-token

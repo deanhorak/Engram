@@ -1,0 +1,13 @@
+{
+  "experiment": "native_bitnet_package_validation",
+  "status": "complete",
+  "command": "PYTHONPATH=src python -m engram.cli validate --model work/native_bitnet/model.engram-bitnet-dip",
+  "package": "work/native_bitnet/model.engram-bitnet-dip",
+  "package_manifest_sha256": "707bbe069ef6892e9bfe98258f3289e28af15a400922e950c4386f56dd26926",
+  "format": "engram-native-bitnet",
+  "version": 1,
+  "file_count": 18,
+  "source_independent": true,
+  "valid": true,
+  "errors": []
+}

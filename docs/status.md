@@ -2051,6 +2051,11 @@ test.
 This strengthens the Milestone 6 implementation evidence but does not change
 the learned-controller quality gate or claim an AVX2 path on this host.
 
+The source-independent authenticated DIP package also passes the Python
+validator: 18 files, format `engram-native-bitnet`, version 1, and zero errors.
+The machine-readable record is
+`reports/native_bitnet_package_validation_2026-08-04.json`.
+
 An attempted 16-sequence independent auxiliary capture using the same
 low-memory native-projection path found only eight records in the authorized
 JSONL input and completed all eight (128 records).  The capture is complete but
