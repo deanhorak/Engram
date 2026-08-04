@@ -54,7 +54,10 @@ or teacher-forcing sweeps are closed.  A joint arm that unfroze only step
 scale, stage embeddings, and low-rank controller adapters reached **0.1714471**,
 effectively unchanged.  Unfreezing every controller tensor reaches
 **0.1714721**, also a null result; the next experiment must use a materially
-different model or expand the independent causal corpus.
+different model or expand the independent causal corpus.  Repeating the
+latent stage-local fit with all 64 training sequences reaches **0.1707001**,
+which is a modest data effect but still fails decisively; the rank-256
+full-corpus arm remains best at **0.1692925**.
 
 The trace contract now has an opt-in causal extension: `--causal-top-k` stores
 teacher top-k logits and next-token IDs, while `distill-controller` can consume
@@ -338,8 +341,9 @@ hashes are in
 `reports/controller_provider_pca_2026-08-03/stage_causal_attention_screens.json`.
 This closes provider-only cache/rank sweeps; joint controller/provider
 training at the small-adapter capacity was screened (0.1714471), followed by
-full-controller training (0.1714721); neither is sufficient.  A materially
-different model or independent causal corpus is required next.
+full-controller training (0.1714721), followed by the full 64-sequence latent
+screen (0.1707001); none is sufficient.  A materially different model or
+independent causal corpus is required next.
 
 ## Native recurrent-controller implementation boundary
 

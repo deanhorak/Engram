@@ -114,7 +114,23 @@
       "validation_terminal_normalized_mse": 0.17147210240364075,
       "maximum_validation_terminal_normalized_mse": 1.353813886642456,
       "relative_improvement": 0.02903102
+    },
+    {
+      "name": "stage_local_latent_rank64_fullcorpus_20steps_tf10",
+      "provider": "/tmp/stage_fullcorpus_20",
+      "provider_sha256": "a56661d9a8b855834ca95bdb374e56b1b1048fc7957b16fde0685aa50ff45b74",
+      "training_trace": "work/controller_distillation/bitnet_train_64x16_b4",
+      "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+      "key_dim": 16,
+      "value_dim": 32,
+      "query_width": 32,
+      "teacher_forcing_steps": 10,
+      "free_running_steps": 20,
+      "initial_validation_terminal_normalized_mse": 0.17670181393623352,
+      "validation_terminal_normalized_mse": 0.1707000732421875,
+      "maximum_validation_terminal_normalized_mse": 1.3491621017456055,
+      "relative_improvement": 0.03399951
     }
   ],
-  "decision": "Stage-local causal K/V memory is a valid CPU-serializable implementation and gives a small latent-rank improvement. Jointly training only small controller adapters changes 0.1714502 to 0.1714471, and unfreezing every controller tensor changes it to 0.1714721; neither is material. Every independent screen remains far above the fixed promotion threshold; direct hidden corrections overfit or destabilize the protected split. Do not promote a learned provider or claim Milestone 4 causal completion."
+  "decision": "Stage-local causal K/V memory is a valid CPU-serializable implementation and gives a small latent-rank improvement. Using all 64 training sequences improves the rank-64 screen to 0.1707001, but the full-corpus rank-256 screen remains best at 0.1692925. Jointly training only small controller adapters changes 0.1714502 to 0.1714471, and unfreezing every controller tensor changes it to 0.1714721; neither is material. Every independent screen remains far above the fixed promotion threshold; direct hidden corrections overfit or destabilize the protected split. Do not promote a learned provider or claim Milestone 4 causal completion."
 }

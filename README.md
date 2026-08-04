@@ -206,8 +206,10 @@ Jointly unfreezing the controller's step scale, stage embeddings, and
 low-rank adapters changes the latent result only to **0.1714471**, so that
 small co-adaptation arm is also closed. Unfreezing every controller tensor
 reaches **0.1714721**, also a null result. The provider/controller class is
-closed for this corpus; the next justified attempt requires a materially
-different model or an independent causal corpus.
+closed for this model. Repeating the latent screen with all 64 training
+sequences reaches **0.1707001**, still far above the gate; the full-corpus
+rank-256 arm remains best at **0.1692925**. The next justified attempt requires
+a materially different model or an independent causal corpus.
 
 ```bash
 PYTHONPATH=src python -m engram.cli distill-causal-attention-provider \

@@ -2372,4 +2372,9 @@
   the protected validation split, another null result.  The entire
   stage-local provider/controller class is now closed for this corpus; further
   progress requires materially different model capacity or an independent
-  causal corpus.
+causal corpus.
+- Reusing all 64 training sequences (1,024 records) with the same stage-local
+  latent architecture improves held-out terminal MSE to **0.1707001**.  This
+  is a modest data effect, but it remains 7.59× above the fixed threshold and
+  does not alter the decision: the full-corpus rank-256 arm at **0.1692925**
+  remains the frontier, and a materially different model or corpus is needed.

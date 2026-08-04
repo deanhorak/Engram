@@ -299,8 +299,11 @@ adapters changes the rank-64 result only to **0.1714471**, so small-adapter
 co-adaptation is also closed.  Further cache-shape, rank, and small-adapter
 sweeps are not justified.  Unfreezing every controller tensor changes the
 result to **0.1714721**, also a null result.  The provider/controller screen
-class is therefore closed for this corpus; only a materially different model
-or an independently sourced causal corpus is justified next.
+class is therefore closed for this model.  Repeating the latent screen with
+all 64 training sequences improves it to **0.1707001**, but remains far above
+the gate; the full-corpus rank-256 arm remains best at **0.1692925**.  Only a
+materially different model or an independently sourced causal corpus is
+justified next.
 
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
