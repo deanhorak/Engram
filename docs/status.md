@@ -184,6 +184,16 @@ development artifact/report are
 `reports/controller_provider_pca_2026-08-03/controller_correction_ridge1_50.json`.
 The nonzero correction remains evaluator-only and does not pass promotion.
 
+A final randomized high-rank screen closes the capacity-only hypothesis. A
+stage-wise rank-64 separate-stream provider reaches held-out terminal
+normalized MSE **0.1767018** (mean **0.7871890**), only marginally better than
+the λ=1 rank-16 provider (**0.1789347**) and still far above **0.0225**. The
+matched combined-transition arm reaches **0.5177052** and is rejected. The
+screen is CPU-only, transformer-free, and preserved in
+`reports/controller_provider_pca_2026-08-03/high_rank_stream_screen.json`.
+Further rank sweeps are closed; M4 now requires a different causal objective
+or provider/controller architecture.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and

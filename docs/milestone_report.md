@@ -166,6 +166,20 @@ retained as evaluator-only evidence in
 `reports/controller_provider_pca_2026-08-03/controller_correction_ridge1_50.json`.
 It does not pass the **0.0225** promotion gate.
 
+The remaining rank-only hypothesis is now closed. A randomized stage-wise
+rank-64 provider fit on the same 64-sequence training trace reaches held-out
+terminal normalized MSE **0.1767018** (mean **0.7871890**, maximum stage
+**1.5251367**). This is only a marginal improvement over the rank-16 λ=1
+result (**0.1789347**) and remains 7.85 times above the **0.0225** gate. A
+matched rank-64 provider trained on the normalized combined transition is
+worse (terminal **0.5177052**), confirming that the teacher's
+semantic/episodic decomposition should be kept. The screen used no
+Transformers model or decoder-layer calls and is recorded in
+`reports/controller_provider_pca_2026-08-03/high_rank_stream_screen.json`.
+Output rank alone is not a defensible route to M4 promotion; the next attempt
+must change the causal training signal or replace the provider/controller
+architecture.
+
 ## Native recurrent-controller implementation boundary
 
 The native token runtime now has a direct implementation of the schema-v3
@@ -349,6 +363,6 @@ thresholds.
 
 ## Verification
 
-- Python: 1,112 passed, 1 skipped (CUDA unavailable on the test runner).
+- Python: 1,128 passed, 1 skipped (CUDA unavailable on the test runner).
 - Native CTest: 20/20 passed.
 - Lint and `git diff --check`: passed.

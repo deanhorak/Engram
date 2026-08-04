@@ -1,0 +1,35 @@
+{
+  "experiment": "high_rank_randomized_operator_stream_screen",
+  "status": "development_failure",
+  "training_trace": "work/controller_distillation/bitnet_train_64x16_b4",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "controller_gate": {
+    "metric": "terminal_normalized_mse",
+    "threshold": 0.0225
+  },
+  "method": {
+    "fit": "stage-wise randomized truncated SVD plus dual ridge regression",
+    "features": "teacher current state, token embedding, bias",
+    "rollout": "free-running exact operator-residual controller",
+    "rank": 64,
+    "randomized_oversampling": 8,
+    "power_iterations": 1,
+    "optimizer_device": "cpu",
+    "inference_device": "cpu",
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0
+  },
+  "separate_streams": {
+    "validation_mean_normalized_mse": 0.7871890028,
+    "validation_terminal_normalized_mse": 0.1767018139,
+    "validation_maximum_stage_normalized_mse": 1.5251367092,
+    "decision": "reject; marginally better terminal error than the rank-16 lambda-1 provider, but far above the causal gate"
+  },
+  "combined_delta_control": {
+    "validation_mean_normalized_mse": 0.8938605289,
+    "validation_terminal_normalized_mse": 0.5177052021,
+    "validation_maximum_stage_normalized_mse": 1.1585165262,
+    "decision": "reject; learning the normalized transition directly is substantially worse than preserving the teacher semantic/episodic decomposition"
+  },
+  "interpretation": "Increasing output rank does not remove the free-running provider error. The next M4 attempt must change the training signal or provider/controller architecture, not repeat a rank-only sweep."
+}
