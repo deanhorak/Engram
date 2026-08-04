@@ -207,7 +207,7 @@ for a larger frozen Qwen3 causal trace and a teacher-family comparison against
 the failed BitNet provider—not another isolated provider rank sweep.
 
 The Qwen3 adapter is covered by the full current regression checkpoint:
-**1,140 Python tests passed, 1 skipped**, and native CTest **20/20 passed**.
+**1,144 Python tests passed, 1 skipped**, and native CTest **20/20 passed**.
 
 That causal comparison is now complete. The new `trace-hf-controller` command
 captured all 28 Qwen3 stages for disjoint 8-sequence/128-record training and

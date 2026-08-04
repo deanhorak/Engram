@@ -2,6 +2,24 @@
 
 Status date: 2026-08-04
 
+## Practical hybrid direction
+
+The project has stopped treating the unqualified layer-free learned provider
+as the default product path. The practical architecture now keeps a
+conventional quantized host model responsible for hidden states and token
+generation, while Engram runs as a CPU retrieval sidecar. `engram chat-hybrid`
+and `engram benchmark-hybrid` send bounded, provenance-tagged JSONL memory to
+an OpenAI-compatible endpoint such as a local `llama.cpp` server. Baseline and
+augmented modes use the same host, allowing controlled latency/usage and
+task-quality comparison.
+
+This is a product-direction pivot, not a new semantic or Milestone 4 gate
+result. The first sidecar uses deterministic hashed lexical retrieval and
+reports `quality_claim: not_established`; a frozen embedding index and an
+independent answer rubric are required before claiming utility. The original
+layer-free learned-provider gate remains a research boundary and is not
+required for this hybrid deployment path.
+
 ## Alternative dense-teacher boundary (Qwen3, 2026-08-04)
 
 The protected learned-provider gate remains failed, and the pinned WikiText-2
@@ -32,7 +50,7 @@ runtime exists. The full structural record is
 `reports/qwen3_teacher_trace_2026-08-04.json`.
 
 The adapter and Qwen3 structural test additions leave the full regression
-suite clean: **1,140 Python tests passed, 1 skipped**, and native CTest remains
+suite clean: **1,144 Python tests passed, 1 skipped**, and native CTest remains
 **20/20** (27.50 seconds). The one skip is the pre-existing CUDA-only query
 feature test on this host.
 
@@ -634,15 +652,21 @@ thresholds.
 
 ## Next development order
 
-1. Keep rank-16/pool-6 as the frozen research point: pool 4 is below the
+1. Freeze a host model, prompt set, memory JSONL, and task rubric, then run
+   `benchmark-hybrid --mode both` against the same OpenAI-compatible endpoint.
+   Do not promote retrieval unless answer quality is non-inferior and its
+   added context/latency cost is measured.
+2. If lexical retrieval is useful, replace the hashing encoder with a frozen
+   semantic embedding index and repeat the same baseline/augmented protocol.
+3. Keep rank-16/pool-6 as the frozen research point: pool 4 is below the
    desired recall margin and higher ranks do not materially improve it.
-2. If the frontier remains near a 1% total-read reduction, keep the selector
+4. If the frontier remains near a 1% total-read reduction, keep the selector
    as a validated research path and prioritize fused projection/MLP kernels or
    a more aggressive learned residual selector.
-3. The protected replay and authenticated opt-in package boundary now pass.
+5. The protected replay and authenticated opt-in package boundary now pass.
    Keep native defaults selector-disabled while deciding whether to implement
    full runtime policy consumption and broader end-to-end benchmarking.
-4. Keep the exact operator-residual controller as the production boundary.
+6. Keep the exact operator-residual controller as the production boundary.
    The standalone controller-only replay passes the state-transition
    threshold, but learned provider and joint adaptation arms remain far above
    the causal threshold. Rank-256, persistent-memory, stage-local K/V,
@@ -656,7 +680,7 @@ thresholds.
 
 ## Verification
 
-- Python: 1,140 passed, 1 skipped (the CUDA-only query feature test is
+- Python: 1,144 passed, 1 skipped (the CUDA-only query feature test is
   unavailable on this host).
 - Native CTest: 20/20 passed outside the sandbox in 27.50 s (including the
   native C ABI lifecycle test).
