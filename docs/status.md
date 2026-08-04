@@ -2018,3 +2018,10 @@ build: **20/20 tests passed** in 26.94 s, including the 26.81 s C ABI lifecycle
 test.
 This strengthens the Milestone 6 implementation evidence but does not change
 the learned-controller quality gate or claim an AVX2 path on this host.
+
+An attempted 16-sequence independent auxiliary capture using the same
+low-memory native-projection path reached four complete sequences (64 records)
+before host-level termination.  Its partial manifest is recorded in
+`reports/controller_provider_pca_2026-08-03/auxiliary_capture_16_screen.json`;
+it is explicitly incomplete and has no quality score.  This is a resource
+boundary, not evidence for or against the M4 gate.

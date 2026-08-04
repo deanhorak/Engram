@@ -1,0 +1,18 @@
+{
+  "experiment": "auxiliary_native_projection_capture_16x16",
+  "status": "host_terminated_partial_capture",
+  "model": "work/native_bitnet/model.engram-bitnet",
+  "dataset": "/tmp/engram_aux_bitnet_fineweb_train.jsonl",
+  "dataset_sha256": "51f5fe5e1df729be0f9bebf6fc09b6d5bc2dd55eef79d3249a06b5d526e19fe9",
+  "requested_samples": 16,
+  "max_tokens": 16,
+  "threads": 4,
+  "native_projections": true,
+  "completed_samples": 4,
+  "completed_records": 64,
+  "trace": "/tmp/bitnet_aux_trace_train16_native_proj",
+  "partial_manifest_sha256": "e48f85e61f3e3a8f82ad7ac91b0f6ccbce5c79205705fd924303179d4cb051d5",
+  "manifest_complete": false,
+  "quality_evaluated": false,
+  "decision": "resource_boundary_no_promotion_claim"
+}

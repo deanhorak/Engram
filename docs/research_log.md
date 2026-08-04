@@ -2504,3 +2504,19 @@ causal corpus.
 - The result closes the current native-test verification gap for Milestone 6;
   AVX2 specialization, lower-memory packaging, longer generation sweeps, and
   an apples-to-apples `llama.cpp` performance study remain open.
+
+## 2026-08-04: larger auxiliary capture hits host boundary
+
+- The next sequence-aware experiment requested a 16-sequence, 16-token
+  independent BitNet trace using the native-projection capture path.  The
+  source-compatible non-DIP package was used because the DIP package is a
+  token-runtime artifact and correctly rejects the Python trace hook.
+- Four sequences (64 records) completed before host-level termination.  The
+  partial manifest is checksummed at
+  `e48f85e61f3e3a8f82ad7ac91b0f6ccbce5c79205705fd924303179d4cb051d5` and is
+  marked `complete: false`; no provider was fitted and no quality number was
+  produced.
+- Decision: do not treat the partial capture as corpus evidence.  A larger
+  independent causal corpus remains the justified M4 requirement, but this
+  host cannot complete it through the current teacher loader without a further
+  low-memory export/capture redesign.
