@@ -1,0 +1,84 @@
+{
+  "experiment": "qwen3_joint_stage_causal_provider_controller_screen",
+  "date": "2026-08-04",
+  "status": "architecture_improved_but_gate_failed",
+  "decision": "retain_the_stage_causal_arm_as_the_best_qwen3_provider_screen_but_do_not_promote",
+  "source": {
+    "repo": "Qwen/Qwen3-0.6B",
+    "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "model_hash": "c1c0f97824fd775a6f100741fa5ad93ae637a36a69dbff37b8d4597781f1b9ae"
+  },
+  "protocol": {
+    "training_trace_manifest_sha256": "251a785f4ab6fcf04a2067a75a63af742cda15f8656e16a500c39ece216f0341",
+    "validation_trace_manifest_sha256": "a45bde750a4a5dc84d0257e6dbdac908f2b871c759fc85694f8a3b787dc41f0b",
+    "training_sequences": 8,
+    "validation_sequences": 8,
+    "positions_per_sequence": 16,
+    "training_records": 128,
+    "validation_records": 128,
+    "layers": 28,
+    "device": "cpu",
+    "causal_top_k": 32,
+    "causal_weight": 0.25,
+    "key_dim": 16,
+    "value_dim": 32,
+    "query_width": 32,
+    "output_rank": 16,
+    "train_controller_correction": true,
+    "direct_hidden_correction": false,
+    "teacher_forcing_steps": 8
+  },
+  "baseline": {
+    "provider": "rank16_state_token_pca",
+    "terminal_normalized_mse": 0.4191557466983795,
+    "threshold": 0.0225
+  },
+  "arms": [
+    {
+      "steps": 20,
+      "seed": 509,
+      "training_report_sha256": "6baca2d99b78f3d1fd42535fc8ee288d264bca2e864863e2d09ab12f31120274",
+      "evaluation_report_sha256": "bdfe53e9edad403e5179649a3a586256731e3618041e1e8b3053cb1002c62f03",
+      "provider_directory_sha256": "c74349a5f9a45d657691ac639eb0bb0c0333a9c82bfeee9f279bfba0875fca91",
+      "controller_directory_sha256": "45955b49ed34d4796ab24a67f870c0a8eb9ea4db4af9015558ccd7e5c4a07fef",
+      "terminal_normalized_mse": 0.3730124533176422,
+      "training_report_terminal_normalized_mse": 0.37301915884017944,
+      "validation_topk_kl": 4.024940311908722,
+      "validation_target_ce": 4.256463646888733,
+      "provider_gate_passed": false,
+      "relative_improvement_vs_pca": 0.1100
+    },
+    {
+      "steps": 60,
+      "seed": 510,
+      "training_report_sha256": "4a49ee7aec131d1593fe710e08a37d6ade74bce2a29d28acf36aad80e037ac24",
+      "evaluation_report_sha256": "bfbe2fba82949ce657b42a3ab1addbe457111b27d6d60b0179e83d8350aa5f7f",
+      "provider_directory_sha256": "7d5a52407c0fc7f02776da99da6850f3d3a03ece07f226e2d97743848cbad977",
+      "controller_directory_sha256": "4ae7df7e08227a18b11c50b766cf4f9514ecd331ac4368591c82c41128e3c4c2",
+      "terminal_normalized_mse": 0.38827747106552124,
+      "training_report_terminal_normalized_mse": 0.388284295797348,
+      "validation_topk_kl": 4.066113710403442,
+      "validation_target_ce": 4.35892653465271,
+      "provider_gate_passed": false,
+      "relative_improvement_vs_pca": 0.0734
+    }
+  ],
+  "runtime_evidence": {
+    "best_arm_decoder_layer_forward_calls": 0,
+    "best_arm_inference_device": "cpu",
+    "best_arm_persistent_sequence_state": true,
+    "end_to_end_generation": false,
+    "native_qwen3_package": false
+  },
+  "interpretation": [
+    "Stage-specific causal memory plus joint controller correction improves the Qwen3 provider over the PCA baseline.",
+    "The 20-step arm is best; extending the same arm to 60 steps regresses, so the improvement is not monotonic.",
+    "Both arms remain 16.6x or more above the fixed 0.0225 provider gate.",
+    "This is auxiliary teacher-family evidence and does not alter the protected Engram gate.",
+    "Further steps/rank tuning of this arm are not justified without a new supervision signal, representation, or larger independent causal corpus."
+  ],
+  "regression": {
+    "python": "1140 passed, 1 skipped",
+    "native_ctest": "20/20 passed"
+  }
+}

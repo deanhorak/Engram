@@ -189,6 +189,14 @@ is worse than the exact-controller provider's **0.41916**, so adding a causal
 loss without jointly changing the provider is closed. See
 `reports/qwen3_causal_supervision_screen_2026-08-04.json`.
 
+The first joint architecture—stage-specific causal key/value memory plus
+controller correction—improves the Qwen3 provider to **0.37301** terminal MSE
+after 20 free-running steps (from **0.41916**), but a 60-step continuation
+regresses to **0.38828**. The best arm is still 16.6× above the **0.0225**
+gate. It is retained as evidence only; further tuning of this exact arm is
+closed until a new representation, supervision signal, or larger causal corpus
+is justified. See `reports/qwen3_joint_causal_provider_screen_2026-08-04.json`.
+
 The replay provider is now a durable, checksummed artifact. For a frozen
 trace, `engram evaluate-controller-sequence` reloads the sequence-shaped
 semantic/episodic arrays, restores sample ordering, and executes the

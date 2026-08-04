@@ -74,6 +74,20 @@ or authorize a package. The machine-readable result is
 `reports/qwen3_causal_supervision_screen_2026-08-04.json`; a future attempt
 must jointly train the provider/controller or replace their representation.
 
+### Qwen3 joint stage-causal provider
+
+The first materially different provider architecture gives every Qwen3 stage
+its own causal key/value memory over prior token states, predicts a rank-16
+residual over the PCA provider, and jointly trains the controller correction.
+With eight teacher-forced and 20 free-running CPU steps, the serialized
+stateful evaluator reaches terminal normalized MSE **0.3730125**, about 11%
+better than the PCA baseline **0.4191557**. A 60-step continuation regresses
+to **0.3882775**, so the gain is non-monotonic. Both remain far above **0.0225**
+(the best arm is 16.6× the threshold), with zero decoder-layer calls and CPU
+inference. This is the best Qwen3 provider result but is not a promotion or a
+native package candidate. Evidence:
+`reports/qwen3_joint_causal_provider_screen_2026-08-04.json`.
+
 ## Transformer-free controller replay boundary
 
 The exact schema-v3 controller now has a standalone CPU runtime and CLI:

@@ -1520,6 +1520,9 @@ def distill_stage_causal_attention_operator_provider(
     train_controller_correction: bool = False,
     train_controller_full: bool = False,
     controller_out: str | Path | None = None,
+    causal_lm_head: str | Path | None = None,
+    causal_norm_weight: str | Path | None = None,
+    causal_weight: float = 0.0,
     learning_rate: float = 3e-4,
     seed: int = 422,
     device: str = "cpu",
@@ -1539,6 +1542,12 @@ def distill_stage_causal_attention_operator_provider(
         )
     if learning_rate <= 0.0 or not np.isfinite(learning_rate):
         raise ValueError("learning_rate must be finite and positive")
+    if causal_weight < 0.0 or not np.isfinite(causal_weight):
+        raise ValueError("causal_weight must be finite and non-negative")
+    if (causal_lm_head is None) != (causal_norm_weight is None):
+        raise ValueError(
+            "causal_lm_head and causal_norm_weight must be supplied together"
+        )
     torch, TorchFactorizedController = _torch_controller_class()
     if device.startswith("cuda") and not torch.cuda.is_available():
         raise RuntimeError("stage causal provider CUDA training requested but unavailable")
@@ -1576,10 +1585,45 @@ def distill_stage_causal_attention_operator_provider(
             data.token_embedding[order].astype(np.float32).reshape(
                 len(sample_ids), sequence, data.hidden_size
             ),
+            None
+            if data.causal_top_ids is None
+            else data.causal_top_ids[order].astype(np.int64).reshape(
+                len(sample_ids), sequence, -1
+            ),
+            None
+            if data.causal_top_logits is None
+            else data.causal_top_logits[order].astype(np.float32).reshape(
+                len(sample_ids), sequence, -1
+            ),
+            None
+            if data.causal_target_ids is None
+            else data.causal_target_ids[order].astype(np.int64).reshape(
+                len(sample_ids), sequence
+            ),
         )
 
-    train_states, train_tokens = pack(training)
-    validation_states, validation_tokens = pack(validation)
+    train_states, train_tokens, train_top_ids, train_top_logits, train_targets = pack(training)
+    validation_states, validation_tokens, validation_top_ids, validation_top_logits, validation_targets = pack(validation)
+    causal_enabled = causal_lm_head is not None
+    if causal_enabled:
+        for name, values in (
+            ("training", (train_top_ids, train_top_logits, train_targets)),
+            ("validation", (validation_top_ids, validation_top_logits, validation_targets)),
+        ):
+            if any(value is None for value in values):
+                raise ValueError(f"causal top-k targets are missing from {name} trace")
+    causal_head = None
+    causal_norm = None
+    if causal_enabled:
+        assert causal_lm_head is not None and causal_norm_weight is not None
+        head = np.asarray(np.load(causal_lm_head), dtype=np.float32)
+        norm = np.asarray(np.load(causal_norm_weight), dtype=np.float32)
+        if head.ndim != 2 or head.shape[1] != training.hidden_size:
+            raise ValueError("causal lm_head must have shape [vocabulary, hidden_size]")
+        if norm.shape != (training.hidden_size,):
+            raise ValueError("causal norm weight must have shape [hidden_size]")
+        causal_head = torch.as_tensor(head, dtype=torch.float32, device=device)
+        causal_norm = torch.as_tensor(norm, dtype=torch.float32, device=device)
     width = training.hidden_size
     stages = training.num_stages
     rank = base.output_rank
@@ -1652,7 +1696,15 @@ def distill_stage_causal_attention_operator_provider(
         )
     }
 
-    def rollout(states, tokens, *, teacher_forcing: bool = False):
+    def rollout(
+        states,
+        tokens,
+        *,
+        teacher_forcing: bool = False,
+        top_ids=None,
+        top_logits=None,
+        targets=None,
+    ):
         stage_keys: list[torch.Tensor] = [
             torch.empty((states.shape[0], 0, key_dim), dtype=torch.float32, device=device)
             for _ in range(stages)
@@ -1714,10 +1766,48 @@ def distill_stage_causal_attention_operator_provider(
                 rms = target.square().mean(dim=-1, keepdim=True).sqrt().clamp_min(1e-4)
                 stage_losses.append(((state - target) / rms).square().mean())
             terminal.append(state)
-        return torch.stack(stage_losses).mean(), terminal
+        causal_metrics = {}
+        loss = torch.stack(stage_losses).mean()
+        if causal_enabled:
+            assert causal_head is not None and causal_norm is not None
+            assert top_ids is not None and top_logits is not None and targets is not None
+            final_states = torch.stack(terminal, dim=1)
+            valid = targets >= 0
+            normalized = final_states / final_states.square().mean(dim=-1, keepdim=True).add(1e-6).sqrt()
+            normalized = normalized * causal_norm
+            rows = causal_head[top_ids]
+            student_logits = (normalized[:, :, None, :] * rows).sum(dim=-1)
+            teacher_probabilities = torch.softmax(top_logits, dim=-1)
+            student_log_probabilities = torch.log_softmax(student_logits, dim=-1)
+            if bool(valid.any()):
+                valid_teacher = teacher_probabilities[valid]
+                valid_student = student_log_probabilities[valid]
+                topk_kl = -(valid_teacher * valid_student).sum(dim=-1).mean()
+                valid_targets = targets[valid]
+                valid_ids = top_ids[valid]
+                matched = valid_ids == valid_targets[:, None]
+                matched_rows = matched.any(dim=-1)
+                if bool(matched_rows.any()):
+                    positions = matched[matched_rows].to(dtype=torch.float32).argmax(dim=-1)
+                    target_ce = -valid_student[matched_rows, positions].mean()
+                else:
+                    target_ce = topk_kl * 0.0
+                causal_loss = topk_kl + 0.25 * target_ce
+            else:
+                causal_loss = loss * 0.0
+                topk_kl = causal_loss
+                target_ce = causal_loss
+            loss = loss + causal_weight * causal_loss
+            causal_metrics = {
+                "causal_topk_kl": topk_kl,
+                "causal_target_ce": target_ce,
+            }
+        return loss, terminal, causal_metrics
 
-    def evaluate(states_np, tokens_np):
+    def evaluate(states_np, tokens_np, top_ids_np=None, top_logits_np=None, targets_np=None):
         values = []
+        causal_totals = {"causal_topk_kl": 0.0, "causal_target_ce": 0.0}
+        causal_records = 0
         with torch.inference_mode():
             for start in range(0, states_np.shape[0], batch_size):
                 states = torch.as_tensor(
@@ -1726,7 +1816,33 @@ def distill_stage_causal_attention_operator_provider(
                 tokens = torch.as_tensor(
                     tokens_np[start : start + batch_size], dtype=torch.float32, device=device
                 )
-                _, terminals = rollout(states, tokens)
+                top_ids = (
+                    torch.as_tensor(top_ids_np[start : start + batch_size], dtype=torch.long, device=device)
+                    if top_ids_np is not None
+                    else None
+                )
+                top_logits = (
+                    torch.as_tensor(top_logits_np[start : start + batch_size], dtype=torch.float32, device=device)
+                    if top_logits_np is not None
+                    else None
+                )
+                targets = (
+                    torch.as_tensor(targets_np[start : start + batch_size], dtype=torch.long, device=device)
+                    if targets_np is not None
+                    else None
+                )
+                _, terminals, causal_metrics = rollout(
+                    states,
+                    tokens,
+                    top_ids=top_ids,
+                    top_logits=top_logits,
+                    targets=targets,
+                )
+                if causal_metrics:
+                    count = int(torch.sum(targets >= 0).item())
+                    causal_records += count
+                    for name, value in causal_metrics.items():
+                        causal_totals[name] += float(value.item()) * count
                 target = states[:, :, -1]
                 for offset, final in enumerate(terminals):
                     rms = target[:, offset].square().mean(dim=-1).clamp_min(1e-8)
@@ -1736,14 +1852,30 @@ def distill_stage_causal_attention_operator_provider(
                         .numpy()
                     )
         terminal = np.concatenate(values)
-        return {
+        result = {
             "terminal_normalized_mse": float(terminal.mean()),
             "maximum_terminal_normalized_mse": float(terminal.max()),
             "records": int(terminal.shape[0]),
         }
+        if causal_records:
+            result.update(
+                {
+                    name: value / causal_records
+                    for name, value in causal_totals.items()
+                }
+            )
+        return result
 
-    initial_validation = evaluate(validation_states, validation_tokens)
-    initial_training = evaluate(train_states, train_tokens)
+    initial_validation = evaluate(
+        validation_states,
+        validation_tokens,
+        validation_top_ids,
+        validation_top_logits,
+        validation_targets,
+    )
+    initial_training = evaluate(
+        train_states, train_tokens, train_top_ids, train_top_logits, train_targets
+    )
     started = time.perf_counter()
     history = []
     train_rng = np.random.default_rng(seed)
@@ -1756,7 +1888,29 @@ def distill_stage_causal_attention_operator_provider(
         states = torch.as_tensor(train_states[indices], dtype=torch.float32, device=device)
         tokens = torch.as_tensor(train_tokens[indices], dtype=torch.float32, device=device)
         optimizer.zero_grad(set_to_none=True)
-        loss, terminals = rollout(states, tokens, teacher_forcing=teacher_forcing)
+        top_ids = (
+            torch.as_tensor(train_top_ids[indices], dtype=torch.long, device=device)
+            if train_top_ids is not None
+            else None
+        )
+        top_logits = (
+            torch.as_tensor(train_top_logits[indices], dtype=torch.float32, device=device)
+            if train_top_logits is not None
+            else None
+        )
+        targets = (
+            torch.as_tensor(train_targets[indices], dtype=torch.long, device=device)
+            if train_targets is not None
+            else None
+        )
+        loss, terminals, causal_metrics = rollout(
+            states,
+            tokens,
+            teacher_forcing=teacher_forcing,
+            top_ids=top_ids,
+            top_logits=top_logits,
+            targets=targets,
+        )
         if not bool(torch.isfinite(loss)):
             raise RuntimeError(f"stage causal provider loss became non-finite at step {step}")
         loss.backward()
@@ -1778,10 +1932,22 @@ def distill_stage_causal_attention_operator_provider(
                         .detach()
                         .cpu()
                     ),
+                    **{
+                        name: float(value.detach().cpu())
+                        for name, value in causal_metrics.items()
+                    },
                 }
             )
-    final_validation = evaluate(validation_states, validation_tokens)
-    final_training = evaluate(train_states, train_tokens)
+    final_validation = evaluate(
+        validation_states,
+        validation_tokens,
+        validation_top_ids,
+        validation_top_logits,
+        validation_targets,
+    )
+    final_training = evaluate(
+        train_states, train_tokens, train_top_ids, train_top_logits, train_targets
+    )
     from engram.runtime.operator_stream import StageCausalAttentionOperatorStreamProvider
 
     trained = StageCausalAttentionOperatorStreamProvider(
@@ -1806,6 +1972,13 @@ def distill_stage_causal_attention_operator_provider(
             "training_batch_size": batch_size,
             "training_seed": seed,
             "optimizer_device": device,
+            "causal_objective": {
+                "enabled": causal_enabled,
+                "lm_head": str(Path(causal_lm_head).resolve()) if causal_lm_head else None,
+                "norm_weight": str(Path(causal_norm_weight).resolve()) if causal_norm_weight else None,
+                "weight": causal_weight,
+                "target": "teacher_topk_logits_and_next_token",
+            },
         },
     )
     target = Path(out)
@@ -1845,6 +2018,7 @@ def distill_stage_causal_attention_operator_provider(
             "batch_size": batch_size,
             "learning_rate": learning_rate,
             "seed": seed,
+            "causal_weight": causal_weight,
             "elapsed_seconds": time.perf_counter() - started,
             "history": history,
             "initial": initial_training,
@@ -1852,6 +2026,14 @@ def distill_stage_causal_attention_operator_provider(
         },
         "initial_validation": initial_validation,
         "validation": final_validation,
+        "causal_objective": {
+            "enabled": causal_enabled,
+            "lm_head": str(Path(causal_lm_head).resolve()) if causal_lm_head else None,
+            "norm_weight": str(Path(causal_norm_weight).resolve()) if causal_norm_weight else None,
+            "weight": causal_weight,
+            "target": "teacher_topk_logits_and_next_token",
+            "decoder_layers_loaded": False,
+        },
         "gate": {
             "metric": "terminal_normalized_mse",
             "threshold": 0.0225,

@@ -2739,3 +2739,26 @@ This closes the isolated top-k-loss hypothesis. The complete record is
 jointly train provider and controller against the causal objective or replace
 the representation; adding this loss to the existing controller and provider
 seams is not a defensible promotion path.
+
+## 2026-08-04 — Qwen3 joint stage-causal provider screen
+
+The first materially different provider architecture was then tested: each of
+the 28 stages received its own causal key/value prefix over prior token
+states, a stage-conditioned query generated a rank-16 residual over the PCA
+provider, and the controller correction tensors were trained jointly. The
+free-running objective included the Qwen3 top-32 causal loss (weight 0.25).
+
+With eight teacher-forced steps followed by 20 free-running CPU steps, the
+serialized stateful provider reached validation terminal normalized MSE
+`0.3730125`, improving the rank-16 PCA baseline `0.4191557` by about 11%.
+The stateful CPU evaluator preserved sequence resets, made zero decoder-layer
+calls, and reproduced the result from the serialized provider/controller. A
+longer 60-step arm regressed to `0.3882775`, showing non-monotonic overfit;
+neither is close to the fixed `0.0225` gate. Validation top-k KL for the best
+arm was `4.02494`, and target CE was `4.25646`.
+
+This is the best Qwen3 provider result so far, but it remains 16.6× above the
+promotion threshold and is not a package candidate. Further steps or rank
+tuning of this exact arm are closed pending a new supervision signal,
+representation, or materially larger causal corpus. The complete record is
+`reports/qwen3_joint_causal_provider_screen_2026-08-04.json`.

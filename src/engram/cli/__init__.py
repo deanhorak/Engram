@@ -1216,6 +1216,22 @@ def _parser() -> argparse.ArgumentParser:
         type=Path,
         help="optional directory for the jointly adapted controller artifact",
     )
+    stage_causal_attention_provider.add_argument(
+        "--causal-lm-head",
+        type=Path,
+        help="optional frozen vocabulary matrix for top-k causal supervision",
+    )
+    stage_causal_attention_provider.add_argument(
+        "--causal-norm-weight",
+        type=Path,
+        help="final RMSNorm weight paired with --causal-lm-head",
+    )
+    stage_causal_attention_provider.add_argument(
+        "--causal-weight",
+        type=float,
+        default=0.0,
+        help="weight for the optional teacher top-k causal objective",
+    )
     stage_causal_attention_provider.add_argument("--learning-rate", type=float, default=3e-4)
     stage_causal_attention_provider.add_argument("--seed", type=int, default=422)
     stage_causal_attention_provider.add_argument("--device", default="cpu")
@@ -3123,6 +3139,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             train_controller_correction=args.train_controller_correction,
             train_controller_full=args.train_controller_full,
             controller_out=args.controller_out,
+            causal_lm_head=args.causal_lm_head,
+            causal_norm_weight=args.causal_norm_weight,
+            causal_weight=args.causal_weight,
             learning_rate=args.learning_rate,
             seed=args.seed,
             device=args.device,
