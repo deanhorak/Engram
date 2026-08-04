@@ -31,6 +31,22 @@
     "cpu_percent": 441,
     "attention_evictions": 0
   },
+  "counterbalanced_threads1": {
+    "threads": 1,
+    "generated_token_ids": [11, 220, 15, 11, 220, 15, 11, 220],
+    "semantic_seconds": 16.5938,
+    "attention_seconds": 37.4283,
+    "elapsed_seconds": 74.19,
+    "maximum_resident_set_kbytes": 1297536,
+    "cpu_percent": 99,
+    "exit_status": 0
+  },
+  "thread_scaling": {
+    "wall_speedup_threads12_over_threads1": 1.4718,
+    "attention_speedup_threads12_over_threads1": 2.3205,
+    "semantic_speedup_threads12_over_threads1": 0.9801,
+    "interpretation": "At eight generated tokens, attention benefits materially from threading while the semantic kernel remains effectively flat."
+  },
   "verification": {
     "exit_status": 0,
     "reset_verification": false,

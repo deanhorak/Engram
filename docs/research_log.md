@@ -2517,6 +2517,10 @@ causal corpus.
   controller or establish an apples-to-apples performance advantage over
   `llama.cpp`.  Evidence:
   `reports/native_bitnet_cpu_generation_2026-08-04_long.json`.
+- A counterbalanced one-thread run generated the same IDs in 74.19 s. Twelve
+  threads deliver 1.47× wall-time and 2.32× attention speedups, while semantic
+  time remains flat. The current bottleneck is therefore the native attention
+  path at this sequence length, not proof of an overall CPU advantage.
 
 ## 2026-08-04: auxiliary capture confirms corpus-cardinality boundary
 

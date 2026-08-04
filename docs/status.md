@@ -2021,6 +2021,11 @@ is `reports/native_bitnet_cpu_generation_2026-08-04_long.json`; this strengthens
 the native systems evidence but is not a learned-controller or llama.cpp
 quality comparison.
 
+A counterbalanced one-thread run produced the identical IDs in 74.19 s
+(37.4283 s attention, 16.5938 s semantic). Twelve threads therefore provide
+approximately **1.47× wall-time** and **2.32× attention** speedups at this
+length; semantic time remains effectively flat.
+
 The complete native CTest suite was also run outside the sandbox on the same
 build: **20/20 tests passed** in 26.94 s, including the 26.81 s C ABI lifecycle
 test.
