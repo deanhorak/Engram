@@ -1,0 +1,37 @@
+{
+  "experiment": "controller_correction_over_highrank_provider",
+  "status": "development_failure",
+  "provider": "randomized_rank64_separate_streams",
+  "training_trace": "work/controller_distillation/bitnet_train_8x16_b2",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "controller_gate": {
+    "metric": "terminal_normalized_mse",
+    "threshold": 0.0225
+  },
+  "adaptation": {
+    "steps": 100,
+    "batch_size": 8,
+    "learning_rate": 0.002,
+    "trainable_parameters": [
+      "step_scale",
+      "adapter_down",
+      "adapter_up",
+      "stage_embeddings",
+      "operator_residual_scale"
+    ],
+    "optimizer_device": "cpu",
+    "inference_device": "cpu",
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0
+  },
+  "validation": {
+    "initial_terminal_normalized_mse": 0.1767018139,
+    "final_terminal_normalized_mse": 0.1718647629,
+    "maximum_terminal_normalized_mse": 1.3632916212,
+    "protected_validation": true
+  },
+  "comparison": {
+    "best_scheduled_provider_terminal_normalized_mse": 0.1717456444,
+    "decision": "reject; controller-only correction does not improve the best nonlinear provider and remains far above the gate"
+  }
+}

@@ -904,6 +904,7 @@ def distill_nonlinear_residual_provider(
     validation_trace: str | Path | None = None,
     steps: int = 100,
     teacher_forcing_steps: int = 0,
+    teacher_forcing_decay_steps: int = 0,
     batch_size: int = 8,
     hidden_width: int = 64,
     stage_width: int = 16,
@@ -916,12 +917,17 @@ def distill_nonlinear_residual_provider(
     if (
         steps < 0
         or teacher_forcing_steps < 0
+        or teacher_forcing_decay_steps < 0
         or batch_size <= 0
         or hidden_width <= 0
         or stage_width <= 0
     ):
         raise ValueError(
             "steps and teacher_forcing_steps must be non-negative; batch and widths positive"
+        )
+    if teacher_forcing_steps and teacher_forcing_decay_steps:
+        raise ValueError(
+            "teacher_forcing_steps and teacher_forcing_decay_steps are mutually exclusive"
         )
     if learning_rate <= 0.0 or not np.isfinite(learning_rate):
         raise ValueError("learning_rate must be finite and positive")
@@ -988,13 +994,19 @@ def distill_nonlinear_residual_provider(
         residual.parameters(), lr=learning_rate, weight_decay=1e-5
     )
 
-    def rollout(data, indices, *, teacher_forcing: bool = False):
+    def rollout(data, indices, *, teacher_forcing: float = 0.0):
         target = torch.as_tensor(data.teacher_states[indices], dtype=torch.float32, device=device)
         token = torch.as_tensor(data.token_embedding[indices], dtype=torch.float32, device=device)
         state = target[:, 0]
         errors = []
         for stage in range(stages):
-            source = target[:, stage] if teacher_forcing else state
+            if teacher_forcing >= 1.0:
+                source = target[:, stage]
+            elif teacher_forcing <= 0.0:
+                source = state
+            else:
+                mask = torch.rand((state.shape[0], 1), device=device) < teacher_forcing
+                source = torch.where(mask, target[:, stage], state)
             features = torch.cat(
                 (source, token, torch.ones((len(indices), 1), device=device)), dim=-1
             )
@@ -1042,7 +1054,15 @@ def distill_nonlinear_residual_provider(
     started = time.perf_counter()
     total_steps = teacher_forcing_steps + steps
     for step in range(total_steps):
-        teacher_forcing = step < teacher_forcing_steps
+        if teacher_forcing_steps:
+            teacher_forcing = 1.0 if step < teacher_forcing_steps else 0.0
+        elif teacher_forcing_decay_steps:
+            teacher_forcing = max(
+                0.0,
+                1.0 - (step / float(max(teacher_forcing_decay_steps - 1, 1))),
+            )
+        else:
+            teacher_forcing = 0.0
         indices = rng.choice(
             training.records,
             size=batch_size,
@@ -1062,7 +1082,14 @@ def distill_nonlinear_residual_provider(
             history.append(
                 {
                     "step": step + 1,
-                    "phase": "teacher_forcing" if teacher_forcing else "free_running",
+                    "phase": (
+                        "teacher_forcing"
+                        if teacher_forcing >= 1.0
+                        else "free_running"
+                        if teacher_forcing <= 0.0
+                        else "scheduled_sampling"
+                    ),
+                    "teacher_forcing_probability": float(teacher_forcing),
                     "loss": float(loss.detach().cpu()),
                     "terminal_normalized_mse": float(errors[-1].detach().cpu()),
                 }
@@ -1089,6 +1116,7 @@ def distill_nonlinear_residual_provider(
             "learned": True,
             "training_steps": steps,
             "teacher_forcing_steps": teacher_forcing_steps,
+            "teacher_forcing_decay_steps": teacher_forcing_decay_steps,
             "training_batch_size": batch_size,
             "training_seed": seed,
             "optimizer_device": device,
@@ -1118,6 +1146,7 @@ def distill_nonlinear_residual_provider(
         "training": {
             "steps": steps,
             "teacher_forcing_steps": teacher_forcing_steps,
+            "teacher_forcing_decay_steps": teacher_forcing_decay_steps,
             "batch_size": batch_size,
             "learning_rate": learning_rate,
             "seed": seed,

@@ -241,6 +241,35 @@ point; longer optimization is closed as an overfitting/oscillation failure.
 Evidence:
 `reports/controller_provider_pca_2026-08-03/nonlinear_schedule_length_screen.json`.
 
+Finally, a stateful nonlinear provider with a 64-wide token memory reset once
+per sequence was trained on the same causal split. Averaged over all 16
+validation positions, terminal normalized MSE changes only from **0.1765443**
+to **0.1760611** after 100 CPU steps; the last-position error is **0.1965011**.
+Persistent token memory is therefore not the missing factor at this capacity.
+The negative result is preserved in
+`reports/controller_provider_pca_2026-08-03/stateful_nonlinear_memory_screen.json`.
+
+Adapting the controller correction tensors over the rank-64 provider was also
+tested (100 CPU steps). Held-out terminal normalized MSE changes from
+**0.1767018** to **0.1718648**, slightly worse than the scheduled nonlinear
+provider (**0.1717456**). This controller-only compensator is rejected and
+remains evaluator-only; evidence:
+`reports/controller_provider_pca_2026-08-03/controller_correction_highrank_screen.json`.
+
+Two additional causal screens closed the most plausible remaining capacity and
+optimization loopholes. A 128-wide persistent-memory residual trained for 20
+CPU steps changes held-out terminal MSE only from **0.1767018** to
+**0.1760428**. A shared nonlinear residual trained on all 64 training
+sequences with teacher-forcing probability decayed smoothly to zero reaches
+**0.1749395**. Both use the independent 16-sequence validation trace and are
+rejected; evidence:
+`reports/controller_provider_pca_2026-08-03/state_space_residual_memory128_screen.json`
+and
+`reports/controller_provider_pca_2026-08-03/nonlinear_train64_decay.json`.
+The teacher-forced training loss can be below the gate while free-running
+validation remains above it, so this is a causal compounding failure rather
+than a missing optimizer schedule.
+
 ## Native recurrent-controller implementation boundary
 
 The native token runtime now has a direct implementation of the schema-v3

@@ -1,0 +1,36 @@
+{
+  "experiment": "nonlinear_provider_full_corpus_scheduled_sampling",
+  "status": "development_failure",
+  "training_trace": "work/controller_distillation/bitnet_train_64x16_b4",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "base_provider": "/tmp/provider_train64_rank64_randomized",
+  "artifact": "/tmp/nonlinear_highrank_train64_decay",
+  "artifact_sha256": "47e2a01f425d57da400e18cc939928a2bda3b65cf0fd81d984dae252aeaac728",
+  "architecture": {
+    "provider": "rank64 PCA plus shared SiLU latent residual",
+    "hidden_width": 64,
+    "stage_width": 16,
+    "teacher_forcing_decay_steps": 100,
+    "free_running_steps": 0,
+    "batch_size": 8,
+    "learning_rate": 0.0003,
+    "seed": 413,
+    "optimizer_device": "cpu",
+    "inference_device": "cpu",
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0
+  },
+  "validation": {
+    "initial_terminal_normalized_mse": 0.1767018179,
+    "final_terminal_normalized_mse": 0.1749395221,
+    "final_mean_stage_normalized_mse": 0.7310598883,
+    "final_maximum_stage_normalized_mse": 1.3840709794,
+    "protected_validation": true
+  },
+  "gate": {
+    "metric": "terminal_normalized_mse",
+    "threshold": 0.0225,
+    "passed": false
+  },
+  "decision": "reject; smooth scheduled sampling over the full 64-sequence training corpus improves the boundary only marginally and remains 7.8 times above the causal gate"
+}

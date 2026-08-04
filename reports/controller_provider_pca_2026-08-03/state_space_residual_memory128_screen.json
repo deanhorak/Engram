@@ -1,0 +1,31 @@
+{
+  "experiment": "state_space_residual_memory_capacity_screen",
+  "status": "development_failure",
+  "training_trace": "work/controller_distillation/bitnet_train_8x16_b2",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "base_provider": "/tmp/provider_train64_rank64_randomized",
+  "architecture": {
+    "provider": "rank64 PCA plus diagonal persistent-memory residual",
+    "memory_dim": 128,
+    "steps": 20,
+    "batch_size": 8,
+    "learning_rate": 0.002,
+    "seed": 410,
+    "optimizer_device": "cpu",
+    "inference_device": "cpu",
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0
+  },
+  "validation": {
+    "initial_terminal_normalized_mse": 0.1767018139,
+    "final_terminal_normalized_mse": 0.1760428101,
+    "final_maximum_terminal_normalized_mse": 1.3758387566,
+    "protected_validation": true
+  },
+  "gate": {
+    "metric": "terminal_normalized_mse",
+    "threshold": 0.0225,
+    "passed": false
+  },
+  "decision": "reject; doubling the persistent-memory width produces only a 0.00066 absolute improvement in a bounded 20-step screen and does not close the causal gap"
+}

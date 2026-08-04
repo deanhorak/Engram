@@ -239,6 +239,29 @@ An extended 300-step free-running continuation after the 100-step warm-up
 regresses to terminal MSE **0.1740203**, so longer optimization is rejected.
 The best scheduled checkpoint remains **0.1717457**, still unpromoted.
 
+A stateful nonlinear memory screen (64-wide memory, reset per sequence) changes
+the full-position validation mean only from **0.1765443** to **0.1760611**.
+It is rejected as a route to M4 promotion; persistent token memory alone does
+not close the causal gap. Evidence:
+`reports/controller_provider_pca_2026-08-03/stateful_nonlinear_memory_screen.json`.
+
+Controller-only correction over the rank-64 base reaches terminal MSE
+**0.1718648**, slightly worse than the scheduled nonlinear provider's
+**0.1717456**. It is rejected as a promotion path; report:
+`reports/controller_provider_pca_2026-08-03/controller_correction_highrank_screen.json`.
+
+Capacity and optimization follow-ups remain negative. A 128-wide persistent
+memory residual reaches **0.1760428** after 20 CPU steps, and a full-corpus
+nonlinear residual with smoothly decayed teacher forcing reaches **0.1749395**.
+Neither approaches the **0.0225** causal promotion threshold on the protected
+16-sequence validation split. Reports:
+`reports/controller_provider_pca_2026-08-03/state_space_residual_memory128_screen.json`
+and
+`reports/controller_provider_pca_2026-08-03/nonlinear_train64_decay.json`.
+The remaining M4 learned-provider block is therefore attributed to
+free-running state/operator compounding, not simply too few training records,
+rank, memory width, or a hard teacher-forcing transition.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and
