@@ -1,5 +1,24 @@
 # Research log
 
+## 2026-08-04 — Hybrid host boundary
+
+The learned transformer-free provider remains far outside the fixed causal
+promotion threshold, so the project now pursues a hybrid architecture as its
+practical direction. The host language model remains responsible for all
+hidden-state computation and token generation. Engram supplies a separate
+CPU-side retrieval process over JSONL memory records and sends bounded,
+provenance-tagged context to an OpenAI-compatible chat endpoint. This works
+with a local `llama.cpp` server and does not require a Transformers model shell.
+
+The initial index uses a deterministic signed hashing encoder so the boundary
+has no hidden model dependency. `chat-hybrid` supports `/reset` and
+`/history`, and `benchmark-hybrid` can send the same prompts through baseline
+and augmented modes. The benchmark reports host latency, provider usage, and
+retrieved record IDs while explicitly setting `quality_claim` to
+`not_established`; answer quality requires an independent task rubric. The
+sidecar is therefore a practical integration boundary, not a semantic-gate
+promotion or a claim that hashed retrieval is the final memory representation.
+
 ## 2026-07-27 — Complete native OLMoE token boundary passes
 
 - Added a streaming compiler for the exact 131-tensor BF16 non-MLP inventory.

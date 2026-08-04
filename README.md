@@ -29,6 +29,45 @@ The long-term systems target is a substantial reduction in DRAM traffic—ideall
 retaining useful model quality. That target is a hypothesis, not a result. Engram will not claim
 success from random fixtures, synthetic tasks, proxy byte counts, or a runnable compiler alone.
 
+## Practical direction: the hybrid architecture
+
+The original layer-free replacement remains a research result, not a validated product path. The
+current practical direction is therefore hybrid: keep a conventional quantized model as the
+quality anchor and run Engram as a CPU sidecar around it.
+
+The first hybrid boundary is deliberately model-agnostic. Engram reads a JSONL memory file,
+selects a small number of relevant records with a deterministic CPU hashing index, bounds their
+total context size, labels them as untrusted reference material, and sends the resulting messages
+to an OpenAI-compatible chat endpoint. A `llama.cpp` server is one supported host, but the host
+could be any local compatible implementation. Engram does not inspect or replace the host's
+hidden states, decoder layers, or logits in this mode.
+
+Start a compatible host, then run:
+
+```bash
+PYTHONPATH=src python -m engram.cli chat-hybrid \
+  --endpoint http://127.0.0.1:8080/v1/chat/completions \
+  --model local-model \
+  --memory path/to/memory.jsonl \
+  --top-k 4 \
+  --min-score 0.15 \
+  --max-context-chars 4000 \
+  --max-tokens 128
+```
+
+Each memory line is an object such as
+`{"id":"project-goal","text":"...","metadata":{"source":"notes"}}`.
+Use `--mode baseline` to bypass retrieval while keeping the same host and conversation loop.
+`benchmark-hybrid` sends the same prompt set through baseline and augmented modes and records
+host latency, usage, and retrieved IDs. It intentionally reports
+`quality_claim: not_established`; answer quality must be scored with an independent task rubric.
+
+This first sidecar is a reproducible lexical retrieval baseline, not a claim that hashed text
+embeddings are the final Engram memory. A later experiment can replace the encoder with a frozen
+model embedding or a model-specific semantic index without changing the host protocol. The
+hybrid go/no-go question is now concrete: does bounded retrieval improve a fixed task-quality
+score at equal or lower end-to-end cost than the same host without Engram?
+
 For an external, reproducible stress test, the project also freezes the public
 [LongEmbed Passkey auxiliary benchmark](docs/auxiliary_benchmarks.md) at an upstream Git revision
 and SHA-256 manifest. This benchmark is evaluation-only and explicitly does **not** replace or

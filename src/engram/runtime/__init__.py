@@ -48,6 +48,19 @@ from .olmoe_selector_policy import (
     load_olmoe_selector_policy,
 )
 from .reference import EngramRuntime, GenerationToken
+from .hybrid import (
+    ChatCompletionClient,
+    HashingTextEncoder,
+    HybridChatRuntime,
+    HybridCompletion,
+    HybridError,
+    HybridMemoryHit,
+    HybridMemoryIndex,
+    HybridMemoryRecord,
+    HybridPromptPolicy,
+    OpenAICompatibleClient,
+    load_hybrid_memory,
+)
 
 __all__ = [
     "EngramRuntime",
@@ -87,4 +100,15 @@ __all__ = [
     "TraceSequenceOperatorStreamProvider",
     "load_olmoe_selector_policy",
     "validate_native_bitnet_package",
+    "ChatCompletionClient",
+    "HashingTextEncoder",
+    "HybridChatRuntime",
+    "HybridCompletion",
+    "HybridError",
+    "HybridMemoryHit",
+    "HybridMemoryIndex",
+    "HybridMemoryRecord",
+    "HybridPromptPolicy",
+    "OpenAICompatibleClient",
+    "load_hybrid_memory",
 ]

@@ -88,6 +88,25 @@ memory derived from SwiGLU records, hybrid local/recurrent/retrieval episodic me
 indexed vocabulary projection, transition caching, and uncertainty-triggered corrections.
 The target package must generate without loading source transformer layers.
 
+## Hybrid host integration
+
+Because the learned layer-free provider remains unqualified, the practical
+deployment direction keeps a conventional quantized Transformer as the
+quality anchor. `engram.runtime.hybrid` provides a separate sidecar boundary:
+it loads immutable JSONL memory records, performs bounded deterministic CPU
+retrieval, renders provenance-tagged reference context, and calls an
+OpenAI-compatible chat completion endpoint. The host owns tokenization,
+hidden states, attention, MLPs, logits, and generation. No Transformers model
+shell or hidden-state contract is required from Engram in this mode.
+
+The sidecar has explicit baseline and augmented modes so a fixed host can be
+measured with and without retrieval. The current hashing encoder is only a
+dependency-free lexical baseline. It should be replaced by a frozen semantic
+embedding index only after a task-quality and end-to-end-cost benchmark shows
+that retrieval is useful. This hybrid path is not evidence for the original
+layer-free Milestone 4 claim; it is the concrete product fallback if the host
+model remains necessary for quality.
+
 This document describes one compiled model worker. A separate, request-level
 [Oracle cognitive executive](cognitive_executive.md) may manage goals, evidence, persistent
 memory policy, tools, and multiple workers above it. Those system functions are not stored in an

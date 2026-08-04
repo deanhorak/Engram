@@ -2,6 +2,26 @@
 
 Snapshot date: **2026-08-04**
 
+## Hybrid architecture boundary
+
+The project now has a practical fallback path that does not depend on the
+unproven layer-free controller/provider. `engram chat-hybrid` and
+`engram benchmark-hybrid` keep a conventional host model in charge of
+generation and expose an OpenAI-compatible endpoint, including a local
+`llama.cpp` server. Engram contributes only a bounded retrieval sidecar:
+JSONL records are indexed with a deterministic CPU hashing encoder, selected
+records are capped by count and characters, and the prompt marks them as
+untrusted reference material. Baseline mode uses the same host and history
+without retrieved records, making the comparison controlled.
+
+This is intentionally not a new semantic-gate result. The initial hashing
+encoder is a reproducible lexical baseline; it does not claim LLM-quality
+embeddings, layer substitution, or hidden-state access. The first useful
+hybrid experiment is therefore a fixed-task baseline/augmented comparison
+with independent answer scoring and host latency/usage measurements. A
+model-specific frozen embedding index can replace the encoder later without
+changing the host protocol.
+
 ## Latest native recurrent-controller boundary
 
 The native token runtime now executes the schema-v3 factorized recurrent

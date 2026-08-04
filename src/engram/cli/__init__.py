@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import time
 from pathlib import Path
 from typing import Sequence
 
@@ -128,12 +130,16 @@ from engram.compiler import (
 )
 from engram.runtime import (
     EngramRuntime,
+    HybridChatRuntime,
+    HybridPromptPolicy,
     NativeBitNetDIPTokenRuntime,
     NativeBitNetRuntime,
     OLMoENativePackageRuntime,
+    OpenAICompatibleClient,
     run_native_bitnet_chat,
     validate_native_bitnet_package,
     OLMoENativeTokenRuntime,
+    load_hybrid_memory,
 )
 from engram.runtime.operator_stream import fit_operator_stream_provider
 from engram.runtime.validation import benchmark_runtime, validate_package
@@ -1492,6 +1498,61 @@ def _parser() -> argparse.ArgumentParser:
         ),
     )
     chat_bitnet.add_argument("--threads", type=int)
+
+    hybrid_chat = commands.add_parser(
+        "chat-hybrid",
+        help=(
+            "chat with an OpenAI-compatible host while Engram supplies optional "
+            "bounded retrieved memory"
+        ),
+    )
+    hybrid_chat.add_argument(
+        "--endpoint",
+        required=True,
+        help="OpenAI-compatible /v1/chat/completions endpoint (llama.cpp server works)",
+    )
+    hybrid_chat.add_argument("--model", default="local-model")
+    hybrid_chat.add_argument("--memory", type=Path, help="optional Engram memory JSONL")
+    hybrid_chat.add_argument("--memory-dimensions", type=int, default=384)
+    hybrid_chat.add_argument("--top-k", type=int, default=4)
+    hybrid_chat.add_argument("--min-score", type=float, default=0.15)
+    hybrid_chat.add_argument("--max-context-chars", type=int, default=4000)
+    hybrid_chat.add_argument("--max-tokens", type=int, default=128)
+    hybrid_chat.add_argument("--temperature", type=float, default=0.0)
+    hybrid_chat.add_argument("--timeout", type=float, default=120.0)
+    hybrid_chat.add_argument(
+        "--api-key-env",
+        default="ENGRAM_HYBRID_API_KEY",
+        help="environment variable containing an optional bearer token",
+    )
+    hybrid_chat.add_argument(
+        "--mode",
+        choices=("hybrid", "baseline"),
+        default="hybrid",
+        help="baseline bypasses retrieved memory while using the same host",
+    )
+    hybrid_chat.add_argument("--system", default="You are a helpful assistant.")
+
+    hybrid_benchmark = commands.add_parser(
+        "benchmark-hybrid",
+        help="compare baseline and Engram-augmented requests against one host",
+    )
+    hybrid_benchmark.add_argument("--endpoint", required=True)
+    hybrid_benchmark.add_argument("--model", default="local-model")
+    hybrid_benchmark.add_argument("--prompts", required=True, type=Path)
+    hybrid_benchmark.add_argument("--memory", type=Path)
+    hybrid_benchmark.add_argument("--memory-dimensions", type=int, default=384)
+    hybrid_benchmark.add_argument("--top-k", type=int, default=4)
+    hybrid_benchmark.add_argument("--min-score", type=float, default=0.15)
+    hybrid_benchmark.add_argument("--max-context-chars", type=int, default=4000)
+    hybrid_benchmark.add_argument("--max-tokens", type=int, default=128)
+    hybrid_benchmark.add_argument("--temperature", type=float, default=0.0)
+    hybrid_benchmark.add_argument("--timeout", type=float, default=120.0)
+    hybrid_benchmark.add_argument("--api-key-env", default="ENGRAM_HYBRID_API_KEY")
+    hybrid_benchmark.add_argument(
+        "--mode", choices=("baseline", "hybrid", "both"), default="both"
+    )
+    hybrid_benchmark.add_argument("--out", type=Path)
 
     validate = commands.add_parser(
         "validate", help="verify package checksums and deterministic generation"
@@ -3441,6 +3502,129 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
             except KeyboardInterrupt:
                 print("\nChat interrupted.")
+    elif args.command == "chat-hybrid":
+        memory = (
+            load_hybrid_memory(args.memory, dimensions=args.memory_dimensions)
+            if args.memory is not None
+            else None
+        )
+        client = OpenAICompatibleClient(
+            args.endpoint,
+            api_key=os.environ.get(args.api_key_env),
+            timeout_seconds=args.timeout,
+        )
+        runtime = HybridChatRuntime(
+            client,
+            model=args.model,
+            memory=memory,
+            policy=HybridPromptPolicy(
+                system_prompt=args.system,
+                top_k=args.top_k,
+                minimum_score=args.min_score,
+                maximum_context_characters=args.max_context_chars,
+            ),
+            max_tokens=args.max_tokens,
+            temperature=args.temperature,
+        )
+        print("Engram hybrid chat. Commands: /reset, /history, /quit")
+        print(f"Host: {args.endpoint}; mode: {args.mode}")
+        while True:
+            try:
+                line = input("You> ").strip()
+            except EOFError:
+                print()
+                break
+            if not line:
+                continue
+            if line == "/quit":
+                break
+            if line == "/reset":
+                runtime.reset()
+                print("Conversation reset.")
+                continue
+            if line == "/history":
+                print(json.dumps(runtime.history, indent=2))
+                continue
+            result = runtime.complete(line, augmented=args.mode == "hybrid")
+            print(f"Engram> {result.text}")
+            if result.hits:
+                details = ", ".join(
+                    f"{hit.record.memory_id}:{hit.score:.3f}" for hit in result.hits
+                )
+                print(f"[retrieved {details}; {result.elapsed_seconds:.3f}s]")
+    elif args.command == "benchmark-hybrid":
+        memory = (
+            load_hybrid_memory(args.memory, dimensions=args.memory_dimensions)
+            if args.memory is not None
+            else None
+        )
+        client = OpenAICompatibleClient(
+            args.endpoint,
+            api_key=os.environ.get(args.api_key_env),
+            timeout_seconds=args.timeout,
+        )
+        prompts: list[dict[str, str]] = []
+        with args.prompts.open("r", encoding="utf-8") as handle:
+            for line_number, line in enumerate(handle, 1):
+                if not line.strip():
+                    continue
+                payload = json.loads(line)
+                if isinstance(payload, str):
+                    prompts.append({"id": str(line_number), "prompt": payload})
+                elif isinstance(payload, dict) and isinstance(payload.get("prompt"), str):
+                    prompts.append(
+                        {
+                            "id": str(payload.get("id", line_number)),
+                            "prompt": payload["prompt"],
+                        }
+                    )
+                else:
+                    raise ValueError(
+                        f"prompt line {line_number} must be a string or object with prompt"
+                    )
+        rows: list[dict[str, object]] = []
+        modes = ("baseline", "hybrid") if args.mode == "both" else (args.mode,)
+        for item in prompts:
+            row: dict[str, object] = {"id": item["id"], "prompt": item["prompt"]}
+            for mode in modes:
+                runtime = HybridChatRuntime(
+                    client,
+                    model=args.model,
+                    memory=memory,
+                    policy=HybridPromptPolicy(
+                        top_k=args.top_k,
+                        minimum_score=args.min_score,
+                        maximum_context_characters=args.max_context_chars,
+                    ),
+                    max_tokens=args.max_tokens,
+                    temperature=args.temperature,
+                )
+                started = time.perf_counter()
+                result = runtime.complete(
+                    item["prompt"], augmented=mode == "hybrid"
+                )
+                payload = result.to_dict()
+                payload["wall_seconds"] = time.perf_counter() - started
+                row[mode] = payload
+            rows.append(row)
+        report = {
+            "format": "engram-hybrid-benchmark",
+            "version": 1,
+            "endpoint": args.endpoint,
+            "model": args.model,
+            "mode": args.mode,
+            "memory": str(args.memory) if args.memory else None,
+            "prompts": rows,
+            "quality_claim": "not_established",
+            "note": (
+                "This report measures host latency/usage and retrieval behavior. "
+                "It does not claim answer quality without an independent task rubric."
+            ),
+        }
+        if args.out is not None:
+            args.out.parent.mkdir(parents=True, exist_ok=True)
+            args.out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps(report, indent=2, sort_keys=True))
     elif args.command == "validate":
         manifest = json.loads(
             (Path(args.model) / "manifest.json").read_text(encoding="utf-8")
