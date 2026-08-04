@@ -345,9 +345,9 @@ cache stored as per-vector symmetric INT8 with FP32 scales reaches KL
 0.00417982, top-1 0.974609, target-NLL delta +0.000391, and hidden L2
 0.048147 across all 1,024 positions. Every frozen band passes, including
 positions 96–127 (KL 0.00301720, top-1 0.964844, hidden L2 0.043127), while
-logical attention reads fall to 25% of dense. This is an evaluator-only
-Milestone 3 attention-substitution pass; the ordinary package remains W16 and
-the recurrent/episodic bounded policy is not yet promoted. The authenticated
+logical attention reads fall to 25% of dense. This is not a protected
+Milestone 2 replay; W16 remains the ordinary package default and the
+recurrent/episodic bounded policy is not yet promoted. The authenticated
 protocol and report are recorded in the milestone report.
 
 The compressed cache is now reachable through an explicit package-runtime
@@ -363,6 +363,15 @@ scalar INT8 implementation therefore makes no end-to-end speed claim; fused
 SIMD/dequantized kernels are the next optimization boundary. The benchmark
 artifact is `work/olmoe_q7/local_attention_package_benchmark_2026-08-03.json`
 (SHA-256 `e8d634a1e08ba12da01cc968e87a8d7b031fb510fd763ddd68a957e44e723bdb`).
+The W128/INT8 compiler path is now also exercised as a complete authenticated
+package: `work/olmoe_q7/package_w128_int8_2026-08-03` (manifest SHA-256
+`0b370a5b47913cade8255056b835ecf6d55f3a5aaf183290808ad22aa3ab6e8f`).  On an
+identical eight-token prompt, native generation produced exactly the same
+token IDs as W16/FP32, reduced attention reads from 31,457,280 to 7,864,320
+bytes (75%), and changed elapsed time from 4.7367 s to 4.8412 s (+2.21%).
+This is now an authenticated opt-in package boundary; W16/FP32 remains the
+ordinary default.  The comparison is recorded in
+`reports/olmoe_q7/package_w128_int8_generation_2026-08-03.json`.
 The native vector-kernel layer now includes a guarded AVX2 INT8 dot-product
 implementation with scalar fallback and parity coverage. This host reports
 `avx2_available=false`, so its measured behavior remains the scalar path; AVX2

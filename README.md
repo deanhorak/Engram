@@ -248,16 +248,25 @@ value vector as symmetric INT8 with one FP32 scale. On the frozen eight-record,
 attention reads are **4,328,521,728 bytes**, exactly **25%** of the dense
 reference, and the run uses no Transformers model shell or GPU.
 
-This is a prospective evaluator-only Milestone 3 gate, not a protected
-Milestone 2 replay and not yet the ordinary package default. The W16 bounded
-policy remains the production default while we integrate the compression into
-package metadata, test additional corpora, and measure end-to-end generation
-speed. The frozen protocol is
+This is not a protected Milestone 2 replay, and W16 remains the ordinary
+package default. The quality gate was first evaluator-only and is now also
+available as an authenticated W128/INT8 opt-in package; broader corpora and
+end-to-end performance tuning remain. The frozen protocol is
 `work/olmoe_q7/local_int8_w128_2026-08-03_protocol.json` (SHA-256
 `953b83cead9e722e6228c5d79252ecaa0c0c8980343459c62f5567455d33bda7`) and the
 authenticated result is
 `work/olmoe_q7/local_int8_w128_2026-08-03_report.json` (SHA-256
 `7cd55514efab021b2109f835310eb14aff64664e972fa6458266f20d1d17df80`).
+
+The explicit compiler path is now exercised end to end as
+`work/olmoe_q7/package_w128_int8_2026-08-03` (manifest SHA-256
+`0b370a5b47913cade8255056b835ecf6d55f3a5aaf183290808ad22aa3ab6e8f`).  On an
+identical eight-token prompt it produces the same token IDs as the W16/FP32
+package, reduces attention reads by 75% (31,457,280 → 7,864,320 bytes), and
+changes elapsed time by +2.21% in this short CPU run.  This is an authenticated
+opt-in package boundary; W16/FP32 remains the ordinary default.  The complete
+comparison is recorded in
+`reports/olmoe_q7/package_w128_int8_generation_2026-08-03.json`.
 
 The native Python package frontend can exercise this path explicitly without
 changing the authenticated package manifest:

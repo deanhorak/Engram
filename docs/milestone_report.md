@@ -400,6 +400,17 @@ memory-traffic/quality pass, not an end-to-end speedup claim. Artifact:
 `work/olmoe_q7/local_attention_package_benchmark_2026-08-03.json`, SHA-256
 `e8d634a1e08ba12da01cc968e87a8d7b031fb510fd763ddd68a957e44e723bdb`.
 
+The compiler/runtime boundary is now exercised as an authenticated W128/INT8
+package, not only as an evaluator override.  Package manifest SHA-256 is
+`0b370a5b47913cade8255056b835ecf6d55f3a5aaf183290808ad22aa3ab6e8f`.
+On an identical eight-token prompt, W128/INT8 and the ordinary W16/FP32
+package produce identical token IDs.  Attention reads fall from 31,457,280 to
+7,864,320 bytes (75%), while elapsed time changes from 4.7367 s to 4.8412 s
+(+2.21%).  Q7 MLP work dominates this short run, so this validates package
+assembly, CPU execution, and quality parity but is not a general speedup
+claim.  Evidence:
+`reports/olmoe_q7/package_w128_int8_generation_2026-08-03.json`.
+
 The rank-16 compressed query/key selector followed by native exact reranking
 now passes both the eight-record train screen and the independently captured
 eight-record development screen. The development result is a causal CPU
@@ -487,7 +498,7 @@ boundary without silently enabling the policy in ordinary generation.
 |---|---|---|
 | 1. Repository, inspection, fixtures, teacher traces, exact MLP decomposition, oracle top-K, tests | Complete | Build system, source inspection, teacher traces, exact SwiGLU/MLP decomposition, oracle experiments, and regression reports are present. |
 | 2. Semantic memory, practical routing, quantization, Python runtime, substituted-MLP evaluation | Protected promotion passed; opt-in only | Train-to-development causal replay, 512/2,048-position CPU scaling, frozen pool frontier, authenticated opt-in package generation, and the separately authorized protected rank-16/pool-6 replay pass. Protected aggregate: 100% top-1, hidden L2 0.009133, logit L2 0.004416, NLL delta −0.000460. The policy remains disabled by default and requires explicit package opt-in. |
-| 3. Attention analysis, local/recurrent/retrieval heads, hybrid episodic memory, attention substitution | Sustained quality gate passed; promotion pending | W128 full-context local attention with per-vector INT8 K/V and FP32 scales passes all frozen bands at 25% logical attention traffic on CPU. Deployable package policy integration, broader corpora, and end-to-end speedup remain. |
+| 3. Attention analysis, local/recurrent/retrieval heads, hybrid episodic memory, attention substitution | Sustained gate passed; authenticated opt-in package validated | W128 full-context local attention with per-vector INT8 K/V and FP32 scales passes all frozen bands at 25% logical attention traffic. An authenticated W128/INT8 package now reproduces W16 token IDs and 75% lower attention reads; the ordinary default remains W16, and broader corpora/performance tuning remain. |
 | 4. Shared recurrent controller and layer-free Engram runtime | Partial; state-transition gate passed | The standalone CPU controller runtime replays exact semantic/episodic streams with zero decoder-layer calls and terminal normalized MSE 0.0000208009 on the held-out trajectory. Stage-local causal K/V memory is now serialized and evaluated, but the best held-out learned-provider terminal MSE is 0.1692925 (rank-256 stage-local screen), so causal provider/controller promotion remains blocked. |
 | 5. Vocabulary/transition/correction artifacts, compiler, validation and CLI | Partial/usable | Native package generation, mapped weights, evaluator recurrent-correction dispatch, validation, greedy generation, and chat CLI work. Authenticated nonzero-controller package promotion remains gated. |
 | 6. Native C++ runtime, kernels, mapping, parity, generation, benchmarks | Partial/usable | CPU scalar/vector kernels, memory mapping, C ABI parity, native generation, and tests are operational. End-to-end long-context benchmarks and optimization remain. |

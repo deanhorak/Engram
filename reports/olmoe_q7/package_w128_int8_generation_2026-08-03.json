@@ -1,0 +1,44 @@
+{
+  "experiment": "olmoe_w128_int8_authenticated_package_generation",
+  "status": "opt_in_package_boundary",
+  "model": "work/olmoe_q7/package_w128_int8_2026-08-03",
+  "model_manifest_sha256": "0b370a5b47913cade8255056b835ecf6d55f3a5aaf183290808ad22aa3ab6e8f",
+  "reference_package": "work/olmoe_q7/package",
+  "reference_manifest_sha256": "861e9cc472f9e1245db5d64e9253411d0b656a0f08df2f58264e9c708ed750db",
+  "library": "build/libengram_olmoe_token_runtime.so",
+  "device": "cpu",
+  "threads": 12,
+  "prompt": "The purpose of a semantic memory system is",
+  "max_new_tokens": 8,
+  "quality": {
+    "token_ids_equal": true,
+    "w16_token_ids": [281, 4657, 285, 19553, 1491, 670, 253, 1533],
+    "w128_int8_token_ids": [281, 4657, 285, 19553, 1491, 670, 253, 1533],
+    "completion": " to store and retrieve information about the world"
+  },
+  "measurements": {
+    "w16_fp32": {
+      "elapsed_ns": 4736718196,
+      "attention_logical_read_bytes": 31457280,
+      "attention_state_bytes": 6336512,
+      "q7_scheduled_bytes": 11010048000
+    },
+    "w128_int8": {
+      "elapsed_ns": 4841181599,
+      "attention_logical_read_bytes": 7864320,
+      "attention_state_bytes": 10921984,
+      "q7_scheduled_bytes": 11010048000
+    },
+    "attention_read_reduction": 0.75,
+    "total_latency_ratio_w128_over_w16": 1.022058,
+    "attention_state_increase_bytes": 4583472
+  },
+  "gate": {
+    "semantic_quality_gate": "covered by frozen W128/INT8 8-sequence/1024-position report",
+    "package_authentication": true,
+    "native_generation": true,
+    "token_parity_on_prompt": true,
+    "default_policy_changed": false,
+    "milestone_3_promotion": "opt_in_validated; broader corpus and performance study remain"
+  }
+}
