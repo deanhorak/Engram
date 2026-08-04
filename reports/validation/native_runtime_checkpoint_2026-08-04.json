@@ -1,0 +1,19 @@
+{
+  "experiment": "native_runtime_validation_checkpoint",
+  "status": "complete",
+  "timestamp_utc": "2026-08-04",
+  "python": {
+    "command": "env PYTHONPATH=src python -m pytest -q",
+    "passed": 1135,
+    "skipped": 1,
+    "warnings": 2,
+    "elapsed_seconds": 104.85
+  },
+  "native": {
+    "command": "/usr/bin/ctest --test-dir build --output-on-failure",
+    "passed": 20,
+    "failed": 0,
+    "elapsed_seconds": 27.44
+  },
+  "interpretation": "All current Python and native regression tests pass. This validates the implementation checkpoint but does not promote the learned controller/provider, claim a broad language-quality result, or establish a llama.cpp comparison."
+}

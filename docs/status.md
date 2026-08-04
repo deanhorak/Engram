@@ -2082,3 +2082,10 @@ respectively, versus the fixed `0.0225` learned-provider threshold. Both arms
 failed; the result is auxiliary and does not claim the protected gate. The
 evidence indicates that simply adding ordinary prose data is insufficient.
 See `reports/controller_provider_pca_2026-08-03/auxiliary_wikitext2_screen.json`.
+### 2026-08-04 complete regression checkpoint
+
+The complete current test suites pass: Python **1,135 passed, 1 skipped** and
+native CTest **20/20**. The single skip is the existing deterministic-CUBLAS
+workspace test on this host. This is a clean implementation checkpoint; it
+does not change the learned-provider gate or create a llama.cpp comparison.
+See `reports/validation/native_runtime_checkpoint_2026-08-04.json`.

@@ -2599,3 +2599,14 @@ Engram gate. It rules out ordinary prose-corpus expansion as the next likely
 fix; future work needs a different causal target, architecture, or supervision.
 The complete machine-readable record is
 `reports/controller_provider_pca_2026-08-03/auxiliary_wikitext2_screen.json`.
+## 2026-08-04 — complete regression checkpoint
+
+After the auxiliary corpus screen, the complete local regression suites were
+rerun. Python passed **1,135 tests with 1 skip** in 104.85 seconds; the skip
+requires deterministic CUBLAS workspace configuration unavailable on this
+host. Native CTest passed **20/20** in 27.44 seconds, including both C ABI
+token-runtime lifecycle suites. This confirms that the capture/merge and
+documentation checkpoint did not regress the CPU runtime. It is an
+implementation result, not a learned-controller promotion or a broad
+llama.cpp comparison. The machine-readable record is
+`reports/validation/native_runtime_checkpoint_2026-08-04.json`.

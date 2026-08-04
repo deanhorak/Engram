@@ -570,9 +570,9 @@ thresholds.
 
 ## Verification
 
-- Python: 1,131 passed, 1 skipped (CUDA unavailable on the test runner).
-- Native CTest: 20/20 passed outside the sandbox in 26.94 s (including the
-  26.81 s C ABI lifecycle test).
+- Python: 1,135 passed, 1 skipped (CUDA unavailable on the test runner).
+- Native CTest: 20/20 passed outside the sandbox in 27.44 s (including the
+  27.32 s C ABI lifecycle test).
 - Lint and `git diff --check`: passed.
 ### Auxiliary learned-provider corpus screen (2026-08-04)
 
@@ -585,3 +585,10 @@ learned-provider promotion threshold. This is not the protected benchmark and
 does not change the native fixed-controller semantic result. It closes the
 specific hypothesis that a modest expansion of ordinary prose data would solve
 the learned-provider failure.
+### Regression checkpoint (2026-08-04)
+
+The complete local suites were rerun after the public-corpus experiment:
+Python **1,135 passed, 1 skipped** and native CTest **20/20**. This confirms
+the current CPU runtime and authenticated package paths remain regression-free.
+The checkpoint is not evidence that the learned controller/provider passed its
+causal gate and is not a `llama.cpp` comparison.
