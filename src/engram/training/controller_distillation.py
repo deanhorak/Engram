@@ -541,12 +541,13 @@ def merge_controller_traces(
         seed=int(first["seed"]),
         metadata=metadata,
     )
-    try:
-        for reader in readers:
-            for shard in reader.iter_shards():
-                writer.append(shard)
-    finally:
-        writer.close()
+    # Do not close in a ``finally`` block: ``TraceWriter.close`` marks the
+    # manifest complete, and an append failure must leave an explicitly
+    # incomplete artifact rather than a falsely authenticated partial merge.
+    for reader in readers:
+        for shard in reader.iter_shards():
+            writer.append(shard)
+    writer.close()
 
     manifest_path = target / "manifest.json"
     report = {
