@@ -2415,3 +2415,21 @@ causal corpus.
 - The provider is retained as a tested, disabled research implementation; it
   does not change the protected promotion or the production package.
   Evidence: reports/controller_provider_pca_2026-08-03/normalized_residual_screen.json.
+
+## 2026-08-04: independent auxiliary-corpus capture blocked by host resources
+
+- A local FineWeb-Edu-derived text slice was prepared from the existing raw
+  Parquet corpus for an independent causal trace.  The temporary 16-row JSONL
+  input is content-addressed with SHA-256
+  `9e7a83eb029a1daf48d6482d607f799e41ab0809e4a5bb1f02525c2ce54c53b5`.
+- The authorized native-BitNet hook-capture command was attempted with one
+  sample per forward pass, 16-token sequences, bounded BLAS/OpenMP threads,
+  and a 600-second timeout.  The process was killed while loading the
+  packaged teacher, before a trace manifest or record was written.  Repeating
+  through the direct runtime loader and outside the sandbox produced the same
+  host-level termination.
+- No auxiliary trace, corpus-based quality number, or promotion claim is
+  recorded.  The input hash documents provenance only; it is not protected
+  gate evidence.  The next M4-quality attempt therefore requires either a
+  lower-memory teacher/export path or a materially different trained model,
+  not another provider-capacity sweep on the existing corpus.
