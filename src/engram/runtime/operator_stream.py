@@ -34,7 +34,10 @@ OPERATOR_PROVIDER_VERSION = 1
 
 
 def _finite(value: np.ndarray, name: str) -> np.ndarray:
-    result = np.asarray(value, dtype=np.float32)
+    # ``asanyarray`` preserves NumPy's read-only ``memmap`` subclass.  This
+    # lets authenticated providers stay file-backed after construction rather
+    # than silently materializing every large stage tensor in RAM.
+    result = np.asanyarray(value, dtype=np.float32)
     if not np.all(np.isfinite(result)):
         raise ValueError(f"{name} must contain only finite values")
     return result
@@ -313,7 +316,15 @@ class TraceSequenceOperatorStreamProvider:
                 or sha256_file(file_path) != info.get("sha256")
             ):
                 raise ValueError(f"sequence provider checksum mismatch: {name}")
-            arrays[Path(name).stem] = np.load(file_path, allow_pickle=False)
+            # Keep large learned bases/projections memory-mapped.  A full
+            # controller provider can occupy hundreds of MiB; eagerly loading
+            # every stage defeats the CPU-only deployment boundary and can
+            # exhaust small inference hosts before the first token.  NumPy's
+            # read-only mmap preserves the authenticated file semantics while
+            # allowing stage-wise access.
+            arrays[Path(name).stem] = np.load(
+                file_path, allow_pickle=False, mmap_mode="r"
+            )
         return cls(
             semantic_outputs=arrays["semantic_outputs"],
             episodic_outputs=arrays["episodic_outputs"],
@@ -484,7 +495,13 @@ class PCAOperatorStreamProvider:
             file_path = target / name
             if not file_path.is_file() or file_path.stat().st_size != info.get("bytes") or sha256_file(file_path) != info.get("sha256"):
                 raise ValueError(f"operator provider checksum mismatch: {name}")
-            arrays[Path(name).stem] = np.load(file_path, allow_pickle=False)
+            # Large providers contain one basis and projection per stage.
+            # Read-only mmap keeps authentication and numerical behavior
+            # unchanged while avoiding an eager hundreds-of-MiB allocation on
+            # CPU-only hosts.
+            arrays[Path(name).stem] = np.load(
+                file_path, allow_pickle=False, mmap_mode="r"
+            )
         return cls(
             semantic_mean=arrays["semantic_mean"],
             semantic_basis=arrays["semantic_basis"],
@@ -864,7 +881,9 @@ class StateSpaceOperatorStreamProvider:
             file_path = target / name
             if not file_path.is_file() or file_path.stat().st_size != info.get("bytes") or sha256_file(file_path) != info.get("sha256"):
                 raise ValueError(f"state-space provider checksum mismatch: {name}")
-            arrays[Path(name).stem] = np.load(file_path, allow_pickle=False)
+            arrays[Path(name).stem] = np.load(
+                file_path, allow_pickle=False, mmap_mode="r"
+            )
         return cls(
             **arrays,
             metadata_payload={key: value for key, value in manifest.items() if key != "files"},
@@ -1028,7 +1047,9 @@ class ResidualStateSpaceOperatorStreamProvider:
             file_path = target / name
             if not file_path.is_file() or file_path.stat().st_size != info.get("bytes") or sha256_file(file_path) != info.get("sha256"):
                 raise ValueError(f"residual provider checksum mismatch: {name}")
-            arrays[Path(name).stem] = np.load(file_path, allow_pickle=False)
+            arrays[Path(name).stem] = np.load(
+                file_path, allow_pickle=False, mmap_mode="r"
+            )
         base = PCAOperatorStreamProvider(
             semantic_mean=arrays["base_semantic_mean"],
             semantic_basis=arrays["base_semantic_basis"],
@@ -1236,7 +1257,9 @@ class NonlinearResidualOperatorStreamProvider:
                 or sha256_file(file_path) != info.get("sha256")
             ):
                 raise ValueError(f"nonlinear provider checksum mismatch: {name}")
-            arrays[Path(name).stem] = np.load(file_path, allow_pickle=False)
+            arrays[Path(name).stem] = np.load(
+                file_path, allow_pickle=False, mmap_mode="r"
+            )
         base = PCAOperatorStreamProvider(
             semantic_mean=arrays["base_semantic_mean"],
             semantic_basis=arrays["base_semantic_basis"],
@@ -1478,7 +1501,9 @@ class CausalAttentionOperatorStreamProvider:
                 or sha256_file(file_path) != info.get("sha256")
             ):
                 raise ValueError(f"causal-attention provider checksum mismatch: {name}")
-            arrays[Path(name).stem] = np.load(file_path, allow_pickle=False)
+            arrays[Path(name).stem] = np.load(
+                file_path, allow_pickle=False, mmap_mode="r"
+            )
         base = PCAOperatorStreamProvider(
             semantic_mean=arrays.pop("base_semantic_mean"),
             semantic_basis=arrays.pop("base_semantic_basis"),
@@ -1734,7 +1759,9 @@ class StageCausalAttentionOperatorStreamProvider:
                 or sha256_file(file_path) != info.get("sha256")
             ):
                 raise ValueError(f"stage causal provider checksum mismatch: {name}")
-            arrays[Path(name).stem] = np.load(file_path, allow_pickle=False)
+            arrays[Path(name).stem] = np.load(
+                file_path, allow_pickle=False, mmap_mode="r"
+            )
         base = PCAOperatorStreamProvider(
             semantic_mean=arrays.pop("base_semantic_mean"),
             semantic_basis=arrays.pop("base_semantic_basis"),

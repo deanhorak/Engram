@@ -355,6 +355,38 @@ def test_nonlinear_residual_provider_zero_output_roundtrip(tmp_path):
     assert restored.metadata()["provider_kind"] == "nonlinear_residual_pca"
 
 
+def test_pca_provider_loads_large_arrays_read_only_mapped(tmp_path):
+    """Provider reload must not eagerly duplicate CPU deployment tensors."""
+
+    rng = np.random.default_rng(129)
+    stages, width, rank = 2, 8, 3
+    provider = PCAOperatorStreamProvider(
+        semantic_mean=rng.normal(size=(stages, width)).astype(np.float32),
+        semantic_basis=rng.normal(size=(stages, rank, width)).astype(np.float32),
+        semantic_projection=rng.normal(
+            size=(stages, 2 * width + 1, rank)
+        ).astype(np.float32),
+        episodic_mean=rng.normal(size=(stages, width)).astype(np.float32),
+        episodic_basis=rng.normal(size=(stages, rank, width)).astype(np.float32),
+        episodic_projection=rng.normal(
+            size=(stages, 2 * width + 1, rank)
+        ).astype(np.float32),
+        metadata_payload={"learned": True},
+    )
+    path = provider.save(tmp_path / "mapped-provider")
+    restored = PCAOperatorStreamProvider.load(path)
+    assert isinstance(restored.semantic_basis, np.memmap)
+    assert isinstance(restored.semantic_projection, np.memmap)
+    assert not restored.semantic_basis.flags.writeable
+    state = rng.normal(size=(2, width)).astype(np.float32)
+    token = rng.normal(size=(2, width)).astype(np.float32)
+    for stage in range(stages):
+        expected = provider.step(state, token, stage)
+        actual = restored.step(state, token, stage)
+        np.testing.assert_allclose(actual[0], expected[0])
+        np.testing.assert_allclose(actual[1], expected[1])
+
+
 def test_causal_attention_provider_zero_output_roundtrip(tmp_path):
     rng = np.random.default_rng(131)
     stages, width, rank = 2, 4, 1

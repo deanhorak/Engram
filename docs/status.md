@@ -1938,3 +1938,15 @@ bytes masked (**98.8038%** retained, **1.1962%** reduction); older candidate
 entries scored fall from **222,208** to **205,824** (**7.3733%** reduction).
 This confirms that the semantic win is not yet a large end-to-end traffic win:
 episodic value reads and the dominant local/projection work are unchanged.
+
+### CPU provider memory boundary (2026-08-04)
+
+Authenticated NumPy provider reloads now use read-only memory mapping for every
+serialized provider family (PCA, state-space, residual, nonlinear, causal, and
+stage-causal).  The arrays remain checksum-verified and numerically identical,
+but large per-stage bases and projections are no longer eagerly copied into
+anonymous RAM.  A focused 14-test parity run includes an explicit `np.memmap`
+assertion and passes.  This improves the CPU-only deployment boundary and is a
+Milestone 6 systems result; it does not change the learned-provider causal
+quality result.  The best learned-provider terminal normalized MSE remains
+**0.1666128**, above the fixed **0.0225** M4 promotion threshold.
