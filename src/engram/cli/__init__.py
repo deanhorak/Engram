@@ -1144,6 +1144,16 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="emit direct 2*hidden-size residual streams instead of PCA-latent corrections",
     )
+    stage_causal_attention_provider.add_argument(
+        "--train-controller-correction",
+        action="store_true",
+        help="also train step scale, stage embeddings, and low-rank controller adapters",
+    )
+    stage_causal_attention_provider.add_argument(
+        "--controller-out",
+        type=Path,
+        help="optional directory for the jointly adapted controller artifact",
+    )
     stage_causal_attention_provider.add_argument("--learning-rate", type=float, default=3e-4)
     stage_causal_attention_provider.add_argument("--seed", type=int, default=422)
     stage_causal_attention_provider.add_argument("--device", default="cpu")
@@ -3020,6 +3030,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             value_dim=args.value_dim,
             query_width=args.query_width,
             direct_hidden_correction=args.direct_hidden_correction,
+            train_controller_correction=args.train_controller_correction,
+            controller_out=args.controller_out,
             learning_rate=args.learning_rate,
             seed=args.seed,
             device=args.device,

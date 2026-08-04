@@ -1289,7 +1289,6 @@ def distill_causal_attention_operator_provider(
         query_head,
         correction_head,
     ]
-    optimizer = torch.optim.AdamW(trainable, lr=learning_rate, weight_decay=1e-5)
     controller_module = TorchFactorizedController(controller_obj).to(device).eval()
     for parameter in controller_module.parameters():
         parameter.requires_grad_(False)
@@ -1518,6 +1517,8 @@ def distill_stage_causal_attention_operator_provider(
     value_dim: int = 32,
     query_width: int = 32,
     direct_hidden_correction: bool = False,
+    train_controller_correction: bool = False,
+    controller_out: str | Path | None = None,
     learning_rate: float = 3e-4,
     seed: int = 422,
     device: str = "cpu",
@@ -1622,8 +1623,19 @@ def distill_stage_causal_attention_operator_provider(
     ]
     optimizer = torch.optim.AdamW(trainable, lr=learning_rate, weight_decay=1e-5)
     controller_module = TorchFactorizedController(controller_obj).to(device).eval()
-    for parameter in controller_module.parameters():
-        parameter.requires_grad_(False)
+    controller_trainable = []
+    for name, parameter in controller_module.named_parameters():
+        enabled = train_controller_correction and name in {
+            "step_scale",
+            "stage_embeddings",
+            "adapter_down",
+            "adapter_up",
+        }
+        parameter.requires_grad_(enabled)
+        if enabled:
+            controller_trainable.append(parameter)
+    trainable.extend(controller_trainable)
+    optimizer = torch.optim.AdamW(trainable, lr=learning_rate, weight_decay=1e-5)
     tensors = {
         name: torch.as_tensor(
             np.array(getattr(base, name), copy=True), dtype=torch.float32, device=device
@@ -1796,6 +1808,10 @@ def distill_stage_causal_attention_operator_provider(
     )
     target = Path(out)
     trained.save(target)
+    serialized_controller = None
+    if controller_out is not None:
+        serialized_controller = Path(controller_out)
+        controller_module.export().save(serialized_controller)
     report = {
         "experiment": "distill_stage_causal_attention_operator_provider",
         "status": "development_result",
@@ -1804,6 +1820,7 @@ def distill_stage_causal_attention_operator_provider(
         "adapted_provider": str(target.resolve()),
         "adapted_provider_sha256": _directory_sha256(target),
         "controller": str(Path(controller).resolve()),
+        "adapted_controller": str(serialized_controller.resolve()) if serialized_controller else None,
         "training_trace": str(Path(trace).resolve()),
         "validation_trace": str(Path(validation_trace).resolve()) if validation_trace else None,
         "optimizer_device": device,
@@ -1816,6 +1833,7 @@ def distill_stage_causal_attention_operator_provider(
             "query_width": query_width,
             "output_rank": rank,
             "direct_hidden_correction": direct_hidden_correction,
+            "train_controller_correction": train_controller_correction,
             "stage_specific_memory": True,
         },
         "training": {

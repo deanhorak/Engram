@@ -202,8 +202,10 @@ head does not generalize on this split (**0.1817167** and **0.1770538** in two
 scheduled screens), so it is not promoted. Results and artifact hashes are
 recorded in
 `reports/controller_provider_pca_2026-08-03/stage_causal_attention_screens.json`.
-The provider-only cache/rank sweep is now closed; the next justified attempt
-is a jointly trained controller/provider or a larger independent causal corpus.
+Jointly unfreezing the controller's step scale, stage embeddings, and
+low-rank adapters changes the latent result only to **0.1714471**, so that
+small co-adaptation arm is also closed. The next justified attempt is a larger
+jointly trained controller/provider or an independent causal corpus.
 
 ```bash
 PYTHONPATH=src python -m engram.cli distill-causal-attention-provider \

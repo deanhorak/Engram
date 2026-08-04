@@ -2361,3 +2361,9 @@
   The next justified M4 attempt must jointly train the controller/provider or
   obtain a larger independent causal corpus; no learned provider enters the
   authenticated package.
+- A small joint arm then unfroze only the controller's ``step_scale``, stage
+  embeddings, and low-rank adapters while training the stage-local provider.
+  The adapted controller was serialized and reloaded through the evaluator;
+  held-out terminal MSE was **0.1714471**, effectively identical to the
+  provider-only **0.1714502**.  This closes small-adapter co-adaptation as
+  well; it did not authorize package promotion or a Milestone 4 gate claim.

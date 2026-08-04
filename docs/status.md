@@ -294,8 +294,11 @@ residual heads overfit this split (0.1817167 at 10 steps and 0.1770538 at a
 lower-rate 20-step arm).  These are negative promotion results, not a gate
 pass.  The complete screen record is
 `reports/controller_provider_pca_2026-08-03/stage_causal_attention_screens.json`.
-Further cache-shape and rank sweeps are closed; the next defensible direction
-is joint controller/provider training or a larger independent causal corpus.
+Jointly unfreezing the controller's step scale, stage embeddings, and low-rank
+adapters changes the rank-64 result only to **0.1714471**, so small-adapter
+co-adaptation is also closed.  Further cache-shape, rank, and small-adapter
+sweeps are not justified; the next defensible direction is a larger jointly
+trained controller/provider model or an independently sourced causal corpus.
 
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible

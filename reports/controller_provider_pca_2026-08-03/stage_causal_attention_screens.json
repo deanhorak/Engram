@@ -75,7 +75,29 @@
       "validation_terminal_normalized_mse": 0.1770537942647934,
       "maximum_validation_terminal_normalized_mse": 1.344658374786377,
       "relative_improvement": -0.001991
+    },
+    {
+      "name": "stage_local_latent_rank64_joint_controller_20steps_tf10",
+      "provider": "/tmp/stage_joint_20",
+      "provider_sha256": "c54e1d4ca6b4cafe01e3ae75160303d55c179c9157d963423de721db4d1bab5c",
+      "adapted_controller": "/tmp/stage_joint_20_controller",
+      "adapted_controller_sha256": "99ddb0ff3a8b5c2c6da36a4062260204375b8b2583898aaf67abf073aa4a4e1d",
+      "key_dim": 16,
+      "value_dim": 32,
+      "query_width": 32,
+      "teacher_forcing_steps": 10,
+      "free_running_steps": 20,
+      "trainable_controller_parameters": [
+        "step_scale",
+        "stage_embeddings",
+        "adapter_down",
+        "adapter_up"
+      ],
+      "initial_validation_terminal_normalized_mse": 0.17670181393623352,
+      "validation_terminal_normalized_mse": 0.17144706845283508,
+      "maximum_validation_terminal_normalized_mse": 1.3545302152633667,
+      "relative_improvement": 0.029172842
     }
   ],
-  "decision": "Stage-local causal K/V memory is a valid CPU-serializable implementation and gives a small latent-rank improvement, but every independent screen remains far above the fixed promotion threshold. Direct hidden corrections overfit or destabilize the protected split. Do not promote a learned provider or claim Milestone 4 causal completion."
+  "decision": "Stage-local causal K/V memory is a valid CPU-serializable implementation and gives a small latent-rank improvement. Jointly training step scale, stage embeddings, and low-rank controller adapters changes 0.1714502 to 0.1714471, which is not material. Every independent screen remains far above the fixed promotion threshold; direct hidden corrections overfit or destabilize the protected split. Do not promote a learned provider or claim Milestone 4 causal completion."
 }

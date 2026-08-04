@@ -50,8 +50,10 @@ The authenticated screen record is
 `reports/controller_provider_pca_2026-08-03/stage_causal_attention_screens.json`.
 The stage-local latent artifact is useful implementation progress, but all
 learned-provider promotion remains blocked.  More isolated cache-shape, rank,
-or teacher-forcing sweeps are closed; the next experiment must jointly train
-the controller/provider or expand the independent causal corpus.
+or teacher-forcing sweeps are closed.  A joint arm that unfroze only step
+scale, stage embeddings, and low-rank controller adapters reached **0.1714471**,
+effectively unchanged; the next experiment must use a larger jointly trained
+controller/provider model or expand the independent causal corpus.
 
 The trace contract now has an opt-in causal extension: `--causal-top-k` stores
 teacher top-k logits and next-token IDs, while `distill-controller` can consume
@@ -334,7 +336,9 @@ so they overfit rather than improve generalization.  The complete screen and
 hashes are in
 `reports/controller_provider_pca_2026-08-03/stage_causal_attention_screens.json`.
 This closes provider-only cache/rank sweeps; joint controller/provider
-training or a larger independent causal corpus is required next.
+training at the small-adapter capacity was also screened (0.1714471) and is
+not sufficient; a larger jointly trained model or independent causal corpus is
+required next.
 
 ## Native recurrent-controller implementation boundary
 
