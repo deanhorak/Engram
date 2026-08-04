@@ -270,6 +270,12 @@ The teacher-forced training loss can be below the gate while free-running
 validation remains above it, so this is a causal compounding failure rather
 than a missing optimizer schedule.
 
+Increasing the full-corpus provider output rank from 64 to 256 lowers held-out
+terminal MSE from **0.1767018** to **0.1710317**, but remains **7.6x** above
+the gate. This rules out rank-64 truncation as the sole cause; the protected
+screen is preserved in
+`reports/controller_provider_pca_2026-08-03/rank256_fullcorpus_screen.json`.
+
 ## Native recurrent-controller implementation boundary
 
 The native token runtime now has a direct implementation of the schema-v3

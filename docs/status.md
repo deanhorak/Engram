@@ -262,6 +262,11 @@ The remaining M4 learned-provider block is therefore attributed to
 free-running state/operator compounding, not simply too few training records,
 rank, memory width, or a hard teacher-forcing transition.
 
+A rank-256 full-corpus provider confirms that rank-64 compression is not the
+sole blocker: terminal MSE improves to **0.1710317**, still **7.6x** above the
+**0.0225** threshold. Evidence:
+`reports/controller_provider_pca_2026-08-03/rank256_fullcorpus_screen.json`.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and

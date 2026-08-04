@@ -1,0 +1,30 @@
+{
+  "experiment": "full_corpus_provider_rank_screen",
+  "status": "development_failure",
+  "training_trace": "work/controller_distillation/bitnet_train_64x16_b4",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "provider": "/tmp/provider_train64_rank256",
+  "provider_sha256": "3f311c72143b9a208debba0aedf573271a239081f33317ce02619fe046f7fb9f",
+  "architecture": {
+    "output_rank": 256,
+    "ridge": 1.0,
+    "input": "controller_state, token_embedding, bias",
+    "optimizer_device": "cpu",
+    "inference_device": "cpu",
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0
+  },
+  "validation": {
+    "terminal_normalized_mse": 0.1710316539,
+    "mean_stage_normalized_mse": 0.7396670580,
+    "maximum_stage_normalized_mse": 1.4301493168,
+    "protected_validation": true
+  },
+  "baseline_rank64_terminal_normalized_mse": 0.1767018179,
+  "gate": {
+    "metric": "terminal_normalized_mse",
+    "threshold": 0.0225,
+    "passed": false
+  },
+  "decision": "reject; rank 256 improves the terminal metric by only 3.6 percent relative to rank 64 and remains 7.6 times above the causal gate"
+}
