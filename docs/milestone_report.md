@@ -1,6 +1,6 @@
 # Engram milestone and gate report
 
-Status date: 2026-08-03
+Status date: 2026-08-04
 
 ## Transformer-free controller replay boundary
 
@@ -129,6 +129,20 @@ to promotion. That retained result is
 The next M4 attempt must add temporal/context features or a stronger jointly
 trained provider/controller model; another isolated rank sweep is not
 justified.
+
+### Direct transition hypothesis (2026-08-04)
+
+A materially different CPU pilot replaced the fixed operator-stream basis with
+a stage-conditioned residual MLP that predicts the complete next controller
+state directly from the current state and token embedding.  This tests whether
+the PCA output seam, rather than the controller dynamics, is the limiting
+factor.  After 100 bounded updates on the protected training trace, the
+held-out terminal normalized MSE was **1.0855621** (initial **1.9863384**),
+still 48× above the **0.0225** threshold.  A wider 512-unit pilot was stopped
+by the host after its 100-update checkpoint at **1.2892941**.  Neither run
+produced a promotion artifact.  The direct-transition family is rejected until
+a model with explicit sequence memory and a larger independent corpus is
+available; this result does not alter the exact state-transition pass.
 
 ### Stateful sequence-provider boundary (2026-08-03)
 
@@ -506,7 +520,7 @@ boundary without silently enabling the policy in ordinary generation.
 | 3. Attention analysis, local/recurrent/retrieval heads, hybrid episodic memory, attention substitution | Sustained gate passed; authenticated opt-in package validated | W128 full-context local attention with per-vector INT8 K/V and FP32 scales passes all frozen bands at 25% logical attention traffic. An authenticated W128/INT8 package now reproduces W16 token IDs and 75% lower attention reads; the ordinary default remains W16, and broader corpora/performance tuning remain. |
 | 4. Shared recurrent controller and layer-free Engram runtime | Partial; state-transition gate passed | The standalone CPU controller runtime replays exact semantic/episodic streams with zero decoder-layer calls and terminal normalized MSE 0.0000208009 on the held-out trajectory. Stage-local causal K/V memory, normalized-residual, prefix-context, and full-corpus nonlinear targets remain negative; the best original-corpus learned-provider terminal MSE is 0.1666128 versus the fixed 0.0225 promotion threshold. The new native-projection capture path completed an independent 8/8 auxiliary split, but rank-128 PCA (0.2438876) and nonlinear (0.2530605) arms also failed. Causal provider/controller promotion remains blocked. |
 | 5. Vocabulary/transition/correction artifacts, compiler, validation and CLI | Partial/usable | Native package generation, mapped weights, evaluator recurrent-correction dispatch, validation, greedy generation, and chat CLI work. Authenticated nonzero-controller package promotion remains gated. |
-| 6. Native C++ runtime, kernels, mapping, parity, generation, benchmarks | Partial/usable | CPU scalar/vector kernels, memory mapping, C ABI parity, native generation, and tests are operational. A complete authenticated DIP package run now generates four tokens through the native CPU token-step runtime in 33.16 s at 1,297,152 kB peak RSS. Python provider artifacts reload read-only via NumPy memmap. AVX2 tuning, lower-memory packaging, and longer benchmark sweeps remain. |
+| 6. Native C++ runtime, kernels, mapping, parity, generation, benchmarks | Partial/usable | CPU scalar/vector kernels, memory mapping, C ABI parity, native generation, and tests are operational. The full native CTest suite passes 20/20 outside the sandbox, and a complete authenticated DIP package run generates four tokens through the native CPU token-step runtime in 33.16 s at 1,297,152 kB peak RSS. Python provider artifacts reload read-only via NumPy memmap. AVX2 tuning, lower-memory packaging, and longer benchmark sweeps remain. |
 | 7. Comprehensive evaluation, ablations, tuning, documentation, final report | In progress | Protected promotion and its documentation are complete. Broad model/task coverage, end-to-end performance tuning, ablations, and the reproducible final study remain. |
 
 ## Goals versus current reality
@@ -548,5 +562,6 @@ thresholds.
 ## Verification
 
 - Python: 1,131 passed, 1 skipped (CUDA unavailable on the test runner).
-- Native CTest: 20/20 passed.
+- Native CTest: 20/20 passed outside the sandbox in 26.94 s (including the
+  26.81 s C ABI lifecycle test).
 - Lint and `git diff --check`: passed.

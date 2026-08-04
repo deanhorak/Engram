@@ -1,6 +1,6 @@
 # Project status
 
-Snapshot date: **2026-08-03**
+Snapshot date: **2026-08-04**
 
 ## Latest native recurrent-controller boundary
 
@@ -222,6 +222,16 @@ A hidden-128/stage-32, 300-step continuation worsens validation terminal MSE
 to **0.2107506**, so increasing this MLP's capacity or training duration is
 not a path to the gate. Evidence:
 `reports/controller_provider_pca_2026-08-03/nonlinear_capacity_screen.json`.
+
+The next materially different hypothesis was a direct stage transition model:
+a stage-conditioned SiLU MLP predicts the complete next controller state from
+the current state and token, avoiding the fixed PCA output basis entirely.  A
+bounded 100-update CPU pilot lowered held-out terminal normalized MSE from
+**1.9863384** to **1.0855621**, still far above the fixed **0.0225** threshold.
+A wider pilot was stopped by the host after its 100-update checkpoint at
+**1.2892941**.  No artifact was promoted.  This rejects the direct-transition
+family for the current corpus; a future M4 attempt needs explicit sequence
+memory and a larger independent corpus, not another capacity-only sweep.
 
 The strongest learned-provider arm now combines the train-64 randomized
 rank-64 base with the nonlinear residual. It improves held-out terminal MSE
@@ -2002,3 +2012,9 @@ work remain tuning targets.
 The separate reset-verification mode is not included in this benchmark because
 it intentionally creates a second full runtime and exceeds the host's memory
 limit; the ordinary single-runtime generation completed with exit status 0.
+
+The complete native CTest suite was also run outside the sandbox on the same
+build: **20/20 tests passed** in 26.94 s, including the 26.81 s C ABI lifecycle
+test.
+This strengthens the Milestone 6 implementation evidence but does not change
+the learned-controller quality gate or claim an AVX2 path on this host.

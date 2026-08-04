@@ -1,0 +1,37 @@
+{
+  "experiment": "direct_stage_transition_screen",
+  "status": "development_result",
+  "training_trace": "work/controller_distillation/bitnet_train_8x16_b2",
+  "training_trace_manifest_sha256": "f8a492d17c7d19531bf0c8a1225272262c4964ba6fd4b26f2a5272da8d785a58",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "validation_trace_manifest_sha256": "bc9730300886f65611777a9ddccc9d2fa2daaf3bab3b873758beabdefca5adf6",
+  "controller": "work/native_bitnet/model.engram-bitnet-dip/controller",
+  "controller_metadata_sha256": "0812a3873ae481ae99d4eeb52182fffb829acb25c01292d2795c0402f1556995",
+  "model": {
+    "kind": "stage_conditioned_residual_mlp",
+    "inputs": ["controller_state", "token_embedding", "stage_embedding"],
+    "output": "next_controller_state",
+    "hidden_width": 256,
+    "stage_width": 32,
+    "updates": 100,
+    "teacher_forced_updates": 50,
+    "optimizer_device": "cpu",
+    "inference_device": "cpu",
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0
+  },
+  "validation": {
+    "initial_terminal_normalized_mse": 1.9863383620977402,
+    "final_terminal_normalized_mse": 1.0855620857328176,
+    "threshold": 0.0225,
+    "passed": false
+  },
+  "wider_checkpoint": {
+    "hidden_width": 512,
+    "updates_completed": 100,
+    "terminal_normalized_mse": 1.28929409570992,
+    "status": "host_terminated_before_completion",
+    "artifact_written": false
+  },
+  "decision": "reject_direct_transition_capacity_family"
+}

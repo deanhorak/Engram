@@ -2474,3 +2474,33 @@ causal corpus.
   the authenticated package and the protected promotion status is unchanged.
   Evidence:
   `reports/controller_provider_pca_2026-08-03/auxiliary_native_projection_screen.json`.
+
+## 2026-08-04: direct stage-transition hypothesis rejected
+
+- To test whether the fixed PCA output basis was the dominant M4 limitation, a
+  bounded CPU pilot replaced semantic/episodic latent reconstruction with a
+  stage-conditioned SiLU MLP that predicts the complete next controller state
+  from the current state and token embedding.  The controller runtime remained
+  layer-free; no Transformers model or decoder layer was loaded.
+- On the protected eight-sequence training / sixteen-sequence validation
+  traces, 100 updates reduced held-out terminal normalized MSE from **1.9863384**
+  to **1.0855621**.  This is still 48× above the fixed **0.0225** promotion
+  threshold.  A wider 512-unit arm was stopped by the host after its 100-update
+  checkpoint at **1.2892941** and produced no artifact.
+- Decision: reject direct state prediction as a capacity-only fix.  The
+  remaining M4 attempt requires explicit sequence memory and a substantially
+  larger independent causal corpus (or a different teacher/export model), not
+  another rank or hidden-width sweep.  The exact operator-residual
+  state-transition pass and the authenticated package are unchanged.
+
+## 2026-08-04: native systems verification completed
+
+- The full native CTest suite was rerun outside the sandbox with
+  `/usr/bin/ctest --test-dir build --output-on-failure`.
+- All **20/20** native tests passed in 26.94 s, including the 26.81 s C ABI
+  lifecycle test.  This confirms package mapping, transition kernels, attention, native
+  generation, reset/lifecycle behavior, and OLMoE C ABI parity on the current
+  build.
+- The result closes the current native-test verification gap for Milestone 6;
+  AVX2 specialization, lower-memory packaging, longer generation sweeps, and
+  an apples-to-apples `llama.cpp` performance study remain open.
