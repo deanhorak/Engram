@@ -1980,3 +1980,19 @@ result, not protected-gate evidence.  Report:
 `reports/controller_provider_pca_2026-08-03/auxiliary_native_projection_screen.json`.
 The same auxiliary report now includes the rank-128 capacity arm at terminal
 MSE **0.2438876**, which also fails.
+
+### Native CPU token generation benchmark (2026-08-04)
+
+The transformer-free C++ token runtime now has a complete package-level
+benchmark record.  Using the authenticated DIP package, 12 CPU threads, the
+native W16/C8/K4 streaming-attention path, and the exact operator-residual
+controller, a one-token prompt generated four tokens (`11 220 15 11`) in
+**33.16 s** wall time.  The run executed 120 stage calls and 120 native
+semantic calls, with **8.43888 s** semantic time and **8.26044 s** attention
+time.  Peak RSS was **1,297,152 kB**.  No Transformers model shell or
+`llama.cpp` was used.  Report:
+`reports/native_bitnet_cpu_generation_2026-08-04.json`.
+
+The separate reset-verification mode is not included in this benchmark because
+it intentionally creates a second full runtime and exceeds the host's memory
+limit; the ordinary single-runtime generation completed with exit status 0.
