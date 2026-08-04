@@ -2026,3 +2026,10 @@ does not enlarge the existing 8/8 auxiliary split and has no new quality score;
 its manifest is recorded in
 `reports/controller_provider_pca_2026-08-03/auxiliary_capture_16_screen.json`.
 This is a corpus-cardinality boundary, not evidence for or against the M4 gate.
+
+The corresponding stage-local causal-memory fit on the frozen auxiliary split
+was attempted with 20 updates and eight teacher-forced warm-up updates, but
+the host terminated the process before an artifact or score was written.
+`reports/controller_provider_pca_2026-08-03/auxiliary_stage_causal_attempt.json`
+records the no-score outcome.  The earlier auxiliary rank-16, rank-128, and
+nonlinear scores remain the only valid auxiliary quality evidence.

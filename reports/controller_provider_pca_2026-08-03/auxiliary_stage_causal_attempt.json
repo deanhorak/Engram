@@ -1,0 +1,19 @@
+{
+  "experiment": "auxiliary_stage_causal_provider_attempt",
+  "status": "host_terminated_before_artifact",
+  "provider": "/tmp/provider_aux_native_rank16",
+  "training_trace": "/tmp/bitnet_aux_trace_train8_native_proj",
+  "validation_trace": "/tmp/bitnet_aux_trace_val8_native_proj",
+  "requested": {
+    "steps": 20,
+    "teacher_forcing_steps": 8,
+    "batch_size": 4,
+    "key_dim": 16,
+    "value_dim": 32,
+    "query_width": 32,
+    "device": "cpu"
+  },
+  "quality_score": null,
+  "artifact_written": false,
+  "decision": "resource_boundary_no_quality_claim"
+}

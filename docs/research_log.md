@@ -2520,3 +2520,10 @@ causal corpus.
   produced.  Decision: the current low-memory capture path is adequate for the
   available auxiliary slice, but a genuinely larger independent corpus is
   still required for the next M4 quality attempt.
+
+- A stage-local causal-memory fit was then attempted on the completed 8/8
+  auxiliary split (20 updates, eight teacher-forced warm-up updates).  The host
+  terminated the CPU process before it emitted an artifact or score.  This is
+  recorded as a resource boundary in
+  `reports/controller_provider_pca_2026-08-03/auxiliary_stage_causal_attempt.json`,
+  not as a quality result.
