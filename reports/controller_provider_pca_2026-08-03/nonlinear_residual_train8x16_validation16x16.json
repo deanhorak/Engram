@@ -1,0 +1,41 @@
+{
+  "experiment": "distill_nonlinear_residual_provider",
+  "status": "development_failure",
+  "training_trace": "work/controller_distillation/bitnet_train_8x16_b2",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "controller_gate": {
+    "metric": "terminal_normalized_mse",
+    "threshold": 0.0225
+  },
+  "architecture": {
+    "base_provider": "pca_state_token_rank16",
+    "residual": "shared SiLU MLP with stage embedding",
+    "hidden_width": 64,
+    "stage_width": 16,
+    "output_rank": 16,
+    "steps": 100,
+    "batch_size": 8,
+    "learning_rate": 0.0003,
+    "seed": 403,
+    "optimizer_device": "cpu",
+    "inference_device": "cpu",
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0
+  },
+  "initial_validation": {
+    "mean_stage_normalized_mse": 0.8770999405,
+    "terminal_normalized_mse": 0.2536107344,
+    "maximum_stage_normalized_mse": 1.6906041652
+  },
+  "final_validation": {
+    "mean_stage_normalized_mse": 0.8168735773,
+    "terminal_normalized_mse": 0.1966997203,
+    "maximum_stage_normalized_mse": 1.6111999080,
+    "post_serialization_terminal_normalized_mse": 0.1966992617
+  },
+  "protected_validation": true,
+  "training_terminal_normalized_mse": 0.1116616316,
+  "artifact": "/tmp/nonlinear_provider_smoke2",
+  "artifact_sha256": "fd00c43bb73117686f8ec168a9f87ddebf7b1557506a8cd17854799898542666",
+  "decision": "reject for promotion; nonlinear correction improves the held-out terminal error but remains 8.74 times above the causal gate"
+}

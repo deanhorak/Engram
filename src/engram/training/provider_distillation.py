@@ -16,6 +16,7 @@ import numpy as np
 
 from engram.controller import FactorizedRecurrentController
 from engram.runtime.operator_stream import (
+    NonlinearResidualOperatorStreamProvider,
     PCAOperatorStreamProvider,
     _directory_sha256,
 )
@@ -894,10 +895,240 @@ def dagger_refit_operator_provider(
     return report
 
 
+def distill_nonlinear_residual_provider(
+    provider: str | Path,
+    controller: str | Path,
+    trace: str | Path,
+    out: str | Path,
+    *,
+    validation_trace: str | Path | None = None,
+    steps: int = 100,
+    batch_size: int = 8,
+    hidden_width: int = 64,
+    stage_width: int = 16,
+    learning_rate: float = 3e-4,
+    seed: int = 403,
+    device: str = "cpu",
+) -> dict[str, Any]:
+    """Train a shared nonlinear latent residual through free-running rollout."""
+
+    if steps < 0 or batch_size <= 0 or hidden_width <= 0 or stage_width <= 0:
+        raise ValueError("steps, batch_size, hidden_width, and stage_width must be positive")
+    if learning_rate <= 0.0 or not np.isfinite(learning_rate):
+        raise ValueError("learning_rate must be finite and positive")
+    torch, TorchFactorizedController = _torch_controller_class()
+    if device.startswith("cuda") and not torch.cuda.is_available():
+        raise RuntimeError("nonlinear provider CUDA training requested but unavailable")
+    if not device.startswith("cuda"):
+        torch.set_num_threads(min(4, torch.get_num_threads()))
+    torch.manual_seed(seed)
+    if device.startswith("cuda"):
+        torch.cuda.manual_seed_all(seed)
+    training = _load_trajectories(trace)
+    validation = _load_trajectories(validation_trace) if validation_trace else training
+    base = PCAOperatorStreamProvider.load(provider)
+    controller_obj = FactorizedRecurrentController.load(controller)
+    for data in (training, validation):
+        if data.hidden_size != base.state_dim or data.num_stages != base.num_stages:
+            raise ValueError("provider and trajectory dimensions differ")
+    if controller_obj.state_dim != training.hidden_size or controller_obj.num_stages != training.num_stages:
+        raise ValueError("controller and training trace dimensions differ")
+
+    width = training.hidden_size
+    stages = training.num_stages
+    rank = base.output_rank
+    module = TorchFactorizedController(controller_obj).to(device).eval()
+    for parameter in module.parameters():
+        parameter.requires_grad_(False)
+    tensors = {
+        name: torch.as_tensor(
+            np.array(getattr(base, name), copy=True), dtype=torch.float32, device=device
+        )
+        for name in (
+            "semantic_mean",
+            "semantic_basis",
+            "semantic_projection",
+            "episodic_mean",
+            "episodic_basis",
+            "episodic_projection",
+        )
+    }
+
+    class TorchNonlinearResidual(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.input_down = torch.nn.Linear(2 * width + 1, hidden_width)
+            self.stage_embedding = torch.nn.Embedding(stages, stage_width)
+            self.hidden_up = torch.nn.Linear(hidden_width + stage_width, hidden_width)
+            self.output_up = torch.nn.Linear(hidden_width, 2 * rank)
+            torch.nn.init.zeros_(self.output_up.weight)
+            torch.nn.init.zeros_(self.output_up.bias)
+
+        def forward(self, features, stage):
+            ids = torch.full(
+                (features.shape[0],), stage, dtype=torch.long, device=features.device
+            )
+            hidden = torch.nn.functional.silu(self.input_down(features))
+            hidden = torch.nn.functional.silu(
+                self.hidden_up(torch.cat((hidden, self.stage_embedding(ids)), dim=-1))
+            )
+            return self.output_up(hidden)
+
+    residual = TorchNonlinearResidual().to(device)
+    optimizer = torch.optim.AdamW(
+        residual.parameters(), lr=learning_rate, weight_decay=1e-5
+    )
+
+    def rollout(data, indices):
+        target = torch.as_tensor(data.teacher_states[indices], dtype=torch.float32, device=device)
+        token = torch.as_tensor(data.token_embedding[indices], dtype=torch.float32, device=device)
+        state = target[:, 0]
+        errors = []
+        for stage in range(stages):
+            features = torch.cat(
+                (state, token, torch.ones((len(indices), 1), device=device)), dim=-1
+            )
+            correction = residual(features, stage)
+            semantic = tensors["semantic_mean"][stage] + (
+                (features @ tensors["semantic_projection"][stage])
+                + correction[:, :rank]
+            ) @ tensors["semantic_basis"][stage]
+            episodic = tensors["episodic_mean"][stage] + (
+                (features @ tensors["episodic_projection"][stage])
+                + correction[:, rank:]
+            ) @ tensors["episodic_basis"][stage]
+            state = module.step(
+                state, torch.cat((token, semantic, episodic), dim=-1), stage
+            )
+            target_state = target[:, stage + 1]
+            rms = target_state.square().mean(dim=-1, keepdim=True).sqrt().clamp_min(1e-4)
+            errors.append(((state - target_state) / rms).square().mean())
+        return torch.stack(errors).mean(), errors
+
+    def evaluate(data):
+        totals = np.zeros(stages, dtype=np.float64)
+        records = 0
+        residual.eval()
+        with torch.inference_mode():
+            for start in range(0, data.records, batch_size):
+                indices = np.arange(start, min(start + batch_size, data.records))
+                _loss, errors = rollout(data, indices)
+                count = len(indices)
+                totals += np.asarray([float(value.item()) for value in errors]) * count
+                records += count
+        residual.train()
+        values = totals / max(records, 1)
+        return {
+            "mean_stage_normalized_mse": float(values.mean()),
+            "terminal_normalized_mse": float(values[-1]),
+            "maximum_stage_normalized_mse": float(values.max()),
+            "stage_normalized_mse": [float(value) for value in values],
+        }
+
+    initial_validation = evaluate(validation)
+    initial_training = evaluate(training)
+    rng = np.random.default_rng(seed)
+    history = []
+    started = time.perf_counter()
+    for step in range(steps):
+        indices = rng.choice(
+            training.records,
+            size=batch_size,
+            replace=training.records < batch_size,
+        )
+        optimizer.zero_grad(set_to_none=True)
+        loss, errors = rollout(training, indices)
+        if not bool(torch.isfinite(loss)):
+            raise RuntimeError(f"nonlinear provider loss became non-finite at step {step}")
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(residual.parameters(), max_norm=1.0)
+        optimizer.step()
+        if step in {0, steps - 1} or (step + 1) % max(steps // 5, 1) == 0:
+            history.append(
+                {
+                    "step": step + 1,
+                    "loss": float(loss.detach().cpu()),
+                    "terminal_normalized_mse": float(errors[-1].detach().cpu()),
+                }
+            )
+    final_validation = evaluate(validation)
+    final_training = evaluate(training)
+    trained = NonlinearResidualOperatorStreamProvider(
+        base_provider=base,
+        input_down=residual.input_down.weight.detach().cpu().numpy().T,
+        input_bias=residual.input_down.bias.detach().cpu().numpy(),
+        stage_embedding=residual.stage_embedding.weight.detach().cpu().numpy(),
+        hidden_up=residual.hidden_up.weight.detach().cpu().numpy().T,
+        hidden_bias=residual.hidden_up.bias.detach().cpu().numpy(),
+        output_up=residual.output_up.weight.detach().cpu().numpy().T,
+        output_bias=residual.output_up.bias.detach().cpu().numpy(),
+        metadata_payload={
+            "source_provider": str(Path(provider).resolve()),
+            "source_provider_sha256": _directory_sha256(Path(provider).resolve()),
+            "training_trace": str(Path(trace).resolve()),
+            "validation_trace": str(Path(validation_trace).resolve()) if validation_trace else None,
+            "source_model_hash": training.manifest.get("model_hash"),
+            "source_dataset_hash": training.manifest.get("dataset_hash"),
+            "architecture": "shared_silu_stage_conditioned_latent_residual",
+            "learned": True,
+            "training_steps": steps,
+            "training_batch_size": batch_size,
+            "training_seed": seed,
+            "optimizer_device": device,
+        },
+    )
+    target = Path(out)
+    trained.save(target)
+    report = {
+        "experiment": "distill_nonlinear_residual_provider",
+        "status": "development_result",
+        "provider": str(Path(provider).resolve()),
+        "provider_sha256": _directory_sha256(Path(provider).resolve()),
+        "adapted_provider": str(target.resolve()),
+        "adapted_provider_sha256": _directory_sha256(target),
+        "controller": str(Path(controller).resolve()),
+        "training_trace": str(Path(trace).resolve()),
+        "validation_trace": str(Path(validation_trace).resolve()) if validation_trace else None,
+        "optimizer_device": device,
+        "inference_device": "cpu",
+        "transformers_model_loaded": False,
+        "decoder_layer_forward_calls": 0,
+        "architecture": {
+            "hidden_width": hidden_width,
+            "stage_width": stage_width,
+            "output_rank": rank,
+        },
+        "training": {
+            "steps": steps,
+            "batch_size": batch_size,
+            "learning_rate": learning_rate,
+            "seed": seed,
+            "elapsed_seconds": time.perf_counter() - started,
+            "history": history,
+            "initial": initial_training,
+            "final": final_training,
+        },
+        "initial_validation": initial_validation,
+        "validation": final_validation,
+        "gate": {
+            "metric": "terminal_normalized_mse",
+            "threshold": 0.0225,
+            "actual": final_validation["terminal_normalized_mse"],
+            "passed": bool(final_validation["terminal_normalized_mse"] <= 0.0225),
+            "layer_free_cpu_replay": True,
+            "end_to_end_generation": False,
+        },
+    }
+    target.parent.mkdir(parents=True, exist_ok=True)
+    atomic_json(target.parent / f"{target.name}_training_report.json", report)
+    return report
+
+
 __all__ = [
     "joint_distill_operator_provider",
     "distill_state_space_operator_provider",
     "distill_state_space_residual_provider",
     "adapt_controller_correction_for_provider",
     "dagger_refit_operator_provider",
+    "distill_nonlinear_residual_provider",
 ]

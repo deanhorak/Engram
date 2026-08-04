@@ -8,11 +8,13 @@ from engram.evaluation.controller_substitution import (
 from engram.runtime.controller_only import ControllerOnlyRuntime
 from engram.runtime.operator_stream import (
     PCAOperatorStreamProvider,
+    NonlinearResidualOperatorStreamProvider,
     RecurrentContextProvider,
     ResidualStateSpaceOperatorStreamProvider,
     StateSpaceOperatorStreamProvider,
     TraceOperatorStreamProvider,
     TraceSequenceOperatorStreamProvider,
+    load_operator_stream_provider,
 )
 
 
@@ -310,3 +312,42 @@ def test_residual_state_space_zero_correction_matches_base_provider(tmp_path):
         np.testing.assert_allclose(actual[0], expected[0])
         np.testing.assert_allclose(actual[1], expected[1])
     assert restored.metadata()["provider_kind"] == "state_space_residual_pca"
+
+
+def test_nonlinear_residual_provider_zero_output_roundtrip(tmp_path):
+    rng = np.random.default_rng(127)
+    stages, width, rank = 2, 4, 1
+    base = PCAOperatorStreamProvider(
+        semantic_mean=rng.normal(size=(stages, width)).astype(np.float32),
+        semantic_basis=rng.normal(size=(stages, rank, width)).astype(np.float32),
+        semantic_projection=rng.normal(size=(stages, 2 * width + 1, rank)).astype(np.float32),
+        episodic_mean=rng.normal(size=(stages, width)).astype(np.float32),
+        episodic_basis=rng.normal(size=(stages, rank, width)).astype(np.float32),
+        episodic_projection=rng.normal(size=(stages, 2 * width + 1, rank)).astype(np.float32),
+        metadata_payload={"source_model_hash": "test"},
+    )
+    provider = NonlinearResidualOperatorStreamProvider(
+        base_provider=base,
+        input_down=rng.normal(size=(2 * width + 1, 3)).astype(np.float32),
+        input_bias=rng.normal(size=3).astype(np.float32),
+        stage_embedding=rng.normal(size=(stages, 2)).astype(np.float32),
+        hidden_up=rng.normal(size=(5, 3)).astype(np.float32),
+        hidden_bias=rng.normal(size=3).astype(np.float32),
+        output_up=np.zeros((3, 2 * rank), dtype=np.float32),
+        output_bias=np.zeros(2 * rank, dtype=np.float32),
+        metadata_payload={"learned": True},
+    )
+    path = provider.save(tmp_path / "nonlinear-provider")
+    restored = NonlinearResidualOperatorStreamProvider.load(path)
+    generic = load_operator_stream_provider(path)
+    state = rng.normal(size=(2, width)).astype(np.float32)
+    token = rng.normal(size=(2, width)).astype(np.float32)
+    for stage in range(stages):
+        expected = base.step(state, token, stage)
+        actual = restored.step(state, token, stage)
+        loaded = generic.step(state, token, stage)
+        np.testing.assert_allclose(actual[0], expected[0])
+        np.testing.assert_allclose(actual[1], expected[1])
+        np.testing.assert_allclose(loaded[0], expected[0])
+        np.testing.assert_allclose(loaded[1], expected[1])
+    assert restored.metadata()["provider_kind"] == "nonlinear_residual_pca"

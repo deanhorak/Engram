@@ -1,0 +1,28 @@
+{
+  "experiment": "nonlinear_residual_provider_capacity_screen",
+  "status": "development_failure",
+  "training_trace": "work/controller_distillation/bitnet_train_8x16_b2",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "base_provider": "pca_state_token_rank16",
+  "architecture": {
+    "hidden_width": 128,
+    "stage_width": 32,
+    "steps": 300,
+    "batch_size": 8,
+    "learning_rate": 0.0001,
+    "seed": 404,
+    "optimizer_device": "cpu",
+    "inference_device": "cpu",
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0
+  },
+  "validation": {
+    "mean_stage_normalized_mse": 0.7995372155,
+    "terminal_normalized_mse": 0.2107505889,
+    "maximum_stage_normalized_mse": 1.5374027975
+  },
+  "comparison": {
+    "smaller_100_step_terminal_normalized_mse": 0.1966997203,
+    "decision": "reject; added width and training steps worsen held-out causal error"
+  }
+}

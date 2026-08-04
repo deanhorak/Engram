@@ -144,6 +144,7 @@ from engram.training import (
     build_distillation_tail_holdout,
     capture_native_bitnet_controller_traces,
     distill_factorized_controller,
+    distill_nonlinear_residual_provider,
     distill_state_space_operator_provider,
     distill_state_space_residual_provider,
     joint_distill_operator_provider,
@@ -997,7 +998,9 @@ def _parser() -> argparse.ArgumentParser:
     fit_operator_provider.add_argument("--output-rank", type=int, default=16)
     fit_operator_provider.add_argument("--ridge", type=float, default=1e-2)
     fit_operator_provider.add_argument(
-        "--target", choices=("streams", "combined_delta"), default="streams"
+        "--target",
+        choices=("streams", "combined_stream", "combined_delta"),
+        default="streams",
     )
 
     distill_operator_provider = commands.add_parser(
@@ -1074,6 +1077,23 @@ def _parser() -> argparse.ArgumentParser:
     dagger_provider.add_argument("--out", required=True, type=Path)
     dagger_provider.add_argument("--iterations", type=int, default=2)
     dagger_provider.add_argument("--ridge", type=float, default=1.0)
+
+    nonlinear_provider = commands.add_parser(
+        "distill-nonlinear-residual-provider",
+        help="distill a shared nonlinear latent residual over a PCA provider",
+    )
+    nonlinear_provider.add_argument("--provider", required=True, type=Path)
+    nonlinear_provider.add_argument("--controller", required=True, type=Path)
+    nonlinear_provider.add_argument("--trace", required=True, type=Path)
+    nonlinear_provider.add_argument("--validation-trace", type=Path)
+    nonlinear_provider.add_argument("--out", required=True, type=Path)
+    nonlinear_provider.add_argument("--steps", type=int, default=100)
+    nonlinear_provider.add_argument("--batch-size", type=int, default=8)
+    nonlinear_provider.add_argument("--hidden-width", type=int, default=64)
+    nonlinear_provider.add_argument("--stage-width", type=int, default=16)
+    nonlinear_provider.add_argument("--learning-rate", type=float, default=3e-4)
+    nonlinear_provider.add_argument("--seed", type=int, default=403)
+    nonlinear_provider.add_argument("--device", default="cpu")
 
     evaluate_operator_provider = commands.add_parser(
         "evaluate-controller-provider",
@@ -2882,6 +2902,22 @@ def main(argv: Sequence[str] | None = None) -> int:
             validation_trace=args.validation_trace,
             iterations=args.iterations,
             ridge=args.ridge,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "distill-nonlinear-residual-provider":
+        result = distill_nonlinear_residual_provider(
+            args.provider,
+            args.controller,
+            args.trace,
+            args.out,
+            validation_trace=args.validation_trace,
+            steps=args.steps,
+            batch_size=args.batch_size,
+            hidden_width=args.hidden_width,
+            stage_width=args.stage_width,
+            learning_rate=args.learning_rate,
+            seed=args.seed,
+            device=args.device,
         )
         print(json.dumps(result, indent=2, sort_keys=True))
     elif args.command == "evaluate-controller-provider":

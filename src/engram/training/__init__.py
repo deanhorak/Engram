@@ -8,6 +8,7 @@ from .provider_distillation import (
     dagger_refit_operator_provider,
     distill_state_space_operator_provider,
     distill_state_space_residual_provider,
+    distill_nonlinear_residual_provider,
     joint_distill_operator_provider,
 )
 from .activation_aware_aq import train_activation_aware_aq_boundaries

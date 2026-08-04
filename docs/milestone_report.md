@@ -180,6 +180,15 @@ Output rank alone is not a defensible route to M4 promotion; the next attempt
 must change the causal training signal or replace the provider/controller
 architecture.
 
+The exact-residual algebra was tested directly as well. A rank-16 provider
+trained on the combined teacher residual (`semantic_output + episodic_output`)
+with the episodic stream serialized as zero reaches held-out terminal
+normalized MSE **0.1793060** (mean **0.8155644**, maximum stage **1.6025280**).
+It is slightly worse than the separate-stream λ=1 provider (**0.1789347**),
+so stream separation is not the dominant source of causal error. The
+transformer-free CPU result is preserved in
+`reports/controller_provider_pca_2026-08-03/combined_stream_rank16.json`.
+
 A DAgger-style visited-state refit was then implemented as
 `engram dagger-refit-operator-provider`. On the smaller 8-sequence training /
 16-sequence validation split, two refits lower held-out terminal normalized
@@ -191,6 +200,22 @@ causal rollouts, no Transformers model, and zero decoder-layer calls. Report:
 `reports/controller_provider_pca_2026-08-03/dagger_refit_train8x16_validation16x16.json`.
 This closes the first visited-state correction attempt; a passing M4 provider
 still requires a materially more expressive teacher signal or architecture.
+
+The first durable nonlinear provider was then implemented. A shared SiLU MLP
+with a learned stage embedding adds latent corrections to the rank-16 PCA
+provider and is serialized as `nonlinear_residual_pca`. A 100-step CPU run on
+8 training sequences improves the independent 16-sequence validation terminal
+normalized MSE from **0.2536107** to **0.1966997**; reloading the serialized
+artifact reproduces **0.1966993**. The improvement is real but remains 8.74
+times above the **0.0225** gate. The provider loader, CLI, checksum-authenticated
+artifact path, and zero-output parity test are now integrated. Evidence:
+`reports/controller_provider_pca_2026-08-03/nonlinear_residual_train8x16_validation16x16.json`.
+
+A larger hidden-128/stage-32 arm trained for 300 CPU steps reaches terminal
+normalized MSE **0.2107506**, worse than the smaller 100-step arm. The
+capacity/epoch increase is therefore rejected rather than promoted; its
+controlled comparison is recorded in
+`reports/controller_provider_pca_2026-08-03/nonlinear_capacity_screen.json`.
 
 ## Native recurrent-controller implementation boundary
 
@@ -375,6 +400,6 @@ thresholds.
 
 ## Verification
 
-- Python: 1,128 passed, 1 skipped (CUDA unavailable on the test runner).
+- Python: 1,129 passed, 1 skipped (CUDA unavailable on the test runner).
 - Native CTest: 20/20 passed.
 - Lint and `git diff --check`: passed.

@@ -11,8 +11,8 @@ import numpy as np
 
 from engram.runtime.controller_only import ControllerOnlyRuntime
 from engram.runtime.operator_stream import (
-    PCAOperatorStreamProvider,
     TraceSequenceOperatorStreamProvider,
+    load_operator_stream_provider,
 )
 from engram.training.controller_distillation import _load_trajectories
 from engram.utils import atomic_json, sha256_file
@@ -41,7 +41,7 @@ def evaluate_controller_provider_trace(
     provider_path = Path(provider).resolve()
     controller_path = Path(controller).resolve()
     data = _load_trajectories(trace_path)
-    loaded_provider = PCAOperatorStreamProvider.load(provider_path)
+    loaded_provider = load_operator_stream_provider(provider_path)
     runtime = ControllerOnlyRuntime(controller_path, allow_correction=allow_correction)
     provider_model_hash = loaded_provider.metadata().get("source_model_hash")
     trace_model_hash = data.manifest.get("model_hash")

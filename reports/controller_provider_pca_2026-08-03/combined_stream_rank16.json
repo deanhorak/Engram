@@ -1,0 +1,30 @@
+{
+  "experiment": "combined_operator_stream_provider",
+  "status": "development_failure",
+  "training_trace": "work/controller_distillation/bitnet_train_64x16_b4",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "controller_gate": {
+    "metric": "terminal_normalized_mse",
+    "threshold": 0.0225
+  },
+  "provider": {
+    "target": "combined_stream",
+    "definition": "semantic_output + episodic_output, with episodic stream serialized as zero",
+    "output_rank": 16,
+    "ridge": 1.0,
+    "optimizer_device": "cpu",
+    "inference_device": "cpu",
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0
+  },
+  "validation": {
+    "mean_stage_normalized_mse": 0.8155643940,
+    "terminal_normalized_mse": 0.1793059856,
+    "maximum_stage_normalized_mse": 1.6025279760
+  },
+  "comparison": {
+    "separate_stream_lambda1_terminal_normalized_mse": 0.1789347380,
+    "decision": "reject; compressing the exact residual sum into one basis does not improve causal rollout"
+  },
+  "interpretation": "The semantic/episodic split is not the dominant source of provider error. The remaining M4 gap requires a stronger causal teacher signal or a more expressive state-conditioned provider."
+}

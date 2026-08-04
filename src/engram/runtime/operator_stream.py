@@ -1047,6 +1047,222 @@ class ResidualStateSpaceOperatorStreamProvider:
         )
 
 
+@dataclass(frozen=True)
+class NonlinearResidualOperatorStreamProvider:
+    """Memoryless nonlinear residual adapter over a PCA provider.
+
+    The wrapped PCA provider is the zero-output baseline.  A shared SiLU MLP
+    predicts stage-conditioned corrections in the provider's latent bases from
+    the current controller state and token embedding.  The artifact contains
+    only NumPy tensors and therefore remains CPU-only at inference time.
+    """
+
+    base_provider: PCAOperatorStreamProvider
+    input_down: np.ndarray
+    input_bias: np.ndarray
+    stage_embedding: np.ndarray
+    hidden_up: np.ndarray
+    hidden_bias: np.ndarray
+    output_up: np.ndarray
+    output_bias: np.ndarray
+    metadata_payload: dict[str, Any]
+    provider_kind: str = "nonlinear_residual_pca"
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.base_provider, PCAOperatorStreamProvider):
+            raise TypeError("base_provider must be a PCAOperatorStreamProvider")
+        arrays = {
+            name: _finite(getattr(self, name), name)
+            for name in (
+                "input_down",
+                "input_bias",
+                "stage_embedding",
+                "hidden_up",
+                "hidden_bias",
+                "output_up",
+                "output_bias",
+            )
+        }
+        width = self.base_provider.state_dim
+        stages = self.base_provider.num_stages
+        rank = self.base_provider.output_rank
+        if arrays["input_down"].ndim != 2 or arrays["input_down"].shape[0] != 2 * width + 1:
+            raise ValueError("input_down must have shape [2 * state_dim + 1, hidden_width]")
+        hidden = arrays["input_down"].shape[1]
+        if arrays["input_bias"].shape != (hidden,):
+            raise ValueError("input_bias must match input_down hidden width")
+        if arrays["stage_embedding"].ndim != 2 or arrays["stage_embedding"].shape[0] != stages:
+            raise ValueError("stage_embedding must have shape [num_stages, stage_width]")
+        stage_width = arrays["stage_embedding"].shape[1]
+        if arrays["hidden_up"].ndim != 2 or arrays["hidden_up"].shape[0] != hidden + stage_width:
+            raise ValueError("hidden_up has incompatible dimensions")
+        hidden_out = arrays["hidden_up"].shape[1]
+        if arrays["hidden_bias"].shape != (hidden_out,):
+            raise ValueError("hidden_bias must match hidden_up output width")
+        if arrays["output_up"].shape != (hidden_out, 2 * rank):
+            raise ValueError("output_up must have shape [hidden_out, 2 * output_rank]")
+        if arrays["output_bias"].shape != (2 * rank,):
+            raise ValueError("output_bias must match output_up output width")
+        if not isinstance(self.metadata_payload, dict):
+            raise ValueError("provider metadata must be an object")
+        for name, value in arrays.items():
+            value.setflags(write=False)
+            object.__setattr__(self, name, value)
+
+    @property
+    def state_dim(self) -> int:
+        return self.base_provider.state_dim
+
+    @property
+    def num_stages(self) -> int:
+        return self.base_provider.num_stages
+
+    @property
+    def output_rank(self) -> int:
+        return self.base_provider.output_rank
+
+    @property
+    def hidden_width(self) -> int:
+        return int(self.input_down.shape[1])
+
+    @property
+    def stage_width(self) -> int:
+        return int(self.stage_embedding.shape[1])
+
+    @property
+    def hidden_out_width(self) -> int:
+        return int(self.hidden_up.shape[1])
+
+    def step(
+        self, state: np.ndarray, token_embedding: np.ndarray, stage: int
+    ) -> tuple[np.ndarray, np.ndarray]:
+        current = _finite(state, "state")
+        token = _finite(token_embedding, "token_embedding")
+        if current.shape != token.shape or current.ndim < 1 or current.shape[-1] != self.state_dim:
+            raise ValueError("state and token_embedding must have matching state width")
+        if not isinstance(stage, (int, np.integer)) or isinstance(stage, bool):
+            raise ValueError("stage must be an integer")
+        if stage < 0 or stage >= self.num_stages:
+            raise ValueError("stage is outside the provider")
+        semantic, episodic = self.base_provider.step(current, token, stage)
+        features = np.concatenate(
+            (current, token, np.ones((*current.shape[:-1], 1), dtype=np.float32)),
+            axis=-1,
+        )
+        hidden = _silu(features @ self.input_down + self.input_bias)
+        stage_features = np.concatenate(
+            (
+                hidden,
+                np.broadcast_to(self.stage_embedding[stage], (*hidden.shape[:-1], self.stage_width)),
+            ),
+            axis=-1,
+        )
+        hidden = _silu(stage_features @ self.hidden_up + self.hidden_bias)
+        correction = hidden @ self.output_up + self.output_bias
+        semantic = semantic + correction[..., : self.output_rank] @ self.base_provider.semantic_basis[stage]
+        episodic = episodic + correction[..., self.output_rank :] @ self.base_provider.episodic_basis[stage]
+        return np.asarray(semantic, dtype=np.float32), np.asarray(episodic, dtype=np.float32)
+
+    def metadata(self) -> dict[str, Any]:
+        return {
+            **self.metadata_payload,
+            "format": OPERATOR_PROVIDER_FORMAT,
+            "version": OPERATOR_PROVIDER_VERSION,
+            "provider_kind": self.provider_kind,
+            "state_dim": self.state_dim,
+            "num_stages": self.num_stages,
+            "output_rank": self.output_rank,
+            "hidden_width": self.hidden_width,
+            "stage_width": self.stage_width,
+            "hidden_out_width": self.hidden_out_width,
+            "base_provider_kind": self.base_provider.provider_kind,
+            "base_provider_metadata": self.base_provider.metadata(),
+            "learned": bool(self.metadata_payload.get("learned", True)),
+            "transformer_layers_loaded": False,
+        }
+
+    def save(self, path: str | Path) -> Path:
+        target = Path(path)
+        target.mkdir(parents=True, exist_ok=True)
+        arrays = {
+            "input_down": self.input_down,
+            "input_bias": self.input_bias,
+            "stage_embedding": self.stage_embedding,
+            "hidden_up": self.hidden_up,
+            "hidden_bias": self.hidden_bias,
+            "output_up": self.output_up,
+            "output_bias": self.output_bias,
+            "base_semantic_mean": self.base_provider.semantic_mean,
+            "base_semantic_basis": self.base_provider.semantic_basis,
+            "base_semantic_projection": self.base_provider.semantic_projection,
+            "base_episodic_mean": self.base_provider.episodic_mean,
+            "base_episodic_basis": self.base_provider.episodic_basis,
+            "base_episodic_projection": self.base_provider.episodic_projection,
+        }
+        inventory: dict[str, dict[str, Any]] = {}
+        for name, value in arrays.items():
+            file_path = target / f"{name}.npy"
+            np.save(file_path, value, allow_pickle=False)
+            inventory[file_path.name] = {
+                "bytes": file_path.stat().st_size,
+                "sha256": sha256_file(file_path),
+                "shape": list(value.shape),
+                "dtype": str(value.dtype),
+            }
+        manifest = self.metadata()
+        manifest["files"] = inventory
+        atomic_json(target / "manifest.json", manifest)
+        return target
+
+    @classmethod
+    def load(cls, path: str | Path) -> "NonlinearResidualOperatorStreamProvider":
+        target = Path(path)
+        manifest = json.loads((target / "manifest.json").read_text(encoding="utf-8"))
+        if (
+            manifest.get("format") != OPERATOR_PROVIDER_FORMAT
+            or manifest.get("version") != OPERATOR_PROVIDER_VERSION
+            or manifest.get("provider_kind") != "nonlinear_residual_pca"
+        ):
+            raise ValueError("unsupported nonlinear residual provider")
+        files = manifest.get("files")
+        if not isinstance(files, dict):
+            raise ValueError("nonlinear provider manifest has no file inventory")
+        arrays: dict[str, np.ndarray] = {}
+        for name, info in files.items():
+            file_path = target / name
+            if (
+                not file_path.is_file()
+                or file_path.stat().st_size != info.get("bytes")
+                or sha256_file(file_path) != info.get("sha256")
+            ):
+                raise ValueError(f"nonlinear provider checksum mismatch: {name}")
+            arrays[Path(name).stem] = np.load(file_path, allow_pickle=False)
+        base = PCAOperatorStreamProvider(
+            semantic_mean=arrays["base_semantic_mean"],
+            semantic_basis=arrays["base_semantic_basis"],
+            semantic_projection=arrays["base_semantic_projection"],
+            episodic_mean=arrays["base_episodic_mean"],
+            episodic_basis=arrays["base_episodic_basis"],
+            episodic_projection=arrays["base_episodic_projection"],
+            metadata_payload=dict(manifest.get("base_provider_metadata", {})),
+        )
+        return cls(
+            base_provider=base,
+            input_down=arrays["input_down"],
+            input_bias=arrays["input_bias"],
+            stage_embedding=arrays["stage_embedding"],
+            hidden_up=arrays["hidden_up"],
+            hidden_bias=arrays["hidden_bias"],
+            output_up=arrays["output_up"],
+            output_bias=arrays["output_bias"],
+            metadata_payload={
+                key: value
+                for key, value in manifest.items()
+                if key not in {"files", "base_provider_metadata"}
+            },
+        )
+
+
 def _fit_stream(
     features: np.ndarray,
     outputs: np.ndarray,
@@ -1077,7 +1293,10 @@ def fit_operator_stream_provider(
     """Fit and serialize a compact state/token-conditioned provider.
 
     ``target="streams"`` reconstructs the teacher's separately captured
-    semantic and episodic vectors. ``target="combined_delta"`` is a
+    semantic and episodic vectors. ``target="combined_stream"`` reconstructs
+    their sum in one output basis and sets the episodic stream to zero; this
+    matches the exact-residual controller algebra while testing whether the
+    separate compression bases are needlessly wasteful. ``target="combined_delta"`` is a
     co-adapted research arm: it learns the normalized state delta directly as
     the semantic stream and sets the episodic stream to zero. The latter tests
     whether the controller boundary, rather than the teacher's decomposition,
@@ -1088,8 +1307,10 @@ def fit_operator_stream_provider(
         raise ValueError("output_rank must be a positive integer")
     if not np.isfinite(ridge) or ridge <= 0.0:
         raise ValueError("ridge must be finite and positive")
-    if target not in {"streams", "combined_delta"}:
-        raise ValueError("target must be 'streams' or 'combined_delta'")
+    if target not in {"streams", "combined_stream", "combined_delta"}:
+        raise ValueError(
+            "target must be 'streams', 'combined_stream', or 'combined_delta'"
+        )
     trace_path = Path(trace).resolve()
     from engram.training.controller_distillation import _load_trajectories
 
@@ -1099,6 +1320,12 @@ def fit_operator_stream_provider(
     if target == "streams":
         semantic = data.semantic_outputs.astype(np.float32)
         episodic = data.episodic_outputs.astype(np.float32)
+    elif target == "combined_stream":
+        semantic = (
+            data.semantic_outputs.astype(np.float32)
+            + data.episodic_outputs.astype(np.float32)
+        )
+        episodic = np.zeros_like(semantic)
     else:
         semantic = (
             data.teacher_states[:, 1:].astype(np.float32)
@@ -1157,6 +1384,24 @@ def _directory_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def load_operator_stream_provider(path: str | Path) -> OperatorStreamProvider:
+    """Load a serialized stateless operator provider by authenticated kind."""
+
+    target = Path(path)
+    manifest = json.loads((target / "manifest.json").read_text(encoding="utf-8"))
+    kind = manifest.get("provider_kind")
+    loaders = {
+        "pca_state_token": PCAOperatorStreamProvider.load,
+        "state_space_pca": StateSpaceOperatorStreamProvider.load,
+        "state_space_residual_pca": ResidualStateSpaceOperatorStreamProvider.load,
+        "nonlinear_residual_pca": NonlinearResidualOperatorStreamProvider.load,
+    }
+    loader = loaders.get(kind)
+    if loader is None:
+        raise ValueError(f"unsupported stateless operator provider kind: {kind!r}")
+    return loader(target)
+
+
 __all__ = [
     "OPERATOR_PROVIDER_FORMAT",
     "OPERATOR_PROVIDER_VERSION",
@@ -1168,5 +1413,7 @@ __all__ = [
     "RecurrentContextProvider",
     "StateSpaceOperatorStreamProvider",
     "ResidualStateSpaceOperatorStreamProvider",
+    "NonlinearResidualOperatorStreamProvider",
+    "load_operator_stream_provider",
     "fit_operator_stream_provider",
 ]

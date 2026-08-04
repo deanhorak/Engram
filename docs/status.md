@@ -203,6 +203,26 @@ still fails the **0.0225** gate and plateaus. The evidence is preserved in
 `reports/controller_provider_pca_2026-08-03/dagger_refit_train8x16_validation16x16.json`;
 it is not a promotion artifact.
 
+The provider boundary was also refit against the exact combined residual
+(`semantic + episodic`) rather than the separately captured streams. Rank-16
+combined-stream rollout reaches held-out terminal normalized MSE **0.1793060**,
+slightly worse than the separate-stream λ=1 result (**0.1789347**). This
+closes the stream-decomposition hypothesis; the remaining M4 gap requires a
+stronger causal teacher signal or a more expressive provider. Evidence:
+`reports/controller_provider_pca_2026-08-03/combined_stream_rank16.json`.
+
+A shared stage-conditioned SiLU residual MLP is now integrated as a durable
+`nonlinear_residual_pca` provider with generic authenticated loading and
+post-serialization evaluation. The 100-step CPU smoke improves held-out
+terminal normalized MSE from **0.2536107** to **0.1966997** (reload parity
+**0.1966993**), but still fails the **0.0225** gate. It is retained as a
+development artifact, not promoted.
+
+A hidden-128/stage-32, 300-step continuation worsens validation terminal MSE
+to **0.2107506**, so increasing this MLP's capacity or training duration is
+not a path to the gate. Evidence:
+`reports/controller_provider_pca_2026-08-03/nonlinear_capacity_screen.json`.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and
