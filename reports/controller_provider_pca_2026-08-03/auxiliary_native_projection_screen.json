@@ -26,7 +26,13 @@
     "provider_sha256": "2a658f51896464ba1acae08461d2bc27ed87677143323080a8655f05381b61b6",
     "terminal_normalized_mse": 0.2467537373304367,
     "mean_stage_normalized_mse": 0.839118242263794,
-    "gate_passed": false
+    "gate_passed": false,
+    "rank128_capacity_arm": {
+      "provider_sha256": "0564323a5e241dd328be39439796f9516654ed7db2c1cf27bdd058d91dbee81c",
+      "terminal_normalized_mse": 0.24388761818408966,
+      "mean_stage_normalized_mse": 0.8301357626914978,
+      "gate_passed": false
+    }
   },
   "nonlinear_screen": {
     "hidden_width": 128,

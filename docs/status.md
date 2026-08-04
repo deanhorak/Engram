@@ -1978,3 +1978,5 @@ MSE **0.2467537**; a 128-wide nonlinear adapter scored **0.2530605**.  Both
 fail the **0.0225** M4 quality threshold.  This is an auxiliary negative
 result, not protected-gate evidence.  Report:
 `reports/controller_provider_pca_2026-08-03/auxiliary_native_projection_screen.json`.
+The same auxiliary report now includes the rank-128 capacity arm at terminal
+MSE **0.2438876**, which also fails.

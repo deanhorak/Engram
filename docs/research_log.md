@@ -2467,6 +2467,8 @@ causal corpus.
   **0.2467537** on the auxiliary validation trace.  A 128-wide nonlinear
   residual adapter with 15 teacher-forced steps reached **0.2530605**.  Both
   fail the fixed **0.0225** M4 threshold by more than an order of magnitude.
+- Increasing the PCA output rank to 128 lowered terminal MSE only to
+  **0.2438876**, so the auxiliary rank-capacity arm is also closed.
 - Decision: reject the auxiliary provider arms.  The native-projection flag is
   retained as a capture/deployment improvement, but no learned provider enters
   the authenticated package and the protected promotion status is unchanged.
