@@ -297,8 +297,10 @@ pass.  The complete screen record is
 Jointly unfreezing the controller's step scale, stage embeddings, and low-rank
 adapters changes the rank-64 result only to **0.1714471**, so small-adapter
 co-adaptation is also closed.  Further cache-shape, rank, and small-adapter
-sweeps are not justified; the next defensible direction is a larger jointly
-trained controller/provider model or an independently sourced causal corpus.
+sweeps are not justified.  Unfreezing every controller tensor changes the
+result to **0.1714721**, also a null result.  The provider/controller screen
+class is therefore closed for this corpus; only a materially different model
+or an independently sourced causal corpus is justified next.
 
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible

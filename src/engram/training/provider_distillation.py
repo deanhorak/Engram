@@ -1518,6 +1518,7 @@ def distill_stage_causal_attention_operator_provider(
     query_width: int = 32,
     direct_hidden_correction: bool = False,
     train_controller_correction: bool = False,
+    train_controller_full: bool = False,
     controller_out: str | Path | None = None,
     learning_rate: float = 3e-4,
     seed: int = 422,
@@ -1621,16 +1622,17 @@ def distill_stage_causal_attention_operator_provider(
         query_head,
         correction_head,
     ]
-    optimizer = torch.optim.AdamW(trainable, lr=learning_rate, weight_decay=1e-5)
     controller_module = TorchFactorizedController(controller_obj).to(device).eval()
     controller_trainable = []
     for name, parameter in controller_module.named_parameters():
-        enabled = train_controller_correction and name in {
-            "step_scale",
-            "stage_embeddings",
-            "adapter_down",
-            "adapter_up",
-        }
+        enabled = train_controller_full or (
+            train_controller_correction and name in {
+                "step_scale",
+                "stage_embeddings",
+                "adapter_down",
+                "adapter_up",
+            }
+        )
         parameter.requires_grad_(enabled)
         if enabled:
             controller_trainable.append(parameter)
@@ -1834,6 +1836,7 @@ def distill_stage_causal_attention_operator_provider(
             "output_rank": rank,
             "direct_hidden_correction": direct_hidden_correction,
             "train_controller_correction": train_controller_correction,
+            "train_controller_full": train_controller_full,
             "stage_specific_memory": True,
         },
         "training": {

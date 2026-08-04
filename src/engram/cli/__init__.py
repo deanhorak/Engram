@@ -1150,6 +1150,11 @@ def _parser() -> argparse.ArgumentParser:
         help="also train step scale, stage embeddings, and low-rank controller adapters",
     )
     stage_causal_attention_provider.add_argument(
+        "--train-controller-full",
+        action="store_true",
+        help="unfreeze every controller tensor for a research-only joint screen",
+    )
+    stage_causal_attention_provider.add_argument(
         "--controller-out",
         type=Path,
         help="optional directory for the jointly adapted controller artifact",
@@ -3031,6 +3036,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             query_width=args.query_width,
             direct_hidden_correction=args.direct_hidden_correction,
             train_controller_correction=args.train_controller_correction,
+            train_controller_full=args.train_controller_full,
             controller_out=args.controller_out,
             learning_rate=args.learning_rate,
             seed=args.seed,

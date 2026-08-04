@@ -2367,3 +2367,9 @@
   held-out terminal MSE was **0.1714471**, effectively identical to the
   provider-only **0.1714502**.  This closes small-adapter co-adaptation as
   well; it did not authorize package promotion or a Milestone 4 gate claim.
+- Unfreezing every factorized controller tensor was screened under the same
+  schedule.  The serialized full-controller artifact reached **0.1714721** on
+  the protected validation split, another null result.  The entire
+  stage-local provider/controller class is now closed for this corpus; further
+  progress requires materially different model capacity or an independent
+  causal corpus.
