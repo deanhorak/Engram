@@ -350,6 +350,15 @@ trained controller completed a short six-position CPU smoke run through this
 path; that is execution evidence only, not a semantic gate or production
 deployment.
 
+The latest native parity check closes an important implementation detail: when
+the authenticated controller has `step_scale == 0`, evaluator-controller mode
+delegates to the exact residual implementation. On the frozen eight-token
+package run, exact and evaluator modes produce identical token IDs, selected
+records, semantic traffic counters, and cache positions. The sealed result is
+`reports/native_bitnet_controller_zero_step_parity_2026-08-04.json`. This is
+systems parity only; nonzero learned corrections still fail the causal
+promotion threshold.
+
 The Python `ControllerDrivenBitNet` path also uses this ABI for nonzero
 corrections. An eight-prompt, one-token development screen reached **0.0%
 token agreement** and **0/8 exact prompts** against the exact residual package;
@@ -374,6 +383,23 @@ Therefore the separately trained **native-BitNet and OLMoE Q7 Milestone 2
 paths are operational and may advance**. Engram still cannot claim that it
 converts an arbitrary dense Llama checkpoint into a gate-passing
 semantic-memory model.
+
+The learned-provider boundary has also been screened against a pinned public
+WikiText-2 raw corpus (`Salesforce/wikitext`, revision
+`b08601e04326c79dfdd32d625aee71d232d685c3`). Sixteen-record train and
+validation subsets were captured in authenticated chunks. Separate-stream
+rank-16/rank-128 providers reached terminal normalized MSE `0.184007` and
+`0.186352`; a rank-128 normalized-residual target reached `0.179788`, all
+versus the fixed `0.0225` gate. Ordinary prose expansion and bounded target
+changes therefore remain closed as solutions. See
+`reports/controller_provider_pca_2026-08-03/auxiliary_wikitext2_screen.json`.
+
+The authenticated native CPU package is multithreaded in attention: a
+controlled eight-token sweep reached 1.47x wall and 2.32x attention speedup at
+12 threads over one thread, while semantic time remained flat. This points to
+semantic coordinate/record parallelism as the next systems optimization, not
+to a missing thread-pool configuration. The full sweep is in
+`reports/native_bitnet_cpu_generation_2026-08-04_long.json`.
 
 The earlier Milestone 3 selector screens remain useful negative controls: a
 rank-4 query-content selector recovered only **25.42%** of the same-state
