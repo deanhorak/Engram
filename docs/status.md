@@ -2098,3 +2098,7 @@ over one thread was 1.07x/1.19x/1.36x/1.47x; attention speedup was
 systems work should target semantic-kernel coordinate/record parallelism.
 This does not change the learned-controller gate or establish a llama.cpp
 comparison.
+The rank-128 normalized-residual target was also tested on the same pinned
+traces and reached terminal normalized MSE **0.179788**. It remains far above
+the **0.0225** threshold, so the auxiliary result does not promote the learned
+provider and does not justify more rank-only sweeps.

@@ -600,3 +600,7 @@ The authenticated DIP token runtime produced identical eight-token IDs at 1,
 that the native runtime is genuinely multithreaded in attention and points to
 semantic-kernel parallelism as the next optimization boundary; it is not a
 learned-controller promotion or a llama.cpp comparison.
+The rank-128 normalized-residual target was included as a bounded alternative
+on the same traces and reached terminal normalized MSE `0.179788`; it still
+fails the `0.0225` threshold. The corpus and target-family screen therefore
+supports changing architecture or supervision, not repeating rank/ridge arms.

@@ -63,12 +63,23 @@
       "mean_stage_normalized_mse": 0.6467767953872681,
       "threshold": 0.0225,
       "passed": false
+    },
+    {
+      "rank": 128,
+      "target": "normalized_residual",
+      "provider_kind": "normalized_residual_pca",
+      "provider_sha256": "103ff97faf547d9b7d57fc8db1409f422d866c80c026de23b81158d8135a2093",
+      "validation_report": "/tmp/engram_wikitext2/provider_residual_rank128_validation.json",
+      "terminal_normalized_mse": 0.17978768050670624,
+      "mean_stage_normalized_mse": 0.6409302353858948,
+      "threshold": 0.0225,
+      "passed": false
     }
   ],
   "interpretation": {
     "protected_gate": "unchanged",
     "learned_provider_promotion": "failed",
-    "conclusion": "Increasing the auxiliary prose corpus from the earlier eight-record screen to sixteen records per split did not approach the causal threshold. Rank 128 did not improve terminal error over rank 16. Ordinary corpus expansion alone is not a defensible route past the learned-provider gate; future work must change the target, architecture, or supervision rather than simply repeat this screen.",
+    "conclusion": "Increasing the auxiliary prose corpus from the earlier eight-record screen to sixteen records per split did not approach the causal threshold. Rank 128 did not improve the separate-stream target over rank 16; the best tested normalized-residual target reached 0.179788 but still failed by roughly eight times. Ordinary corpus expansion, rank-only scaling, and this target change are not defensible routes past the learned-provider gate; future work must change the architecture or supervision rather than repeat this screen.",
     "transformers_model_loaded": false,
     "decoder_layer_forward_calls": 0
   }

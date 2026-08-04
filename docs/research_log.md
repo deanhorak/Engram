@@ -2623,3 +2623,9 @@ the next CPU optimization target rather than a missing thread-pool hook. This
 is a systems result for the exact-residual native package, not a quality
 promotion or a `llama.cpp` comparison. The extended report is
 `reports/native_bitnet_cpu_generation_2026-08-04_long.json`.
+The same WikiText-2 traces were also fit with the rank-128
+`normalized_residual` target. Its validation terminal normalized MSE was
+`0.1797876805`, slightly better than the separate-stream arms but still about
+8x above the fixed threshold. This closes the bounded target-family check for
+this corpus; no further rank/ridge sweep is justified without a new causal
+architecture or supervision signal.
