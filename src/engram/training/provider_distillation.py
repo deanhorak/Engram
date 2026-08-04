@@ -741,9 +741,163 @@ def adapt_controller_correction_for_provider(
     return report
 
 
+def dagger_refit_operator_provider(
+    provider: str | Path,
+    controller: str | Path,
+    trace: str | Path,
+    out: str | Path,
+    *,
+    validation_trace: str | Path | None = None,
+    iterations: int = 2,
+    ridge: float = 1.0,
+) -> dict[str, Any]:
+    """Refit a provider on states visited by its own causal rollout.
+
+    Each iteration rolls the current provider through the frozen controller,
+    then fits the provider projections against the aligned teacher streams at
+    those visited states.  This is a small DAgger-style intervention against
+    compounding rollout error; it is deliberately an evaluator artifact until
+    an independent causal split passes the controller gate.
+    """
+
+    if isinstance(iterations, bool) or not isinstance(iterations, (int, np.integer)) or iterations < 0:
+        raise ValueError("iterations must be a non-negative integer")
+    if not np.isfinite(ridge) or ridge <= 0.0:
+        raise ValueError("ridge must be finite and positive")
+    training = _load_trajectories(trace)
+    validation = _load_trajectories(validation_trace) if validation_trace else training
+    loaded = PCAOperatorStreamProvider.load(provider)
+    controller_obj = FactorizedRecurrentController.load(controller)
+    for data in (training, validation):
+        if data.hidden_size != loaded.state_dim or data.num_stages != loaded.num_stages:
+            raise ValueError("provider and trajectory dimensions differ")
+    if controller_obj.state_dim != training.hidden_size or controller_obj.num_stages != training.num_stages:
+        raise ValueError("controller and training trace dimensions differ")
+
+    def rollout(data, current):
+        state = data.teacher_states[:, 0].astype(np.float32).copy()
+        token = data.token_embedding.astype(np.float32)
+        states = [state.copy()]
+        for stage in range(data.num_stages):
+            semantic, episodic = current.step(state, token, stage)
+            state = controller_obj.step(
+                state,
+                np.concatenate((token, semantic, episodic), axis=-1),
+                stage=stage,
+            )
+            states.append(state.copy())
+        return np.stack(states, axis=1)
+
+    def evaluate(data, current):
+        states = rollout(data, current)
+        target = data.teacher_states[:, 1:].astype(np.float32)
+        rms = np.sqrt(np.mean(np.square(target), axis=-1, keepdims=True)).clip(1e-4)
+        error = np.square((states[:, 1:] - target) / rms)
+        stage = np.mean(error, axis=(0, 2))
+        return {
+            "mean_stage_normalized_mse": float(stage.mean()),
+            "terminal_normalized_mse": float(stage[-1]),
+            "maximum_stage_normalized_mse": float(stage.max()),
+            "stage_normalized_mse": [float(value) for value in stage],
+        }
+
+    def refit(states, data, current):
+        records = data.records
+        token = data.token_embedding.astype(np.float32)
+        semantic_mean = np.array(current.semantic_mean, copy=True)
+        semantic_basis = np.array(current.semantic_basis, copy=True)
+        episodic_mean = np.array(current.episodic_mean, copy=True)
+        episodic_basis = np.array(current.episodic_basis, copy=True)
+        semantic_projection = np.empty_like(current.semantic_projection)
+        episodic_projection = np.empty_like(current.episodic_projection)
+        visited = states[:, :-1]
+        for stage in range(data.num_stages):
+            features = np.concatenate(
+                (visited[:, stage], token, np.ones((records, 1), dtype=np.float32)),
+                axis=-1,
+            )
+            gram = features @ features.T
+            scale = max(float(np.mean(np.diag(gram))), 1.0)
+            gram += np.eye(records, dtype=np.float32) * (ridge * scale)
+            semantic_latent = (
+                data.semantic_outputs[:, stage].astype(np.float32) - semantic_mean[stage]
+            ) @ semantic_basis[stage].T
+            episodic_latent = (
+                data.episodic_outputs[:, stage].astype(np.float32) - episodic_mean[stage]
+            ) @ episodic_basis[stage].T
+            semantic_projection[stage] = features.T @ np.linalg.solve(
+                gram, semantic_latent
+            )
+            episodic_projection[stage] = features.T @ np.linalg.solve(
+                gram, episodic_latent
+            )
+        return PCAOperatorStreamProvider(
+            semantic_mean=semantic_mean,
+            semantic_basis=semantic_basis,
+            semantic_projection=semantic_projection,
+            episodic_mean=episodic_mean,
+            episodic_basis=episodic_basis,
+            episodic_projection=episodic_projection,
+            metadata_payload={
+                **current.metadata_payload,
+                "adaptation": "dagger_visited_state_refit",
+                "adaptation_iterations": iterations,
+                "adaptation_ridge": ridge,
+            },
+        )
+
+    history = []
+    current = loaded
+    for iteration in range(iterations + 1):
+        history.append(
+            {
+                "iteration": iteration,
+                "training": evaluate(training, current),
+                "validation": evaluate(validation, current),
+            }
+        )
+        if iteration < iterations:
+            current = refit(rollout(training, current), training, current)
+
+    target = Path(out)
+    current.save(target)
+    final = history[-1]["validation"]
+    report = {
+        "experiment": "dagger_refit_operator_provider",
+        "status": "development_result",
+        "provider": str(Path(provider).resolve()),
+        "provider_sha256": _directory_sha256(Path(provider).resolve()),
+        "adapted_provider": str(target.resolve()),
+        "adapted_provider_sha256": _directory_sha256(target),
+        "controller": str(Path(controller).resolve()),
+        "training_trace": str(Path(trace).resolve()),
+        "validation_trace": str(Path(validation_trace).resolve()) if validation_trace else None,
+        "iterations": iterations,
+        "ridge": ridge,
+        "optimizer_device": "cpu",
+        "inference_device": "cpu",
+        "transformers_model_loaded": False,
+        "decoder_layer_forward_calls": 0,
+        "history": history,
+        "validation": final,
+        "gate": {
+            "metric": "terminal_normalized_mse",
+            "threshold": 0.0225,
+            "actual": final["terminal_normalized_mse"],
+            "passed": bool(final["terminal_normalized_mse"] <= 0.0225),
+            "layer_free_cpu_replay": True,
+            "end_to_end_generation": False,
+        },
+    }
+    target.parent.mkdir(parents=True, exist_ok=True)
+    atomic_json(target.parent / f"{target.name}_training_report.json", report)
+    return report
+
+
 __all__ = [
     "joint_distill_operator_provider",
     "distill_state_space_operator_provider",
     "distill_state_space_residual_provider",
     "adapt_controller_correction_for_provider",
+    "dagger_refit_operator_provider",
 ]

@@ -194,6 +194,15 @@ screen is CPU-only, transformer-free, and preserved in
 Further rank sweeps are closed; M4 now requires a different causal objective
 or provider/controller architecture.
 
+The first different causal objective is now reproducible as
+`engram dagger-refit-operator-provider`. It repeatedly refits the provider on
+states visited by its own rollout (a DAgger-style correction). On the
+8-sequence train / 16-sequence validation split, two iterations improve held-
+out terminal normalized MSE from **0.2536107** to **0.1849852**, but the result
+still fails the **0.0225** gate and plateaus. The evidence is preserved in
+`reports/controller_provider_pca_2026-08-03/dagger_refit_train8x16_validation16x16.json`;
+it is not a promotion artifact.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and

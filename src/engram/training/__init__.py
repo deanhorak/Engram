@@ -5,6 +5,7 @@ from .controller_distillation import (
 )
 from .provider_distillation import (
     adapt_controller_correction_for_provider,
+    dagger_refit_operator_provider,
     distill_state_space_operator_provider,
     distill_state_space_residual_provider,
     joint_distill_operator_provider,

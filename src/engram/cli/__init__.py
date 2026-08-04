@@ -139,6 +139,7 @@ from engram.evaluation.end_to_end import evaluate_end_to_end
 from engram.evaluation.controller_gate import evaluate_controller_gate
 from engram.training import (
     adapt_controller_correction_for_provider,
+    dagger_refit_operator_provider,
     build_distillation_corpus,
     build_distillation_tail_holdout,
     capture_native_bitnet_controller_traces,
@@ -1061,6 +1062,18 @@ def _parser() -> argparse.ArgumentParser:
     adapt_controller.add_argument("--learning-rate", type=float, default=2e-3)
     adapt_controller.add_argument("--seed", type=int, default=55)
     adapt_controller.add_argument("--device", default="cpu")
+
+    dagger_provider = commands.add_parser(
+        "dagger-refit-operator-provider",
+        help="refit provider projections on states visited by causal rollout",
+    )
+    dagger_provider.add_argument("--provider", required=True, type=Path)
+    dagger_provider.add_argument("--controller", required=True, type=Path)
+    dagger_provider.add_argument("--trace", required=True, type=Path)
+    dagger_provider.add_argument("--validation-trace", type=Path)
+    dagger_provider.add_argument("--out", required=True, type=Path)
+    dagger_provider.add_argument("--iterations", type=int, default=2)
+    dagger_provider.add_argument("--ridge", type=float, default=1.0)
 
     evaluate_operator_provider = commands.add_parser(
         "evaluate-controller-provider",
@@ -2858,6 +2871,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             learning_rate=args.learning_rate,
             seed=args.seed,
             device=args.device,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "dagger-refit-operator-provider":
+        result = dagger_refit_operator_provider(
+            args.provider,
+            args.controller,
+            args.trace,
+            args.out,
+            validation_trace=args.validation_trace,
+            iterations=args.iterations,
+            ridge=args.ridge,
         )
         print(json.dumps(result, indent=2, sort_keys=True))
     elif args.command == "evaluate-controller-provider":

@@ -180,6 +180,18 @@ Output rank alone is not a defensible route to M4 promotion; the next attempt
 must change the causal training signal or replace the provider/controller
 architecture.
 
+A DAgger-style visited-state refit was then implemented as
+`engram dagger-refit-operator-provider`. On the smaller 8-sequence training /
+16-sequence validation split, two refits lower held-out terminal normalized
+MSE from **0.2536107** to **0.1849852** (validation mean **0.6448557**), while
+the training terminal falls from **0.1302454** to **0.1226217**. The gain
+stops after the second refit and remains 8.22 times above the **0.0225** gate,
+so the artifact is retained as development evidence only. It uses CPU-only
+causal rollouts, no Transformers model, and zero decoder-layer calls. Report:
+`reports/controller_provider_pca_2026-08-03/dagger_refit_train8x16_validation16x16.json`.
+This closes the first visited-state correction attempt; a passing M4 provider
+still requires a materially more expressive teacher signal or architecture.
+
 ## Native recurrent-controller implementation boundary
 
 The native token runtime now has a direct implementation of the schema-v3
