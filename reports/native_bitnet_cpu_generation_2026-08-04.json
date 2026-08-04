@@ -30,6 +30,22 @@
     "maximum_resident_set_kbytes": 1297152,
     "cpu_percent": 364
   },
+  "counterbalanced_threads1": {
+    "threads": 1,
+    "elapsed_seconds": 45.48,
+    "semantic_seconds": 8.46124,
+    "attention_seconds": 18.8224,
+    "maximum_resident_set_kbytes": 1297536,
+    "cpu_percent": 99,
+    "generated_token_ids": [11, 220, 15, 11],
+    "exit_status": 0
+  },
+  "thread_scaling": {
+    "wall_speedup_threads12_over_threads1": 1.3715,
+    "attention_speedup_threads12_over_threads1": 2.2786,
+    "semantic_speedup_threads12_over_threads1": 1.0028,
+    "interpretation": "The current native projection kernel is materially threaded for attention, while the semantic path is effectively flat at this short four-token workload."
+  },
   "verification": {
     "exit_status": 0,
     "reset_verification": false,

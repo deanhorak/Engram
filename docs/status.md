@@ -1993,6 +1993,12 @@ time.  Peak RSS was **1,297,152 kB**.  No Transformers model shell or
 `llama.cpp` was used.  Report:
 `reports/native_bitnet_cpu_generation_2026-08-04.json`.
 
+A counterbalanced one-thread run generated the identical token IDs in 45.48 s
+(18.8224 s attention, 8.46124 s semantic), so 12 threads provide a **1.37×
+wall-time speedup** and **2.28× attention speedup** at this short length.  The
+semantic kernel is effectively flat here; longer prompts and fused semantic
+work remain tuning targets.
+
 The separate reset-verification mode is not included in this benchmark because
 it intentionally creates a second full runtime and exceeds the host's memory
 limit; the ordinary single-runtime generation completed with exit status 0.
