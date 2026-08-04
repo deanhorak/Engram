@@ -1,0 +1,34 @@
+{
+  "experiment": "native_bitnet_zero_step_controller_parity",
+  "status": "passed",
+  "package": "work/native_bitnet/model.engram-bitnet-dip",
+  "package_manifest_sha256": "707bbe069ef6892e9bfe98258f3289e28af15a400922e950c4386f56dd26926",
+  "prompt_token_ids": [128000],
+  "max_new_tokens": 8,
+  "threads": 12,
+  "exact_operator_residual": {
+    "generated_token_ids": [11, 220, 15, 11, 220, 15, 11, 220],
+    "positions": 8,
+    "selected_records": 341159,
+    "semantic_cache_line_bytes": 2613559296,
+    "attention_seconds": 16.6455,
+    "semantic_seconds": 16.8447
+  },
+  "factorized_recurrent_correction_evaluator": {
+    "step_scale_contract": "all_zero",
+    "generated_token_ids": [11, 220, 15, 11, 220, 15, 11, 220],
+    "positions": 8,
+    "selected_records": 341159,
+    "semantic_cache_line_bytes": 2613559296,
+    "attention_seconds": 16.6668,
+    "semantic_seconds": 16.9229
+  },
+  "parity": {
+    "token_ids_match": true,
+    "positions_match": true,
+    "selected_records_match": true,
+    "semantic_cache_line_bytes_match": true,
+    "controller_branch_has_no_quality_effect_when_step_scale_zero": true
+  },
+  "interpretation": "The evaluator-facing recurrent-controller ABI now delegates zero-step artifacts to the exact operator-residual implementation. This closes the native zero-step parity boundary; nonzero learned-controller quality remains a separate failed causal gate."
+}

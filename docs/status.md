@@ -2102,3 +2102,12 @@ The rank-128 normalized-residual target was also tested on the same pinned
 traces and reached terminal normalized MSE **0.179788**. It remains far above
 the **0.0225** threshold, so the auxiliary result does not promote the learned
 provider and does not justify more rank-only sweeps.
+### Zero-step controller ABI parity (2026-08-04)
+
+The native evaluator-controller mode now delegates all-zero `step_scale`
+artifacts to the exact residual implementation after validating the complete
+controller tensors. On the authenticated eight-token run it matches exact
+mode in token IDs, selected records, semantic traffic counters, and positions.
+This fixes a real native parity issue; it does not promote nonzero learned
+controller corrections. The sealed result is
+`reports/native_bitnet_controller_zero_step_parity_2026-08-04.json`.

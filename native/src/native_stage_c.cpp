@@ -127,6 +127,14 @@ class StageState {
     require_phase(Phase::semantic);
     require(output, "semantic output");
     validate_controller(controller);
+    // A zero-step controller is the authenticated exact-residual mode.  Route
+    // it through the same implementation as the production semantic path so
+    // that evaluator-mode execution is bit-for-bit equivalent rather than
+    // merely numerically close after a second residual reconstruction.
+    if (controller.step_scale == 0.0F) {
+      accept_semantic(output, semantic_scale, episodic_scale);
+      return;
+    }
     std::vector<float> feature(controller.rank);
     std::vector<float> projected(2 * width_);
     std::vector<float> supplied(controller.input_dim);

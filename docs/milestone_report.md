@@ -604,3 +604,10 @@ The rank-128 normalized-residual target was included as a bounded alternative
 on the same traces and reached terminal normalized MSE `0.179788`; it still
 fails the `0.0225` threshold. The corpus and target-family screen therefore
 supports changing architecture or supervision, not repeating rank/ridge arms.
+### Native controller ABI parity (2026-08-04)
+
+The all-zero correction artifact now uses the exact residual implementation in
+both production and evaluator-controller modes. The frozen eight-token run
+matches generated IDs, selected records, traffic counters, and positions in
+both modes. The fix closes the native systems parity boundary while leaving
+the separate nonzero learned-controller causal gate unchanged.

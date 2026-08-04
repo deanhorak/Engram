@@ -2629,3 +2629,15 @@ The same WikiText-2 traces were also fit with the rank-128
 8x above the fixed threshold. This closes the bounded target-family check for
 this corpus; no further rank/ridge sweep is justified without a new causal
 architecture or supervision signal.
+## 2026-08-04 — zero-step native controller parity fix
+
+An explicit native run through `--enable-recurrent-correction` exposed a subtle
+systems mismatch: the package's all-zero `step_scale` controller path rebuilt
+the residual in a second floating-point loop, changing sparse selection counts
+despite identical token IDs. The native stage implementation now validates the
+complete controller artifact and delegates zero-step execution to the exact
+`accept_semantic` path. After rebuild, exact and evaluator-controller modes
+match token IDs, selected records, semantic cache-line bytes, and positions on
+the eight-token package run. Native CTest remains 20/20. This closes only the
+zero-step ABI parity boundary; nonzero learned-controller promotion remains
+failed. See `reports/native_bitnet_controller_zero_step_parity_2026-08-04.json`.
