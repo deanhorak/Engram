@@ -2505,6 +2505,19 @@ causal corpus.
   AVX2 specialization, lower-memory packaging, longer generation sweeps, and
   an apples-to-apples `llama.cpp` performance study remain open.
 
+## 2026-08-04: longer native CPU generation completed
+
+- The authenticated DIP package completed an 8-token native CPU generation
+  (`11 220 15 11 220 15 11 220`) with 12 threads, exact operator-residual
+  controller mode, and no Transformers or `llama.cpp` runtime.
+- The run processed 240 stage/semantic calls in 50.43 s wall time, with
+  16.9311 s semantic time, 16.1322 s attention time, and 1,296,960 kB peak RSS.
+  It exited successfully and incurred no attention evictions.
+- This extends the 4-token systems benchmark but does not promote the learned
+  controller or establish an apples-to-apples performance advantage over
+  `llama.cpp`.  Evidence:
+  `reports/native_bitnet_cpu_generation_2026-08-04_long.json`.
+
 ## 2026-08-04: auxiliary capture confirms corpus-cardinality boundary
 
 - The next sequence-aware experiment requested a 16-sequence, 16-token

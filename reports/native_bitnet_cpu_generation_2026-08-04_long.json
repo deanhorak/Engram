@@ -1,0 +1,40 @@
+{
+  "experiment": "native_bitnet_cpu_token_generation_longer_sweep",
+  "status": "completed",
+  "package": "work/native_bitnet/model.engram-bitnet-dip",
+  "package_manifest_sha256": "707bbe069ef6892e9bfe98258f3289e28af15a400922e950c4386f56dd26926",
+  "runtime": {
+    "binary": "build/engram-bitnet-token-generate",
+    "command": "build/engram-bitnet-token-generate work/native_bitnet/model.engram-bitnet-dip 8 12 128000",
+    "threads": 12,
+    "attention_mode": "native_streaming_w16_c8_k4_sinks2",
+    "semantic_backend": "native_bitnet_dynamic_input_pruning_v2",
+    "controller_mode": "exact_operator_residual",
+    "decoder_layers_constructed": false,
+    "transformers_model_loaded": false,
+    "llama_cpp_used": false,
+    "device": "cpu"
+  },
+  "prompt_token_ids": [128000],
+  "max_new_tokens": 8,
+  "generated_token_ids": [11, 220, 15, 11, 220, 15, 11, 220],
+  "metrics": {
+    "positions_processed": 8,
+    "stage_calls": 240,
+    "semantic_calls": 240,
+    "semantic_rows": 240,
+    "selected_records": 341159,
+    "semantic_seconds": 16.9311,
+    "attention_seconds": 16.1322,
+    "elapsed_seconds": 50.43,
+    "maximum_resident_set_kbytes": 1296960,
+    "cpu_percent": 441,
+    "attention_evictions": 0
+  },
+  "verification": {
+    "exit_status": 0,
+    "reset_verification": false,
+    "note": "The single-runtime generation completed; reset verification is a separate high-memory lifecycle test."
+  },
+  "interpretation": "Longer native CPU token-step evidence for the authenticated DIP package; not a learned-controller quality promotion or llama.cpp comparison."
+}

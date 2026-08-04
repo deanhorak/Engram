@@ -2013,6 +2013,14 @@ The separate reset-verification mode is not included in this benchmark because
 it intentionally creates a second full runtime and exceeds the host's memory
 limit; the ordinary single-runtime generation completed with exit status 0.
 
+The longer 8-token run completed successfully with the same authenticated
+package and 12 CPU threads: 240 stage calls, 16.9311 s semantic time,
+16.1322 s attention time, 50.43 s wall time, and 1,296,960 kB peak RSS.  It
+produced token IDs `11 220 15 11 220 15 11 220`.  The machine-readable record
+is `reports/native_bitnet_cpu_generation_2026-08-04_long.json`; this strengthens
+the native systems evidence but is not a learned-controller or llama.cpp
+quality comparison.
+
 The complete native CTest suite was also run outside the sandbox on the same
 build: **20/20 tests passed** in 26.94 s, including the 26.81 s C ABI lifecycle
 test.
