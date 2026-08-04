@@ -2572,3 +2572,30 @@ causal corpus.
   `60df2937b5642daa0925f3a47ab3eb8185c56a8fa32d1fd82dc7a5a809854769`.
   This is infrastructure validation, not a new causal-quality result; the full
   record is `reports/controller_provider_pca_2026-08-03/trace_merge_real_chunked.json`.
+## 2026-08-04 — pinned WikiText-2 auxiliary provider screen
+
+To test whether the learned controller-provider failure was primarily a corpus-size
+problem, we added a public auxiliary benchmark from `Salesforce/wikitext`,
+configuration `wikitext-2-raw-v1`, pinned to revision
+`b08601e04326c79dfdd32d625aee71d232d685c3`. The downloaded train and validation
+Parquet objects were independently verified with SHA-256 values equal to their
+Hugging Face LFS object IDs:
+
+- train: `e83889baabc497075506f91975be5fac0d45c5290b6b20582c8cd1e853d0c9f7`
+- validation: `204929b7ff9d6184953f867dedb860e40aa69c078fc1e54b3baaa8fb28511c4c`
+
+We materialized separate 16-record train and validation JSONL subsets (hashes
+`04deca3f...` and `6e6f9139...`) and captured each in four authenticated
+four-record chunks. The merged traces contain 256 records per split, have
+disjoint sample IDs, and have complete manifests (`00c7b8e8...` train and
+`1f911440...` validation). Capture was CPU-only, used packaged native
+projections, four threads, and sixteen token positions per sequence.
+
+The rank-16 PCA state/token provider reached validation terminal normalized MSE
+`0.1840071678`; rank 128 reached `0.1863523424`. Both fail the fixed learned
+provider threshold `0.0225` by a wide margin, and rank 128 is not better than
+rank 16. This is auxiliary evidence only and does not alter the protected
+Engram gate. It rules out ordinary prose-corpus expansion as the next likely
+fix; future work needs a different causal target, architecture, or supervision.
+The complete machine-readable record is
+`reports/controller_provider_pca_2026-08-03/auxiliary_wikitext2_screen.json`.

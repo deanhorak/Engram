@@ -574,3 +574,14 @@ thresholds.
 - Native CTest: 20/20 passed outside the sandbox in 26.94 s (including the
   26.81 s C ABI lifecycle test).
 - Lint and `git diff --check`: passed.
+### Auxiliary learned-provider corpus screen (2026-08-04)
+
+An independently pinned WikiText-2 raw train/validation split was captured
+through the authenticated chunk/merge path to separate corpus size from trace
+integrity. The 16-record-per-split screen produced 256 trace records per split.
+Rank-16 and rank-128 PCA state/token providers scored terminal normalized MSE
+`0.184007` and `0.186352` on validation, both failing the fixed `0.0225`
+learned-provider promotion threshold. This is not the protected benchmark and
+does not change the native fixed-controller semantic result. It closes the
+specific hypothesis that a modest expansion of ordinary prose data would solve
+the learned-provider failure.

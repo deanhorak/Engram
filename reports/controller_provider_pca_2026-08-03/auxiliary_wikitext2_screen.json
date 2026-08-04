@@ -1,0 +1,75 @@
+{
+  "experiment": "auxiliary_wikitext2_controller_provider_screen",
+  "status": "complete_negative_screen",
+  "purpose": "Test whether a larger, public, independently pinned prose corpus improves learned controller-provider causal replay; this is auxiliary evidence and is not the protected Engram gate.",
+  "timestamp_utc": "2026-08-04",
+  "upstream": {
+    "dataset": "Salesforce/wikitext",
+    "configuration": "wikitext-2-raw-v1",
+    "revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+    "revision_url": "https://huggingface.co/datasets/Salesforce/wikitext/tree/b08601e04326c79dfdd32d625aee71d232d685c3/wikitext-2-raw-v1",
+    "files": {
+      "train-00000-of-00001.parquet": {
+        "size_bytes": 6357543,
+        "sha256": "e83889baabc497075506f91975be5fac0d45c5290b6b20582c8cd1e853d0c9f7"
+      },
+      "validation-00000-of-00001.parquet": {
+        "size_bytes": 657209,
+        "sha256": "204929b7ff9d6184953f867dedb860e40aa69c078fc1e54b3baaa8fb28511c4c"
+      }
+    }
+  },
+  "materialized_subsets": {
+    "training": {
+      "records": 16,
+      "jsonl_sha256": "04deca3fde7f82eb0b0efb244b5dda61324b7324a341e7460bc7d9aa2051a488",
+      "trace_manifest_sha256": "00c7b8e8cb33b90d232bd492319c3abf2e2bc2c783061c48ae432fc2573d37e5",
+      "trace_records": 256,
+      "trace_sample_ids_disjoint": true
+    },
+    "validation": {
+      "records": 16,
+      "jsonl_sha256": "6e6f913904d1a11a8638c8ef291bc1124ed97e93e0e66c22e8ccb72d5fc8c9e8",
+      "trace_manifest_sha256": "1f9114400c1bf73f519c13ea2cbfbe7a6642e28c7c76fe9a5a3ef4c1c1b3b67b",
+      "trace_records": 256,
+      "trace_sample_ids_disjoint": true
+    }
+  },
+  "capture": {
+    "model": "work/native_bitnet/model.engram-bitnet",
+    "model_sha256": "8143ae115ed6babe5e5ada8fb8c5b769d8f417802b2db042ad98b4f7ed73975b",
+    "teacher_device": "cpu",
+    "native_projections": true,
+    "threads": 4,
+    "max_tokens": 16,
+    "chunk_size": 4,
+    "chunks_per_split": 4
+  },
+  "provider_evaluations": [
+    {
+      "rank": 16,
+      "provider_sha256": "65e55155a82df5cb07097298f3d1c4263351617799c7bc9938a5557b89194eee",
+      "validation_report": "/tmp/engram_wikitext2/provider_rank16_validation.json",
+      "terminal_normalized_mse": 0.1840071678161621,
+      "mean_stage_normalized_mse": 0.6614208817481995,
+      "threshold": 0.0225,
+      "passed": false
+    },
+    {
+      "rank": 128,
+      "provider_sha256": "f43a6e7b784365c286489d452a4f2b25da81dfd49fc37607af0d65a94d7a24c3",
+      "validation_report": "/tmp/engram_wikitext2/provider_rank128_validation.json",
+      "terminal_normalized_mse": 0.18635234236717224,
+      "mean_stage_normalized_mse": 0.6467767953872681,
+      "threshold": 0.0225,
+      "passed": false
+    }
+  ],
+  "interpretation": {
+    "protected_gate": "unchanged",
+    "learned_provider_promotion": "failed",
+    "conclusion": "Increasing the auxiliary prose corpus from the earlier eight-record screen to sixteen records per split did not approach the causal threshold. Rank 128 did not improve terminal error over rank 16. Ordinary corpus expansion alone is not a defensible route past the learned-provider gate; future work must change the target, architecture, or supervision rather than simply repeat this screen.",
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0
+  }
+}

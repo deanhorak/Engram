@@ -2070,3 +2070,15 @@ the host terminated the process before an artifact or score was written.
 `reports/controller_provider_pca_2026-08-03/auxiliary_stage_causal_attempt.json`
 records the no-score outcome.  The earlier auxiliary rank-16, rank-128, and
 nonlinear scores remain the only valid auxiliary quality evidence.
+### 2026-08-04 auxiliary public-corpus screen
+
+The learned controller-provider path was tested against a pinned public
+WikiText-2 raw corpus (Hugging Face `Salesforce/wikitext`, revision
+`b08601e04326c79dfdd32d625aee71d232d685c3`). Separate 16-record train and
+validation subsets were hashed and captured in authenticated chunks, producing
+256 trace records per split. Rank-16 and rank-128 PCA state/token providers
+reached terminal validation normalized MSE `0.184007` and `0.186352`,
+respectively, versus the fixed `0.0225` learned-provider threshold. Both arms
+failed; the result is auxiliary and does not claim the protected gate. The
+evidence indicates that simply adding ordinary prose data is insufficient.
+See `reports/controller_provider_pca_2026-08-03/auxiliary_wikitext2_screen.json`.
