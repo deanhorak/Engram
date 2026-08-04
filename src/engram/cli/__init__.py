@@ -62,6 +62,7 @@ from engram.evaluation.controller_only import evaluate_controller_only_trace
 from engram.evaluation.controller_provider import (
     evaluate_controller_provider_trace,
     evaluate_controller_sequence_replay,
+    evaluate_controller_stateful_provider_trace,
 )
 from engram.evaluation.native_attention_benchmark import (
     benchmark_native_streaming_attention,
@@ -145,6 +146,7 @@ from engram.training import (
     capture_native_bitnet_controller_traces,
     distill_factorized_controller,
     distill_nonlinear_residual_provider,
+    distill_causal_attention_operator_provider,
     distill_state_space_operator_provider,
     distill_state_space_residual_provider,
     joint_distill_operator_provider,
@@ -1102,6 +1104,24 @@ def _parser() -> argparse.ArgumentParser:
     nonlinear_provider.add_argument("--seed", type=int, default=403)
     nonlinear_provider.add_argument("--device", default="cpu")
 
+    causal_attention_provider = commands.add_parser(
+        "distill-causal-attention-provider",
+        help="distill a causal key/value context provider over a PCA provider",
+    )
+    causal_attention_provider.add_argument("--provider", required=True, type=Path)
+    causal_attention_provider.add_argument("--controller", required=True, type=Path)
+    causal_attention_provider.add_argument("--trace", required=True, type=Path)
+    causal_attention_provider.add_argument("--validation-trace", type=Path)
+    causal_attention_provider.add_argument("--out", required=True, type=Path)
+    causal_attention_provider.add_argument("--steps", type=int, default=100)
+    causal_attention_provider.add_argument("--batch-size", type=int, default=8)
+    causal_attention_provider.add_argument("--key-dim", type=int, default=32)
+    causal_attention_provider.add_argument("--value-dim", type=int, default=64)
+    causal_attention_provider.add_argument("--query-width", type=int, default=64)
+    causal_attention_provider.add_argument("--learning-rate", type=float, default=3e-4)
+    causal_attention_provider.add_argument("--seed", type=int, default=417)
+    causal_attention_provider.add_argument("--device", default="cpu")
+
     evaluate_operator_provider = commands.add_parser(
         "evaluate-controller-provider",
         help="evaluate a learned operator provider with a transformer-free controller",
@@ -1124,6 +1144,19 @@ def _parser() -> argparse.ArgumentParser:
     evaluate_sequence_provider.add_argument("--provider", required=True, type=Path)
     evaluate_sequence_provider.add_argument("--controller", required=True, type=Path)
     evaluate_sequence_provider.add_argument("--out", required=True, type=Path)
+    evaluate_stateful_provider = commands.add_parser(
+        "evaluate-controller-stateful-provider",
+        help="evaluate a learned stateful provider with the transformer-free controller",
+    )
+    evaluate_stateful_provider.add_argument("--trace", required=True, type=Path)
+    evaluate_stateful_provider.add_argument("--provider", required=True, type=Path)
+    evaluate_stateful_provider.add_argument("--controller", required=True, type=Path)
+    evaluate_stateful_provider.add_argument("--out", required=True, type=Path)
+    evaluate_stateful_provider.add_argument(
+        "--allow-correction",
+        action="store_true",
+        help="allow an unauthenticated nonzero factorized correction",
+    )
 
     attention_benchmark = commands.add_parser(
         "benchmark-native-attention",
@@ -2929,6 +2962,23 @@ def main(argv: Sequence[str] | None = None) -> int:
             device=args.device,
         )
         print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "distill-causal-attention-provider":
+        result = distill_causal_attention_operator_provider(
+            args.provider,
+            args.controller,
+            args.trace,
+            args.out,
+            validation_trace=args.validation_trace,
+            steps=args.steps,
+            batch_size=args.batch_size,
+            key_dim=args.key_dim,
+            value_dim=args.value_dim,
+            query_width=args.query_width,
+            learning_rate=args.learning_rate,
+            seed=args.seed,
+            device=args.device,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
     elif args.command == "evaluate-controller-provider":
         result = evaluate_controller_provider_trace(
             args.trace,
@@ -2944,6 +2994,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.provider,
             args.controller,
             out=args.out,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "evaluate-controller-stateful-provider":
+        result = evaluate_controller_stateful_provider_trace(
+            args.trace,
+            args.provider,
+            args.controller,
+            out=args.out,
+            allow_correction=args.allow_correction,
         )
         print(json.dumps(result, indent=2, sort_keys=True))
     elif args.command == "benchmark-native-attention":

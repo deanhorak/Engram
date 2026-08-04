@@ -9,6 +9,7 @@ from .provider_distillation import (
     distill_state_space_operator_provider,
     distill_state_space_residual_provider,
     distill_nonlinear_residual_provider,
+    distill_causal_attention_operator_provider,
     joint_distill_operator_provider,
 )
 from .activation_aware_aq import train_activation_aware_aq_boundaries
@@ -192,6 +193,7 @@ __all__ = [
     "train_intrinsic_sparse_boundaries",
     "distill_factorized_controller",
     "joint_distill_operator_provider",
+    "distill_causal_attention_operator_provider",
     "train_activation_aware_aq_boundaries",
     "train_budget_native_ternary_student",
     "train_projection_aq_layers",

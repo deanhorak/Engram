@@ -272,6 +272,13 @@ rank-64 stage heads reaches **0.2416596** after 20 CPU steps, worse than the
 PCA baseline. Its report is
 `reports/controller_provider_pca_2026-08-03/state_space_direct_memory256_screen.json`.
 
+An explicit causal key/value-memory provider is now implemented and evaluated
+through `engram evaluate-controller-stateful-provider`. It preserves prior
+token keys/values instead of compressing them into one diagonal state, but the
+20-step protected screen reaches only **0.1758242** terminal MSE. This is a
+valid CPU serialization/reload boundary, not a Milestone 4 promotion; report:
+`reports/controller_provider_pca_2026-08-03/causal_attention_provider_screen.json`.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and

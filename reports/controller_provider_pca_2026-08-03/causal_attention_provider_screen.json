@@ -1,0 +1,37 @@
+{
+  "experiment": "causal_key_value_context_provider_screen",
+  "status": "development_failure",
+  "training_trace": "work/controller_distillation/bitnet_train_8x16_b2",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "base_provider": "/tmp/provider_train64_rank64_randomized",
+  "artifact": "/tmp/causal_attention_provider_20_small",
+  "artifact_sha256": "8d94e1ef6180ce921fe39a620bcddde17f390bed2cc60741adf29cef7a807f70",
+  "architecture": {
+    "provider": "causal key/value memory plus stage-conditioned query residual",
+    "key_dim": 16,
+    "value_dim": 32,
+    "query_width": 32,
+    "output_rank": 64,
+    "steps": 20,
+    "batch_size": 8,
+    "learning_rate": 0.0003,
+    "seed": 419,
+    "optimizer_device": "cpu",
+    "inference_device": "cpu",
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0
+  },
+  "validation": {
+    "initial_terminal_normalized_mse": 0.1767018139,
+    "final_terminal_normalized_mse": 0.1758241951,
+    "final_maximum_terminal_normalized_mse": 1.3591297865,
+    "protected_validation": true,
+    "reload_evaluator": "evaluate-controller-stateful-provider"
+  },
+  "gate": {
+    "metric": "terminal_normalized_mse",
+    "threshold": 0.0225,
+    "passed": false
+  },
+  "decision": "reject; retaining addressable causal key/value history yields only a 0.00088 absolute validation improvement in the bounded screen and remains far above the learned-provider gate"
+}

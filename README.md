@@ -182,6 +182,39 @@ terminal normalized MSE **0.1759220** after 50 CPU steps. It is available as
 `engram adapt-controller-correction`; the nonzero controller is retained for
 evaluation only and is not an authenticated promotion artifact.
 
+The current learned-provider frontier is documented in
+`docs/milestone_report.md`. Full-corpus rank-256 fitting reaches terminal MSE
+**0.1710317**; a 128-wide persistent-memory residual reaches **0.1760428**;
+and smooth scheduled sampling reaches **0.1749395**. None passes the fixed
+**0.0225** causal gate. An explicit causal key/value provider is now also
+implemented: it keeps compact keys and values for every prior token, forms a
+stage-specific query from the controller state and token, and predicts a
+low-rank residual over the PCA streams. It is CPU-serializable and evaluated
+with the stateful command below, but its bounded protected screen reaches only
+**0.1758242**, so it remains research-only.
+
+```bash
+PYTHONPATH=src python -m engram.cli distill-causal-attention-provider \
+  --provider work/provider_train8_rank64 \
+  --controller work/controller_distillation/bitnet_rank128_operator_residual_1024x256_exact/controller \
+  --trace work/controller_distillation/bitnet_train_8x16_b2 \
+  --validation-trace work/controller_distillation/bitnet_validation_16x16_b4 \
+  --out work/controller_provider_causal_attention \
+  --steps 100 --key-dim 32 --value-dim 64 --query-width 64 --device cpu
+
+PYTHONPATH=src python -m engram.cli evaluate-controller-stateful-provider \
+  --trace work/controller_distillation/bitnet_validation_16x16_b4 \
+  --provider work/controller_provider_causal_attention \
+  --controller work/controller_distillation/bitnet_rank128_operator_residual_1024x256_exact/controller \
+  --out reports/controller_provider_causal_attention/evaluation.json
+```
+
+The evaluator checks source-model identity, rejects training/validation
+dataset reuse, advances provider context exactly once per token, and reports
+zero decoder-layer calls. A passing replay or fixture is not a learned-model
+promotion; only an independent causal result below **0.0225** can authorize
+the nonzero provider in a package.
+
 ### Milestone 2 ledger
 
 ### Current Milestone 3 attention boundary (2026-08-03)

@@ -1171,6 +1171,326 @@ def distill_nonlinear_residual_provider(
     return report
 
 
+def distill_causal_attention_operator_provider(
+    provider: str | Path,
+    controller: str | Path,
+    trace: str | Path,
+    out: str | Path,
+    *,
+    validation_trace: str | Path | None = None,
+    steps: int = 100,
+    batch_size: int = 8,
+    key_dim: int = 32,
+    value_dim: int = 64,
+    query_width: int = 64,
+    learning_rate: float = 3e-4,
+    seed: int = 417,
+    device: str = "cpu",
+) -> dict[str, Any]:
+    """Distill a causal key/value context provider through the controller.
+
+    The provider retains compact keys and values for all prior tokens in each
+    sequence.  A stage-conditioned query attends only to that prefix and
+    predicts a low-rank residual over a fixed PCA provider.  Training is
+    free-running through the frozen controller; validation uses a separate
+    sequence-disjoint trace.
+    """
+
+    if (
+        steps < 0
+        or batch_size <= 0
+        or key_dim <= 0
+        or value_dim <= 0
+        or query_width <= 0
+    ):
+        raise ValueError("steps and context dimensions must be non-negative/positive")
+    if learning_rate <= 0.0 or not np.isfinite(learning_rate):
+        raise ValueError("learning_rate must be finite and positive")
+    torch, TorchFactorizedController = _torch_controller_class()
+    if device.startswith("cuda") and not torch.cuda.is_available():
+        raise RuntimeError("causal-attention provider CUDA training requested but unavailable")
+    if not device.startswith("cuda"):
+        torch.set_num_threads(min(4, torch.get_num_threads()))
+    torch.manual_seed(seed)
+    if device.startswith("cuda"):
+        torch.cuda.manual_seed_all(seed)
+
+    training = _load_trajectories(trace)
+    validation = _load_trajectories(validation_trace) if validation_trace else training
+    base = PCAOperatorStreamProvider.load(provider)
+    controller_obj = FactorizedRecurrentController.load(controller)
+    for data in (training, validation):
+        if data.hidden_size != base.state_dim or data.num_stages != base.num_stages:
+            raise ValueError("provider and trajectory dimensions differ")
+    if (
+        controller_obj.state_dim != training.hidden_size
+        or controller_obj.num_stages != training.num_stages
+    ):
+        raise ValueError("controller and training trace dimensions differ")
+
+    def pack(data):
+        sample_ids = np.unique(data.sample_id)
+        counts = [int(np.sum(data.sample_id == sample)) for sample in sample_ids]
+        if not counts or len(set(counts)) != 1:
+            raise ValueError("causal-attention traces must contain equal-length sequences")
+        order = np.concatenate(
+            [np.flatnonzero(data.sample_id == sample) for sample in sample_ids]
+        )
+        sequence = counts[0]
+        return (
+            data.teacher_states[order].astype(np.float32).reshape(
+                len(sample_ids), sequence, data.num_stages + 1, data.hidden_size
+            ),
+            data.token_embedding[order].astype(np.float32).reshape(
+                len(sample_ids), sequence, data.hidden_size
+            ),
+        )
+
+    train_states, train_tokens = pack(training)
+    validation_states, validation_tokens = pack(validation)
+    width = training.hidden_size
+    stages = training.num_stages
+    rank = base.output_rank
+    rng = np.random.default_rng(seed)
+
+    def normal(shape, scale):
+        return (rng.normal(size=shape) * scale).astype(np.float32)
+
+    key_projection = torch.nn.Parameter(
+        torch.as_tensor(normal((width, key_dim), 1.0 / np.sqrt(width)), device=device)
+    )
+    value_projection = torch.nn.Parameter(
+        torch.as_tensor(normal((width, value_dim), 1.0 / np.sqrt(width)), device=device)
+    )
+    state_query_projection = torch.nn.Parameter(
+        torch.as_tensor(normal((width, query_width), 1.0 / np.sqrt(width)), device=device)
+    )
+    token_query_projection = torch.nn.Parameter(
+        torch.as_tensor(normal((width, query_width), 1.0 / np.sqrt(width)), device=device)
+    )
+    query_head = torch.nn.Parameter(
+        torch.as_tensor(
+            normal((stages, 2 * query_width, key_dim), 1.0 / np.sqrt(2 * query_width)),
+            device=device,
+        )
+    )
+    correction_head = torch.nn.Parameter(
+        torch.zeros((stages, 2 * query_width + value_dim + 1, 2 * rank), device=device)
+    )
+    trainable = [
+        key_projection,
+        value_projection,
+        state_query_projection,
+        token_query_projection,
+        query_head,
+        correction_head,
+    ]
+    optimizer = torch.optim.AdamW(trainable, lr=learning_rate, weight_decay=1e-5)
+    controller_module = TorchFactorizedController(controller_obj).to(device).eval()
+    for parameter in controller_module.parameters():
+        parameter.requires_grad_(False)
+    tensors = {
+        name: torch.as_tensor(
+            np.array(getattr(base, name), copy=True), dtype=torch.float32, device=device
+        )
+        for name in (
+            "semantic_mean",
+            "semantic_basis",
+            "semantic_projection",
+            "episodic_mean",
+            "episodic_basis",
+            "episodic_projection",
+        )
+    }
+
+    def rollout(states, tokens):
+        keys = tokens @ key_projection
+        values = tokens @ value_projection
+        stage_losses = []
+        terminal = []
+        for position in range(states.shape[1]):
+            token = tokens[:, position]
+            state = states[:, position, 0]
+            history_keys = keys[:, : position + 1]
+            history_values = values[:, : position + 1]
+            for stage in range(stages):
+                features = torch.cat(
+                    (state, token, torch.ones((states.shape[0], 1), device=device)), dim=-1
+                )
+                base_semantic = tensors["semantic_mean"][stage] + (
+                    features @ tensors["semantic_projection"][stage]
+                ) @ tensors["semantic_basis"][stage]
+                base_episodic = tensors["episodic_mean"][stage] + (
+                    features @ tensors["episodic_projection"][stage]
+                ) @ tensors["episodic_basis"][stage]
+                query_features = torch.cat(
+                    (
+                        state @ state_query_projection,
+                        token @ token_query_projection,
+                    ),
+                    dim=-1,
+                )
+                query = query_features @ query_head[stage]
+                scores = torch.sum(history_keys * query[:, None, :], dim=-1) / np.sqrt(key_dim)
+                weights = torch.softmax(scores, dim=-1)
+                context = torch.sum(weights[..., None] * history_values, dim=1)
+                correction_features = torch.cat(
+                    (
+                        query_features,
+                        context,
+                        torch.ones((states.shape[0], 1), device=device),
+                    ),
+                    dim=-1,
+                )
+                correction = correction_features @ correction_head[stage]
+                semantic = base_semantic + correction[:, :rank] @ tensors["semantic_basis"][stage]
+                episodic = base_episodic + correction[:, rank:] @ tensors["episodic_basis"][stage]
+                state = controller_module.step(
+                    state,
+                    torch.cat((token, semantic, episodic), dim=-1),
+                    stage,
+                )
+                target = states[:, position, stage + 1]
+                rms = target.square().mean(dim=-1, keepdim=True).sqrt().clamp_min(1e-4)
+                stage_losses.append(((state - target) / rms).square().mean())
+            terminal.append(state)
+        return torch.stack(stage_losses).mean(), terminal
+
+    def evaluate(states_np, tokens_np):
+        values = []
+        stage_totals = np.zeros(stages, dtype=np.float64)
+        records = 0
+        with torch.inference_mode():
+            for start in range(0, states_np.shape[0], batch_size):
+                states = torch.as_tensor(
+                    states_np[start : start + batch_size], dtype=torch.float32, device=device
+                )
+                tokens = torch.as_tensor(
+                    tokens_np[start : start + batch_size], dtype=torch.float32, device=device
+                )
+                _, terminals = rollout(states, tokens)
+                target = states[:, :, -1]
+                for offset, final in enumerate(terminals):
+                    rms = target[:, offset].square().mean(dim=-1).clamp_min(1e-8)
+                    values.append(
+                        ((final - target[:, offset]).square().mean(dim=-1) / rms)
+                        .cpu()
+                        .numpy()
+                    )
+                records += states.shape[0] * states.shape[1]
+        terminal = np.concatenate(values)
+        return {
+            "terminal_normalized_mse": float(terminal.mean()),
+            "maximum_terminal_normalized_mse": float(terminal.max()),
+            "records": int(records),
+        }
+
+    initial_validation = evaluate(validation_states, validation_tokens)
+    initial_training = evaluate(train_states, train_tokens)
+    started = time.perf_counter()
+    history = []
+    train_rng = np.random.default_rng(seed)
+    for step in range(steps):
+        indices = train_rng.choice(
+            train_states.shape[0], size=batch_size, replace=train_states.shape[0] < batch_size
+        )
+        states = torch.as_tensor(train_states[indices], dtype=torch.float32, device=device)
+        tokens = torch.as_tensor(train_tokens[indices], dtype=torch.float32, device=device)
+        optimizer.zero_grad(set_to_none=True)
+        loss, terminals = rollout(states, tokens)
+        if not bool(torch.isfinite(loss)):
+            raise RuntimeError(f"causal-attention provider loss became non-finite at step {step}")
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(trainable, max_norm=1.0)
+        optimizer.step()
+        if step in {0, steps - 1} or (step + 1) % max(steps // 5, 1) == 0:
+            history.append(
+                {
+                    "step": step + 1,
+                    "loss": float(loss.detach().cpu()),
+                    "terminal_normalized_mse": float(
+                        ((terminals[-1] - states[:, -1, -1]).square().mean(dim=-1)
+                         / states[:, -1, -1].square().mean(dim=-1).clamp_min(1e-8))
+                        .mean()
+                        .detach()
+                        .cpu()
+                    ),
+                }
+            )
+    final_validation = evaluate(validation_states, validation_tokens)
+    final_training = evaluate(train_states, train_tokens)
+    from engram.runtime.operator_stream import CausalAttentionOperatorStreamProvider
+
+    trained = CausalAttentionOperatorStreamProvider(
+        base_provider=base,
+        key_projection=key_projection.detach().cpu().numpy(),
+        value_projection=value_projection.detach().cpu().numpy(),
+        state_query_projection=state_query_projection.detach().cpu().numpy(),
+        token_query_projection=token_query_projection.detach().cpu().numpy(),
+        query_head=query_head.detach().cpu().numpy(),
+        correction_head=correction_head.detach().cpu().numpy(),
+        metadata_payload={
+            "source_provider": str(Path(provider).resolve()),
+            "source_provider_sha256": _directory_sha256(Path(provider).resolve()),
+            "training_trace": str(Path(trace).resolve()),
+            "validation_trace": str(Path(validation_trace).resolve()) if validation_trace else None,
+            "source_model_hash": training.manifest.get("model_hash"),
+            "source_dataset_hash": training.manifest.get("dataset_hash"),
+            "architecture": "causal_key_value_context_over_pca_residual",
+            "learned": True,
+            "training_steps": steps,
+            "training_batch_size": batch_size,
+            "training_seed": seed,
+            "optimizer_device": device,
+        },
+    )
+    target = Path(out)
+    trained.save(target)
+    report = {
+        "experiment": "distill_causal_attention_operator_provider",
+        "status": "development_result",
+        "provider": str(Path(provider).resolve()),
+        "provider_sha256": _directory_sha256(Path(provider).resolve()),
+        "adapted_provider": str(target.resolve()),
+        "adapted_provider_sha256": _directory_sha256(target),
+        "controller": str(Path(controller).resolve()),
+        "training_trace": str(Path(trace).resolve()),
+        "validation_trace": str(Path(validation_trace).resolve()) if validation_trace else None,
+        "optimizer_device": device,
+        "inference_device": "cpu",
+        "transformers_model_loaded": False,
+        "decoder_layer_forward_calls": 0,
+        "architecture": {
+            "key_dim": key_dim,
+            "value_dim": value_dim,
+            "query_width": query_width,
+            "output_rank": rank,
+        },
+        "training": {
+            "steps": steps,
+            "batch_size": batch_size,
+            "learning_rate": learning_rate,
+            "seed": seed,
+            "elapsed_seconds": time.perf_counter() - started,
+            "history": history,
+            "initial": initial_training,
+            "final": final_training,
+        },
+        "initial_validation": initial_validation,
+        "validation": final_validation,
+        "gate": {
+            "metric": "terminal_normalized_mse",
+            "threshold": 0.0225,
+            "actual": final_validation["terminal_normalized_mse"],
+            "passed": bool(final_validation["terminal_normalized_mse"] <= 0.0225),
+            "layer_free_cpu_replay": True,
+            "end_to_end_generation": False,
+        },
+    }
+    atomic_json(target.parent / f"{target.name}_training_report.json", report)
+    return report
+
+
 __all__ = [
     "joint_distill_operator_provider",
     "distill_state_space_operator_provider",
@@ -1178,4 +1498,5 @@ __all__ = [
     "adapt_controller_correction_for_provider",
     "dagger_refit_operator_provider",
     "distill_nonlinear_residual_provider",
+    "distill_causal_attention_operator_provider",
 ]

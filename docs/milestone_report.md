@@ -283,6 +283,14 @@ rank-64 PCA provider and fails the gate. This closes the “residual adapter
 placement” hypothesis for this capacity; evidence:
 `reports/controller_provider_pca_2026-08-03/state_space_direct_memory256_screen.json`.
 
+The context-aware replacement keeps compact keys and values for every prior
+token and attends to that prefix with a stage-conditioned query. Its new
+stateful evaluator and authenticated loader pass CPU reload parity, but a
+20-step screen (key 16, value 32, query width 32) changes protected terminal
+MSE only from **0.1767018** to **0.1758242**. The provider is therefore
+retained as an implemented research boundary, not promoted; evidence:
+`reports/controller_provider_pca_2026-08-03/causal_attention_provider_screen.json`.
+
 ## Native recurrent-controller implementation boundary
 
 The native token runtime now has a direct implementation of the schema-v3

@@ -7,6 +7,7 @@ from engram.evaluation.controller_substitution import (
 )
 from engram.runtime.controller_only import ControllerOnlyRuntime
 from engram.runtime.operator_stream import (
+    CausalAttentionOperatorStreamProvider,
     PCAOperatorStreamProvider,
     NonlinearResidualOperatorStreamProvider,
     RecurrentContextProvider,
@@ -351,3 +352,50 @@ def test_nonlinear_residual_provider_zero_output_roundtrip(tmp_path):
         np.testing.assert_allclose(loaded[0], expected[0])
         np.testing.assert_allclose(loaded[1], expected[1])
     assert restored.metadata()["provider_kind"] == "nonlinear_residual_pca"
+
+
+def test_causal_attention_provider_zero_output_roundtrip(tmp_path):
+    rng = np.random.default_rng(131)
+    stages, width, rank = 2, 4, 1
+    key_dim, value_dim, query_width = 2, 3, 3
+    base = PCAOperatorStreamProvider(
+        semantic_mean=rng.normal(size=(stages, width)).astype(np.float32),
+        semantic_basis=rng.normal(size=(stages, rank, width)).astype(np.float32),
+        semantic_projection=rng.normal(size=(stages, 2 * width + 1, rank)).astype(np.float32),
+        episodic_mean=rng.normal(size=(stages, width)).astype(np.float32),
+        episodic_basis=rng.normal(size=(stages, rank, width)).astype(np.float32),
+        episodic_projection=rng.normal(size=(stages, 2 * width + 1, rank)).astype(np.float32),
+        metadata_payload={"source_model_hash": "test", "source_dataset_hash": "train"},
+    )
+    provider = CausalAttentionOperatorStreamProvider(
+        base_provider=base,
+        key_projection=rng.normal(size=(width, key_dim)).astype(np.float32),
+        value_projection=rng.normal(size=(width, value_dim)).astype(np.float32),
+        state_query_projection=rng.normal(size=(width, query_width)).astype(np.float32),
+        token_query_projection=rng.normal(size=(width, query_width)).astype(np.float32),
+        query_head=rng.normal(size=(stages, 2 * query_width, key_dim)).astype(np.float32),
+        correction_head=np.zeros(
+            (stages, 2 * query_width + value_dim + 1, 2 * rank), dtype=np.float32
+        ),
+        metadata_payload={"learned": True, "source_dataset_hash": "train"},
+    )
+    path = provider.save(tmp_path / "causal-provider")
+    restored = CausalAttentionOperatorStreamProvider.load(path)
+    generic = load_operator_stream_provider(path)
+    state = rng.normal(size=(2, width)).astype(np.float32)
+    token = rng.normal(size=(2, width)).astype(np.float32)
+    provider.reset((2,))
+    restored.reset((2,))
+    generic.reset((2,))
+    provider.begin_token(token)
+    restored.begin_token(token)
+    generic.begin_token(token)
+    for stage in range(stages):
+        expected = base.step(state, token, stage)
+        actual = restored.step(state, token, stage)
+        loaded = generic.step(state, token, stage)
+        np.testing.assert_allclose(actual[0], expected[0])
+        np.testing.assert_allclose(actual[1], expected[1])
+        np.testing.assert_allclose(loaded[0], expected[0])
+        np.testing.assert_allclose(loaded[1], expected[1])
+    assert restored.metadata()["provider_kind"] == "causal_attention_pca"
