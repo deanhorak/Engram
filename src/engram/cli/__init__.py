@@ -1002,7 +1002,7 @@ def _parser() -> argparse.ArgumentParser:
     fit_operator_provider.add_argument("--ridge", type=float, default=1e-2)
     fit_operator_provider.add_argument(
         "--target",
-        choices=("streams", "combined_stream", "combined_delta"),
+        choices=("streams", "combined_stream", "combined_delta", "normalized_residual"),
         default="streams",
     )
 

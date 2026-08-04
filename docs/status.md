@@ -1939,6 +1939,14 @@ entries scored fall from **222,208** to **205,824** (**7.3733%** reduction).
 This confirms that the semantic win is not yet a large end-to-end traffic win:
 episodic value reads and the dominant local/projection work are unchanged.
 
+The next materially different target was also screened: a normalized residual
+provider predicts a unit combined semantic/episodic direction and a separate
+log-magnitude head. On the eight-sequence training arm with the independent
+development trace it reached terminal normalized MSE **0.1909275**, worse than
+the raw-stream rank-16 baseline. The target is rejected without a full-corpus
+run or package promotion; evidence is
+reports/controller_provider_pca_2026-08-03/normalized_residual_screen.json.
+
 ### CPU provider memory boundary (2026-08-04)
 
 Authenticated NumPy provider reloads now use read-only memory mapping for every

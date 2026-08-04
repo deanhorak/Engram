@@ -2400,3 +2400,18 @@ causal corpus.
   a Milestone 6 systems improvement only: the best causal learned-provider
   result remains **0.1666128**, so the Milestone 4 **0.0225** quality gate is
   still not passed.
+
+## 2026-08-04: normalized residual target rejected
+
+- Added a separate provider target that fits the combined semantic/episodic
+  residual as a unit direction plus a linear log-magnitude head.  This tests
+  whether raw-stream PCA is wasting rank on the very large early-stage
+  amplitudes.
+- The first frozen screen used eight training sequences and rank 16, with the
+  independent 16-sequence development trace kept separate.  Terminal
+  normalized MSE was **0.1909275**, versus the raw-stream rank-16 family near
+  **0.1789**.  The gate therefore rejects this target and no full-corpus arm
+  was authorized.
+- The provider is retained as a tested, disabled research implementation; it
+  does not change the protected promotion or the production package.
+  Evidence: reports/controller_provider_pca_2026-08-03/normalized_residual_screen.json.

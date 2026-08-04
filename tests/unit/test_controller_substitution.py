@@ -10,6 +10,7 @@ from engram.runtime.operator_stream import (
     CausalAttentionOperatorStreamProvider,
     StageCausalAttentionOperatorStreamProvider,
     PCAOperatorStreamProvider,
+    NormalizedResidualOperatorStreamProvider,
     NonlinearResidualOperatorStreamProvider,
     RecurrentContextProvider,
     ResidualStateSpaceOperatorStreamProvider,
@@ -385,6 +386,36 @@ def test_pca_provider_loads_large_arrays_read_only_mapped(tmp_path):
         actual = restored.step(state, token, stage)
         np.testing.assert_allclose(actual[0], expected[0])
         np.testing.assert_allclose(actual[1], expected[1])
+
+
+def test_normalized_residual_provider_roundtrip(tmp_path):
+    rng = np.random.default_rng(130)
+    stages, width, rank = 2, 6, 2
+    provider = NormalizedResidualOperatorStreamProvider(
+        direction_mean=rng.normal(size=(stages, width)).astype(np.float32),
+        direction_basis=rng.normal(size=(stages, rank, width)).astype(np.float32),
+        direction_projection=rng.normal(
+            size=(stages, 2 * width + 1, rank)
+        ).astype(np.float32),
+        gain_mean=rng.normal(size=stages).astype(np.float32),
+        gain_projection=rng.normal(
+            size=(stages, 2 * width + 1)
+        ).astype(np.float32),
+        metadata_payload={"source_dataset_hash": "train"},
+    )
+    path = provider.save(tmp_path / "normalized-provider")
+    restored = NormalizedResidualOperatorStreamProvider.load(path)
+    generic = load_operator_stream_provider(path)
+    state = rng.normal(size=(2, width)).astype(np.float32)
+    token = rng.normal(size=(2, width)).astype(np.float32)
+    for stage in range(stages):
+        expected = provider.step(state, token, stage)
+        actual = restored.step(state, token, stage)
+        loaded = generic.step(state, token, stage)
+        np.testing.assert_allclose(actual[0], expected[0])
+        np.testing.assert_allclose(actual[1], expected[1])
+        np.testing.assert_allclose(loaded[0], expected[0])
+        np.testing.assert_allclose(loaded[1], expected[1])
 
 
 def test_causal_attention_provider_zero_output_roundtrip(tmp_path):

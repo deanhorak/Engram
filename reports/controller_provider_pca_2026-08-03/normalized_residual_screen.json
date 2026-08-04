@@ -1,0 +1,27 @@
+{
+  "experiment": "normalized_residual_provider_screen",
+  "status": "development_failure",
+  "training_trace": "work/controller_distillation/bitnet_train_8x16_b2",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "provider": "/tmp/provider_normalized8_rank16",
+  "provider_sha256": "bb0c439ea4fc84ef7939665f2c1280269b2e279fc7174226599c9e4f22a265a8",
+  "architecture": {
+    "target": "unit_combined_semantic_episodic_residual_with_log_gain",
+    "output_rank": 16,
+    "ridge": 1.0,
+    "inference_device": "cpu",
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0
+  },
+  "validation": {
+    "terminal_normalized_mse": 0.19092753529548645,
+    "mean_stage_normalized_mse": 0.7432090044021606,
+    "maximum_stage_normalized_mse": 1.1656403541564941
+  },
+  "gate": {
+    "metric": "terminal_normalized_mse",
+    "threshold": 0.0225,
+    "passed": false,
+    "decision": "reject; separating residual direction and log magnitude remains worse than the raw-stream rank-16 baseline and does not justify a full-corpus run"
+  }
+}

@@ -517,6 +517,164 @@ class PCAOperatorStreamProvider:
         )
 
 
+@dataclass(frozen=True)
+class NormalizedResidualOperatorStreamProvider:
+    """Predict a residual direction and log-magnitude separately.
+
+    Raw operator streams contain a few very large early-stage magnitudes. A
+    single PCA basis can spend most of its rank modeling that scale rather
+    than the direction that survives the controller's RMS normalization. This
+    provider fits PCA to unit residual directions and a separate linear head to
+    log residual magnitude. It is a learned research artifact until its
+    free-running held-out causal result passes the controller gate.
+    """
+
+    direction_mean: np.ndarray
+    direction_basis: np.ndarray
+    direction_projection: np.ndarray
+    gain_mean: np.ndarray
+    gain_projection: np.ndarray
+    metadata_payload: dict[str, Any]
+    provider_kind: str = "normalized_residual_pca"
+
+    def __post_init__(self) -> None:
+        arrays = {
+            "direction_mean": _finite(self.direction_mean, "direction_mean"),
+            "direction_basis": _finite(self.direction_basis, "direction_basis"),
+            "direction_projection": _finite(
+                self.direction_projection, "direction_projection"
+            ),
+            "gain_mean": _finite(self.gain_mean, "gain_mean"),
+            "gain_projection": _finite(self.gain_projection, "gain_projection"),
+        }
+        if arrays["direction_mean"].ndim != 2:
+            raise ValueError("direction_mean must have shape [stages, state_dim]")
+        stages, width = arrays["direction_mean"].shape
+        basis = arrays["direction_basis"]
+        projection = arrays["direction_projection"]
+        if basis.ndim != 3 or basis.shape[0] != stages or basis.shape[2] != width:
+            raise ValueError("direction_basis has incompatible dimensions")
+        rank = basis.shape[1]
+        expected_features = 2 * width + 1
+        if projection.shape != (stages, expected_features, rank):
+            raise ValueError("direction_projection has incompatible dimensions")
+        if arrays["gain_mean"].shape != (stages,):
+            raise ValueError("gain_mean must have shape [stages]")
+        if arrays["gain_projection"].shape != (stages, expected_features):
+            raise ValueError("gain_projection has incompatible dimensions")
+        for name, value in arrays.items():
+            value.setflags(write=False)
+            object.__setattr__(self, name, value)
+        if not isinstance(self.metadata_payload, dict):
+            raise ValueError("provider metadata must be an object")
+
+    @property
+    def state_dim(self) -> int:
+        return int(self.direction_mean.shape[1])
+
+    @property
+    def num_stages(self) -> int:
+        return int(self.direction_mean.shape[0])
+
+    @property
+    def output_rank(self) -> int:
+        return int(self.direction_basis.shape[1])
+
+    def step(
+        self, state: np.ndarray, token_embedding: np.ndarray, stage: int
+    ) -> tuple[np.ndarray, np.ndarray]:
+        current = _finite(state, "state")
+        token = _finite(token_embedding, "token_embedding")
+        if current.shape != token.shape or current.shape[-1] != self.state_dim:
+            raise ValueError("state and token_embedding must have matching width")
+        if not isinstance(stage, (int, np.integer)) or isinstance(stage, bool):
+            raise ValueError("stage must be an integer")
+        if stage < 0 or stage >= self.num_stages:
+            raise ValueError("stage is outside the provider")
+        features = np.concatenate(
+            (current, token, np.ones((*current.shape[:-1], 1), dtype=np.float32)),
+            axis=-1,
+        )
+        direction = self.direction_mean[stage] + (
+            features @ self.direction_projection[stage]
+        ) @ self.direction_basis[stage]
+        direction /= np.sqrt(
+            np.mean(np.square(direction), axis=-1, keepdims=True)
+        ).clip(1e-5)
+        log_gain = self.gain_mean[stage] + features @ self.gain_projection[stage]
+        gain = np.exp(np.clip(log_gain, -12.0, 12.0))[..., None]
+        semantic = np.asarray(direction * gain, dtype=np.float32)
+        return semantic, np.zeros_like(semantic)
+
+    def metadata(self) -> dict[str, Any]:
+        return {
+            **self.metadata_payload,
+            "format": OPERATOR_PROVIDER_FORMAT,
+            "version": OPERATOR_PROVIDER_VERSION,
+            "provider_kind": self.provider_kind,
+            "state_dim": self.state_dim,
+            "num_stages": self.num_stages,
+            "output_rank": self.output_rank,
+            "learned": True,
+            "transformer_layers_loaded": False,
+        }
+
+    def save(self, path: str | Path) -> Path:
+        target = Path(path)
+        target.mkdir(parents=True, exist_ok=True)
+        arrays = {
+            "direction_mean": self.direction_mean,
+            "direction_basis": self.direction_basis,
+            "direction_projection": self.direction_projection,
+            "gain_mean": self.gain_mean,
+            "gain_projection": self.gain_projection,
+        }
+        inventory: dict[str, dict[str, Any]] = {}
+        for name, value in arrays.items():
+            file_path = target / f"{name}.npy"
+            np.save(file_path, value, allow_pickle=False)
+            inventory[file_path.name] = {
+                "bytes": file_path.stat().st_size,
+                "sha256": sha256_file(file_path),
+                "shape": list(value.shape),
+                "dtype": str(value.dtype),
+            }
+        manifest = self.metadata()
+        manifest["files"] = inventory
+        atomic_json(target / "manifest.json", manifest)
+        return target
+
+    @classmethod
+    def load(cls, path: str | Path) -> "NormalizedResidualOperatorStreamProvider":
+        target = Path(path)
+        manifest = json.loads((target / "manifest.json").read_text(encoding="utf-8"))
+        if (
+            manifest.get("format") != OPERATOR_PROVIDER_FORMAT
+            or manifest.get("version") != OPERATOR_PROVIDER_VERSION
+            or manifest.get("provider_kind") != "normalized_residual_pca"
+        ):
+            raise ValueError("unsupported normalized residual provider")
+        files = manifest.get("files")
+        if not isinstance(files, dict):
+            raise ValueError("provider manifest has no file inventory")
+        arrays: dict[str, np.ndarray] = {}
+        for name, info in files.items():
+            file_path = target / name
+            if (
+                not file_path.is_file()
+                or file_path.stat().st_size != info.get("bytes")
+                or sha256_file(file_path) != info.get("sha256")
+            ):
+                raise ValueError(f"normalized residual checksum mismatch: {name}")
+            arrays[Path(name).stem] = np.load(
+                file_path, allow_pickle=False, mmap_mode="r"
+            )
+        return cls(
+            **arrays,
+            metadata_payload={key: value for key, value in manifest.items() if key != "files"},
+        )
+
+
 @dataclass
 class RecurrentContextProvider:
     """Small stateful provider for sequence-level layer-free execution.
@@ -1826,9 +1984,15 @@ def fit_operator_stream_provider(
         raise ValueError("output_rank must be a positive integer")
     if not np.isfinite(ridge) or ridge <= 0.0:
         raise ValueError("ridge must be finite and positive")
-    if target not in {"streams", "combined_stream", "combined_delta"}:
+    if target not in {
+        "streams",
+        "combined_stream",
+        "combined_delta",
+        "normalized_residual",
+    }:
         raise ValueError(
-            "target must be 'streams', 'combined_stream', or 'combined_delta'"
+            "target must be 'streams', 'combined_stream', 'combined_delta', or "
+            "'normalized_residual'"
         )
     trace_path = Path(trace).resolve()
     from engram.training.controller_distillation import _load_trajectories
@@ -1845,18 +2009,94 @@ def fit_operator_stream_provider(
             + data.episodic_outputs.astype(np.float32)
         )
         episodic = np.zeros_like(semantic)
-    else:
+    elif target == "combined_delta":
         semantic = (
             data.teacher_states[:, 1:].astype(np.float32)
             - data.teacher_states[:, :-1].astype(np.float32)
         )
         episodic = np.zeros_like(semantic)
+    else:
+        semantic = None
+        episodic = None
     stages = data.num_stages
     width = data.hidden_size
-    semantic_mean = np.empty((stages, width), dtype=np.float32)
     fitted_rank = min(int(output_rank), data.records, width)
+    if target == "normalized_residual":
+        direction_mean = np.empty((stages, width), dtype=np.float32)
+        direction_basis = np.empty((stages, fitted_rank, width), dtype=np.float32)
+        direction_projection = np.empty(
+            (stages, 2 * width + 1, fitted_rank), dtype=np.float32
+        )
+        gain_mean = np.empty((stages,), dtype=np.float32)
+        gain_projection = np.empty((stages, 2 * width + 1), dtype=np.float32)
+        combined = (
+            data.semantic_outputs.astype(np.float32)
+            + data.episodic_outputs.astype(np.float32)
+        )
+        magnitude = np.sqrt(
+            np.mean(np.square(combined), axis=-1, keepdims=True)
+        ).clip(1e-5)
+        directions = combined / magnitude
+        logs = np.log(magnitude[..., 0])
+        for stage in range(stages):
+            features = np.concatenate(
+                (
+                    state[:, stage],
+                    token,
+                    np.ones((data.records, 1), dtype=np.float32),
+                ),
+                axis=-1,
+            )
+            dm, db, dp = _fit_stream(
+                features,
+                directions[:, stage],
+                output_rank=output_rank,
+                ridge=ridge,
+            )
+            gram = features @ features.T
+            scale = max(float(np.mean(np.diag(gram))), 1.0)
+            gram += np.eye(data.records, dtype=np.float32) * (float(ridge) * scale)
+            gain_mean[stage] = float(logs[:, stage].mean())
+            gain_projection[stage] = features.T @ np.linalg.solve(
+                gram, logs[:, stage] - gain_mean[stage]
+            )
+            direction_mean[stage] = dm
+            direction_basis[stage, : db.shape[0]] = db
+            direction_projection[stage, :, : dp.shape[1]] = dp
+        provider = NormalizedResidualOperatorStreamProvider(
+            direction_mean=direction_mean,
+            direction_basis=direction_basis,
+            direction_projection=direction_projection,
+            gain_mean=gain_mean,
+            gain_projection=gain_projection,
+            metadata_payload={
+                "source_trace": str(trace_path),
+                "source_trace_manifest_sha256": sha256_file(
+                    trace_path / "manifest.json"
+                ),
+                "source_model_hash": data.manifest.get("model_hash"),
+                "source_dataset_hash": data.manifest.get("dataset_hash"),
+                "training_records": data.records,
+                "input_order": ["controller_state", "token_embedding", "bias"],
+                "ridge": float(ridge),
+                "requested_output_rank": int(output_rank),
+                "operator_normalization": data.manifest.get("metadata", {}).get(
+                    "operator_normalization"
+                ),
+                "target": target,
+            },
+        )
+        saved = provider.save(out)
+        return {
+            "provider": str(saved.resolve()),
+            "provider_sha256": _directory_sha256(saved),
+            "metadata": provider.metadata(),
+        }
+    semantic_mean = np.empty((stages, width), dtype=np.float32)
     semantic_basis = np.empty((stages, fitted_rank, width), dtype=np.float32)
-    semantic_projection = np.empty((stages, 2 * width + 1, fitted_rank), dtype=np.float32)
+    semantic_projection = np.empty(
+        (stages, 2 * width + 1, fitted_rank), dtype=np.float32
+    )
     episodic_mean = np.empty_like(semantic_mean)
     episodic_basis = np.empty_like(semantic_basis)
     episodic_projection = np.empty_like(semantic_projection)
@@ -1911,6 +2151,7 @@ def load_operator_stream_provider(path: str | Path) -> OperatorStreamProvider:
     kind = manifest.get("provider_kind")
     loaders = {
         "pca_state_token": PCAOperatorStreamProvider.load,
+        "normalized_residual_pca": NormalizedResidualOperatorStreamProvider.load,
         "state_space_pca": StateSpaceOperatorStreamProvider.load,
         "state_space_residual_pca": ResidualStateSpaceOperatorStreamProvider.load,
         "nonlinear_residual_pca": NonlinearResidualOperatorStreamProvider.load,
@@ -1931,6 +2172,7 @@ __all__ = [
     "TraceOperatorStreamProvider",
     "TraceSequenceOperatorStreamProvider",
     "PCAOperatorStreamProvider",
+    "NormalizedResidualOperatorStreamProvider",
     "RecurrentContextProvider",
     "StateSpaceOperatorStreamProvider",
     "ResidualStateSpaceOperatorStreamProvider",
