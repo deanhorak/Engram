@@ -2559,3 +2559,10 @@ causal corpus.
   trace plus merge report.  The command is covered by unit tests and is an
   infrastructure improvement only; it does not convert the existing 8/8 slice
   into new evidence.
+
+- The merger was exercised on two real native-projection chunks (four sequences
+  each, offsets 0 and 4).  It produced an authenticated 8-sequence/128-record
+  trace with manifest SHA
+  `60df2937b5642daa0925f3a47ab3eb8185c56a8fa32d1fd82dc7a5a809854769`.
+  This is infrastructure validation, not a new causal-quality result; the full
+  record is `reports/controller_provider_pca_2026-08-03/trace_merge_real_chunked.json`.

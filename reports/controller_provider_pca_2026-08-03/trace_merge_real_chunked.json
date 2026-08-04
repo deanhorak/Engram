@@ -1,0 +1,29 @@
+{
+  "experiment": "merge_real_native_projection_trace_chunks",
+  "status": "complete",
+  "chunks": [
+    {
+      "trace": "/tmp/bitnet_aux_trace_chunk0",
+      "manifest_sha256": "5eb467c6d4097726fb7c332a3e7f1570fadaa7b99ef78bd7a0c9ee7d941f812c",
+      "record_offset": 0,
+      "sequences": 4,
+      "records": 64
+    },
+    {
+      "trace": "/tmp/bitnet_aux_trace_chunk4",
+      "manifest_sha256": "f5b029394429080606944dd4ec546e5d1a8e1e9bcfbab873c12cf4454b041bd7",
+      "record_offset": 4,
+      "sequences": 4,
+      "records": 64
+    }
+  ],
+  "merged_trace": "/tmp/bitnet_aux_trace_merged8",
+  "merged_manifest_sha256": "60df2937b5642daa0925f3a47ab3eb8185c56a8fa32d1fd82dc7a5a809854769",
+  "records": 128,
+  "sample_count": 8,
+  "sample_ids_disjoint": true,
+  "model_hash": "8143ae115ed6babe5e5ada8fb8c5b769d8f417802b2db042ad98b4f7ed73975b",
+  "dataset_hash": "51f5fe5e1df729be0f9bebf6fc09b6d5bc2dd55eef79d3249a06b5d526e19fe9",
+  "quality_evaluated": false,
+  "decision": "infrastructure_validation_only"
+}

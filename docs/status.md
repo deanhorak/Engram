@@ -2005,6 +2005,11 @@ are disjoint, then emits a new checksummed trace and merge report.  Unit tests
 cover both successful merging and overlap rejection; this infrastructure does
 not relax any causal-gate policy.
 
+The merger was exercised on two real native-projection chunks (offsets 0 and
+4) and produced an authenticated 8-sequence/128-record trace with manifest
+SHA `60df2937b5642daa0925f3a47ab3eb8185c56a8fa32d1fd82dc7a5a809854769`.
+This validates chunk assembly only; it is not a new quality measurement.
+
 ### Native CPU token generation benchmark (2026-08-04)
 
 The transformer-free C++ token runtime now has a complete package-level
