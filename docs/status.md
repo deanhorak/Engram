@@ -223,6 +223,22 @@ to **0.2107506**, so increasing this MLP's capacity or training duration is
 not a path to the gate. Evidence:
 `reports/controller_provider_pca_2026-08-03/nonlinear_capacity_screen.json`.
 
+The strongest learned-provider arm now combines the train-64 randomized
+rank-64 base with the nonlinear residual. It improves held-out terminal MSE
+from **0.1767018** to **0.1731798**, but still fails the **0.0225** gate by a
+wide margin. Evidence is preserved in
+`reports/controller_provider_pca_2026-08-03/nonlinear_highrank_screen.json`.
+
+The nonlinear trainer now supports scheduled causal distillation. One hundred
+teacher-forced steps followed by one hundred free-running steps on the rank-64
+base reach held-out terminal MSE **0.1717456** (reload **0.1717457**). This is
+the best learned-provider result, but still fails the **0.0225** gate; report:
+`reports/controller_provider_pca_2026-08-03/nonlinear_highrank_scheduled.json`.
+
+An extended 300-step free-running continuation after the 100-step warm-up
+regresses to terminal MSE **0.1740203**, so longer optimization is rejected.
+The best scheduled checkpoint remains **0.1717457**, still unpromoted.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and

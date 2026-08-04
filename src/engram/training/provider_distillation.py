@@ -903,6 +903,7 @@ def distill_nonlinear_residual_provider(
     *,
     validation_trace: str | Path | None = None,
     steps: int = 100,
+    teacher_forcing_steps: int = 0,
     batch_size: int = 8,
     hidden_width: int = 64,
     stage_width: int = 16,
@@ -912,8 +913,16 @@ def distill_nonlinear_residual_provider(
 ) -> dict[str, Any]:
     """Train a shared nonlinear latent residual through free-running rollout."""
 
-    if steps < 0 or batch_size <= 0 or hidden_width <= 0 or stage_width <= 0:
-        raise ValueError("steps, batch_size, hidden_width, and stage_width must be positive")
+    if (
+        steps < 0
+        or teacher_forcing_steps < 0
+        or batch_size <= 0
+        or hidden_width <= 0
+        or stage_width <= 0
+    ):
+        raise ValueError(
+            "steps and teacher_forcing_steps must be non-negative; batch and widths positive"
+        )
     if learning_rate <= 0.0 or not np.isfinite(learning_rate):
         raise ValueError("learning_rate must be finite and positive")
     torch, TorchFactorizedController = _torch_controller_class()
@@ -979,14 +988,15 @@ def distill_nonlinear_residual_provider(
         residual.parameters(), lr=learning_rate, weight_decay=1e-5
     )
 
-    def rollout(data, indices):
+    def rollout(data, indices, *, teacher_forcing: bool = False):
         target = torch.as_tensor(data.teacher_states[indices], dtype=torch.float32, device=device)
         token = torch.as_tensor(data.token_embedding[indices], dtype=torch.float32, device=device)
         state = target[:, 0]
         errors = []
         for stage in range(stages):
+            source = target[:, stage] if teacher_forcing else state
             features = torch.cat(
-                (state, token, torch.ones((len(indices), 1), device=device)), dim=-1
+                (source, token, torch.ones((len(indices), 1), device=device)), dim=-1
             )
             correction = residual(features, stage)
             semantic = tensors["semantic_mean"][stage] + (
@@ -998,7 +1008,7 @@ def distill_nonlinear_residual_provider(
                 + correction[:, rank:]
             ) @ tensors["episodic_basis"][stage]
             state = module.step(
-                state, torch.cat((token, semantic, episodic), dim=-1), stage
+                source, torch.cat((token, semantic, episodic), dim=-1), stage
             )
             target_state = target[:, stage + 1]
             rms = target_state.square().mean(dim=-1, keepdim=True).sqrt().clamp_min(1e-4)
@@ -1030,23 +1040,29 @@ def distill_nonlinear_residual_provider(
     rng = np.random.default_rng(seed)
     history = []
     started = time.perf_counter()
-    for step in range(steps):
+    total_steps = teacher_forcing_steps + steps
+    for step in range(total_steps):
+        teacher_forcing = step < teacher_forcing_steps
         indices = rng.choice(
             training.records,
             size=batch_size,
             replace=training.records < batch_size,
         )
         optimizer.zero_grad(set_to_none=True)
-        loss, errors = rollout(training, indices)
+        loss, errors = rollout(training, indices, teacher_forcing=teacher_forcing)
         if not bool(torch.isfinite(loss)):
             raise RuntimeError(f"nonlinear provider loss became non-finite at step {step}")
         loss.backward()
         torch.nn.utils.clip_grad_norm_(residual.parameters(), max_norm=1.0)
         optimizer.step()
-        if step in {0, steps - 1} or (step + 1) % max(steps // 5, 1) == 0:
+        if (
+            step in {0, total_steps - 1, teacher_forcing_steps - 1}
+            or (step + 1) % max(total_steps // 5, 1) == 0
+        ):
             history.append(
                 {
                     "step": step + 1,
+                    "phase": "teacher_forcing" if teacher_forcing else "free_running",
                     "loss": float(loss.detach().cpu()),
                     "terminal_normalized_mse": float(errors[-1].detach().cpu()),
                 }
@@ -1072,6 +1088,7 @@ def distill_nonlinear_residual_provider(
             "architecture": "shared_silu_stage_conditioned_latent_residual",
             "learned": True,
             "training_steps": steps,
+            "teacher_forcing_steps": teacher_forcing_steps,
             "training_batch_size": batch_size,
             "training_seed": seed,
             "optimizer_device": device,
@@ -1100,6 +1117,7 @@ def distill_nonlinear_residual_provider(
         },
         "training": {
             "steps": steps,
+            "teacher_forcing_steps": teacher_forcing_steps,
             "batch_size": batch_size,
             "learning_rate": learning_rate,
             "seed": seed,

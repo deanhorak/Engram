@@ -1,0 +1,23 @@
+{
+  "experiment": "scheduled_nonlinear_provider_length_screen",
+  "status": "development_failure",
+  "base_provider": "randomized_rank64_separate_streams",
+  "teacher_forcing_steps": 100,
+  "free_running_steps": 300,
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "validation": {
+    "terminal_normalized_mse": 0.1740202580,
+    "mean_stage_normalized_mse": 0.6249625211,
+    "maximum_stage_normalized_mse": 1.0491501242,
+    "post_serialization": true,
+    "protected_validation": true
+  },
+  "comparison": {
+    "best_100_free_step_terminal_normalized_mse": 0.1717456444,
+    "decision": "reject; extended free-running optimization regresses and does not approach the causal gate"
+  },
+  "optimizer_device": "cpu",
+  "inference_device": "cpu",
+  "transformers_model_loaded": false,
+  "decoder_layer_forward_calls": 0
+}

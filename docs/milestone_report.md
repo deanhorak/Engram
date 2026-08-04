@@ -217,6 +217,30 @@ capacity/epoch increase is therefore rejected rather than promoted; its
 controlled comparison is recorded in
 `reports/controller_provider_pca_2026-08-03/nonlinear_capacity_screen.json`.
 
+Combining the full-train randomized rank-64 provider with the nonlinear
+residual gives the best learned-provider screen so far. A 100-step CPU
+residual fit on the 8-sequence arm improves held-out terminal normalized MSE
+from **0.1767018** to **0.1731798** (mean stage **0.6788608**). The gain is
+small and the result remains 7.70 times above the **0.0225** gate. It is
+preserved as a transformer-free, protected-validation development result in
+`reports/controller_provider_pca_2026-08-03/nonlinear_highrank_screen.json`;
+no learned provider is promoted.
+
+Scheduled causal distillation is now exposed by the nonlinear-provider CLI.
+One hundred teacher-forced steps followed by one hundred free-running steps
+on the same high-rank base reduce held-out terminal normalized MSE to
+**0.1717456**; serialized reload gives **0.1717457**. This is the best
+learned-provider result so far, but remains 7.63 times above the **0.0225**
+gate. The controlled result is recorded in
+`reports/controller_provider_pca_2026-08-03/nonlinear_highrank_scheduled.json`.
+
+Extending the free-running phase to 300 steps after the same 100-step
+teacher-forced warm-up regresses to terminal normalized MSE **0.1740203**.
+The shorter 100-step free-running checkpoint remains the selected research
+point; longer optimization is closed as an overfitting/oscillation failure.
+Evidence:
+`reports/controller_provider_pca_2026-08-03/nonlinear_schedule_length_screen.json`.
+
 ## Native recurrent-controller implementation boundary
 
 The native token runtime now has a direct implementation of the schema-v3

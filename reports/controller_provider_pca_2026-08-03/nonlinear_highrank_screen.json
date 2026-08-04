@@ -1,0 +1,35 @@
+{
+  "experiment": "high_rank_base_plus_nonlinear_residual",
+  "status": "development_failure",
+  "training_trace": "work/controller_distillation/bitnet_train_8x16_b2",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "base_provider_trace": "work/controller_distillation/bitnet_train_64x16_b4",
+  "controller_gate": {
+    "metric": "terminal_normalized_mse",
+    "threshold": 0.0225
+  },
+  "architecture": {
+    "base_provider": "randomized_rank64_separate_streams",
+    "residual": "shared SiLU MLP with stage embedding",
+    "hidden_width": 64,
+    "stage_width": 16,
+    "output_rank": 64,
+    "steps": 100,
+    "batch_size": 8,
+    "learning_rate": 0.0003,
+    "seed": 405,
+    "optimizer_device": "cpu",
+    "inference_device": "cpu",
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0
+  },
+  "validation": {
+    "initial_terminal_normalized_mse": 0.1767018179,
+    "final_terminal_normalized_mse": 0.1731798092,
+    "final_mean_stage_normalized_mse": 0.6788608236,
+    "final_maximum_stage_normalized_mse": 1.2737683374,
+    "protected_validation": true
+  },
+  "artifact_sha256": "223030a963ca6d2b0c92447382c55b4a6ec3a9699297a7910fd29148b153e9b1",
+  "decision": "retain as the best learned-provider screen; it remains far above the causal gate and is not promoted"
+}

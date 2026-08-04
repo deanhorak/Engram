@@ -1088,6 +1088,7 @@ def _parser() -> argparse.ArgumentParser:
     nonlinear_provider.add_argument("--validation-trace", type=Path)
     nonlinear_provider.add_argument("--out", required=True, type=Path)
     nonlinear_provider.add_argument("--steps", type=int, default=100)
+    nonlinear_provider.add_argument("--teacher-forcing-steps", type=int, default=0)
     nonlinear_provider.add_argument("--batch-size", type=int, default=8)
     nonlinear_provider.add_argument("--hidden-width", type=int, default=64)
     nonlinear_provider.add_argument("--stage-width", type=int, default=16)
@@ -2912,6 +2913,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.out,
             validation_trace=args.validation_trace,
             steps=args.steps,
+            teacher_forcing_steps=args.teacher_forcing_steps,
             batch_size=args.batch_size,
             hidden_width=args.hidden_width,
             stage_width=args.stage_width,
