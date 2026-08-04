@@ -1958,3 +1958,13 @@ assertion and passes.  This improves the CPU-only deployment boundary and is a
 Milestone 6 systems result; it does not change the learned-provider causal
 quality result.  The best learned-provider terminal normalized MSE remains
 **0.1666128**, above the fixed **0.0225** M4 promotion threshold.
+
+An explicit context representation was then screened as the next M4
+direction: a stateful provider maintained a cumulative per-sequence
+token-embedding mean and fitted the combined semantic/episodic stream from
+state, token, prefix mean, and bias.  The complete 8-sequence training /
+16-sequence validation screen reached terminal normalized MSE **0.1864766**,
+worse than the raw rank-16 baseline near **0.1789**, so it is rejected.  The
+larger full-corpus variant was killed by the host before producing a score and
+is not treated as evidence.  Report:
+`reports/controller_provider_pca_2026-08-03/prefix_context_screen.json`.

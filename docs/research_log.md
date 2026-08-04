@@ -2433,3 +2433,21 @@ causal corpus.
   gate evidence.  The next M4-quality attempt therefore requires either a
   lower-memory teacher/export path or a materially different trained model,
   not another provider-capacity sweep on the existing corpus.
+
+## 2026-08-04: explicit prefix context representation rejected
+
+- The next M4 direction was screened with a stateful provider that maintained
+  the cumulative mean of token embeddings for each sequence.  Each stage's
+  combined semantic-plus-episodic stream was fitted from current controller
+  state, current token, prefix mean, and a bias using rank-16 output PCA and
+  ridge 1.0.
+- The complete eight-sequence training arm and disjoint 16-sequence validation
+  arm ran through the real free-running CPU controller.  Held-out terminal
+  normalized MSE was **0.1864766**, worse than the existing raw rank-16
+  baseline near **0.1789** and 8.3 times the fixed **0.0225** threshold.
+- The full-corpus version was attempted with the same feature contract but was
+  killed by the host after the first stages.  It emitted no artifact or score;
+  this is recorded as a resource boundary rather than a quality result.
+- Decision: reject this context representation and do not add it to the
+  authenticated package.  Evidence:
+  `reports/controller_provider_pca_2026-08-03/prefix_context_screen.json`.

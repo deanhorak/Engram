@@ -1,0 +1,32 @@
+{
+  "experiment": "prefix_context_provider_screen",
+  "status": "development_failure",
+  "training_trace": "work/controller_distillation/bitnet_train_8x16_b2",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "controller": "/tmp/engram-calibration5/controller",
+  "target": "combined_semantic_episodic_stream",
+  "context_representation": "per-sequence-cumulative-token-embedding-mean",
+  "input_features": [
+    "current_controller_state",
+    "current_token_embedding",
+    "prefix_token_embedding_mean",
+    "bias"
+  ],
+  "output_rank": 16,
+  "ridge": 1.0,
+  "training_sequences": 8,
+  "validation_sequences": 16,
+  "sequence_length": 16,
+  "terminal_normalized_mse": 0.18647658824920654,
+  "mean_stage_normalized_mse": 0.7537141442298889,
+  "maximum_stage_normalized_mse": 1.3665155172348022,
+  "raw_rank16_baseline_terminal_normalized_mse_approx": 0.1789,
+  "promotion_threshold": 0.0225,
+  "gate_passed": false,
+  "decision": "reject",
+  "notes": [
+    "The provider was evaluated in free-running stateful CPU controller replay.",
+    "A full-corpus version was attempted with the same features but was killed by the host after the first stages; it produced no score and is not treated as evidence.",
+    "No provider artifact was promoted or installed into a package."
+  ]
+}
