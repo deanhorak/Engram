@@ -170,6 +170,13 @@ The resumable training command is `engram distill-state-space-provider`; it
 can use CUDA for optimization when available, while the resulting provider
 artifact and sequence runtime remain NumPy/CPU-only.
 
+The current best provider uses the 64-sequence corpus with rank-16 λ=1
+regularization and a full-width 64-memory residual state-space adapter.
+Forty free-running CPU steps reach held-out terminal normalized MSE
+**0.1777104**. The residual path is checksummed and exposed through
+`engram distill-state-space-residual-provider`, but remains outside the
+authenticated package until the **0.0225** causal gate is met.
+
 ### Milestone 2 ledger
 
 ### Current Milestone 3 attention boundary (2026-08-03)

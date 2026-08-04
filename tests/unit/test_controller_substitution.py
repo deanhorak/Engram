@@ -9,6 +9,7 @@ from engram.runtime.controller_only import ControllerOnlyRuntime
 from engram.runtime.operator_stream import (
     PCAOperatorStreamProvider,
     RecurrentContextProvider,
+    ResidualStateSpaceOperatorStreamProvider,
     StateSpaceOperatorStreamProvider,
     TraceOperatorStreamProvider,
     TraceSequenceOperatorStreamProvider,
@@ -274,3 +275,38 @@ def test_state_space_provider_roundtrip_and_sequence_execution(tmp_path):
     actual = runtime.run_sequence_provider(initial, token, restored)
     np.testing.assert_allclose(actual.stage_states, expected.stage_states)
     assert restored.metadata()["provider_kind"] == "state_space_pca"
+
+
+def test_residual_state_space_zero_correction_matches_base_provider(tmp_path):
+    rng = np.random.default_rng(113)
+    stages, width, rank = 2, 4, 1
+    base = PCAOperatorStreamProvider(
+        semantic_mean=rng.normal(size=(stages, width)).astype(np.float32),
+        semantic_basis=rng.normal(size=(stages, rank, width)).astype(np.float32),
+        semantic_projection=rng.normal(size=(stages, 2 * width + 1, rank)).astype(np.float32),
+        episodic_mean=rng.normal(size=(stages, width)).astype(np.float32),
+        episodic_basis=rng.normal(size=(stages, rank, width)).astype(np.float32),
+        episodic_projection=rng.normal(size=(stages, 2 * width + 1, rank)).astype(np.float32),
+        metadata_payload={"source_model_hash": "test"},
+    )
+    provider = ResidualStateSpaceOperatorStreamProvider(
+        base_provider=base,
+        memory_input=np.zeros((width, 3), dtype=np.float32),
+        decay=np.full(3, 0.8, dtype=np.float32),
+        correction_head=np.zeros((stages, 4, 2 * rank), dtype=np.float32),
+        metadata_payload={"learned": True},
+    )
+    path = provider.save(tmp_path / "residual-provider")
+    restored = ResidualStateSpaceOperatorStreamProvider.load(path)
+    state = rng.normal(size=(2, width)).astype(np.float32)
+    token = rng.normal(size=(2, width)).astype(np.float32)
+    provider.reset((2,))
+    restored.reset((2,))
+    provider.begin_token(token)
+    restored.begin_token(token)
+    for stage in range(stages):
+        expected = base.step(state, token, stage)
+        actual = restored.step(state, token, stage)
+        np.testing.assert_allclose(actual[0], expected[0])
+        np.testing.assert_allclose(actual[1], expected[1])
+    assert restored.metadata()["provider_kind"] == "state_space_residual_pca"

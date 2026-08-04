@@ -1,0 +1,66 @@
+{
+  "architecture": {
+    "base_provider_ridge": 1.0,
+    "memory_dim": 64,
+    "output_rank": 16
+  },
+  "controller": "/home/dean/repos/engram/work/controller_distillation/bitnet_rank128_operator_residual_1024x256_exact/controller",
+  "decoder_layer_forward_calls": 0,
+  "experiment": "distill_state_space_residual_provider",
+  "gate": {
+    "actual": 0.17771044373512268,
+    "end_to_end_generation": false,
+    "layer_free_cpu_replay": true,
+    "metric": "terminal_normalized_mse",
+    "passed": false,
+    "threshold": 0.0225
+  },
+  "inference_device": "cpu",
+  "initial_validation": {
+    "maximum_terminal_normalized_mse": 1.3839330673217773,
+    "terminal_normalized_mse": 0.17893442511558533
+  },
+  "optimizer_device": "cpu",
+  "provider": "/tmp/provider64_ridge1",
+  "provider_sha256": "e2621a845f030ebb4998f329abc701cd052ed5d9981b262a08a579d762e1aa84",
+  "status": "development_result",
+  "training": {
+    "batch_size": 8,
+    "elapsed_seconds": 177.50624586100457,
+    "final": {
+      "maximum_terminal_normalized_mse": 0.8619580268859863,
+      "terminal_normalized_mse": 0.13438959419727325
+    },
+    "history": [
+      {
+        "loss": 0.6359157562255859,
+        "step": 1
+      },
+      {
+        "loss": 0.6536187529563904,
+        "step": 10
+      },
+      {
+        "loss": 0.6679254174232483,
+        "step": 20
+      },
+      {
+        "loss": 0.7004838585853577,
+        "step": 30
+      },
+      {
+        "loss": 0.6696988940238953,
+        "step": 40
+      }
+    ],
+    "seed": 91,
+    "steps": 40
+  },
+  "training_trace": "/home/dean/repos/engram/work/controller_distillation/bitnet_train_64x16_b4",
+  "transformers_model_loaded": false,
+  "validation": {
+    "maximum_terminal_normalized_mse": 1.3857781887054443,
+    "terminal_normalized_mse": 0.17771044373512268
+  },
+  "validation_trace": "/home/dean/repos/engram/work/controller_distillation/bitnet_validation_16x16_b4"
+}

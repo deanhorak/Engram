@@ -160,6 +160,18 @@ one-step CPU smoke completed with reloadable artifact output and zero
 decoder-layer calls. CUDA is optional for this training command and is never
 required by the serialized CPU runtime.
 
+Regularization was then swept on the 64-sequence corpus. Rank-16 λ=1 gives
+the best linear held-out terminal normalized MSE (**0.1789347**) versus
+**0.1841841** at λ=0.1, **0.1797703** at λ=3, and **0.1832849** at λ=10.
+Starting from that λ=1 provider, the full-width residual state-space adapter
+preserves the linear path exactly at zero correction and reaches **0.1777104**
+after 40 free-running CPU steps (training **0.1343896**). This is the best
+learned-provider result so far, but remains 7.9 times above the **0.0225**
+gate. The durable artifact and reports are
+`work/controller_provider_state_space_residual_train64_ridge1_40` and
+`reports/controller_provider_pca_2026-08-03/residual_state_space_train64_ridge1_40.json`;
+the provider remains unpromoted.
+
 Engram is an operational research prototype, not a general quality-preserving
 dense-Llama compiler. The repository can inspect and trace a Llama-compatible
 teacher, decompose SwiGLU MLPs, run routing and compression experiments, and

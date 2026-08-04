@@ -143,6 +143,7 @@ from engram.training import (
     capture_native_bitnet_controller_traces,
     distill_factorized_controller,
     distill_state_space_operator_provider,
+    distill_state_space_residual_provider,
     joint_distill_operator_provider,
     evaluate_native_gate_channel_shadow,
     evaluate_native_gate_residual_shadow,
@@ -1028,6 +1029,22 @@ def _parser() -> argparse.ArgumentParser:
     distill_state_space.add_argument("--learning-rate", type=float, default=2e-3)
     distill_state_space.add_argument("--seed", type=int, default=81)
     distill_state_space.add_argument("--device", default="cpu")
+
+    distill_state_space_residual = commands.add_parser(
+        "distill-state-space-residual-provider",
+        help="distill a persistent-memory residual over a full PCA provider",
+    )
+    distill_state_space_residual.add_argument("--provider", required=True, type=Path)
+    distill_state_space_residual.add_argument("--controller", required=True, type=Path)
+    distill_state_space_residual.add_argument("--trace", required=True, type=Path)
+    distill_state_space_residual.add_argument("--validation-trace", type=Path)
+    distill_state_space_residual.add_argument("--out", required=True, type=Path)
+    distill_state_space_residual.add_argument("--steps", type=int, default=40)
+    distill_state_space_residual.add_argument("--batch-size", type=int, default=8)
+    distill_state_space_residual.add_argument("--memory-dim", type=int, default=64)
+    distill_state_space_residual.add_argument("--learning-rate", type=float, default=2e-3)
+    distill_state_space_residual.add_argument("--seed", type=int, default=91)
+    distill_state_space_residual.add_argument("--device", default="cpu")
 
     evaluate_operator_provider = commands.add_parser(
         "evaluate-controller-provider",
@@ -2793,6 +2810,21 @@ def main(argv: Sequence[str] | None = None) -> int:
             batch_size=args.batch_size,
             memory_dim=args.memory_dim,
             projection_width=args.projection_width,
+            learning_rate=args.learning_rate,
+            seed=args.seed,
+            device=args.device,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+    elif args.command == "distill-state-space-residual-provider":
+        result = distill_state_space_residual_provider(
+            args.provider,
+            args.controller,
+            args.trace,
+            args.out,
+            validation_trace=args.validation_trace,
+            steps=args.steps,
+            batch_size=args.batch_size,
+            memory_dim=args.memory_dim,
             learning_rate=args.learning_rate,
             seed=args.seed,
             device=args.device,

@@ -1,0 +1,29 @@
+{
+  "experiment": "provider_regularization_and_residual_state_space",
+  "status": "development_results",
+  "training_trace": "work/controller_distillation/bitnet_train_64x16_b4",
+  "validation_trace": "work/controller_distillation/bitnet_validation_16x16_b4",
+  "controller_gate": {
+    "metric": "terminal_normalized_mse",
+    "threshold": 0.0225
+  },
+  "linear_rank16_ridge": {
+    "0.1": 0.1841841340,
+    "1.0": 0.1789347380,
+    "3.0": 0.1797703058,
+    "10.0": 0.1832848638
+  },
+  "residual_state_space": {
+    "base_ridge": 1.0,
+    "memory_dim": 64,
+    "steps": 40,
+    "validation_terminal_normalized_mse": 0.1777118891,
+    "validation_max_terminal_normalized_mse": 1.3858251572,
+    "training_terminal_normalized_mse": 0.1343752742,
+    "optimizer_device": "cpu",
+    "inference_device": "cpu",
+    "transformers_model_loaded": false,
+    "decoder_layer_forward_calls": 0,
+    "decision": "retain as a resumable artifact; still far above the causal gate"
+  }
+}

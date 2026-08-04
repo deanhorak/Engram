@@ -256,6 +256,8 @@ def distill_state_space_operator_provider(
     if validation.hidden_size != training.hidden_size or validation.num_stages != training.num_stages:
         raise ValueError("validation trace dimensions differ")
     torch, TorchFactorizedController = _torch_controller_class()
+    if not device.startswith("cuda"):
+        torch.set_num_threads(min(4, torch.get_num_threads()))
     if device.startswith("cuda"):
         torch.cuda.manual_seed_all(seed)
     torch.manual_seed(seed)
@@ -423,4 +425,177 @@ def distill_state_space_operator_provider(
     return report
 
 
-__all__ = ["joint_distill_operator_provider", "distill_state_space_operator_provider"]
+def distill_state_space_residual_provider(
+    provider: str | Path,
+    controller: str | Path,
+    trace: str | Path,
+    out: str | Path,
+    *,
+    validation_trace: str | Path | None = None,
+    steps: int = 40,
+    batch_size: int = 8,
+    memory_dim: int = 64,
+    learning_rate: float = 2e-3,
+    seed: int = 91,
+    device: str = "cpu",
+) -> dict[str, Any]:
+    """Train a persistent-memory residual over a full PCA provider."""
+
+    if steps < 0 or batch_size <= 0 or memory_dim <= 0:
+        raise ValueError("steps, batch_size, and memory_dim must be positive")
+    if learning_rate <= 0.0 or not np.isfinite(learning_rate):
+        raise ValueError("learning_rate must be finite and positive")
+    torch, TorchFactorizedController = _torch_controller_class()
+    if device.startswith("cuda") and not torch.cuda.is_available():
+        raise RuntimeError("residual provider CUDA training requested but unavailable")
+    if not device.startswith("cuda"):
+        torch.set_num_threads(min(4, torch.get_num_threads()))
+    torch.manual_seed(seed)
+    if device.startswith("cuda"):
+        torch.cuda.manual_seed_all(seed)
+    from engram.runtime.operator_stream import ResidualStateSpaceOperatorStreamProvider
+
+    training = _load_trajectories(trace)
+    validation = _load_trajectories(validation_trace) if validation_trace else training
+    base = PCAOperatorStreamProvider.load(provider)
+    controller_obj = FactorizedRecurrentController.load(controller)
+    if base.state_dim != training.hidden_size or base.num_stages != training.num_stages:
+        raise ValueError("provider and trace dimensions differ")
+    if controller_obj.state_dim != training.hidden_size or controller_obj.num_stages != training.num_stages:
+        raise ValueError("controller and trace dimensions differ")
+
+    def pack(data):
+        sample_ids = np.unique(data.sample_id)
+        counts = [int(np.sum(data.sample_id == sample)) for sample in sample_ids]
+        if not counts or len(set(counts)) != 1:
+            raise ValueError("residual provider traces must contain equal-length sequences")
+        order = np.concatenate([np.flatnonzero(data.sample_id == sample) for sample in sample_ids])
+        sequence = counts[0]
+        return (
+            data.teacher_states[order].astype(np.float32).reshape(
+                len(sample_ids), sequence, data.num_stages + 1, data.hidden_size
+            ),
+            data.token_embedding[order].astype(np.float32).reshape(
+                len(sample_ids), sequence, data.hidden_size
+            ),
+        )
+
+    train_states, train_tokens = pack(training)
+    validation_states, validation_tokens = pack(validation)
+    width = training.hidden_size
+    stages = training.num_stages
+    rank = base.output_rank
+    torch_controller = TorchFactorizedController(controller_obj).to(device).eval()
+    for parameter in torch_controller.parameters():
+        parameter.requires_grad_(False)
+    semantic_mean = torch.as_tensor(np.array(base.semantic_mean, copy=True), dtype=torch.float32, device=device)
+    semantic_basis = torch.as_tensor(np.array(base.semantic_basis, copy=True), dtype=torch.float32, device=device)
+    semantic_projection = torch.as_tensor(np.array(base.semantic_projection, copy=True), dtype=torch.float32, device=device)
+    episodic_mean = torch.as_tensor(np.array(base.episodic_mean, copy=True), dtype=torch.float32, device=device)
+    episodic_basis = torch.as_tensor(np.array(base.episodic_basis, copy=True), dtype=torch.float32, device=device)
+    episodic_projection = torch.as_tensor(np.array(base.episodic_projection, copy=True), dtype=torch.float32, device=device)
+    memory_input = torch.nn.Parameter(torch.zeros((width, memory_dim), device=device))
+    decay = torch.nn.Parameter(torch.full((memory_dim,), 0.8, device=device))
+    correction_head = torch.nn.Parameter(torch.zeros((stages, memory_dim + 1, 2 * rank), device=device))
+    trainable = [memory_input, decay, correction_head]
+    optimizer = torch.optim.AdamW(trainable, lr=learning_rate, weight_decay=1e-4)
+
+    def rollout(states, tokens):
+        memory = torch.zeros((states.shape[0], memory_dim), dtype=torch.float32, device=device)
+        losses = []
+        terminals = []
+        for position in range(states.shape[1]):
+            token = tokens[:, position]
+            memory = torch.tanh(memory * decay + token @ memory_input)
+            state = states[:, position, 0]
+            context = torch.cat((memory, torch.ones((states.shape[0], 1), device=device)), dim=-1)
+            for stage in range(stages):
+                base_features = torch.cat((state, token, torch.ones((states.shape[0], 1), device=device)), dim=-1)
+                semantic_latent = base_features @ semantic_projection[stage] + context @ correction_head[stage, :, :rank]
+                episodic_latent = base_features @ episodic_projection[stage] + context @ correction_head[stage, :, rank:]
+                semantic = semantic_mean[stage] + semantic_latent @ semantic_basis[stage]
+                episodic = episodic_mean[stage] + episodic_latent @ episodic_basis[stage]
+                state = torch_controller.step(state, torch.cat((token, semantic, episodic), dim=-1), stage)
+                target = states[:, position, stage + 1]
+                rms = target.square().mean(dim=-1, keepdim=True).sqrt().clamp_min(1e-4)
+                losses.append(((state - target) / rms).square().mean())
+            terminals.append(state)
+        return torch.stack(losses).mean(), terminals
+
+    def evaluate(states_np, tokens_np):
+        states = torch.as_tensor(states_np, dtype=torch.float32, device=device)
+        tokens = torch.as_tensor(tokens_np, dtype=torch.float32, device=device)
+        values = []
+        with torch.inference_mode():
+            for start in range(0, states.shape[0], batch_size):
+                _, terminals = rollout(states[start : start + batch_size], tokens[start : start + batch_size])
+                for offset, final in enumerate(terminals):
+                    target = states[start : start + batch_size, offset, -1]
+                    values.append((final - target).square().mean(dim=-1).div(target.square().mean(dim=-1).clamp_min(1e-8)).cpu().numpy())
+        values = np.concatenate(values)
+        return {"terminal_normalized_mse": float(values.mean()), "maximum_terminal_normalized_mse": float(values.max())}
+
+    initial_validation = evaluate(validation_states, validation_tokens)
+    started = time.perf_counter()
+    history = []
+    rng = np.random.default_rng(seed)
+    for step in range(steps):
+        indices = rng.choice(train_states.shape[0], size=batch_size, replace=train_states.shape[0] < batch_size)
+        states = torch.as_tensor(train_states[indices], dtype=torch.float32, device=device)
+        tokens = torch.as_tensor(train_tokens[indices], dtype=torch.float32, device=device)
+        optimizer.zero_grad(set_to_none=True)
+        loss, _ = rollout(states, tokens)
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(trainable, max_norm=1.0)
+        optimizer.step()
+        if step == 0 or step == steps - 1 or (step + 1) % max(steps // 4, 1) == 0:
+            history.append({"step": step + 1, "loss": float(loss.detach().cpu())})
+    final_validation = evaluate(validation_states, validation_tokens)
+    final_training = evaluate(train_states, train_tokens)
+    trained = ResidualStateSpaceOperatorStreamProvider(
+        base_provider=base,
+        memory_input=memory_input.detach().cpu().numpy(),
+        decay=decay.detach().cpu().numpy(),
+        correction_head=correction_head.detach().cpu().numpy(),
+        metadata_payload={
+            "source_provider": str(Path(provider).resolve()),
+            "source_provider_sha256": _directory_sha256(Path(provider).resolve()),
+            "training_trace": str(Path(trace).resolve()),
+            "validation_trace": str(Path(validation_trace).resolve()) if validation_trace else None,
+            "architecture": "full_pca_provider_plus_diagonal_state_space_residual",
+            "learned": True,
+            "training_steps": steps,
+            "training_batch_size": batch_size,
+            "training_seed": seed,
+            "optimizer_device": device,
+        },
+    )
+    target = Path(out)
+    trained.save(target)
+    report = {
+        "experiment": "distill_state_space_residual_provider",
+        "status": "development_result",
+        "provider": str(Path(provider).resolve()),
+        "provider_sha256": _directory_sha256(target),
+        "controller": str(Path(controller).resolve()),
+        "training_trace": str(Path(trace).resolve()),
+        "validation_trace": str(Path(validation_trace).resolve()) if validation_trace else None,
+        "optimizer_device": device,
+        "inference_device": "cpu",
+        "transformers_model_loaded": False,
+        "decoder_layer_forward_calls": 0,
+        "architecture": {"memory_dim": memory_dim, "output_rank": rank, "base_provider_ridge": base.metadata().get("ridge")},
+        "training": {"steps": steps, "batch_size": batch_size, "seed": seed, "elapsed_seconds": time.perf_counter() - started, "history": history, "final": final_training},
+        "initial_validation": initial_validation,
+        "validation": final_validation,
+        "gate": {"metric": "terminal_normalized_mse", "threshold": 0.0225, "actual": final_validation["terminal_normalized_mse"], "passed": bool(final_validation["terminal_normalized_mse"] <= 0.0225), "layer_free_cpu_replay": True, "end_to_end_generation": False},
+    }
+    atomic_json(target.parent / f"{target.name}_training_report.json", report)
+    return report
+
+
+__all__ = [
+    "joint_distill_operator_provider",
+    "distill_state_space_operator_provider",
+    "distill_state_space_residual_provider",
+]

@@ -145,6 +145,16 @@ a one-step CPU smoke produced a checksummed reloadable artifact and recorded
 zero decoder-layer calls. CUDA may accelerate distillation when available,
 but the serialized inference path remains CPU-only.
 
+The 64-sequence rank-16 regularization sweep selects λ=1: held-out terminal
+normalized MSE is **0.1789347** (λ=0.1: **0.1841841**, λ=3: **0.1797703**,
+λ=10: **0.1832849**). A full-width residual state-space adapter over that
+provider preserves the λ=1 path when its correction is zero and reaches
+**0.1777104** after 40 free-running CPU steps, with training error
+**0.1343896**. This is the best learned-provider result so far, but it still
+fails the **0.0225** causal gate. The resumable artifact is
+`work/controller_provider_state_space_residual_train64_ridge1_40`; report:
+`reports/controller_provider_pca_2026-08-03/residual_state_space_train64_ridge1_40.json`.
+
 ## Native recurrent-controller implementation boundary
 
 The native token runtime now has a direct implementation of the schema-v3
