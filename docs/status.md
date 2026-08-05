@@ -23,6 +23,14 @@ with independent answer scoring and host latency/usage measurements. A
 model-specific frozen embedding index can replace the encoder later without
 changing the host protocol.
 
+The first CPU-only Ollama comparison is now complete. An isolated listener
+using `OLLAMA_LLM_LIBRARY=cpu_avx2` loaded `qwen3:latest` at 100% CPU. For one
+prompt and 16 generated tokens, baseline latency was **5.4658 s** and
+Engram-augmented latency was **13.8032 s**; prompt tokens rose from 33 to 99.
+Retrieval was correct, but the current sidecar is **2.52× slower** on this
+screen. The result is retained as a negative performance finding, not a
+quality or semantic-gate claim.
+
 ## Latest native recurrent-controller boundary
 
 The native token runtime now executes the schema-v3 factorized recurrent

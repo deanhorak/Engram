@@ -20,6 +20,12 @@ independent answer rubric are required before claiming utility. The original
 layer-free learned-provider gate remains a research boundary and is not
 required for this hybrid deployment path.
 
+The first CPU-only smoke used Ollama's `cpu_avx2` backend with `qwen3:latest`.
+One matched prompt and 16 generated tokens took **5.4658 s** baseline versus
+**13.8032 s** with one retrieved record; prompt tokens increased from 33 to
+99. Retrieval execution is valid, but this initial sidecar is not yet a
+performance improvement.
+
 ## Alternative dense-teacher boundary (Qwen3, 2026-08-04)
 
 The protected learned-provider gate remains failed, and the pinned WikiText-2

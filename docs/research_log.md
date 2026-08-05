@@ -27,6 +27,16 @@ The checked-in machine report is
 `reports/hybrid_ollama_smoke_2026-08-04.json`; it is execution evidence only: its `quality_claim` remains
 `not_established` because no independent answer rubric was applied.
 
+A second Ollama listener was started with `OLLAMA_LLM_LIBRARY=cpu_avx2` and
+the system model store. `ollama ps` confirmed `qwen3:latest` at **100% CPU**.
+On a matched one-prompt/16-token screen, baseline took **5.4658 s** with 33
+prompt tokens; Engram augmentation took **13.8032 s** with 99 prompt tokens
+and retrieved `milestone-status`. The hybrid path therefore works on CPU but
+is currently **2.52× slower** on this short prompt because prompt evaluation
+dominates. This is a negative performance result, not a failure of the
+integration. The preserved report is
+`reports/hybrid_ollama_cpu_smoke_2026-08-04.json`; no quality claim is made.
+
 ## 2026-07-27 — Complete native OLMoE token boundary passes
 
 - Added a streaming compiler for the exact 131-tensor BF16 non-MLP inventory.

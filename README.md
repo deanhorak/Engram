@@ -80,6 +80,12 @@ model embedding or a model-specific semantic index without changing the host pro
 hybrid go/no-go question is now concrete: does bounded retrieval improve a fixed task-quality
 score at equal or lower end-to-end cost than the same host without Engram?
 
+The first CPU-only Ollama screen answered only the plumbing question. With
+Qwen3 on 100% CPU, one 16-token prompt took 5.47 s baseline versus 13.80 s
+with retrieved context (33 versus 99 prompt tokens). Retrieval was correct,
+but this sidecar configuration is not yet a performance improvement; see
+[`hybrid_ollama_cpu_smoke_2026-08-04.json`](reports/hybrid_ollama_cpu_smoke_2026-08-04.json).
+
 For an external, reproducible stress test, the project also freezes the public
 [LongEmbed Passkey auxiliary benchmark](docs/auxiliary_benchmarks.md) at an upstream Git revision
 and SHA-256 manifest. This benchmark is evaluation-only and explicitly does **not** replace or
