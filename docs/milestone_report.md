@@ -54,6 +54,18 @@ baseline answers versus 5/5 retrieved answers, although augmentation remained 1.
 slower. This clears the controlled semantic-selector implementation boundary, not a
 general retrieval benchmark or the original transformer-free architecture gates.
 
+The next boundary replaced the synthetic corpus with the public BEIR SciFact test
+split. It used all 5,183 papers, all 300 judged claims, and 339 binary-positive qrels.
+The thresholds were declared before execution at nDCG@10 >= 0.60 and Recall@100 >=
+0.85. Hashing failed (0.2728/0.5872); pinned CPU-only MiniLM passed
+(**0.6493/0.9267**). A deterministic five-claim Qwen3 host confirmation then passed
+4/5 top-five retrieval and 3/5 augmented answers versus 0/5 baseline, while costing
+3.35x the baseline wall time. Therefore the public offline selector gate passes, but
+the complete host pipeline does not. Remaining work is frozen reranking/top-1
+precision, followed by embedding persistence and a larger held-out host protocol.
+This public evidence neither replaces the separately protected gate nor advances the
+layer-free Milestone 4 provider.
+
 ## Alternative dense-teacher boundary (Qwen3, 2026-08-04)
 
 The protected learned-provider gate remains failed, and the pinned WikiText-2
@@ -686,21 +698,23 @@ thresholds.
 
 ## Next development order
 
-1. Freeze a host model, prompt set, memory JSONL, and task rubric, then run
-   `benchmark-hybrid --mode both` against the same OpenAI-compatible endpoint.
-   Do not promote retrieval unless answer quality is non-inferior and its
-   added context/latency cost is measured.
-2. If lexical retrieval is useful, replace the hashing encoder with a frozen
-   semantic embedding index and repeat the same baseline/augmented protocol.
-3. Keep rank-16/pool-6 as the frozen research point: pool 4 is below the
+1. Keep the public SciFact corpus, qrels, MiniLM revision, and declared retrieval
+   thresholds frozen. Fit or select a CPU-capable reranker only on a separate training
+   source, then measure top-1/MRR/nDCG on the unchanged SciFact test qrels.
+2. Repeat the deterministic Qwen3 host protocol only if reranking improves the offline
+   boundary. Require answer improvement and report prompt traffic and wall time; do not
+   compensate for poor top-1 precision by injecting an unbounded candidate list.
+3. Persist and authenticate the corpus embedding matrix so ordinary startup maps the
+   index instead of rebuilding it for 176.8 seconds.
+4. Keep rank-16/pool-6 as the frozen research point: pool 4 is below the
    desired recall margin and higher ranks do not materially improve it.
-4. If the frontier remains near a 1% total-read reduction, keep the selector
+5. If the frontier remains near a 1% total-read reduction, keep the selector
    as a validated research path and prioritize fused projection/MLP kernels or
    a more aggressive learned residual selector.
-5. The protected replay and authenticated opt-in package boundary now pass.
+6. The protected replay and authenticated opt-in package boundary now pass.
    Keep native defaults selector-disabled while deciding whether to implement
    full runtime policy consumption and broader end-to-end benchmarking.
-6. Keep the exact operator-residual controller as the production boundary.
+7. Keep the exact operator-residual controller as the production boundary.
    The standalone controller-only replay passes the state-transition
    threshold, but learned provider and joint adaptation arms remain far above
    the causal threshold. Rank-256, persistent-memory, stage-local K/V,
@@ -714,7 +728,7 @@ thresholds.
 
 ## Verification
 
-- Python: 1,148 passed, 1 skipped (the CUDA-only query feature test is
+- Python: 1,155 passed, 1 skipped (the CUDA-only query feature test is
   unavailable on this host).
 - Native CTest: 20/20 passed outside the sandbox in 27.50 s (including the
   native C ABI lifecycle test).

@@ -123,6 +123,18 @@ the immutable corpus matrix. Both produce normalized vectors consumed by the sam
 exact cosine search and prompt policy. Artifact revision, ONNX SHA-256, tokenizer
 SHA-256, provider, dimensions, and pooling contract are emitted in benchmark reports.
 
+The same index now accepts the standard BEIR directory contract: `corpus.jsonl`,
+`queries.jsonl`, and `qrels/<split>.tsv`. Positive qrels become expected memberships;
+the evaluator reports recall, hit rate, reciprocal rank, nDCG, MAP, and precision at
+fixed cutoffs. On SciFact, the pinned sentence encoder passes the declared public
+retrieval gate, but exact search over the in-memory matrix and five-record prompt
+injection are evaluation implementations rather than the final serving design. The
+host confirmation shows that candidate recall alone is insufficient: the next stage
+needs a CPU reranker that presents fewer, better-ordered records. The corpus embedding
+matrix should then be serialized with its encoder and input hashes and memory-mapped at
+startup. Neither change alters the conventional host model's ownership of generation,
+so this remains a hybrid fallback rather than the layer-free target architecture.
+
 This document describes one compiled model worker. A separate, request-level
 [Oracle cognitive executive](cognitive_executive.md) may manage goals, evidence, persistent
 memory policy, tools, and multiple workers above it. Those system functions are not stored in an

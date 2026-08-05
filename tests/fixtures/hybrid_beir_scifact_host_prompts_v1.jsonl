@@ -1,0 +1,5 @@
+{"id":"scifact-1","prompt":"0-dimensional biomaterials show inductive properties.","required_terms":["nanotechnologies","stem cells"],"expected_memory_ids":["31715818"]}
+{"id":"scifact-3","prompt":"1,000 genomes project enables mapping of genetic sequence variation consisting of rare variants with larger penetrance effects than common variants.","required_terms":["Rare Variants","Synthetic"],"expected_memory_ids":["14717500"]}
+{"id":"scifact-5","prompt":"1/2000 in UK have abnormal PrP positivity.","required_terms":["abnormal prion protein","appendixes"],"expected_memory_ids":["13734012"]}
+{"id":"scifact-13","prompt":"5% of perinatal mortality is due to low birth weight.","required_terms":["childhood underweight"],"expected_memory_ids":["1606628"]}
+{"id":"scifact-42","prompt":"A high microerythrocyte count raises vulnerability to severe anemia in homozygous alpha (+)- thalassemia trait subjects.","required_terms":["Microerythrocyte","Thalassaemia"],"expected_memory_ids":["18174210"]}

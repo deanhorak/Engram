@@ -142,6 +142,33 @@ See the [hashing confirmation](reports/hybrid_retrieval_scale_v1_confirmation_ha
 [MiniLM confirmation](reports/hybrid_retrieval_scale_v1_confirmation_minilm_2026-08-05.json),
 and [CPU host confirmation](reports/hybrid_retrieval_scale_v1_host_2026-08-05.json).
 
+The first public natural-language boundary uses the complete BEIR SciFact test split: 5,183
+scientific-paper records, 300 judged claims, and 339 positive relevance pairs. The protocol and
+thresholds were fixed before execution: nDCG@10 at least 0.60 and Recall@100 at least 0.85, with
+no score filtering. Hashing failed at **0.2728 nDCG@10 / 0.5872 Recall@100**. The same pinned,
+CPU-only MiniLM encoder passed at **0.6493 / 0.9267**. Its one-time in-memory index build took
+176.8 s and its 300 query lookups averaged 60.1 ms. This is credible public retrieval evidence,
+not generated-answer or end-to-end performance evidence.
+
+```bash
+PYTHONPATH=src python -m engram.cli benchmark-beir-hybrid-retrieval \
+  --dataset path/to/scifact \
+  --encoder onnx-sentence \
+  --embedding-threads 12 \
+  --out scifact-report.json
+```
+
+A deterministic five-claim CPU-only Qwen3 confirmation then exercised the complete sidecar. The
+baseline answered 0/5 title rubrics, retrieval placed the judged paper in the top five for 4/5,
+and the augmented host answered 3/5. Mean wall time rose from 7.02 s to 23.53 s (**3.35x**).
+One relevant paper was ranked 17th; on another claim the relevant paper was rank 3 but Qwen chose
+the rank-1 distractor. Thus the offline public retrieval gate passes, while the complete public
+host boundary does not. The next quality experiment is a frozen CPU reranker/top-1 precision
+boundary on the same corpus and qrels; persisting corpus embeddings is the subsequent startup-cost
+optimization. See the [hashing report](reports/hybrid_beir_scifact_hashing_2026-08-05.json),
+[MiniLM report](reports/hybrid_beir_scifact_minilm_2026-08-05.json), and
+[host confirmation](reports/hybrid_beir_scifact_host_2026-08-05.json).
+
 For an external, reproducible stress test, the project also freezes the public
 [LongEmbed Passkey auxiliary benchmark](docs/auxiliary_benchmarks.md) at an upstream Git revision
 and SHA-256 manifest. This benchmark is evaluation-only and explicitly does **not** replace or

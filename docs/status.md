@@ -68,6 +68,23 @@ and 8.19 s augmented (1.26x), while semantic lookup averaged 14.4 ms. The select
 boundary therefore passes this controlled synthetic protocol, but host prefill remains
 the performance bottleneck and no broad real-world retrieval claim is established.
 
+The public-corpus follow-up is now complete on BEIR SciFact. It evaluated all 5,183
+documents and all 300 test claims with positive qrels. Before execution, the gate was
+fixed at nDCG@10 >= 0.60 and Recall@100 >= 0.85. Signed hashing failed at 0.2728 and
+0.5872. The pinned quantized MiniLM CPU encoder passed at **0.6493 nDCG@10** and
+**0.9267 Recall@100**; indexing took 176.8 s and queries averaged 60.1 ms. This is a
+public retrieval-only pass, distinct from protected Engram promotion and from answer
+quality.
+
+The bounded CPU-only Qwen3 host confirmation did not pass end to end. Its five claims
+were selected deterministically from qrels before host execution. Baseline answers
+passed 0/5, top-five retrieval passed 4/5, and augmented title answers passed 3/5.
+Mean wall time increased from 7.02 s to 23.53 s (3.35x). The two failures separate the
+remaining quality problem: one relevant document was rank 17, while another was rank 3
+but lost the host's implicit reranking to a rank-1 distractor. The next boundary is a
+frozen CPU reranker/top-1 precision experiment on the unchanged corpus and qrels, not a
+larger prompt. Persisted embeddings should follow to remove repeated 176.8 s startup.
+
 ## Latest native recurrent-controller boundary
 
 The native token runtime now executes the schema-v3 factorized recurrent

@@ -14,6 +14,7 @@ from engram.runtime.hybrid import (
     HybridRetrievalQuery,
     OpenAICompatibleClient,
     evaluate_hybrid_retrieval,
+    load_beir_retrieval_dataset,
     score_expected_memory_ids,
     score_required_terms,
 )
@@ -218,5 +219,38 @@ def test_retrieval_evaluator_reports_top_k_and_category_metrics() -> None:
     assert result["record_count"] == 3
     assert result["metrics"]["1"]["all_expected_hit_rate"] == 1.0
     assert result["metrics"]["2"]["mean_reciprocal_rank"] == 1.0
+    assert result["metrics"]["2"]["ndcg"] == 1.0
+    assert result["metrics"]["2"]["mean_average_precision"] == 1.0
     assert result["category_metrics"]["lexical"]["1"]["query_count"] == 2
     assert result["latency"]["maximum_seconds"] >= 0.0
+
+
+def test_beir_loader_uses_only_judged_split_queries(tmp_path: Path) -> None:
+    dataset = tmp_path / "beir"
+    (dataset / "qrels").mkdir(parents=True)
+    (dataset / "corpus.jsonl").write_text(
+        json.dumps({"_id": "d1", "title": "CPU", "text": "CPU inference"})
+        + "\n"
+        + json.dumps({"_id": "d2", "title": "Weather", "text": "rain"})
+        + "\n",
+        encoding="utf-8",
+    )
+    (dataset / "queries.jsonl").write_text(
+        json.dumps({"_id": "q1", "text": "CPU inference"})
+        + "\n"
+        + json.dumps({"_id": "unused", "text": "not judged"})
+        + "\n",
+        encoding="utf-8",
+    )
+    (dataset / "qrels" / "test.tsv").write_text(
+        "query-id\tcorpus-id\tscore\nq1\td1\t1\n",
+        encoding="utf-8",
+    )
+    index, queries, manifest = load_beir_retrieval_dataset(dataset)
+    assert len(index.records) == 2
+    assert index.records[0].deployment_text == "CPU"
+    assert [query.query_id for query in queries] == ["q1"]
+    assert queries[0].expected_memory_ids == ("d1",)
+    assert manifest["evaluated_queries"] == 1
+    assert manifest["available_queries"] == 2
+    assert len(manifest["corpus_sha256"]) == 64

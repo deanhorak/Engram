@@ -1,5 +1,37 @@
 # Research log
 
+## 2026-08-05 — Public SciFact retrieval passes; complete host boundary does not
+
+Implemented a standard BEIR corpus/query/qrels loader and extended the host-independent
+evaluator with nDCG, mean average precision, and precision. The frozen SciFact archive has
+MD5 `5f7d1de60b170fc8027bb7898e2efca1` and SHA-256
+`536e14446a0ba56ed1398ab1055f39fe852686ecad24a6306c80c490fa8e0165`.
+The extracted corpus, queries, and test qrels SHA-256 values are respectively
+`dec31c8182f3d744c7d2c09423756fd1d17cbef75808db13ba01cc0aab4d1ac6`,
+`8ff84a7c903f722981cd8d595c022660140c51867b27608a6d4910db86080313`, and
+`0864bb985e0ca2367ba217977e72004d549054b2b06666ed9d4825ac7c21284c`.
+The test evaluates 300 claims against 5,183 papers and 339 positive qrels.
+
+Before either full run, the public retrieval gate was fixed at nDCG@10 >= 0.60 and
+Recall@100 >= 0.85, using top-k 1/3/5/10/100 and no score filtering. Hashing failed at
+0.272771 nDCG@10 and 0.587222 Recall@100. The pinned quantized MiniLM encoder on
+`CPUExecutionProvider` passed at **0.649268** and **0.926667**. MiniLM index construction
+took 176.806 s and query latency averaged 60.114 ms. Reports:
+`reports/hybrid_beir_scifact_hashing_2026-08-05.json` and
+`reports/hybrid_beir_scifact_minilm_2026-08-05.json`.
+
+The host confirmation fixture was frozen by the deterministic rule “lowest five numeric test
+query IDs with exactly one positive qrel,” yielding 1, 3, 5, 13, and 42; its SHA-256 is
+`cae60612343648e4c159dace99c6077cadc4ef3e94619fca313d64260ac9cd94`.
+With top-k 5 and CPU-only Ollama/Qwen3, baseline answers passed 0/5, expected retrieval
+passed 4/5, and augmented title answers passed 3/5. Mean wall time was 7.019 s baseline
+and 23.532 s hybrid (3.352x). Query 13's relevant paper ranked 17; query 1's relevant
+paper ranked 3 but Qwen selected the rank-1 distractor. This rejects the complete host
+boundary while localizing the next quality experiment to CPU reranking/top-1 precision.
+Evidence: `reports/hybrid_beir_scifact_host_2026-08-05.json`.
+
+The full Python regression suite passes: 1,155 passed and one CUDA-only test skipped.
+
 ## 2026-08-05 — Quantized CPU sentence encoder clears scaled selector boundary
 
 Added `benchmark-hybrid-retrieval`, a host-independent evaluator that reports top-k

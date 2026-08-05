@@ -4,6 +4,25 @@ The project now freezes one public long-context retrieval corpus for an
 independent, reproducible stress test. It is deliberately separate from the
 project-specific protected gate.
 
+## BEIR SciFact
+
+The hybrid sidecar's first public natural-language retrieval boundary uses BEIR
+SciFact. The official `scifact.zip` archive has MD5
+`5f7d1de60b170fc8027bb7898e2efca1` and locally verified SHA-256
+`536e14446a0ba56ed1398ab1055f39fe852686ecad24a6306c80c490fa8e0165`.
+The extracted file SHA-256 values are:
+
+- `corpus.jsonl`: `dec31c8182f3d744c7d2c09423756fd1d17cbef75808db13ba01cc0aab4d1ac6`
+- `queries.jsonl`: `8ff84a7c903f722981cd8d595c022660140c51867b27608a6d4910db86080313`
+- `qrels/test.tsv`: `0864bb985e0ca2367ba217977e72004d549054b2b06666ed9d4825ac7c21284c`
+
+The run uses all 5,183 corpus records and the 300 test queries with positive
+judgments (339 binary-positive pairs). It is a public auxiliary retrieval and host
+benchmark; it is not the protected Engram semantic gate. The checked-in reports
+record the source URL, archive hashes, extracted hashes, encoder identity, thresholds,
+and per-query results. SciFact is distributed as part of the BEIR benchmark under the
+license recorded by its public dataset card.
+
 ## LongEmbed Passkey
 
 The selected source is the `passkey` configuration of

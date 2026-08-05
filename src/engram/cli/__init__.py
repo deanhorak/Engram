@@ -139,6 +139,7 @@ from engram.runtime import (
     OLMoENativePackageRuntime,
     OpenAICompatibleClient,
     evaluate_hybrid_retrieval,
+    load_beir_retrieval_dataset,
     run_native_bitnet_chat,
     score_expected_memory_ids,
     score_required_terms,
@@ -1549,6 +1550,8 @@ def _parser() -> argparse.ArgumentParser:
     )
     hybrid_chat.add_argument("--model", default="local-model")
     hybrid_chat.add_argument("--memory", type=Path, help="optional Engram memory JSONL")
+    hybrid_chat.add_argument("--beir-dataset", type=Path)
+    hybrid_chat.add_argument("--beir-split", default="test")
     hybrid_chat.add_argument("--memory-dimensions", type=int, default=384)
     _add_hybrid_encoder_arguments(hybrid_chat)
     hybrid_chat.add_argument("--top-k", type=int, default=4)
@@ -1593,6 +1596,8 @@ def _parser() -> argparse.ArgumentParser:
     hybrid_benchmark.add_argument("--model", default="local-model")
     hybrid_benchmark.add_argument("--prompts", required=True, type=Path)
     hybrid_benchmark.add_argument("--memory", type=Path)
+    hybrid_benchmark.add_argument("--beir-dataset", type=Path)
+    hybrid_benchmark.add_argument("--beir-split", default="test")
     hybrid_benchmark.add_argument("--memory-dimensions", type=int, default=384)
     _add_hybrid_encoder_arguments(hybrid_benchmark)
     hybrid_benchmark.add_argument("--top-k", type=int, default=4)
@@ -1637,6 +1642,29 @@ def _parser() -> argparse.ArgumentParser:
     )
     hybrid_retrieval_benchmark.add_argument("--min-score", type=float, default=0.05)
     hybrid_retrieval_benchmark.add_argument("--out", required=True, type=Path)
+
+    beir_hybrid_benchmark = commands.add_parser(
+        "benchmark-beir-hybrid-retrieval",
+        help="evaluate a frozen BEIR retrieval split without a model host",
+    )
+    beir_hybrid_benchmark.add_argument("--dataset", required=True, type=Path)
+    beir_hybrid_benchmark.add_argument("--split", default="test")
+    beir_hybrid_benchmark.add_argument("--memory-dimensions", type=int, default=384)
+    _add_hybrid_encoder_arguments(beir_hybrid_benchmark)
+    beir_hybrid_benchmark.add_argument(
+        "--top-k-values", type=int, nargs="+", default=[1, 3, 5, 10, 100]
+    )
+    beir_hybrid_benchmark.add_argument("--min-score", type=float, default=-1.0)
+    beir_hybrid_benchmark.add_argument(
+        "--minimum-ndcg-at-10", type=float, default=0.60
+    )
+    beir_hybrid_benchmark.add_argument(
+        "--minimum-recall-at-100", type=float, default=0.85
+    )
+    beir_hybrid_benchmark.add_argument("--source-url")
+    beir_hybrid_benchmark.add_argument("--source-archive-md5")
+    beir_hybrid_benchmark.add_argument("--source-archive-sha256")
+    beir_hybrid_benchmark.add_argument("--out", required=True, type=Path)
 
     validate = commands.add_parser(
         "validate", help="verify package checksums and deterministic generation"
@@ -3587,15 +3615,23 @@ def main(argv: Sequence[str] | None = None) -> int:
             except KeyboardInterrupt:
                 print("\nChat interrupted.")
     elif args.command == "chat-hybrid":
-        memory = (
-            load_hybrid_memory(
+        if args.memory is not None and args.beir_dataset is not None:
+            raise ValueError("--memory and --beir-dataset are mutually exclusive")
+        if args.beir_dataset is not None:
+            memory, _, _ = load_beir_retrieval_dataset(
+                args.beir_dataset,
+                split=args.beir_split,
+                dimensions=args.memory_dimensions,
+                encoder=_hybrid_encoder_from_args(args),
+            )
+        elif args.memory is not None:
+            memory = load_hybrid_memory(
                 args.memory,
                 dimensions=args.memory_dimensions,
                 encoder=_hybrid_encoder_from_args(args),
             )
-            if args.memory is not None
-            else None
-        )
+        else:
+            memory = None
         client = OpenAICompatibleClient(
             args.endpoint,
             api_key=os.environ.get(args.api_key_env),
@@ -3642,6 +3678,57 @@ def main(argv: Sequence[str] | None = None) -> int:
                     f"{hit.record.memory_id}:{hit.score:.3f}" for hit in result.hits
                 )
                 print(f"[retrieved {details}; {result.elapsed_seconds:.3f}s]")
+    elif args.command == "benchmark-beir-hybrid-retrieval":
+        index_started = time.perf_counter()
+        memory, queries, dataset_manifest = load_beir_retrieval_dataset(
+            args.dataset,
+            split=args.split,
+            dimensions=args.memory_dimensions,
+            encoder=_hybrid_encoder_from_args(args),
+        )
+        index_seconds = time.perf_counter() - index_started
+        evaluation = evaluate_hybrid_retrieval(
+            memory,
+            queries,
+            top_k_values=args.top_k_values,
+            minimum_score=args.min_score,
+        )
+        if "10" not in evaluation["metrics"] or "100" not in evaluation["metrics"]:
+            raise ValueError("BEIR evaluation requires top-k values 10 and 100")
+        ndcg_at_10 = evaluation["metrics"]["10"]["ndcg"]
+        recall_at_100 = evaluation["metrics"]["100"]["mean_expected_recall"]
+        gate = {
+            "minimum_ndcg_at_10": args.minimum_ndcg_at_10,
+            "minimum_recall_at_100": args.minimum_recall_at_100,
+            "ndcg_at_10": ndcg_at_10,
+            "recall_at_100": recall_at_100,
+            "passed": (
+                ndcg_at_10 >= args.minimum_ndcg_at_10
+                and recall_at_100 >= args.minimum_recall_at_100
+            ),
+        }
+        report = {
+            "format": "engram-beir-hybrid-retrieval-benchmark",
+            "version": 1,
+            "dataset": dataset_manifest,
+            "source": {
+                "url": args.source_url,
+                "archive_md5": args.source_archive_md5,
+                "archive_sha256": args.source_archive_sha256,
+            },
+            "index_build_seconds": index_seconds,
+            "encoder": memory.encoder.to_dict(),
+            "gate": gate,
+            "quality_claim": "public_retrieval_metrics_only",
+            "evaluation": evaluation,
+            "note": (
+                "This report evaluates public qrels without invoking a language "
+                "model. It does not establish generated-answer quality."
+            ),
+        }
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps(report, indent=2, sort_keys=True))
     elif args.command == "benchmark-hybrid-retrieval":
         index_started = time.perf_counter()
         encoder = _hybrid_encoder_from_args(args)
@@ -3707,15 +3794,24 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         print(json.dumps(report, indent=2, sort_keys=True))
     elif args.command == "benchmark-hybrid":
-        memory = (
-            load_hybrid_memory(
+        if args.memory is not None and args.beir_dataset is not None:
+            raise ValueError("--memory and --beir-dataset are mutually exclusive")
+        beir_manifest = None
+        if args.beir_dataset is not None:
+            memory, _, beir_manifest = load_beir_retrieval_dataset(
+                args.beir_dataset,
+                split=args.beir_split,
+                dimensions=args.memory_dimensions,
+                encoder=_hybrid_encoder_from_args(args),
+            )
+        elif args.memory is not None:
+            memory = load_hybrid_memory(
                 args.memory,
                 dimensions=args.memory_dimensions,
                 encoder=_hybrid_encoder_from_args(args),
             )
-            if args.memory is not None
-            else None
-        )
+        else:
+            memory = None
         client = OpenAICompatibleClient(
             args.endpoint,
             api_key=os.environ.get(args.api_key_env),
@@ -3864,7 +3960,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             "model": args.model,
             "mode": args.mode,
             "memory": str(args.memory) if args.memory else None,
-            "memory_sha256": sha256_file(args.memory) if args.memory else None,
+            "memory_sha256": (
+                sha256_file(args.memory)
+                if args.memory
+                else beir_manifest["corpus_sha256"]
+                if beir_manifest
+                else None
+            ),
+            "beir_dataset": beir_manifest,
             "encoder": memory.encoder.to_dict() if memory is not None else None,
             "prompts_sha256": sha256_file(args.prompts),
             "context_format": args.context_format,

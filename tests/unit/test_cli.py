@@ -218,6 +218,45 @@ def test_hybrid_retrieval_benchmark_is_host_independent(tmp_path):
     assert len(payload["queries_sha256"]) == 64
 
 
+def test_beir_hybrid_benchmark_reports_public_metric_gate(tmp_path):
+    dataset = tmp_path / "scifact"
+    (dataset / "qrels").mkdir(parents=True)
+    (dataset / "corpus.jsonl").write_text(
+        json.dumps({"_id": "d1", "title": "CPU", "text": "CPU inference"})
+        + "\n"
+        + json.dumps({"_id": "d2", "title": "Rain", "text": "weather"})
+        + "\n",
+        encoding="utf-8",
+    )
+    (dataset / "queries.jsonl").write_text(
+        json.dumps({"_id": "q1", "text": "CPU inference"}) + "\n",
+        encoding="utf-8",
+    )
+    (dataset / "qrels" / "test.tsv").write_text(
+        "query-id\tcorpus-id\tscore\nq1\td1\t1\n",
+        encoding="utf-8",
+    )
+    report = tmp_path / "beir-report.json"
+    main(
+        [
+            "benchmark-beir-hybrid-retrieval",
+            "--dataset",
+            str(dataset),
+            "--top-k-values",
+            "1",
+            "10",
+            "100",
+            "--out",
+            str(report),
+        ]
+    )
+    payload = json.loads(report.read_text(encoding="utf-8"))
+    assert payload["quality_claim"] == "public_retrieval_metrics_only"
+    assert payload["gate"]["passed"]
+    assert payload["evaluation"]["metrics"]["10"]["ndcg"] == 1.0
+    assert payload["dataset"]["relevance_pairs"] == 1
+
+
 def test_width_pruned_cli_forwards_layer_schedule(tmp_path, monkeypatch):
     captured = {}
 

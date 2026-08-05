@@ -12,6 +12,7 @@ that a controller or semantic provider has replaced the host model.
 
 from __future__ import annotations
 
+import csv
 import hashlib
 import json
 import re
@@ -344,8 +345,8 @@ class HybridMemoryIndex:
     ) -> tuple[HybridMemoryHit, ...]:
         if top_k < 0:
             raise ValueError("top_k must be nonnegative")
-        if not 0.0 <= minimum_score <= 1.0:
-            raise ValueError("minimum_score must lie in [0, 1]")
+        if not -1.0 <= minimum_score <= 1.0:
+            raise ValueError("minimum_score must lie in [-1, 1]")
         if top_k == 0:
             return ()
         query_vector = self.encoder.encode(query)
@@ -530,8 +531,8 @@ def evaluate_hybrid_retrieval(
     query_ids = [query.query_id for query in queries]
     if len(set(query_ids)) != len(query_ids):
         raise ValueError("query_id values must be unique")
-    if not 0.0 <= minimum_score <= 1.0:
-        raise ValueError("minimum_score must lie in [0, 1]")
+    if not -1.0 <= minimum_score <= 1.0:
+        raise ValueError("minimum_score must lie in [-1, 1]")
     requested_k = sorted(set(top_k_values))
     if not requested_k or any(not isinstance(k, int) or k <= 0 for k in requested_k):
         raise ValueError("top_k_values must contain positive integers")
@@ -584,6 +585,9 @@ def evaluate_hybrid_retrieval(
         all_hits: list[bool] = []
         any_hits: list[bool] = []
         reciprocal_ranks: list[float] = []
+        ndcg_scores: list[float] = []
+        average_precisions: list[float] = []
+        precisions: list[float] = []
         for row in selected:
             expected = set(row["expected_memory_ids"])
             retrieved = row["retrieved_memory_ids"][:k]
@@ -597,12 +601,36 @@ def evaluate_hybrid_retrieval(
                 if memory_id in retrieved
             ]
             reciprocal_ranks.append(1.0 / min(ranks) if ranks else 0.0)
+            gains = [1.0 if memory_id in expected else 0.0 for memory_id in retrieved]
+            dcg = sum(
+                gain / np.log2(rank + 1.0)
+                for rank, gain in enumerate(gains, start=1)
+            )
+            ideal_count = min(len(expected), k)
+            ideal_dcg = sum(
+                1.0 / np.log2(rank + 1.0)
+                for rank in range(1, ideal_count + 1)
+            )
+            ndcg_scores.append(dcg / ideal_dcg if ideal_dcg else 0.0)
+            relevant_seen = 0
+            precision_sum = 0.0
+            for rank, memory_id in enumerate(retrieved, start=1):
+                if memory_id in expected:
+                    relevant_seen += 1
+                    precision_sum += relevant_seen / rank
+            average_precisions.append(
+                precision_sum / ideal_count if ideal_count else 0.0
+            )
+            precisions.append(len(overlap) / k)
         return {
             "query_count": len(selected),
             "mean_expected_recall": float(np.mean(recalls)),
             "all_expected_hit_rate": float(np.mean(all_hits)),
             "any_expected_hit_rate": float(np.mean(any_hits)),
             "mean_reciprocal_rank": float(np.mean(reciprocal_ranks)),
+            "ndcg": float(np.mean(ndcg_scores)),
+            "mean_average_precision": float(np.mean(average_precisions)),
+            "precision": float(np.mean(precisions)),
         }
 
     categories = sorted({query.category for query in queries})
@@ -836,6 +864,124 @@ def load_hybrid_memory(
     )
 
 
+def load_beir_retrieval_dataset(
+    directory: str | Path,
+    *,
+    split: str = "test",
+    dimensions: int = 384,
+    encoder: HashingTextEncoder | ONNXSentenceTextEncoder | None = None,
+) -> tuple[HybridMemoryIndex, tuple[HybridRetrievalQuery, ...], dict[str, Any]]:
+    """Load a standard BEIR corpus, query set, and binary qrels."""
+
+    root = Path(directory)
+    corpus_path = root / "corpus.jsonl"
+    queries_path = root / "queries.jsonl"
+    qrels_path = root / "qrels" / f"{split}.tsv"
+    missing = [
+        str(path)
+        for path in (corpus_path, queries_path, qrels_path)
+        if not path.is_file()
+    ]
+    if missing:
+        raise HybridError(f"BEIR dataset is missing required files: {missing}")
+
+    records: list[HybridMemoryRecord] = []
+    with corpus_path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, 1):
+            if not line.strip():
+                continue
+            try:
+                payload = json.loads(line)
+            except json.JSONDecodeError as error:
+                raise HybridError(
+                    f"invalid BEIR corpus JSON on line {line_number}"
+                ) from error
+            memory_id = payload.get("_id") if isinstance(payload, Mapping) else None
+            title = payload.get("title", "") if isinstance(payload, Mapping) else ""
+            body = payload.get("text") if isinstance(payload, Mapping) else None
+            if (
+                not isinstance(memory_id, str)
+                or not isinstance(title, str)
+                or not isinstance(body, str)
+            ):
+                raise HybridError(
+                    f"BEIR corpus line {line_number} requires string _id/title/text"
+                )
+            text = f"{title.strip()}\n{body.strip()}" if title.strip() else body.strip()
+            records.append(
+                HybridMemoryRecord(
+                    memory_id,
+                    text,
+                    {"dataset": root.name, "split": split},
+                    title.strip() or None,
+                )
+            )
+
+    query_texts: dict[str, str] = {}
+    with queries_path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, 1):
+            if not line.strip():
+                continue
+            try:
+                payload = json.loads(line)
+            except json.JSONDecodeError as error:
+                raise HybridError(
+                    f"invalid BEIR query JSON on line {line_number}"
+                ) from error
+            query_id = payload.get("_id") if isinstance(payload, Mapping) else None
+            text = payload.get("text") if isinstance(payload, Mapping) else None
+            if not isinstance(query_id, str) or not isinstance(text, str):
+                raise HybridError(
+                    f"BEIR query line {line_number} requires string _id/text"
+                )
+            if query_id in query_texts:
+                raise HybridError(f"duplicate BEIR query ID: {query_id}")
+            query_texts[query_id] = text
+
+    relevant: dict[str, list[str]] = {}
+    with qrels_path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle, delimiter="\t")
+        required_columns = {"query-id", "corpus-id", "score"}
+        if not required_columns.issubset(reader.fieldnames or ()):
+            raise HybridError("BEIR qrels header must contain query-id/corpus-id/score")
+        for row in reader:
+            try:
+                score = float(row["score"])
+            except (TypeError, ValueError) as error:
+                raise HybridError("BEIR qrels score is not numeric") from error
+            if score > 0:
+                relevant.setdefault(row["query-id"], []).append(row["corpus-id"])
+    missing_queries = sorted(set(relevant).difference(query_texts))
+    if missing_queries:
+        raise HybridError(f"BEIR qrels reference missing queries: {missing_queries}")
+    queries = tuple(
+        HybridRetrievalQuery(
+            query_id=query_id,
+            text=query_texts[query_id],
+            expected_memory_ids=tuple(dict.fromkeys(memory_ids)),
+            category=f"beir_{split}",
+        )
+        for query_id, memory_ids in sorted(relevant.items())
+    )
+    index = HybridMemoryIndex(
+        records,
+        encoder=encoder or HashingTextEncoder(dimensions),
+    )
+    manifest = {
+        "directory": str(root),
+        "split": split,
+        "corpus_sha256": _sha256_path(corpus_path),
+        "queries_sha256": _sha256_path(queries_path),
+        "qrels_sha256": _sha256_path(qrels_path),
+        "corpus_records": len(records),
+        "available_queries": len(query_texts),
+        "evaluated_queries": len(queries),
+        "relevance_pairs": sum(len(ids) for ids in relevant.values()),
+        "relevance": "binary_positive_qrels",
+    }
+    return index, queries, manifest
+
+
 __all__ = [
     "ChatCompletionClient",
     "HashingTextEncoder",
@@ -851,6 +997,7 @@ __all__ = [
     "OpenAICompatibleClient",
     "evaluate_hybrid_retrieval",
     "load_hybrid_memory",
+    "load_beir_retrieval_dataset",
     "score_expected_memory_ids",
     "score_required_terms",
 ]
