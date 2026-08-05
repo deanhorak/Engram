@@ -4,7 +4,8 @@
   "host": {
     "provider": "ollama",
     "endpoint": "http://127.0.0.1:11435/api/chat",
-    "runtime_library": "cpu_avx2",
+    "runtime_library_requested": "cpu_avx2",
+    "runtime_library_loaded": "libggml-cpu-sandybridge.so",
     "model": "qwen3:latest",
     "model_digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
     "think": false,
