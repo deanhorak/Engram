@@ -1517,6 +1517,9 @@ def _parser() -> argparse.ArgumentParser:
     hybrid_chat.add_argument("--top-k", type=int, default=4)
     hybrid_chat.add_argument("--min-score", type=float, default=0.15)
     hybrid_chat.add_argument("--max-context-chars", type=int, default=4000)
+    hybrid_chat.add_argument(
+        "--context-format", choices=("compact", "verbose"), default="compact"
+    )
     hybrid_chat.add_argument("--max-tokens", type=int, default=128)
     hybrid_chat.add_argument("--temperature", type=float, default=0.0)
     hybrid_chat.add_argument("--timeout", type=float, default=120.0)
@@ -1557,12 +1560,21 @@ def _parser() -> argparse.ArgumentParser:
     hybrid_benchmark.add_argument("--top-k", type=int, default=4)
     hybrid_benchmark.add_argument("--min-score", type=float, default=0.15)
     hybrid_benchmark.add_argument("--max-context-chars", type=int, default=4000)
+    hybrid_benchmark.add_argument(
+        "--context-format", choices=("compact", "verbose"), default="compact"
+    )
     hybrid_benchmark.add_argument("--max-tokens", type=int, default=128)
     hybrid_benchmark.add_argument("--temperature", type=float, default=0.0)
     hybrid_benchmark.add_argument("--timeout", type=float, default=120.0)
     hybrid_benchmark.add_argument("--think", action="store_true", default=None)
     hybrid_benchmark.add_argument("--no-think", dest="think", action="store_false")
     hybrid_benchmark.add_argument("--api-key-env", default="ENGRAM_HYBRID_API_KEY")
+    hybrid_benchmark.add_argument(
+        "--warmup-requests",
+        type=int,
+        default=1,
+        help="unmeasured one-token requests used to load the host before timing",
+    )
     hybrid_benchmark.add_argument(
         "--mode", choices=("baseline", "hybrid", "both"), default="both"
     )
@@ -3537,6 +3549,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 top_k=args.top_k,
                 minimum_score=args.min_score,
                 maximum_context_characters=args.max_context_chars,
+                context_format=args.context_format,
             ),
             max_tokens=args.max_tokens,
             temperature=args.temperature,
@@ -3599,6 +3612,20 @@ def main(argv: Sequence[str] | None = None) -> int:
                         f"prompt line {line_number} must be a string or object with prompt"
                     )
         rows: list[dict[str, object]] = []
+        if args.warmup_requests < 0:
+            raise ValueError("--warmup-requests must be nonnegative")
+        warmup_usage: list[dict[str, object]] = []
+        for warmup_index in range(args.warmup_requests):
+            _, usage = client.complete(
+                [
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": f"warmup {warmup_index}"},
+                ],
+                model=args.model,
+                max_tokens=1,
+                temperature=0.0,
+            )
+            warmup_usage.append(dict(usage))
         modes = ("baseline", "hybrid") if args.mode == "both" else (args.mode,)
         for item in prompts:
             row: dict[str, object] = {"id": item["id"], "prompt": item["prompt"]}
@@ -3611,6 +3638,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                         top_k=args.top_k,
                         minimum_score=args.min_score,
                         maximum_context_characters=args.max_context_chars,
+                        context_format=args.context_format,
                     ),
                     max_tokens=args.max_tokens,
                     temperature=args.temperature,
@@ -3630,6 +3658,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             "model": args.model,
             "mode": args.mode,
             "memory": str(args.memory) if args.memory else None,
+            "context_format": args.context_format,
+            "warmup": {
+                "requests": args.warmup_requests,
+                "usage": warmup_usage,
+            },
             "prompts": rows,
             "quality_claim": "not_established",
             "note": (

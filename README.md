@@ -64,6 +64,7 @@ PYTHONPATH=src python -m engram.cli chat-hybrid \
   --endpoint http://127.0.0.1:11434/api/chat \
   --model qwen3:latest \
   --memory path/to/memory.jsonl \
+  --context-format compact \
   --no-think
 ```
 
@@ -85,6 +86,16 @@ Qwen3 on 100% CPU, one 16-token prompt took 5.47 s baseline versus 13.80 s
 with retrieved context (33 versus 99 prompt tokens). Retrieval was correct,
 but this sidecar configuration is not yet a performance improvement; see
 [`hybrid_ollama_cpu_smoke_2026-08-04.json`](reports/hybrid_ollama_cpu_smoke_2026-08-04.json).
+
+Compact context is now the default. It emits one untrusted-reference safety
+instruction and record IDs, but keeps retrieval score and metadata in the
+benchmark report instead of spending model tokens on them. On the same
+CPU-only Qwen3 prompt it reduced added prompt tokens from 66 to 39 and hybrid
+latency from 13.80 s to 7.97 s. The warm baseline was 4.65 s, so the optimized
+path remains 1.71× slower. `benchmark-hybrid` now performs one one-token warmup
+request by default to prevent model-load time from contaminating one arm; use
+`--warmup-requests 0` only when cold-start timing is intentional. See the
+[`compact CPU report`](reports/hybrid_ollama_cpu_compact_2026-08-05.json).
 
 For an external, reproducible stress test, the project also freezes the public
 [LongEmbed Passkey auxiliary benchmark](docs/auxiliary_benchmarks.md) at an upstream Git revision
@@ -225,7 +236,7 @@ for a larger frozen Qwen3 causal trace and a teacher-family comparison against
 the failed BitNet provider—not another isolated provider rank sweep.
 
 The Qwen3 adapter is covered by the full current regression checkpoint:
-**1,145 Python tests passed, 1 skipped**, and native CTest **20/20 passed**.
+**1,148 Python tests passed, 1 skipped**, and native CTest **20/20 passed**.
 
 That causal comparison is now complete. The new `trace-hf-controller` command
 captured all 28 Qwen3 stages for disjoint 8-sequence/128-record training and

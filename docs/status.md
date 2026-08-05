@@ -31,6 +31,15 @@ Retrieval was correct, but the current sidecar is **2.52× slower** on this
 screen. The result is retained as a negative performance finding, not a
 quality or semantic-gate claim.
 
+The first prompt-traffic optimization is complete. Compact rendering removes
+retrieval score, serialized metadata, and repeated closing tags from the model
+prompt while retaining one untrusted-context instruction and every record ID.
+On the matched warm CPU screen, added prompt tokens fell from 66 to 39 and
+hybrid latency fell from 13.8032 s to 7.9709 s. Retrieval itself took 0.288 ms.
+The warm baseline was 4.6491 s, so compact hybrid remains 1.71× slower. The
+benchmark CLI now performs an explicit one-token warmup by default and reports
+retrieval time and injected context characters.
+
 ## Latest native recurrent-controller boundary
 
 The native token runtime now executes the schema-v3 factorized recurrent

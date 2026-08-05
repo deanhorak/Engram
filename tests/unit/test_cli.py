@@ -90,6 +90,20 @@ def test_width_pruned_cli_exposes_strict_q4_deployment_flag(tmp_path):
     assert arguments.target_widths == [384, 672]
 
 
+def test_hybrid_benchmark_defaults_to_compact_warm_execution(tmp_path):
+    arguments = _parser().parse_args(
+        [
+            "benchmark-hybrid",
+            "--endpoint",
+            "http://127.0.0.1:11434/api/chat",
+            "--prompts",
+            str(tmp_path / "prompts.jsonl"),
+        ]
+    )
+    assert arguments.context_format == "compact"
+    assert arguments.warmup_requests == 1
+
+
 def test_width_pruned_cli_forwards_layer_schedule(tmp_path, monkeypatch):
     captured = {}
 

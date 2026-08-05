@@ -37,6 +37,24 @@ dominates. This is a negative performance result, not a failure of the
 integration. The preserved report is
 `reports/hybrid_ollama_cpu_smoke_2026-08-04.json`; no quality claim is made.
 
+## 2026-08-05 — Compact hybrid context reduces CPU overhead
+
+The first optimization targeted the measured bottleneck rather than the
+sub-millisecond retrieval calculation. The verbose prompt serialized score,
+metadata, opening and closing tags, and repeated safety prose. The compact
+format keeps one instruction that retrieved material is untrusted, retains
+each record ID, and moves score/metadata to the machine report. It also
+enforces the character budget over the complete inserted context.
+
+The benchmark now records retrieval seconds and inserted characters and runs
+one unmeasured one-token warmup by default. On the same CPU-only Qwen3 prompt,
+compact context used 72 prompt tokens versus 99 for verbose and 33 for
+baseline. Added prompt traffic therefore fell 41%. Warm hybrid wall time fell
+from 13.8032 s to 7.9709 s; retrieval took 0.288 ms. The warm baseline took
+4.6491 s, so compact hybrid is still 1.71× slower and is not promoted as a
+performance improvement. Evidence:
+`reports/hybrid_ollama_cpu_compact_2026-08-05.json`.
+
 ## 2026-07-27 — Complete native OLMoE token boundary passes
 
 - Added a streaming compiler for the exact 131-tensor BF16 non-MLP inventory.

@@ -26,6 +26,12 @@ One matched prompt and 16 generated tokens took **5.4658 s** baseline versus
 99. Retrieval execution is valid, but this initial sidecar is not yet a
 performance improvement.
 
+Compact rendering subsequently reduced added prompt tokens from 66 to 39 and
+warm hybrid latency from 13.8032 s to 7.9709 s. Retrieval took only 0.288 ms,
+confirming that host prompt evaluation—not indexing—is the remaining cost.
+The warm baseline was 4.6491 s, so the optimized path remains 1.71× slower and
+has not passed a performance or quality gate.
+
 ## Alternative dense-teacher boundary (Qwen3, 2026-08-04)
 
 The protected learned-provider gate remains failed, and the pinned WikiText-2
@@ -56,7 +62,7 @@ runtime exists. The full structural record is
 `reports/qwen3_teacher_trace_2026-08-04.json`.
 
 The adapter and Qwen3 structural test additions leave the full regression
-suite clean: **1,145 Python tests passed, 1 skipped**, and native CTest remains
+suite clean: **1,148 Python tests passed, 1 skipped**, and native CTest remains
 **20/20** (27.50 seconds). The one skip is the pre-existing CUDA-only query
 feature test on this host.
 
@@ -686,7 +692,7 @@ thresholds.
 
 ## Verification
 
-- Python: 1,145 passed, 1 skipped (the CUDA-only query feature test is
+- Python: 1,148 passed, 1 skipped (the CUDA-only query feature test is
   unavailable on this host).
 - Native CTest: 20/20 passed outside the sandbox in 27.50 s (including the
   native C ABI lifecycle test).

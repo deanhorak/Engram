@@ -1,0 +1,49 @@
+{
+  "format": "engram-hybrid-benchmark",
+  "version": 1,
+  "host": {
+    "provider": "ollama",
+    "endpoint": "http://127.0.0.1:11435/api/chat",
+    "runtime_library_requested": "cpu_avx2",
+    "runtime_library_loaded": "libggml-cpu-sandybridge.so",
+    "model": "qwen3:latest",
+    "model_digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+    "think": false,
+    "verified_processor": "100% CPU"
+  },
+  "protocol": {
+    "warmup_requests": 1,
+    "completion_tokens": 16,
+    "context_format": "compact",
+    "memory_records": 3,
+    "top_k": 3,
+    "minimum_score": 0.05,
+    "maximum_context_characters": 1200
+  },
+  "prompt": {
+    "id": "architecture",
+    "text": "What is our practical architecture?",
+    "baseline_wall_seconds": 4.6491141840,
+    "hybrid_wall_seconds": 7.9708687740,
+    "baseline_prompt_tokens": 33,
+    "hybrid_prompt_tokens": 72,
+    "baseline_completion_tokens": 16,
+    "hybrid_completion_tokens": 9,
+    "hybrid_context_characters": 241,
+    "hybrid_retrieval_seconds": 0.0002880230,
+    "hybrid_memory_hits": ["milestone-status"]
+  },
+  "comparison_to_verbose": {
+    "verbose_hybrid_wall_seconds": 13.8032215189,
+    "verbose_hybrid_prompt_tokens": 99,
+    "added_prompt_tokens_verbose": 66,
+    "added_prompt_tokens_compact": 39,
+    "added_prompt_token_reduction_fraction": 0.4090909091,
+    "hybrid_wall_reduction_fraction": 0.4225356187
+  },
+  "summary": {
+    "hybrid_over_baseline_wall_ratio": 1.714492,
+    "quality_claim": "not_established",
+    "note": "One-prompt warm CPU screen; retrieval is negligible but prompt evaluation remains the limiting cost."
+  }
+}
