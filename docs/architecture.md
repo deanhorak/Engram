@@ -115,6 +115,14 @@ prompts can also carry expected memory IDs and required answer terms. Those chec
 are deliberately deterministic and task-specific, and the input hashes are recorded
 so later optimization cannot silently change the evaluation set.
 
+The encoder boundary now has two implementations. `HashingTextEncoder` remains the
+zero-dependency lexical control. `ONNXSentenceTextEncoder` resolves a pinned local or
+Hugging Face snapshot, tokenizes in bounded batches, executes only ONNX Runtime's CPU
+provider, applies attention-mask mean pooling and L2 normalization, and precomputes
+the immutable corpus matrix. Both produce normalized vectors consumed by the same
+exact cosine search and prompt policy. Artifact revision, ONNX SHA-256, tokenizer
+SHA-256, provider, dimensions, and pooling contract are emitted in benchmark reports.
+
 This document describes one compiled model worker. A separate, request-level
 [Oracle cognitive executive](cognitive_executive.md) may manage goals, evidence, persistent
 memory policy, tools, and multiple workers above it. Those system functions are not stored in an

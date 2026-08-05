@@ -20,6 +20,11 @@ conversion = [
   "accelerate>=0.26",
 ]
 dev = ["pytest>=8"]
+hybrid = [
+  "huggingface-hub>=0.23",
+  "onnxruntime>=1.16",
+  "tokenizers>=0.15",
+]
 
 [project.scripts]
 engram = "engram.cli:main"

@@ -11,7 +11,9 @@ from engram.runtime.hybrid import (
     HybridMemoryIndex,
     HybridMemoryRecord,
     HybridPromptPolicy,
+    HybridRetrievalQuery,
     OpenAICompatibleClient,
+    evaluate_hybrid_retrieval,
     score_expected_memory_ids,
     score_required_terms,
 )
@@ -190,3 +192,31 @@ def test_frozen_hybrid_rubrics_are_deterministic() -> None:
     assert answer["missing_terms"] == []
     assert retrieval["passed"]
     assert retrieval["retrieved_memory_ids"] == ["cpu-policy"]
+
+
+def test_retrieval_evaluator_reports_top_k_and_category_metrics() -> None:
+    index = HybridMemoryIndex(
+        [
+            HybridMemoryRecord("cpu", "CPU inference deployment policy"),
+            HybridMemoryRecord("training", "CUDA training acceleration policy"),
+            HybridMemoryRecord("weather", "rain forecast and cloud cover"),
+        ]
+    )
+    result = evaluate_hybrid_retrieval(
+        index,
+        [
+            HybridRetrievalQuery(
+                "cpu-query", "CPU deployment", ("cpu",), "lexical"
+            ),
+            HybridRetrievalQuery(
+                "cuda-query", "CUDA acceleration", ("training",), "lexical"
+            ),
+        ],
+        top_k_values=(1, 2),
+        minimum_score=0.05,
+    )
+    assert result["record_count"] == 3
+    assert result["metrics"]["1"]["all_expected_hit_rate"] == 1.0
+    assert result["metrics"]["2"]["mean_reciprocal_rank"] == 1.0
+    assert result["category_metrics"]["lexical"]["1"]["query_count"] == 2
+    assert result["latency"]["maximum_seconds"] >= 0.0

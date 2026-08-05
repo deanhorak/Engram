@@ -1,0 +1,5 @@
+{"id":"host-nectar-index","prompt":"How does Nectar arrange its catalog keys?","required_terms":["B-tree"],"expected_memory_ids":["nectar-index"]}
+{"id":"host-onyx-compression","prompt":"What method makes Onyx snapshots occupy less space?","required_terms":["Zstandard","7"],"expected_memory_ids":["onyx-compression"]}
+{"id":"host-prairie-retry","prompt":"How many additional attempts may Prairie make after an operation fails?","required_terms":["four"],"expected_memory_ids":["prairie-retry"]}
+{"id":"host-tundra-audit","prompt":"How often is Tundra checked for regulatory conformance?","required_terms":["quarter"],"expected_memory_ids":["tundra-audit"]}
+{"id":"host-umber-threshold","prompt":"What cutoff must an Umber build meet to be accepted?","required_terms":["0.92"],"expected_memory_ids":["umber-threshold"]}

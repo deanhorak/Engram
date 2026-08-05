@@ -1,0 +1,837 @@
+{
+  "format": "engram-hybrid-retrieval-benchmark",
+  "version": 1,
+  "memory": "tests/fixtures/hybrid_retrieval_scale_v1_memory.jsonl",
+  "memory_sha256": "75a0a33dcc433af9968fa58193b29728bc1a5cd8abd0724e30bba69925b7d571",
+  "queries_source": "tests/fixtures/hybrid_retrieval_scale_v1_queries.jsonl",
+  "queries_sha256": "66e28c14e7ab1284e6fb4c8870694bad0b28cef9e21e05c27a465db5bc85fee5",
+  "index_build_seconds": 0.0054486209992319345,
+  "encoder": {
+    "type": "signed_token_hashing",
+    "dimensions": 384
+  },
+  "quality_claim": "retrieval_membership_only",
+  "evaluation": {
+    "record_count": 64,
+    "query_count": 24,
+    "dimensions": 384,
+    "minimum_score": 0.05,
+    "top_k_values": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "metrics": {
+      "1": {
+        "query_count": 24,
+        "mean_expected_recall": 0.7916666666666666,
+        "all_expected_hit_rate": 0.7916666666666666,
+        "any_expected_hit_rate": 0.7916666666666666,
+        "mean_reciprocal_rank": 0.7916666666666666
+      },
+      "2": {
+        "query_count": 24,
+        "mean_expected_recall": 0.8333333333333334,
+        "all_expected_hit_rate": 0.8333333333333334,
+        "any_expected_hit_rate": 0.8333333333333334,
+        "mean_reciprocal_rank": 0.8125
+      },
+      "4": {
+        "query_count": 24,
+        "mean_expected_recall": 0.875,
+        "all_expected_hit_rate": 0.875,
+        "any_expected_hit_rate": 0.875,
+        "mean_reciprocal_rank": 0.826388888888889
+      },
+      "8": {
+        "query_count": 24,
+        "mean_expected_recall": 0.9166666666666666,
+        "all_expected_hit_rate": 0.9166666666666666,
+        "any_expected_hit_rate": 0.9166666666666666,
+        "mean_reciprocal_rank": 0.8347222222222221
+      }
+    },
+    "category_metrics": {
+      "lexical_rephrase": {
+        "1": {
+          "query_count": 12,
+          "mean_expected_recall": 1.0,
+          "all_expected_hit_rate": 1.0,
+          "any_expected_hit_rate": 1.0,
+          "mean_reciprocal_rank": 1.0
+        },
+        "2": {
+          "query_count": 12,
+          "mean_expected_recall": 1.0,
+          "all_expected_hit_rate": 1.0,
+          "any_expected_hit_rate": 1.0,
+          "mean_reciprocal_rank": 1.0
+        },
+        "4": {
+          "query_count": 12,
+          "mean_expected_recall": 1.0,
+          "all_expected_hit_rate": 1.0,
+          "any_expected_hit_rate": 1.0,
+          "mean_reciprocal_rank": 1.0
+        },
+        "8": {
+          "query_count": 12,
+          "mean_expected_recall": 1.0,
+          "all_expected_hit_rate": 1.0,
+          "any_expected_hit_rate": 1.0,
+          "mean_reciprocal_rank": 1.0
+        }
+      },
+      "semantic_rephrase": {
+        "1": {
+          "query_count": 12,
+          "mean_expected_recall": 0.5833333333333334,
+          "all_expected_hit_rate": 0.5833333333333334,
+          "any_expected_hit_rate": 0.5833333333333334,
+          "mean_reciprocal_rank": 0.5833333333333334
+        },
+        "2": {
+          "query_count": 12,
+          "mean_expected_recall": 0.6666666666666666,
+          "all_expected_hit_rate": 0.6666666666666666,
+          "any_expected_hit_rate": 0.6666666666666666,
+          "mean_reciprocal_rank": 0.625
+        },
+        "4": {
+          "query_count": 12,
+          "mean_expected_recall": 0.75,
+          "all_expected_hit_rate": 0.75,
+          "any_expected_hit_rate": 0.75,
+          "mean_reciprocal_rank": 0.6527777777777778
+        },
+        "8": {
+          "query_count": 12,
+          "mean_expected_recall": 0.8333333333333334,
+          "all_expected_hit_rate": 0.8333333333333334,
+          "any_expected_hit_rate": 0.8333333333333334,
+          "mean_reciprocal_rank": 0.6694444444444444
+        }
+      }
+    },
+    "latency": {
+      "mean_seconds": 0.0001482019215472974,
+      "p50_seconds": 0.00014436099445447326,
+      "p95_seconds": 0.0001576689421199262,
+      "maximum_seconds": 0.00022774998797103763
+    },
+    "queries": [
+      {
+        "id": "q-borealis-shelter",
+        "category": "lexical_rephrase",
+        "query": "What fabric is specified for Borealis expedition shelter tents?",
+        "expected_memory_ids": [
+          "borealis-shelter"
+        ],
+        "retrieved_memory_ids": [
+          "borealis-shelter",
+          "borealis-radio",
+          "ember-port",
+          "quartz-audit",
+          "helios-retention",
+          "alder-policy",
+          "elm-retention",
+          "fir-batch"
+        ],
+        "retrieved_scores": [
+          0.48112523555755615,
+          0.20100757479667664,
+          0.19245009124279022,
+          0.18490007519721985,
+          0.111111119389534,
+          0.10540925711393356,
+          0.10540925711393356,
+          0.10540925711393356
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.00022774998797103763
+      },
+      {
+        "id": "q-cinder-backup",
+        "category": "lexical_rephrase",
+        "query": "What backup cadence does the Cinder service use?",
+        "expected_memory_ids": [
+          "cinder-backup"
+        ],
+        "retrieved_memory_ids": [
+          "cinder-backup",
+          "cinder-owner",
+          "grove-encryption",
+          "zephyr-region",
+          "cedar-port",
+          "garnet-owner",
+          "vector-owner",
+          "juniper-owner"
+        ],
+        "retrieved_scores": [
+          0.3651483654975891,
+          0.3061861991882324,
+          0.2357022613286972,
+          0.21320071816444397,
+          0.1178511306643486,
+          0.1178511306643486,
+          0.1178511306643486,
+          0.11180339753627777
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.00015790999168530107
+      },
+      {
+        "id": "q-delta-retention",
+        "category": "lexical_rephrase",
+        "query": "How many days is the Delta archive retention period?",
+        "expected_memory_ids": [
+          "delta-retention"
+        ],
+        "retrieved_memory_ids": [
+          "delta-retention",
+          "delta-region",
+          "juniper-owner",
+          "prairie-owner",
+          "ember-owner",
+          "solstice-owner",
+          "tundra-owner",
+          "quartz-encryption"
+        ],
+        "retrieved_scores": [
+          0.48112523555755615,
+          0.30151134729385376,
+          0.21081851422786713,
+          0.21081851422786713,
+          0.20100757479667664,
+          0.20100757479667664,
+          0.20100757479667664,
+          0.19245009124279022
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.0001484810491092503
+      },
+      {
+        "id": "q-ember-port",
+        "category": "lexical_rephrase",
+        "query": "Which network port accepts Ember telemetry ingestion?",
+        "expected_memory_ids": [
+          "ember-port"
+        ],
+        "retrieved_memory_ids": [
+          "ember-port",
+          "meridian-port",
+          "ember-owner",
+          "iris-quorum",
+          "cedar-port",
+          "helios-codec",
+          "elm-retention",
+          "raven-region"
+        ],
+        "retrieved_scores": [
+          0.5455447435379028,
+          0.25197634100914,
+          0.22792117297649384,
+          0.133630633354187,
+          0.12598817050457,
+          0.12598817050457,
+          0.11952286958694458,
+          0.11952286958694458
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.00014065898722037673
+      },
+      {
+        "id": "q-fjord-checksum",
+        "category": "lexical_rephrase",
+        "query": "Which checksum algorithm verifies Fjord artifact uploads?",
+        "expected_memory_ids": [
+          "fjord-checksum"
+        ],
+        "retrieved_memory_ids": [
+          "fjord-checksum",
+          "fjord-region",
+          "larch-checksum",
+          "birch-interval",
+          "iris-quorum",
+          "yarrow-format",
+          "garnet-owner",
+          "meridian-port"
+        ],
+        "retrieved_scores": [
+          0.5455447435379028,
+          0.34188175201416016,
+          0.34188175201416016,
+          0.133630633354187,
+          0.133630633354187,
+          0.133630633354187,
+          0.12598817050457,
+          0.12598817050457
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.00014603702584281564
+      },
+      {
+        "id": "q-garnet-window",
+        "category": "lexical_rephrase",
+        "query": "When does the Garnet maintenance window begin?",
+        "expected_memory_ids": [
+          "garnet-window"
+        ],
+        "retrieved_memory_ids": [
+          "garnet-window",
+          "garnet-owner",
+          "cedar-port",
+          "grove-encryption",
+          "spruce-threshold",
+          "vector-owner",
+          "juniper-owner",
+          "lumen-codec"
+        ],
+        "retrieved_scores": [
+          0.32732683420181274,
+          0.25197634100914,
+          0.12598817050457,
+          0.12598817050457,
+          0.12598817050457,
+          0.12598817050457,
+          0.11952286958694458,
+          0.11952286958694458
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.00015253201127052307
+      },
+      {
+        "id": "q-helios-codec",
+        "category": "lexical_rephrase",
+        "query": "Which codec encodes Helios archival audio?",
+        "expected_memory_ids": [
+          "helios-codec"
+        ],
+        "retrieved_memory_ids": [
+          "helios-codec",
+          "kepler-timeout",
+          "helios-retention",
+          "maple-timeout",
+          "dogwood-codec",
+          "onyx-alert"
+        ],
+        "retrieved_scores": [
+          0.6804138422012329,
+          0.14433756470680237,
+          0.13608276844024658,
+          0.13608276844024658,
+          0.12309148907661438,
+          0.12309148907661438
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.0001425450318492949
+      },
+      {
+        "id": "q-indigo-batch",
+        "category": "lexical_rephrase",
+        "query": "How many records are in each Indigo processing batch?",
+        "expected_memory_ids": [
+          "indigo-batch"
+        ],
+        "retrieved_memory_ids": [
+          "indigo-batch",
+          "indigo-region",
+          "elm-retention",
+          "xenon-budget",
+          "xenon-owner",
+          "birch-interval",
+          "yarrow-format",
+          "grove-encryption"
+        ],
+        "retrieved_scores": [
+          0.30151134729385376,
+          0.30151134729385376,
+          0.21081851422786713,
+          0.18490007519721985,
+          0.18490007519721985,
+          0.1178511306643486,
+          0.1178511306643486,
+          0.111111119389534
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.00014931900659576058
+      },
+      {
+        "id": "q-juniper-sensor",
+        "category": "lexical_rephrase",
+        "query": "What temperature sensor does Juniper greenhouse monitoring use?",
+        "expected_memory_ids": [
+          "juniper-sensor"
+        ],
+        "retrieved_memory_ids": [
+          "juniper-sensor",
+          "juniper-owner",
+          "cedar-port",
+          "grove-encryption",
+          "prairie-retry",
+          "ember-port",
+          "oak-window"
+        ],
+        "retrieved_scores": [
+          0.5892556309700012,
+          0.3354101777076721,
+          0.1178511306643486,
+          0.1178511306643486,
+          0.10660035908222198,
+          0.10206206887960434,
+          0.09128709137439728
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.0001410089898854494
+      },
+      {
+        "id": "q-kepler-quorum",
+        "category": "lexical_rephrase",
+        "query": "How many voting nodes form the Kepler quorum?",
+        "expected_memory_ids": [
+          "kepler-quorum"
+        ],
+        "retrieved_memory_ids": [
+          "kepler-quorum",
+          "birch-interval",
+          "kepler-timeout",
+          "garnet-owner",
+          "helios-codec",
+          "spruce-threshold",
+          "alder-policy",
+          "lumen-codec"
+        ],
+        "retrieved_scores": [
+          0.3922322690486908,
+          0.1249999925494194,
+          0.1249999925494194,
+          0.1178511306643486,
+          0.1178511306643486,
+          0.1178511306643486,
+          0.11180339753627777,
+          0.11180339753627777
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.00013800500892102718
+      },
+      {
+        "id": "q-lumen-cache",
+        "category": "lexical_rephrase",
+        "query": "What cache size is assigned to each Lumen rendering worker?",
+        "expected_memory_ids": [
+          "lumen-cache"
+        ],
+        "retrieved_memory_ids": [
+          "lumen-cache",
+          "xenon-budget",
+          "quartz-audit",
+          "birch-interval",
+          "garnet-owner",
+          "vector-owner",
+          "lumen-codec",
+          "prairie-owner"
+        ],
+        "retrieved_scores": [
+          0.547722578048706,
+          0.26311740279197693,
+          0.17541159689426422,
+          0.11180339753627777,
+          0.10540925711393356,
+          0.10540925711393356,
+          0.10000000149011612,
+          0.10000000149011612
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.0001449200208298862
+      },
+      {
+        "id": "q-meridian-timeout",
+        "category": "lexical_rephrase",
+        "query": "What connection timeout applies to Meridian gateway requests?",
+        "expected_memory_ids": [
+          "meridian-timeout"
+        ],
+        "retrieved_memory_ids": [
+          "meridian-timeout",
+          "meridian-port",
+          "garnet-owner",
+          "vector-owner",
+          "zephyr-owner",
+          "fjord-region",
+          "hazel-cache",
+          "tundra-owner"
+        ],
+        "retrieved_scores": [
+          0.5330017805099487,
+          0.2357022613286972,
+          0.1178511306643486,
+          0.1178511306643486,
+          0.11180339753627777,
+          0.10660035908222198,
+          0.10660035908222198,
+          0.10660035908222198
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.0001523229875601828
+      },
+      {
+        "id": "q-nectar-index",
+        "category": "semantic_rephrase",
+        "query": "How does Nectar arrange its catalog keys?",
+        "expected_memory_ids": [
+          "nectar-index"
+        ],
+        "retrieved_memory_ids": [
+          "nectar-owner",
+          "nectar-index",
+          "cedar-port",
+          "indigo-region",
+          "meridian-timeout",
+          "solstice-shard",
+          "zephyr-region",
+          "umber-threshold"
+        ],
+        "retrieved_scores": [
+          0.23904573917388916,
+          0.2182178944349289,
+          0.12598817050457,
+          0.11396058648824692,
+          0.11396058648824692,
+          0.11396058648824692,
+          0.11396058648824692,
+          0.10101526230573654
+        ],
+        "first_expected_rank_at_max_k": 2,
+        "retrieval_seconds": 0.00013618898810818791
+      },
+      {
+        "id": "q-onyx-compression",
+        "category": "semantic_rephrase",
+        "query": "What method makes Onyx snapshots occupy less space?",
+        "expected_memory_ids": [
+          "onyx-compression"
+        ],
+        "retrieved_memory_ids": [
+          "raven-schedule",
+          "pine-retry",
+          "birch-interval",
+          "kepler-timeout",
+          "cedar-port",
+          "maple-timeout",
+          "meridian-port",
+          "borealis-radio"
+        ],
+        "retrieved_scores": [
+          0.22645540535449982,
+          0.15430335700511932,
+          0.14433756470680237,
+          0.14433756470680237,
+          0.13608276844024658,
+          0.13608276844024658,
+          0.13608276844024658,
+          0.12309148907661438
+        ],
+        "first_expected_rank_at_max_k": null,
+        "retrieval_seconds": 0.00013709795894101262
+      },
+      {
+        "id": "q-prairie-retry",
+        "category": "semantic_rephrase",
+        "query": "How many additional attempts may Prairie make after an operation fails?",
+        "expected_memory_ids": [
+          "prairie-retry"
+        ],
+        "retrieved_memory_ids": [
+          "birch-interval",
+          "helios-codec",
+          "maple-timeout",
+          "onyx-alert",
+          "prairie-retry",
+          "kepler-timeout",
+          "prairie-owner",
+          "redwood-index"
+        ],
+        "retrieved_scores": [
+          0.21320071816444397,
+          0.20100757479667664,
+          0.20100757479667664,
+          0.1818181872367859,
+          0.1818181872367859,
+          0.10660035908222198,
+          0.09534625709056854,
+          0.09534625709056854
+        ],
+        "first_expected_rank_at_max_k": 5,
+        "retrieval_seconds": 0.00015630299458280206
+      },
+      {
+        "id": "q-quartz-encryption",
+        "category": "semantic_rephrase",
+        "query": "Which cipher safeguards Quartz information while stored?",
+        "expected_memory_ids": [
+          "quartz-encryption"
+        ],
+        "retrieved_memory_ids": [
+          "quartz-encryption",
+          "juniper-sensor",
+          "juniper-owner",
+          "prairie-owner",
+          "quartz-audit",
+          "oak-window"
+        ],
+        "retrieved_scores": [
+          0.2182178944349289,
+          0.12598817050457,
+          0.11952286958694458,
+          0.11952286958694458,
+          0.10482849180698395,
+          0.09759001433849335
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.0001340240123681724
+      },
+      {
+        "id": "q-raven-schedule",
+        "category": "semantic_rephrase",
+        "query": "At what recurring time are Raven reports produced?",
+        "expected_memory_ids": [
+          "raven-schedule"
+        ],
+        "retrieved_memory_ids": [
+          "raven-schedule",
+          "xenon-owner",
+          "nectar-owner",
+          "raven-region",
+          "prairie-retry",
+          "garnet-window",
+          "quartz-encryption",
+          "kepler-quorum"
+        ],
+        "retrieved_scores": [
+          0.1961161345243454,
+          0.1961161345243454,
+          0.11180339753627777,
+          0.11180339753627777,
+          0.10660035908222198,
+          0.10206206887960434,
+          0.10206206887960434,
+          0.0980580672621727
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.00013891299022361636
+      },
+      {
+        "id": "q-solstice-shard",
+        "category": "semantic_rephrase",
+        "query": "Into how many partitions is the Solstice primary table divided?",
+        "expected_memory_ids": [
+          "solstice-shard"
+        ],
+        "retrieved_memory_ids": [
+          "solstice-shard",
+          "delta-region",
+          "borealis-radio",
+          "indigo-region",
+          "solstice-owner",
+          "zephyr-region",
+          "quartz-encryption",
+          "quartz-audit"
+        ],
+        "retrieved_scores": [
+          0.4767313003540039,
+          0.28603875637054443,
+          0.19069251418113708,
+          0.19069251418113708,
+          0.19069251418113708,
+          0.19069251418113708,
+          0.18257418274879456,
+          0.17541159689426422
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.0001431030104868114
+      },
+      {
+        "id": "q-tundra-audit",
+        "category": "semantic_rephrase",
+        "query": "How often is Tundra checked for regulatory conformance?",
+        "expected_memory_ids": [
+          "tundra-audit"
+        ],
+        "retrieved_memory_ids": [
+          "prairie-owner",
+          "quartz-audit",
+          "birch-interval",
+          "helios-retention",
+          "alder-policy",
+          "elm-retention",
+          "juniper-owner",
+          "delta-region"
+        ],
+        "retrieved_scores": [
+          0.22360679507255554,
+          0.1961161345243454,
+          0.1249999925494194,
+          0.1178511306643486,
+          0.11180339753627777,
+          0.11180339753627777,
+          0.11180339753627777,
+          0.10660035908222198
+        ],
+        "first_expected_rank_at_max_k": null,
+        "retrieval_seconds": 0.00015057704877108335
+      },
+      {
+        "id": "q-umber-threshold",
+        "category": "semantic_rephrase",
+        "query": "What cutoff must an Umber build meet to be accepted?",
+        "expected_memory_ids": [
+          "umber-threshold"
+        ],
+        "retrieved_memory_ids": [
+          "delta-region",
+          "onyx-alert",
+          "umber-threshold",
+          "iris-quorum",
+          "garnet-owner",
+          "vector-owner",
+          "redwood-index",
+          "umber-format"
+        ],
+        "retrieved_scores": [
+          0.19069251418113708,
+          0.19069251418113708,
+          0.16903084516525269,
+          0.11180339753627777,
+          0.10540925711393356,
+          0.10540925711393356,
+          0.10000000149011612,
+          0.10000000149011612
+        ],
+        "first_expected_rank_at_max_k": 3,
+        "retrieval_seconds": 0.0001514140167273581
+      },
+      {
+        "id": "q-vector-queue",
+        "category": "semantic_rephrase",
+        "query": "What is the upper bound on work waiting inside Vector dispatch?",
+        "expected_memory_ids": [
+          "vector-queue"
+        ],
+        "retrieved_memory_ids": [
+          "vector-queue",
+          "vector-owner",
+          "quartz-audit",
+          "cedar-port",
+          "meridian-port",
+          "juniper-owner",
+          "prairie-owner",
+          "umber-format"
+        ],
+        "retrieved_scores": [
+          0.3636363744735718,
+          0.30151134729385376,
+          0.2508726119995117,
+          0.20100757479667664,
+          0.20100757479667664,
+          0.19069251418113708,
+          0.19069251418113708,
+          0.19069251418113708
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.00014603702584281564
+      },
+      {
+        "id": "q-willow-format",
+        "category": "semantic_rephrase",
+        "query": "What serialization representation carries Willow records?",
+        "expected_memory_ids": [
+          "willow-format"
+        ],
+        "retrieved_memory_ids": [
+          "willow-format",
+          "elm-retention",
+          "fjord-region",
+          "indigo-batch",
+          "onyx-alert",
+          "onyx-compression",
+          "solstice-owner",
+          "solstice-shard"
+        ],
+        "retrieved_scores": [
+          0.25819888710975647,
+          0.12909944355487823,
+          0.12309148907661438,
+          0.12309148907661438,
+          0.12309148907661438,
+          0.12309148907661438,
+          0.12309148907661438,
+          0.12309148907661438
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.00014191598165780306
+      },
+      {
+        "id": "q-xenon-budget",
+        "category": "semantic_rephrase",
+        "query": "How much working memory may one Xenon query process consume?",
+        "expected_memory_ids": [
+          "xenon-budget"
+        ],
+        "retrieved_memory_ids": [
+          "xenon-budget",
+          "xenon-owner",
+          "pine-retry",
+          "maple-timeout",
+          "elm-retention",
+          "lumen-codec",
+          "nectar-owner",
+          "ember-owner"
+        ],
+        "retrieved_scores": [
+          0.26311740279197693,
+          0.26311740279197693,
+          0.23904573917388916,
+          0.10540925711393356,
+          0.10000000149011612,
+          0.10000000149011612,
+          0.10000000149011612,
+          0.09534625709056854
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.00014380196807906032
+      },
+      {
+        "id": "q-zephyr-region",
+        "category": "semantic_rephrase",
+        "query": "In which geographical area is Zephyr primarily deployed?",
+        "expected_memory_ids": [
+          "zephyr-region"
+        ],
+        "retrieved_memory_ids": [
+          "zephyr-region",
+          "grove-encryption",
+          "spruce-threshold",
+          "fir-batch",
+          "juniper-owner",
+          "prairie-owner",
+          "raven-region",
+          "umber-format"
+        ],
+        "retrieved_scores": [
+          0.21320071816444397,
+          0.1178511306643486,
+          0.1178511306643486,
+          0.11180339753627777,
+          0.11180339753627777,
+          0.11180339753627777,
+          0.11180339753627777,
+          0.11180339753627777
+        ],
+        "first_expected_rank_at_max_k": 1,
+        "retrieval_seconds": 0.00013598002260550857
+      }
+    ]
+  },
+  "note": "This report measures deterministic retrieval membership. It does not invoke a language model or establish answer quality."
+}

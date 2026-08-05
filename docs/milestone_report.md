@@ -43,6 +43,17 @@ the first controlled evidence that the hybrid sidecar improves project-specific
 fact grounding. It does not establish general answer quality, semantic embeddings,
 or an end-to-end speed advantage.
 
+The subsequent scale boundary replaces the hashing hypothesis with measured evidence.
+On a frozen 64-record corpus with paired same-entity distractors, hashing achieved
+79.2% top-1 on 24 development queries and 87.5% on a separately frozen 24-query
+confirmation split. Semantic-subset top-1 was only 58.3% and 75.0%. A pinned,
+quantized `all-MiniLM-L6-v2` ONNX encoder executed on CPU and achieved 100% top-1 on
+both full splits and both semantic subsets. Confirmation query encoding averaged
+5.86 ms and one-time indexing took 1.19 s. A five-query Qwen host screen passed 0/5
+baseline answers versus 5/5 retrieved answers, although augmentation remained 1.26x
+slower. This clears the controlled semantic-selector implementation boundary, not a
+general retrieval benchmark or the original transformer-free architecture gates.
+
 ## Alternative dense-teacher boundary (Qwen3, 2026-08-04)
 
 The protected learned-provider gate remains failed, and the pinned WikiText-2

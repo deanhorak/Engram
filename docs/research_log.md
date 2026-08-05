@@ -1,5 +1,41 @@
 # Research log
 
+## 2026-08-05 — Quantized CPU sentence encoder clears scaled selector boundary
+
+Added `benchmark-hybrid-retrieval`, a host-independent evaluator that reports top-k
+expected-membership recall, hit rate, reciprocal rank, category breakdowns, latency,
+per-query rankings, and frozen input hashes. Its scale-v1 corpus has 64 records, with
+same-entity distractors for 24 development and 24 different confirmation targets.
+Both query splits contain 12 lexical and 12 semantic rephrases. The memory SHA-256 is
+`75a0a33dcc433af9968fa58193b29728bc1a5cd8abd0724e30bba69925b7d571`;
+development and confirmation query hashes are `66e28c14...85fee5` and
+`02c2a39b...3c8d6`.
+
+The signed 384-dimensional hashing control achieved 79.17% development and 87.50%
+confirmation top-1. Its semantic categories achieved only 58.33% and 75.00%; even
+top-8 development semantic recall was 83.33%. This closes hashing as the scaled
+semantic selector rather than compensating with more host context.
+
+Implemented `ONNXSentenceTextEncoder` with bounded batch tokenization, attention-mask
+mean pooling, L2 normalization, precomputed corpus embeddings, Hugging Face/local
+resolution, and an explicit CPU provider. The frozen model is
+`sentence-transformers/all-MiniLM-L6-v2` revision
+`1110a243fdf4706b3f48f1d95db1a4f5529b4d41`; quantized AVX2 ONNX SHA-256 is
+`b941bf19...0fd21` and tokenizer SHA-256 is `be50c362...72037`. It reached 24/24
+top-1 on development and independently 24/24 on confirmation, including both 12/12
+semantic subsets. Confirmation query latency averaged 5.859 ms and the 64-record
+index built in 1.185 s on 12 CPU threads.
+
+The actual host path now accepts the same encoder. A frozen five-query development
+screen selected difficult semantic hashing failures and used CPU-only Ollama/Qwen3.
+Expected retrieval passed 5/5, baseline answer terms passed 0/5, and augmented answer
+terms passed 5/5. Mean wall time was 6.5005 s baseline versus 8.1911 s augmented
+(1.2601x); semantic lookup averaged 14.418 ms. The semantic selector and grounding
+mechanism pass this controlled synthetic protocol, while end-to-end latency remains
+negative and broader real-world evaluation remains necessary.
+
+The full Python regression suite passes: 1,153 passed and one CUDA-only test skipped.
+
 ## 2026-08-05 — Separate retrieval and deployment payload passes frozen fact recall
 
 The next optimization attacked host prefill traffic while preserving retrieval

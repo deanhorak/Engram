@@ -1,0 +1,24 @@
+{"id":"cq-borealis-radio","query":"Which radio channel is assigned to Borealis expedition communications?","expected_memory_ids":["borealis-radio"],"category":"lexical_rephrase"}
+{"id":"cq-cinder-owner","query":"Which operations team owns Cinder incident escalation?","expected_memory_ids":["cinder-owner"],"category":"lexical_rephrase"}
+{"id":"cq-delta-region","query":"Which region hosts the primary Delta archive?","expected_memory_ids":["delta-region"],"category":"lexical_rephrase"}
+{"id":"cq-ember-owner","query":"Which team receives Ember telemetry incident pages?","expected_memory_ids":["ember-owner"],"category":"lexical_rephrase"}
+{"id":"cq-fjord-region","query":"To which storage region does Fjord replicate artifacts?","expected_memory_ids":["fjord-region"],"category":"lexical_rephrase"}
+{"id":"cq-garnet-owner","query":"Which reliability group owns the Garnet database?","expected_memory_ids":["garnet-owner"],"category":"lexical_rephrase"}
+{"id":"cq-helios-retention","query":"How long does Helios retain media upload manifests?","expected_memory_ids":["helios-retention"],"category":"lexical_rephrase"}
+{"id":"cq-indigo-region","query":"In which region do the primary Indigo analytics workers run?","expected_memory_ids":["indigo-region"],"category":"lexical_rephrase"}
+{"id":"cq-juniper-owner","query":"Which horticulture team maintains Juniper greenhouse monitoring?","expected_memory_ids":["juniper-owner"],"category":"lexical_rephrase"}
+{"id":"cq-kepler-timeout","query":"After how many seconds do abandoned Kepler leases expire?","expected_memory_ids":["kepler-timeout"],"category":"lexical_rephrase"}
+{"id":"cq-lumen-codec","query":"Which image codec is used for Lumen preview exports?","expected_memory_ids":["lumen-codec"],"category":"lexical_rephrase"}
+{"id":"cq-meridian-port","query":"Which port serves Meridian gateway health checks?","expected_memory_ids":["meridian-port"],"category":"lexical_rephrase"}
+{"id":"cq-nectar-owner","query":"Which group is accountable for Nectar operations?","expected_memory_ids":["nectar-owner"],"category":"semantic_rephrase"}
+{"id":"cq-onyx-alert","query":"After what sequence of failures should Onyx staff be notified?","expected_memory_ids":["onyx-alert"],"category":"semantic_rephrase"}
+{"id":"cq-prairie-owner","query":"Which group looks after the Prairie automation service?","expected_memory_ids":["prairie-owner"],"category":"semantic_rephrase"}
+{"id":"cq-quartz-audit","query":"How frequently are accesses to Quartz inspected?","expected_memory_ids":["quartz-audit"],"category":"semantic_rephrase"}
+{"id":"cq-raven-region","query":"Where are completed Raven documents kept?","expected_memory_ids":["raven-region"],"category":"semantic_rephrase"}
+{"id":"cq-solstice-owner","query":"Which team administers the Solstice storage system?","expected_memory_ids":["solstice-owner"],"category":"semantic_rephrase"}
+{"id":"cq-tundra-owner","query":"Who signs off on Tundra policy exceptions?","expected_memory_ids":["tundra-owner"],"category":"semantic_rephrase"}
+{"id":"cq-umber-format","query":"What file representation carries Umber inspection results?","expected_memory_ids":["umber-format"],"category":"semantic_rephrase"}
+{"id":"cq-vector-owner","query":"Which group handles escalation for Vector dispatch?","expected_memory_ids":["vector-owner"],"category":"semantic_rephrase"}
+{"id":"cq-willow-region","query":"Where is Willow's fallback copy located?","expected_memory_ids":["willow-region"],"category":"semantic_rephrase"}
+{"id":"cq-xenon-owner","query":"Which team investigates Xenon result relevance problems?","expected_memory_ids":["xenon-owner"],"category":"semantic_rephrase"}
+{"id":"cq-zephyr-owner","query":"Who authorizes Zephyr releases?","expected_memory_ids":["zephyr-owner"],"category":"semantic_rephrase"}

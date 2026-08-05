@@ -52,6 +52,22 @@ raising only the completion ceiling to 32 tokens completed the unchanged fact an
 passed 3/3. This is a narrow fact-grounding result, not a broad quality gate or a
 latency win.
 
+The scaled selector boundary is now implemented and independently confirmed. A
+frozen 64-record corpus gives each of 24 queried entities a same-entity distractor;
+24 development and 24 confirmation queries each contain 12 lexical and 12 semantic
+rephrases, and confirmation targets different records. Signed hashing reached 79.2%
+development and 87.5% confirmation top-1, with semantic top-1 of 58.3% and 75.0%.
+The pinned `all-MiniLM-L6-v2` revision, using its quantized AVX2 ONNX artifact on
+`CPUExecutionProvider`, reached 100% top-1 on both splits and both semantic subsets.
+Confirmation queries averaged 5.86 ms and the 64-record index built in 1.19 s.
+
+A five-query CPU-only Qwen development screen exercised difficult semantic hashing
+failures through the real host boundary. Baseline answers passed 0/5; semantic
+retrieval and augmented answers both passed 5/5. Mean wall time was 6.50 s baseline
+and 8.19 s augmented (1.26x), while semantic lookup averaged 14.4 ms. The selector
+boundary therefore passes this controlled synthetic protocol, but host prefill remains
+the performance bottleneck and no broad real-world retrieval claim is established.
+
 ## Latest native recurrent-controller boundary
 
 The native token runtime now executes the schema-v3 factorized recurrent

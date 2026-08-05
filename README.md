@@ -86,6 +86,24 @@ model embedding or a model-specific semantic index without changing the host pro
 hybrid go/no-go question is now concrete: does bounded retrieval improve a fixed task-quality
 score at equal or lower end-to-end cost than the same host without Engram?
 
+The replacement encoder is now available as an optional CPU-only ONNX path. Install
+`engram-lm[hybrid]`, then add `--encoder onnx-sentence` to `chat-hybrid`, `benchmark-hybrid`, or
+the retrieval-only command. Engram pins `sentence-transformers/all-MiniLM-L6-v2` revision
+`1110a243...b4d41` by default, automatically resolves it through Hugging Face when it is not a
+local directory, executes the quantized AVX2 ONNX artifact through `CPUExecutionProvider`, and
+records both model and tokenizer SHA-256 values. Override the model, revision, or ONNX filename
+explicitly when testing another frozen encoder.
+
+```bash
+PYTHONPATH=src python -m engram.cli benchmark-hybrid-retrieval \
+  --memory tests/fixtures/hybrid_retrieval_scale_v1_memory.jsonl \
+  --queries tests/fixtures/hybrid_retrieval_scale_v1_confirmation_queries.jsonl \
+  --encoder onnx-sentence \
+  --embedding-threads 12 \
+  --top-k-values 1 2 4 8 \
+  --out retrieval-report.json
+```
+
 The first CPU-only Ollama screen answered only the plumbing question. With
 Qwen3 on 100% CPU, one 16-token prompt took 5.47 s baseline versus 13.80 s
 with retrieved context (33 versus 99 prompt tokens). Retrieval was correct,
@@ -110,6 +128,19 @@ completion ceiling. Mean wall time was 6.699 s baseline and 8.821 s augmented (*
 retrieval averaged 0.223 ms. This establishes task-specific grounding utility but still rejects a
 performance-win claim. See the
 [`frozen payload report`](reports/hybrid_ollama_cpu_payload_2026-08-05.json).
+
+A larger retrieval boundary now uses 64 records, 24 development queries, and 24 separately
+frozen confirmation queries. Each queried entity has a same-entity distractor, and each split is
+balanced between lexical and semantic rephrases. Hashing reached 79.2% development and 87.5%
+confirmation top-1; its semantic subsets reached only 58.3% and 75.0%. The pinned quantized
+MiniLM encoder reached **24/24 top-1 on both splits**, including every semantic rephrase.
+Confirmation lookup averaged 5.86 ms on CPU and the 64-record index built in 1.19 s. A five-query
+CPU-only Qwen host screen then passed 0/5 without memory and 5/5 with semantic retrieval, but the
+augmented path remained 1.26× slower. These controlled synthetic facts validate the implementation
+and semantic-discrimination boundary; they are not evidence of broad retrieval or answer quality.
+See the [hashing confirmation](reports/hybrid_retrieval_scale_v1_confirmation_hashing_2026-08-05.json),
+[MiniLM confirmation](reports/hybrid_retrieval_scale_v1_confirmation_minilm_2026-08-05.json),
+and [CPU host confirmation](reports/hybrid_retrieval_scale_v1_host_2026-08-05.json).
 
 For an external, reproducible stress test, the project also freezes the public
 [LongEmbed Passkey auxiliary benchmark](docs/auxiliary_benchmarks.md) at an upstream Git revision

@@ -177,6 +177,47 @@ def test_hybrid_benchmark_scores_frozen_answer_and_retrieval_rubrics(
     assert payload["quality_claim"] == "task_specific_rubric_only"
 
 
+def test_hybrid_retrieval_benchmark_is_host_independent(tmp_path):
+    memory = tmp_path / "memory.jsonl"
+    queries = tmp_path / "queries.jsonl"
+    report = tmp_path / "retrieval.json"
+    memory.write_text(
+        json.dumps({"id": "cpu", "text": "CPU inference deployment"}) + "\n",
+        encoding="utf-8",
+    )
+    queries.write_text(
+        json.dumps(
+            {
+                "id": "cpu-query",
+                "query": "CPU deployment",
+                "expected_memory_ids": ["cpu"],
+                "category": "lexical",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    main(
+        [
+            "benchmark-hybrid-retrieval",
+            "--memory",
+            str(memory),
+            "--queries",
+            str(queries),
+            "--top-k-values",
+            "1",
+            "4",
+            "--out",
+            str(report),
+        ]
+    )
+    payload = json.loads(report.read_text(encoding="utf-8"))
+    assert payload["quality_claim"] == "retrieval_membership_only"
+    assert payload["evaluation"]["metrics"]["1"]["all_expected_hit_rate"] == 1.0
+    assert len(payload["memory_sha256"]) == 64
+    assert len(payload["queries_sha256"]) == 64
+
+
 def test_width_pruned_cli_forwards_layer_schedule(tmp_path, monkeypatch):
     captured = {}
 

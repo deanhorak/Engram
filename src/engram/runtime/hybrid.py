@@ -64,6 +64,31 @@ class HybridMemoryHit:
     score: float
 
 
+@dataclass(frozen=True)
+class HybridRetrievalQuery:
+    """One frozen query with explicit expected memory membership."""
+
+    query_id: str
+    text: str
+    expected_memory_ids: tuple[str, ...]
+    category: str = "all"
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.query_id, str) or not self.query_id.strip():
+            raise ValueError("query_id must be a non-empty string")
+        if not isinstance(self.text, str) or not self.text.strip():
+            raise ValueError("query text must be a non-empty string")
+        if not self.expected_memory_ids or any(
+            not isinstance(memory_id, str) or not memory_id.strip()
+            for memory_id in self.expected_memory_ids
+        ):
+            raise ValueError("expected_memory_ids must contain non-empty strings")
+        if len(set(self.expected_memory_ids)) != len(self.expected_memory_ids):
+            raise ValueError("expected_memory_ids must be unique")
+        if not isinstance(self.category, str) or not self.category.strip():
+            raise ValueError("query category must be a non-empty string")
+
+
 class HashingTextEncoder:
     """Small deterministic CPU encoder with no model or network dependency.
 
@@ -94,6 +119,154 @@ class HashingTextEncoder:
             vector /= norm
         return vector
 
+    def encode_many(self, texts: Sequence[str]) -> np.ndarray:
+        """Encode a batch using the deterministic lexical baseline."""
+
+        return np.stack([self.encode(text) for text in texts], axis=0)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "type": "signed_token_hashing",
+            "dimensions": self.dimensions,
+        }
+
+
+class ONNXSentenceTextEncoder:
+    """Frozen CPU sentence encoder backed by an ONNX artifact."""
+
+    def __init__(
+        self,
+        model: str | Path,
+        *,
+        revision: str | None = None,
+        onnx_file: str = "onnx/model_quint8_avx2.onnx",
+        dimensions: int = 384,
+        maximum_tokens: int = 256,
+        batch_size: int = 32,
+        threads: int | None = None,
+    ) -> None:
+        if dimensions <= 0 or maximum_tokens <= 0 or batch_size <= 0:
+            raise ValueError(
+                "dimensions, maximum_tokens, and batch_size must be positive"
+            )
+        if threads is not None and threads <= 0:
+            raise ValueError("threads must be positive when provided")
+        source = Path(model).expanduser()
+        if source.is_dir():
+            model_path = source.resolve()
+            source_kind = "local"
+        else:
+            if source.is_absolute() or str(model).startswith(("./", "../", "~")):
+                raise HybridError(f"sentence encoder directory does not exist: {source}")
+            try:
+                from huggingface_hub import snapshot_download
+            except ImportError as error:
+                raise HybridError(
+                    "huggingface-hub is required to download the sentence encoder"
+                ) from error
+            try:
+                model_path = Path(
+                    snapshot_download(
+                        repo_id=str(model),
+                        revision=revision,
+                        allow_patterns=[onnx_file, "tokenizer.json"],
+                    )
+                ).resolve()
+            except Exception as error:
+                raise HybridError(
+                    f"could not resolve sentence encoder {model!r}: {error}"
+                ) from error
+            source_kind = "huggingface_hub"
+        onnx_path = model_path / onnx_file
+        tokenizer_path = model_path / "tokenizer.json"
+        if not onnx_path.is_file() or not tokenizer_path.is_file():
+            raise HybridError(
+                f"sentence encoder requires {onnx_file} and tokenizer.json in {model_path}"
+            )
+        try:
+            import onnxruntime as ort
+            from tokenizers import Tokenizer
+        except ImportError as error:
+            raise HybridError(
+                "onnxruntime and tokenizers are required for the ONNX sentence encoder"
+            ) from error
+        session_options = ort.SessionOptions()
+        if threads is not None:
+            session_options.intra_op_num_threads = threads
+        self._session = ort.InferenceSession(
+            str(onnx_path),
+            sess_options=session_options,
+            providers=["CPUExecutionProvider"],
+        )
+        self._tokenizer = Tokenizer.from_file(str(tokenizer_path))
+        self._tokenizer.enable_truncation(max_length=maximum_tokens)
+        self._tokenizer.enable_padding()
+        self.dimensions = dimensions
+        self.batch_size = batch_size
+        self.maximum_tokens = maximum_tokens
+        self.model = str(model)
+        self.revision = revision
+        self.model_path = model_path
+        self.onnx_file = onnx_file
+        self.onnx_sha256 = _sha256_path(onnx_path)
+        self.tokenizer_sha256 = _sha256_path(tokenizer_path)
+        self.source_kind = source_kind
+
+    def encode(self, text: str) -> np.ndarray:
+        return self.encode_many([text])[0]
+
+    def encode_many(self, texts: Sequence[str]) -> np.ndarray:
+        if not texts or any(not isinstance(text, str) for text in texts):
+            raise ValueError("texts must contain at least one string")
+        batches: list[np.ndarray] = []
+        for offset in range(0, len(texts), self.batch_size):
+            encoded = self._tokenizer.encode_batch(
+                texts[offset : offset + self.batch_size]
+            )
+            feed = {
+                "input_ids": np.asarray([item.ids for item in encoded], dtype=np.int64),
+                "attention_mask": np.asarray(
+                    [item.attention_mask for item in encoded], dtype=np.int64
+                ),
+                "token_type_ids": np.asarray(
+                    [item.type_ids for item in encoded], dtype=np.int64
+                ),
+            }
+            hidden = np.asarray(self._session.run(None, feed)[0], dtype=np.float32)
+            if hidden.ndim != 3 or hidden.shape[2] != self.dimensions:
+                raise HybridError(
+                    f"sentence encoder returned shape {hidden.shape}, expected (*, *, {self.dimensions})"
+                )
+            mask = feed["attention_mask"][..., None]
+            pooled = (hidden * mask).sum(axis=1) / np.maximum(mask.sum(axis=1), 1)
+            norms = np.linalg.norm(pooled, axis=1, keepdims=True)
+            batches.append((pooled / np.maximum(norms, 1e-12)).astype(np.float32))
+        return np.concatenate(batches, axis=0)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "type": "onnx_sentence_transformer_mean_pooling",
+            "model": self.model,
+            "revision": self.revision,
+            "source_kind": self.source_kind,
+            "resolved_model_path": str(self.model_path),
+            "onnx_file": self.onnx_file,
+            "onnx_sha256": self.onnx_sha256,
+            "tokenizer_sha256": self.tokenizer_sha256,
+            "dimensions": self.dimensions,
+            "maximum_tokens": self.maximum_tokens,
+            "batch_size": self.batch_size,
+            "providers": self._session.get_providers(),
+        }
+
+
+def _sha256_path(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
 
 class HybridMemoryIndex:
     """Read-only deterministic memory index for the hybrid sidecar."""
@@ -102,7 +275,7 @@ class HybridMemoryIndex:
         self,
         records: Sequence[HybridMemoryRecord],
         *,
-        encoder: HashingTextEncoder | None = None,
+        encoder: HashingTextEncoder | ONNXSentenceTextEncoder | None = None,
     ) -> None:
         if not records:
             raise ValueError("at least one memory record is required")
@@ -111,8 +284,8 @@ class HybridMemoryIndex:
             raise ValueError("memory_id values must be unique")
         self.records = tuple(records)
         self.encoder = encoder or HashingTextEncoder()
-        self._embeddings = np.stack(
-            [self.encoder.encode(record.text) for record in self.records], axis=0
+        self._embeddings = self.encoder.encode_many(
+            [record.text for record in self.records]
         )
         self._embeddings.flags.writeable = False
 
@@ -122,6 +295,7 @@ class HybridMemoryIndex:
         path: str | Path,
         *,
         dimensions: int = 384,
+        encoder: HashingTextEncoder | ONNXSentenceTextEncoder | None = None,
     ) -> "HybridMemoryIndex":
         records: list[HybridMemoryRecord] = []
         source = Path(path)
@@ -159,7 +333,7 @@ class HybridMemoryIndex:
                         prompt_text,
                     )
                 )
-        return cls(records, encoder=HashingTextEncoder(dimensions))
+        return cls(records, encoder=encoder or HashingTextEncoder(dimensions))
 
     def search(
         self,
@@ -339,6 +513,128 @@ def score_expected_memory_ids(
         "expected_memory_ids": expected,
         "retrieved_memory_ids": retrieved,
         "missing_memory_ids": missing,
+    }
+
+
+def evaluate_hybrid_retrieval(
+    index: HybridMemoryIndex,
+    queries: Sequence[HybridRetrievalQuery],
+    *,
+    top_k_values: Sequence[int] = (1, 4, 8),
+    minimum_score: float = 0.05,
+) -> dict[str, Any]:
+    """Evaluate frozen retrieval membership without invoking a model host."""
+
+    if not queries:
+        raise ValueError("at least one retrieval query is required")
+    query_ids = [query.query_id for query in queries]
+    if len(set(query_ids)) != len(query_ids):
+        raise ValueError("query_id values must be unique")
+    if not 0.0 <= minimum_score <= 1.0:
+        raise ValueError("minimum_score must lie in [0, 1]")
+    requested_k = sorted(set(top_k_values))
+    if not requested_k or any(not isinstance(k, int) or k <= 0 for k in requested_k):
+        raise ValueError("top_k_values must contain positive integers")
+    record_ids = {record.memory_id for record in index.records}
+    unknown_ids = sorted(
+        {
+            memory_id
+            for query in queries
+            for memory_id in query.expected_memory_ids
+            if memory_id not in record_ids
+        }
+    )
+    if unknown_ids:
+        raise ValueError(f"queries reference unknown memory IDs: {unknown_ids}")
+
+    maximum_k = min(max(requested_k), len(index.records))
+    rows: list[dict[str, Any]] = []
+    latencies: list[float] = []
+    for query in queries:
+        started = time.perf_counter()
+        hits = index.search(
+            query.text,
+            top_k=maximum_k,
+            minimum_score=minimum_score,
+        )
+        elapsed = time.perf_counter() - started
+        latencies.append(elapsed)
+        retrieved_ids = [hit.record.memory_id for hit in hits]
+        expected = set(query.expected_memory_ids)
+        ranks = [
+            retrieved_ids.index(memory_id) + 1
+            for memory_id in query.expected_memory_ids
+            if memory_id in retrieved_ids
+        ]
+        rows.append(
+            {
+                "id": query.query_id,
+                "category": query.category,
+                "query": query.text,
+                "expected_memory_ids": list(query.expected_memory_ids),
+                "retrieved_memory_ids": retrieved_ids,
+                "retrieved_scores": [hit.score for hit in hits],
+                "first_expected_rank_at_max_k": min(ranks) if ranks else None,
+                "retrieval_seconds": elapsed,
+            }
+        )
+
+    def summarize(selected: Sequence[dict[str, Any]], k: int) -> dict[str, Any]:
+        recalls: list[float] = []
+        all_hits: list[bool] = []
+        any_hits: list[bool] = []
+        reciprocal_ranks: list[float] = []
+        for row in selected:
+            expected = set(row["expected_memory_ids"])
+            retrieved = row["retrieved_memory_ids"][:k]
+            overlap = expected.intersection(retrieved)
+            recalls.append(len(overlap) / len(expected))
+            all_hits.append(overlap == expected)
+            any_hits.append(bool(overlap))
+            ranks = [
+                retrieved.index(memory_id) + 1
+                for memory_id in expected
+                if memory_id in retrieved
+            ]
+            reciprocal_ranks.append(1.0 / min(ranks) if ranks else 0.0)
+        return {
+            "query_count": len(selected),
+            "mean_expected_recall": float(np.mean(recalls)),
+            "all_expected_hit_rate": float(np.mean(all_hits)),
+            "any_expected_hit_rate": float(np.mean(any_hits)),
+            "mean_reciprocal_rank": float(np.mean(reciprocal_ranks)),
+        }
+
+    categories = sorted({query.category for query in queries})
+    metrics = {
+        str(k): summarize(rows, min(k, maximum_k)) for k in requested_k
+    }
+    category_metrics = {
+        category: {
+            str(k): summarize(
+                [row for row in rows if row["category"] == category],
+                min(k, maximum_k),
+            )
+            for k in requested_k
+        }
+        for category in categories
+    }
+    latency_array = np.asarray(latencies, dtype=np.float64)
+    return {
+        "record_count": len(index.records),
+        "query_count": len(queries),
+        "dimensions": index.encoder.dimensions,
+        "minimum_score": minimum_score,
+        "top_k_values": requested_k,
+        "metrics": metrics,
+        "category_metrics": category_metrics,
+        "latency": {
+            "mean_seconds": float(np.mean(latency_array)),
+            "p50_seconds": float(np.percentile(latency_array, 50)),
+            "p95_seconds": float(np.percentile(latency_array, 95)),
+            "maximum_seconds": float(np.max(latency_array)),
+        },
+        "queries": rows,
     }
 
 
@@ -527,15 +823,23 @@ class HybridChatRuntime:
         )
 
 
-def load_hybrid_memory(path: str | Path, *, dimensions: int = 384) -> HybridMemoryIndex:
-    """Load a JSONL sidecar memory with deterministic CPU embeddings."""
+def load_hybrid_memory(
+    path: str | Path,
+    *,
+    dimensions: int = 384,
+    encoder: HashingTextEncoder | ONNXSentenceTextEncoder | None = None,
+) -> HybridMemoryIndex:
+    """Load a JSONL sidecar memory with frozen CPU embeddings."""
 
-    return HybridMemoryIndex.from_jsonl(path, dimensions=dimensions)
+    return HybridMemoryIndex.from_jsonl(
+        path, dimensions=dimensions, encoder=encoder
+    )
 
 
 __all__ = [
     "ChatCompletionClient",
     "HashingTextEncoder",
+    "ONNXSentenceTextEncoder",
     "HybridChatRuntime",
     "HybridCompletion",
     "HybridError",
@@ -543,7 +847,9 @@ __all__ = [
     "HybridMemoryIndex",
     "HybridMemoryRecord",
     "HybridPromptPolicy",
+    "HybridRetrievalQuery",
     "OpenAICompatibleClient",
+    "evaluate_hybrid_retrieval",
     "load_hybrid_memory",
     "score_expected_memory_ids",
     "score_required_terms",

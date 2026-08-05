@@ -132,10 +132,13 @@ from engram.runtime import (
     EngramRuntime,
     HybridChatRuntime,
     HybridPromptPolicy,
+    HybridRetrievalQuery,
     NativeBitNetDIPTokenRuntime,
     NativeBitNetRuntime,
+    ONNXSentenceTextEncoder,
     OLMoENativePackageRuntime,
     OpenAICompatibleClient,
+    evaluate_hybrid_retrieval,
     run_native_bitnet_chat,
     score_expected_memory_ids,
     score_required_terms,
@@ -184,6 +187,37 @@ from engram.training import (
     train_width_pruned_student,
 )
 from engram.utils import atomic_json, sha256_file
+
+
+def _add_hybrid_encoder_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--encoder", choices=("hashing", "onnx-sentence"), default="hashing"
+    )
+    parser.add_argument(
+        "--embedding-model",
+        default="sentence-transformers/all-MiniLM-L6-v2",
+    )
+    parser.add_argument(
+        "--embedding-revision",
+        default="1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    )
+    parser.add_argument(
+        "--embedding-onnx-file", default="onnx/model_quint8_avx2.onnx"
+    )
+    parser.add_argument("--embedding-batch-size", type=int, default=32)
+    parser.add_argument("--embedding-threads", type=int)
+
+
+def _hybrid_encoder_from_args(args: argparse.Namespace):
+    if args.encoder == "hashing":
+        return None
+    return ONNXSentenceTextEncoder(
+        args.embedding_model,
+        revision=args.embedding_revision,
+        onnx_file=args.embedding_onnx_file,
+        batch_size=args.embedding_batch_size,
+        threads=args.embedding_threads,
+    )
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -1516,6 +1550,7 @@ def _parser() -> argparse.ArgumentParser:
     hybrid_chat.add_argument("--model", default="local-model")
     hybrid_chat.add_argument("--memory", type=Path, help="optional Engram memory JSONL")
     hybrid_chat.add_argument("--memory-dimensions", type=int, default=384)
+    _add_hybrid_encoder_arguments(hybrid_chat)
     hybrid_chat.add_argument("--top-k", type=int, default=4)
     hybrid_chat.add_argument("--min-score", type=float, default=0.15)
     hybrid_chat.add_argument("--max-context-chars", type=int, default=4000)
@@ -1559,6 +1594,7 @@ def _parser() -> argparse.ArgumentParser:
     hybrid_benchmark.add_argument("--prompts", required=True, type=Path)
     hybrid_benchmark.add_argument("--memory", type=Path)
     hybrid_benchmark.add_argument("--memory-dimensions", type=int, default=384)
+    _add_hybrid_encoder_arguments(hybrid_benchmark)
     hybrid_benchmark.add_argument("--top-k", type=int, default=4)
     hybrid_benchmark.add_argument("--min-score", type=float, default=0.15)
     hybrid_benchmark.add_argument("--max-context-chars", type=int, default=4000)
@@ -1585,6 +1621,22 @@ def _parser() -> argparse.ArgumentParser:
         "--mode", choices=("baseline", "hybrid", "both"), default="both"
     )
     hybrid_benchmark.add_argument("--out", type=Path)
+
+    hybrid_retrieval_benchmark = commands.add_parser(
+        "benchmark-hybrid-retrieval",
+        help="evaluate frozen hybrid retrieval without invoking a model host",
+    )
+    hybrid_retrieval_benchmark.add_argument("--memory", required=True, type=Path)
+    hybrid_retrieval_benchmark.add_argument("--queries", required=True, type=Path)
+    hybrid_retrieval_benchmark.add_argument(
+        "--memory-dimensions", type=int, default=384
+    )
+    _add_hybrid_encoder_arguments(hybrid_retrieval_benchmark)
+    hybrid_retrieval_benchmark.add_argument(
+        "--top-k-values", type=int, nargs="+", default=[1, 4, 8]
+    )
+    hybrid_retrieval_benchmark.add_argument("--min-score", type=float, default=0.05)
+    hybrid_retrieval_benchmark.add_argument("--out", required=True, type=Path)
 
     validate = commands.add_parser(
         "validate", help="verify package checksums and deterministic generation"
@@ -3536,7 +3588,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 print("\nChat interrupted.")
     elif args.command == "chat-hybrid":
         memory = (
-            load_hybrid_memory(args.memory, dimensions=args.memory_dimensions)
+            load_hybrid_memory(
+                args.memory,
+                dimensions=args.memory_dimensions,
+                encoder=_hybrid_encoder_from_args(args),
+            )
             if args.memory is not None
             else None
         )
@@ -3586,9 +3642,77 @@ def main(argv: Sequence[str] | None = None) -> int:
                     f"{hit.record.memory_id}:{hit.score:.3f}" for hit in result.hits
                 )
                 print(f"[retrieved {details}; {result.elapsed_seconds:.3f}s]")
+    elif args.command == "benchmark-hybrid-retrieval":
+        index_started = time.perf_counter()
+        encoder = _hybrid_encoder_from_args(args)
+        memory = load_hybrid_memory(
+            args.memory,
+            dimensions=args.memory_dimensions,
+            encoder=encoder,
+        )
+        index_seconds = time.perf_counter() - index_started
+        queries: list[HybridRetrievalQuery] = []
+        with args.queries.open("r", encoding="utf-8") as handle:
+            for line_number, line in enumerate(handle, 1):
+                if not line.strip():
+                    continue
+                try:
+                    payload = json.loads(line)
+                except json.JSONDecodeError as error:
+                    raise ValueError(
+                        f"invalid retrieval query JSON on line {line_number}"
+                    ) from error
+                if not isinstance(payload, dict):
+                    raise ValueError(
+                        f"retrieval query line {line_number} must be an object"
+                    )
+                query_text = payload.get("query", payload.get("prompt"))
+                expected = payload.get("expected_memory_ids")
+                if not isinstance(query_text, str) or not isinstance(expected, list):
+                    raise ValueError(
+                        f"retrieval query line {line_number} requires query/prompt "
+                        "and expected_memory_ids"
+                    )
+                queries.append(
+                    HybridRetrievalQuery(
+                        query_id=str(payload.get("id", line_number)),
+                        text=query_text,
+                        expected_memory_ids=tuple(expected),
+                        category=str(payload.get("category", "all")),
+                    )
+                )
+        evaluation = evaluate_hybrid_retrieval(
+            memory,
+            queries,
+            top_k_values=args.top_k_values,
+            minimum_score=args.min_score,
+        )
+        report = {
+            "format": "engram-hybrid-retrieval-benchmark",
+            "version": 1,
+            "memory": str(args.memory),
+            "memory_sha256": sha256_file(args.memory),
+            "queries_source": str(args.queries),
+            "queries_sha256": sha256_file(args.queries),
+            "index_build_seconds": index_seconds,
+            "encoder": memory.encoder.to_dict(),
+            "quality_claim": "retrieval_membership_only",
+            "evaluation": evaluation,
+            "note": (
+                "This report measures deterministic retrieval membership. It does "
+                "not invoke a language model or establish answer quality."
+            ),
+        }
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps(report, indent=2, sort_keys=True))
     elif args.command == "benchmark-hybrid":
         memory = (
-            load_hybrid_memory(args.memory, dimensions=args.memory_dimensions)
+            load_hybrid_memory(
+                args.memory,
+                dimensions=args.memory_dimensions,
+                encoder=_hybrid_encoder_from_args(args),
+            )
             if args.memory is not None
             else None
         )
@@ -3741,6 +3865,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "mode": args.mode,
             "memory": str(args.memory) if args.memory else None,
             "memory_sha256": sha256_file(args.memory) if args.memory else None,
+            "encoder": memory.encoder.to_dict() if memory is not None else None,
             "prompts_sha256": sha256_file(args.prompts),
             "context_format": args.context_format,
             "system_prompt": args.system,

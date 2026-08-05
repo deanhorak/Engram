@@ -1,0 +1,24 @@
+{"id":"q-borealis-shelter","query":"What fabric is specified for Borealis expedition shelter tents?","expected_memory_ids":["borealis-shelter"],"category":"lexical_rephrase"}
+{"id":"q-cinder-backup","query":"What backup cadence does the Cinder service use?","expected_memory_ids":["cinder-backup"],"category":"lexical_rephrase"}
+{"id":"q-delta-retention","query":"How many days is the Delta archive retention period?","expected_memory_ids":["delta-retention"],"category":"lexical_rephrase"}
+{"id":"q-ember-port","query":"Which network port accepts Ember telemetry ingestion?","expected_memory_ids":["ember-port"],"category":"lexical_rephrase"}
+{"id":"q-fjord-checksum","query":"Which checksum algorithm verifies Fjord artifact uploads?","expected_memory_ids":["fjord-checksum"],"category":"lexical_rephrase"}
+{"id":"q-garnet-window","query":"When does the Garnet maintenance window begin?","expected_memory_ids":["garnet-window"],"category":"lexical_rephrase"}
+{"id":"q-helios-codec","query":"Which codec encodes Helios archival audio?","expected_memory_ids":["helios-codec"],"category":"lexical_rephrase"}
+{"id":"q-indigo-batch","query":"How many records are in each Indigo processing batch?","expected_memory_ids":["indigo-batch"],"category":"lexical_rephrase"}
+{"id":"q-juniper-sensor","query":"What temperature sensor does Juniper greenhouse monitoring use?","expected_memory_ids":["juniper-sensor"],"category":"lexical_rephrase"}
+{"id":"q-kepler-quorum","query":"How many voting nodes form the Kepler quorum?","expected_memory_ids":["kepler-quorum"],"category":"lexical_rephrase"}
+{"id":"q-lumen-cache","query":"What cache size is assigned to each Lumen rendering worker?","expected_memory_ids":["lumen-cache"],"category":"lexical_rephrase"}
+{"id":"q-meridian-timeout","query":"What connection timeout applies to Meridian gateway requests?","expected_memory_ids":["meridian-timeout"],"category":"lexical_rephrase"}
+{"id":"q-nectar-index","query":"How does Nectar arrange its catalog keys?","expected_memory_ids":["nectar-index"],"category":"semantic_rephrase"}
+{"id":"q-onyx-compression","query":"What method makes Onyx snapshots occupy less space?","expected_memory_ids":["onyx-compression"],"category":"semantic_rephrase"}
+{"id":"q-prairie-retry","query":"How many additional attempts may Prairie make after an operation fails?","expected_memory_ids":["prairie-retry"],"category":"semantic_rephrase"}
+{"id":"q-quartz-encryption","query":"Which cipher safeguards Quartz information while stored?","expected_memory_ids":["quartz-encryption"],"category":"semantic_rephrase"}
+{"id":"q-raven-schedule","query":"At what recurring time are Raven reports produced?","expected_memory_ids":["raven-schedule"],"category":"semantic_rephrase"}
+{"id":"q-solstice-shard","query":"Into how many partitions is the Solstice primary table divided?","expected_memory_ids":["solstice-shard"],"category":"semantic_rephrase"}
+{"id":"q-tundra-audit","query":"How often is Tundra checked for regulatory conformance?","expected_memory_ids":["tundra-audit"],"category":"semantic_rephrase"}
+{"id":"q-umber-threshold","query":"What cutoff must an Umber build meet to be accepted?","expected_memory_ids":["umber-threshold"],"category":"semantic_rephrase"}
+{"id":"q-vector-queue","query":"What is the upper bound on work waiting inside Vector dispatch?","expected_memory_ids":["vector-queue"],"category":"semantic_rephrase"}
+{"id":"q-willow-format","query":"What serialization representation carries Willow records?","expected_memory_ids":["willow-format"],"category":"semantic_rephrase"}
+{"id":"q-xenon-budget","query":"How much working memory may one Xenon query process consume?","expected_memory_ids":["xenon-budget"],"category":"semantic_rephrase"}
+{"id":"q-zephyr-region","query":"In which geographical area is Zephyr primarily deployed?","expected_memory_ids":["zephyr-region"],"category":"semantic_rephrase"}

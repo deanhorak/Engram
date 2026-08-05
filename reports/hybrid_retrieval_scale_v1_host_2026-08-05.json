@@ -1,0 +1,493 @@
+{
+  "format": "engram-hybrid-benchmark",
+  "version": 1,
+  "endpoint": "http://127.0.0.1:11435/api/chat",
+  "model": "qwen3:latest",
+  "mode": "both",
+  "memory": "tests/fixtures/hybrid_retrieval_scale_v1_memory.jsonl",
+  "memory_sha256": "75a0a33dcc433af9968fa58193b29728bc1a5cd8abd0724e30bba69925b7d571",
+  "encoder": {
+    "type": "onnx_sentence_transformer_mean_pooling",
+    "model": "sentence-transformers/all-MiniLM-L6-v2",
+    "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "source_kind": "huggingface_hub",
+    "resolved_model_path": "/home/dean/.cache/huggingface/hub/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "onnx_file": "onnx/model_quint8_avx2.onnx",
+    "onnx_sha256": "b941bf19f1f1283680f449fa6a7336bb5600bdcd5f84d10ddc5cd72218a0fd21",
+    "tokenizer_sha256": "be50c3628f2bf5bb5e3a7f17b1f74611b2561a3a27eeab05e5aa30f411572037",
+    "dimensions": 384,
+    "maximum_tokens": 256,
+    "batch_size": 32,
+    "providers": [
+      "CPUExecutionProvider"
+    ]
+  },
+  "prompts_sha256": "f05432e372297ff77381da6d13cf073b1accface7abcb3bc7a50696b62a82970",
+  "context_format": "compact",
+  "system_prompt": "You are a helpful assistant. Answer directly and concisely.",
+  "warmup": {
+    "requests": 1,
+    "usage": [
+      {
+        "prompt_eval_count": 38,
+        "eval_count": 1,
+        "total_duration": 7512409423,
+        "load_duration": 3565921939,
+        "prompt_eval_duration": 3845284346,
+        "client_elapsed_seconds": 7.516056503984146
+      }
+    ]
+  },
+  "prompts": [
+    {
+      "id": "host-nectar-index",
+      "prompt": "How does Nectar arrange its catalog keys?",
+      "rubric": {
+        "required_terms": [
+          "B-tree"
+        ],
+        "expected_memory_ids": [
+          "nectar-index"
+        ]
+      },
+      "baseline": {
+        "text": "Nectar arranges its catalog keys in alphabetical order.",
+        "elapsed_seconds": 4.361535960983019,
+        "usage": {
+          "prompt_eval_count": 43,
+          "eval_count": 12,
+          "total_duration": 4360129160,
+          "load_duration": 221111917,
+          "prompt_eval_duration": 2271602605,
+          "eval_duration": 1851056410,
+          "client_elapsed_seconds": 4.36137218400836
+        },
+        "augmented": false,
+        "retrieval_seconds": 1.6060075722634792e-06,
+        "context_characters": 0,
+        "memory_hits": [],
+        "wall_seconds": 4.36157374503091,
+        "answer_rubric": {
+          "passed": false,
+          "required_terms": [
+            "b-tree"
+          ],
+          "matched_terms": [],
+          "missing_terms": [
+            "b-tree"
+          ]
+        }
+      },
+      "hybrid": {
+        "text": "Nectar arranges its catalog keys using a B-tree structure.",
+        "elapsed_seconds": 7.473463201022241,
+        "usage": {
+          "prompt_eval_count": 70,
+          "eval_count": 14,
+          "total_duration": 7471789120,
+          "load_duration": 288998113,
+          "prompt_eval_duration": 5160616873,
+          "eval_duration": 2011702500,
+          "client_elapsed_seconds": 7.473232727963477
+        },
+        "augmented": true,
+        "retrieval_seconds": 0.01571876398520544,
+        "context_characters": 130,
+        "memory_hits": [
+          {
+            "memory_id": "nectar-index",
+            "score": 0.6677263975143433,
+            "metadata": {
+              "revision": "scale-v1",
+              "entity": "nectar"
+            }
+          }
+        ],
+        "wall_seconds": 7.489270313992165,
+        "answer_rubric": {
+          "passed": true,
+          "required_terms": [
+            "b-tree"
+          ],
+          "matched_terms": [
+            "b-tree"
+          ],
+          "missing_terms": []
+        },
+        "retrieval_rubric": {
+          "passed": true,
+          "expected_memory_ids": [
+            "nectar-index"
+          ],
+          "retrieved_memory_ids": [
+            "nectar-index"
+          ],
+          "missing_memory_ids": []
+        }
+      }
+    },
+    {
+      "id": "host-onyx-compression",
+      "prompt": "What method makes Onyx snapshots occupy less space?",
+      "rubric": {
+        "required_terms": [
+          "Zstandard",
+          "7"
+        ],
+        "expected_memory_ids": [
+          "onyx-compression"
+        ]
+      },
+      "baseline": {
+        "text": "The method that makes Onyx snapshots occupy less space is **incremental snapshots**. This technique only stores the changes made since the last snapshot, significantly reducing the",
+        "elapsed_seconds": 7.581037149997428,
+        "usage": {
+          "prompt_eval_count": 44,
+          "eval_count": 32,
+          "total_duration": 7579643060,
+          "load_duration": 225286226,
+          "prompt_eval_duration": 2523069596,
+          "eval_duration": 4809946016,
+          "client_elapsed_seconds": 7.580828604986891
+        },
+        "augmented": false,
+        "retrieval_seconds": 2.443965058773756e-06,
+        "context_characters": 0,
+        "memory_hits": [],
+        "wall_seconds": 7.581080311036203,
+        "answer_rubric": {
+          "passed": false,
+          "required_terms": [
+            "zstandard",
+            "7"
+          ],
+          "matched_terms": [],
+          "missing_terms": [
+            "zstandard",
+            "7"
+          ]
+        }
+      },
+      "hybrid": {
+        "text": "Onyx snapshots use Zstandard (zstd) compression at level 7, which helps them occupy less space.",
+        "elapsed_seconds": 9.720127897977363,
+        "usage": {
+          "prompt_eval_count": 73,
+          "eval_count": 24,
+          "total_duration": 9718501238,
+          "load_duration": 206262600,
+          "prompt_eval_duration": 5320833734,
+          "eval_duration": 4171601511,
+          "client_elapsed_seconds": 9.719931435014587
+        },
+        "augmented": true,
+        "retrieval_seconds": 0.011501364992000163,
+        "context_characters": 135,
+        "memory_hits": [
+          {
+            "memory_id": "onyx-compression",
+            "score": 0.6728839874267578,
+            "metadata": {
+              "revision": "scale-v1",
+              "entity": "onyx"
+            }
+          }
+        ],
+        "wall_seconds": 9.73171069700038,
+        "answer_rubric": {
+          "passed": true,
+          "required_terms": [
+            "zstandard",
+            "7"
+          ],
+          "matched_terms": [
+            "zstandard",
+            "7"
+          ],
+          "missing_terms": []
+        },
+        "retrieval_rubric": {
+          "passed": true,
+          "expected_memory_ids": [
+            "onyx-compression"
+          ],
+          "retrieved_memory_ids": [
+            "onyx-compression"
+          ],
+          "missing_memory_ids": []
+        }
+      }
+    },
+    {
+      "id": "host-prairie-retry",
+      "prompt": "How many additional attempts may Prairie make after an operation fails?",
+      "rubric": {
+        "required_terms": [
+          "four"
+        ],
+        "expected_memory_ids": [
+          "prairie-retry"
+        ]
+      },
+      "baseline": {
+        "text": "Prairie may make up to 3 additional attempts after an operation fails.",
+        "elapsed_seconds": 5.4327232770156115,
+        "usage": {
+          "prompt_eval_count": 46,
+          "eval_count": 17,
+          "total_duration": 5431317313,
+          "load_duration": 193111180,
+          "prompt_eval_duration": 2848989908,
+          "eval_duration": 2376636870,
+          "client_elapsed_seconds": 5.432547556993086
+        },
+        "augmented": false,
+        "retrieval_seconds": 1.675973180681467e-06,
+        "context_characters": 0,
+        "memory_hits": [],
+        "wall_seconds": 5.432758476003073,
+        "answer_rubric": {
+          "passed": false,
+          "required_terms": [
+            "four"
+          ],
+          "matched_terms": [],
+          "missing_terms": [
+            "four"
+          ]
+        }
+      },
+      "hybrid": {
+        "text": "Prairie may make up to four additional attempts after an operation fails.",
+        "elapsed_seconds": 7.777902511996217,
+        "usage": {
+          "prompt_eval_count": 74,
+          "eval_count": 16,
+          "total_duration": 7776098737,
+          "load_duration": 234812846,
+          "prompt_eval_duration": 5198469302,
+          "eval_duration": 2330863358,
+          "client_elapsed_seconds": 7.777697530051228
+        },
+        "augmented": true,
+        "retrieval_seconds": 0.0073505930486135185,
+        "context_characters": 146,
+        "memory_hits": [
+          {
+            "memory_id": "prairie-retry",
+            "score": 0.6589981913566589,
+            "metadata": {
+              "revision": "scale-v1",
+              "entity": "prairie"
+            }
+          }
+        ],
+        "wall_seconds": 7.785341733018868,
+        "answer_rubric": {
+          "passed": true,
+          "required_terms": [
+            "four"
+          ],
+          "matched_terms": [
+            "four"
+          ],
+          "missing_terms": []
+        },
+        "retrieval_rubric": {
+          "passed": true,
+          "expected_memory_ids": [
+            "prairie-retry"
+          ],
+          "retrieved_memory_ids": [
+            "prairie-retry"
+          ],
+          "missing_memory_ids": []
+        }
+      }
+    },
+    {
+      "id": "host-tundra-audit",
+      "prompt": "How often is Tundra checked for regulatory conformance?",
+      "rubric": {
+        "required_terms": [
+          "quarter"
+        ],
+        "expected_memory_ids": [
+          "tundra-audit"
+        ]
+      },
+      "baseline": {
+        "text": "Tundra is checked for regulatory conformance on an ongoing basis, with regular audits and assessments to ensure compliance with applicable regulations and standards. The frequency depends on the",
+        "elapsed_seconds": 7.505075670022052,
+        "usage": {
+          "prompt_eval_count": 45,
+          "eval_count": 32,
+          "total_duration": 7503739128,
+          "load_duration": 177522878,
+          "prompt_eval_duration": 2604387221,
+          "eval_duration": 4701042834,
+          "client_elapsed_seconds": 7.504903163993731
+        },
+        "augmented": false,
+        "retrieval_seconds": 8.380156941711903e-07,
+        "context_characters": 0,
+        "memory_hits": [],
+        "wall_seconds": 7.505109961028211,
+        "answer_rubric": {
+          "passed": false,
+          "required_terms": [
+            "quarter"
+          ],
+          "matched_terms": [],
+          "missing_terms": [
+            "quarter"
+          ]
+        }
+      },
+      "hybrid": {
+        "text": "Tundra is checked for regulatory conformance quarterly through an audit process.",
+        "elapsed_seconds": 7.317501748970244,
+        "usage": {
+          "prompt_eval_count": 72,
+          "eval_count": 15,
+          "total_duration": 7316015400,
+          "load_duration": 242651068,
+          "prompt_eval_duration": 4960182315,
+          "eval_duration": 2100724464,
+          "client_elapsed_seconds": 7.317343000962865
+        },
+        "augmented": true,
+        "retrieval_seconds": 0.018026720033958554,
+        "context_characters": 129,
+        "memory_hits": [
+          {
+            "memory_id": "tundra-audit",
+            "score": 0.6699696779251099,
+            "metadata": {
+              "revision": "scale-v1",
+              "entity": "tundra"
+            }
+          }
+        ],
+        "wall_seconds": 7.335609693953302,
+        "answer_rubric": {
+          "passed": true,
+          "required_terms": [
+            "quarter"
+          ],
+          "matched_terms": [
+            "quarter"
+          ],
+          "missing_terms": []
+        },
+        "retrieval_rubric": {
+          "passed": true,
+          "expected_memory_ids": [
+            "tundra-audit"
+          ],
+          "retrieved_memory_ids": [
+            "tundra-audit"
+          ],
+          "missing_memory_ids": []
+        }
+      }
+    },
+    {
+      "id": "host-umber-threshold",
+      "prompt": "What cutoff must an Umber build meet to be accepted?",
+      "rubric": {
+        "required_terms": [
+          "0.92"
+        ],
+        "expected_memory_ids": [
+          "umber-threshold"
+        ]
+      },
+      "baseline": {
+        "text": "The cutoff for an Umber build to be accepted typically depends on the specific context, such as a game, competition, or organizational criteria. In general, an",
+        "elapsed_seconds": 7.621948496962432,
+        "usage": {
+          "prompt_eval_count": 46,
+          "eval_count": 32,
+          "total_duration": 7620706241,
+          "load_duration": 226115935,
+          "prompt_eval_duration": 2697251180,
+          "eval_duration": 4677008013,
+          "client_elapsed_seconds": 7.621812657976989
+        },
+        "augmented": false,
+        "retrieval_seconds": 1.32701825350523e-06,
+        "context_characters": 0,
+        "memory_hits": [],
+        "wall_seconds": 7.621975456015207,
+        "answer_rubric": {
+          "passed": false,
+          "required_terms": [
+            "0.92"
+          ],
+          "matched_terms": [],
+          "missing_terms": [
+            "0.92"
+          ]
+        }
+      },
+      "hybrid": {
+        "text": "The Umber build must meet a cutoff of 0.92 to be accepted.",
+        "elapsed_seconds": 8.593819831032306,
+        "usage": {
+          "prompt_eval_count": 77,
+          "eval_count": 19,
+          "total_duration": 8592379647,
+          "load_duration": 230389767,
+          "prompt_eval_duration": 5505037761,
+          "eval_duration": 2843007518,
+          "client_elapsed_seconds": 8.593644810956903
+        },
+        "augmented": true,
+        "retrieval_seconds": 0.01949078997131437,
+        "context_characters": 138,
+        "memory_hits": [
+          {
+            "memory_id": "umber-threshold",
+            "score": 0.621143102645874,
+            "metadata": {
+              "revision": "scale-v1",
+              "entity": "umber"
+            }
+          }
+        ],
+        "wall_seconds": 8.613380251976196,
+        "answer_rubric": {
+          "passed": true,
+          "required_terms": [
+            "0.92"
+          ],
+          "matched_terms": [
+            "0.92"
+          ],
+          "missing_terms": []
+        },
+        "retrieval_rubric": {
+          "passed": true,
+          "expected_memory_ids": [
+            "umber-threshold"
+          ],
+          "retrieved_memory_ids": [
+            "umber-threshold"
+          ],
+          "missing_memory_ids": []
+        }
+      }
+    }
+  ],
+  "quality_summary": {
+    "answer_rubric_records": 5,
+    "retrieval_rubric_records": 5,
+    "baseline_answer_pass_rate": 0.0,
+    "hybrid_answer_pass_rate": 1.0,
+    "hybrid_retrieval_pass_rate": 1.0,
+    "hybrid_answer_noninferior": true
+  },
+  "quality_claim": "task_specific_rubric_only",
+  "note": "This report measures host latency/usage and retrieval behavior. It does not claim answer quality without an independent task rubric."
+}
