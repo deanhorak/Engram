@@ -1,0 +1,3 @@
+{"id":"architecture","prompt":"Which product design did the project choose?","required_terms":["hybrid","Engram","host"],"expected_memory_ids":["milestone-status"]}
+{"id":"cpu-policy","prompt":"What deployment policy applies to inference accelerators?","required_terms":["CPU","CUDA","training"],"expected_memory_ids":["cpu-policy"]}
+{"id":"host-role","prompt":"How are generation and memory responsibilities divided?","required_terms":["host","Engram","context"],"expected_memory_ids":["host-role"]}

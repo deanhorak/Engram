@@ -137,6 +137,8 @@ from engram.runtime import (
     OLMoENativePackageRuntime,
     OpenAICompatibleClient,
     run_native_bitnet_chat,
+    score_expected_memory_ids,
+    score_required_terms,
     validate_native_bitnet_package,
     OLMoENativeTokenRuntime,
     load_hybrid_memory,
@@ -1565,6 +1567,10 @@ def _parser() -> argparse.ArgumentParser:
     )
     hybrid_benchmark.add_argument("--max-tokens", type=int, default=128)
     hybrid_benchmark.add_argument("--temperature", type=float, default=0.0)
+    hybrid_benchmark.add_argument(
+        "--system",
+        default="You are a helpful assistant. Answer directly and concisely.",
+    )
     hybrid_benchmark.add_argument("--timeout", type=float, default=120.0)
     hybrid_benchmark.add_argument("--think", action="store_true", default=None)
     hybrid_benchmark.add_argument("--no-think", dest="think", action="store_false")
@@ -3592,19 +3598,41 @@ def main(argv: Sequence[str] | None = None) -> int:
             timeout_seconds=args.timeout,
             think=args.think,
         )
-        prompts: list[dict[str, str]] = []
+        prompts: list[dict[str, object]] = []
         with args.prompts.open("r", encoding="utf-8") as handle:
             for line_number, line in enumerate(handle, 1):
                 if not line.strip():
                     continue
                 payload = json.loads(line)
                 if isinstance(payload, str):
-                    prompts.append({"id": str(line_number), "prompt": payload})
+                    prompts.append(
+                        {
+                            "id": str(line_number),
+                            "prompt": payload,
+                            "required_terms": [],
+                            "expected_memory_ids": [],
+                        }
+                    )
                 elif isinstance(payload, dict) and isinstance(payload.get("prompt"), str):
+                    required_terms = payload.get("required_terms", [])
+                    expected_memory_ids = payload.get("expected_memory_ids", [])
+                    if (
+                        not isinstance(required_terms, list)
+                        or not all(isinstance(item, str) for item in required_terms)
+                        or not isinstance(expected_memory_ids, list)
+                        or not all(
+                            isinstance(item, str) for item in expected_memory_ids
+                        )
+                    ):
+                        raise ValueError(
+                            f"prompt line {line_number} rubric fields must be string lists"
+                        )
                     prompts.append(
                         {
                             "id": str(payload.get("id", line_number)),
                             "prompt": payload["prompt"],
+                            "required_terms": required_terms,
+                            "expected_memory_ids": expected_memory_ids,
                         }
                     )
                 else:
@@ -3618,7 +3646,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         for warmup_index in range(args.warmup_requests):
             _, usage = client.complete(
                 [
-                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "system", "content": args.system},
                     {"role": "user", "content": f"warmup {warmup_index}"},
                 ],
                 model=args.model,
@@ -3628,13 +3656,21 @@ def main(argv: Sequence[str] | None = None) -> int:
             warmup_usage.append(dict(usage))
         modes = ("baseline", "hybrid") if args.mode == "both" else (args.mode,)
         for item in prompts:
-            row: dict[str, object] = {"id": item["id"], "prompt": item["prompt"]}
+            row: dict[str, object] = {
+                "id": item["id"],
+                "prompt": item["prompt"],
+                "rubric": {
+                    "required_terms": item["required_terms"],
+                    "expected_memory_ids": item["expected_memory_ids"],
+                },
+            }
             for mode in modes:
                 runtime = HybridChatRuntime(
                     client,
                     model=args.model,
                     memory=memory,
                     policy=HybridPromptPolicy(
+                        system_prompt=args.system,
                         top_k=args.top_k,
                         minimum_score=args.min_score,
                         maximum_context_characters=args.max_context_chars,
@@ -3645,12 +3681,58 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
                 started = time.perf_counter()
                 result = runtime.complete(
-                    item["prompt"], augmented=mode == "hybrid"
+                    str(item["prompt"]), augmented=mode == "hybrid"
                 )
                 payload = result.to_dict()
                 payload["wall_seconds"] = time.perf_counter() - started
+                if item["required_terms"]:
+                    payload["answer_rubric"] = score_required_terms(
+                        result.text, item["required_terms"]
+                    )
+                if mode == "hybrid" and item["expected_memory_ids"]:
+                    payload["retrieval_rubric"] = score_expected_memory_ids(
+                        result.hits, item["expected_memory_ids"]
+                    )
                 row[mode] = payload
             rows.append(row)
+        answer_rubric_records = sum(
+            bool(item["required_terms"]) for item in prompts
+        )
+        retrieval_rubric_records = sum(
+            bool(item["expected_memory_ids"]) for item in prompts
+        )
+        quality_summary: dict[str, object] = {
+            "answer_rubric_records": answer_rubric_records,
+            "retrieval_rubric_records": retrieval_rubric_records,
+        }
+        for mode in modes:
+            answer_scores = [
+                bool(row[mode]["answer_rubric"]["passed"])
+                for row in rows
+                if "answer_rubric" in row[mode]
+            ]
+            if answer_scores:
+                quality_summary[f"{mode}_answer_pass_rate"] = (
+                    sum(answer_scores) / len(answer_scores)
+                )
+        if "hybrid" in modes:
+            retrieval_scores = [
+                bool(row["hybrid"]["retrieval_rubric"]["passed"])
+                for row in rows
+                if "retrieval_rubric" in row["hybrid"]
+            ]
+            if retrieval_scores:
+                quality_summary["hybrid_retrieval_pass_rate"] = (
+                    sum(retrieval_scores) / len(retrieval_scores)
+                )
+        if (
+            "baseline_answer_pass_rate" in quality_summary
+            and "hybrid_answer_pass_rate" in quality_summary
+        ):
+            quality_summary["hybrid_answer_noninferior"] = (
+                quality_summary["hybrid_answer_pass_rate"]
+                >= quality_summary["baseline_answer_pass_rate"]
+            )
         report = {
             "format": "engram-hybrid-benchmark",
             "version": 1,
@@ -3658,13 +3740,21 @@ def main(argv: Sequence[str] | None = None) -> int:
             "model": args.model,
             "mode": args.mode,
             "memory": str(args.memory) if args.memory else None,
+            "memory_sha256": sha256_file(args.memory) if args.memory else None,
+            "prompts_sha256": sha256_file(args.prompts),
             "context_format": args.context_format,
+            "system_prompt": args.system,
             "warmup": {
                 "requests": args.warmup_requests,
                 "usage": warmup_usage,
             },
             "prompts": rows,
-            "quality_claim": "not_established",
+            "quality_summary": quality_summary,
+            "quality_claim": (
+                "task_specific_rubric_only"
+                if answer_rubric_records
+                else "not_established"
+            ),
             "note": (
                 "This report measures host latency/usage and retrieval behavior. "
                 "It does not claim answer quality without an independent task rubric."

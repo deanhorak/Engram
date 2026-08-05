@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from engram.cli import _parser, main
@@ -102,6 +104,77 @@ def test_hybrid_benchmark_defaults_to_compact_warm_execution(tmp_path):
     )
     assert arguments.context_format == "compact"
     assert arguments.warmup_requests == 1
+    assert "directly and concisely" in arguments.system
+
+
+def test_hybrid_benchmark_scores_frozen_answer_and_retrieval_rubrics(
+    tmp_path, monkeypatch
+):
+    memory = tmp_path / "memory.jsonl"
+    prompts = tmp_path / "prompts.jsonl"
+    report = tmp_path / "report.json"
+    memory.write_text(
+        json.dumps(
+            {
+                "id": "cpu-policy",
+                "text": "CPU and GPU deployment policy for inference and training",
+                "prompt_text": "Inference is CPU-only; CUDA is for training.",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    prompts.write_text(
+        json.dumps(
+            {
+                "id": "cpu",
+                "prompt": "What is the CPU and GPU policy?",
+                "required_terms": ["CPU", "CUDA"],
+                "expected_memory_ids": ["cpu-policy"],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    class _Client:
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        def complete(self, messages, **_kwargs):
+            system = messages[0]["content"]
+            return (
+                "CPU inference; CUDA training."
+                if "CPU-only" in system
+                else "No project context.",
+                {},
+            )
+
+    monkeypatch.setattr("engram.cli.OpenAICompatibleClient", _Client)
+    main(
+        [
+            "benchmark-hybrid",
+            "--endpoint",
+            "http://local/api/chat",
+            "--model",
+            "fixture",
+            "--prompts",
+            str(prompts),
+            "--memory",
+            str(memory),
+            "--min-score",
+            "0",
+            "--max-tokens",
+            "8",
+            "--out",
+            str(report),
+        ]
+    )
+    payload = json.loads(report.read_text(encoding="utf-8"))
+    assert payload["quality_summary"]["baseline_answer_pass_rate"] == 0.0
+    assert payload["quality_summary"]["hybrid_answer_pass_rate"] == 1.0
+    assert payload["quality_summary"]["hybrid_retrieval_pass_rate"] == 1.0
+    assert payload["quality_claim"] == "task_specific_rubric_only"
 
 
 def test_width_pruned_cli_forwards_layer_schedule(tmp_path, monkeypatch):

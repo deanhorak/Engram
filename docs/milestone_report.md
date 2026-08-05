@@ -1,6 +1,6 @@
 # Engram milestone and gate report
 
-Status date: 2026-08-04
+Status date: 2026-08-05
 
 ## Practical hybrid direction
 
@@ -14,9 +14,10 @@ augmented modes use the same host, allowing controlled latency/usage and
 task-quality comparison.
 
 This is a product-direction pivot, not a new semantic or Milestone 4 gate
-result. The first sidecar uses deterministic hashed lexical retrieval and
-reports `quality_claim: not_established`; a frozen embedding index and an
-independent answer rubric are required before claiming utility. The original
+result. The first sidecar uses deterministic hashed lexical retrieval. Benchmarks without
+an independent rubric report `quality_claim: not_established`; frozen fact-recall
+prompts can now declare required answer terms and expected memory IDs, in which case
+the report is explicitly limited to `task_specific_rubric_only`. The original
 layer-free learned-provider gate remains a research boundary and is not
 required for this hybrid deployment path.
 
@@ -31,6 +32,16 @@ warm hybrid latency from 13.8032 s to 7.9709 s. Retrieval took only 0.288 ms,
 confirming that host prompt evaluation—not indexing—is the remaining cost.
 The warm baseline was 4.6491 s, so the optimized path remains 1.71× slower and
 has not passed a performance or quality gate.
+
+The follow-up separates verbose retrieval text from a concise deployment payload
+without changing retrieval scoring. A frozen three-prompt protocol records SHA-256
+for both JSONL inputs and requires exact top-1 memory membership plus prompt-specific
+answer terms. CPU-only Qwen3 passed 3/3 retrieval and 3/3 augmented-answer checks,
+while its unaugmented baseline passed 0/3. The final 32-token run averaged 8.821 s
+augmented versus 6.699 s baseline (1.32x), and retrieval averaged 0.223 ms. This is
+the first controlled evidence that the hybrid sidecar improves project-specific
+fact grounding. It does not establish general answer quality, semantic embeddings,
+or an end-to-end speed advantage.
 
 ## Alternative dense-teacher boundary (Qwen3, 2026-08-04)
 

@@ -1,0 +1,81 @@
+{
+  "format": "engram-hybrid-benchmark-summary",
+  "version": 1,
+  "host": {
+    "provider": "ollama",
+    "endpoint": "http://127.0.0.1:11435/api/chat",
+    "runtime_library_requested": "cpu_avx2",
+    "runtime_library_loaded": "libggml-cpu-sandybridge.so",
+    "model": "qwen3:latest",
+    "model_digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+    "think": false,
+    "verified_processor": "100% CPU"
+  },
+  "protocol": {
+    "memory": "tests/fixtures/hybrid_ollama_cpu_v1_memory.jsonl",
+    "memory_sha256": "6f80e193a7fa248c578d670c0a6ac7418e74f88a4edc5ec095e8dad447ec7689",
+    "prompts": "tests/fixtures/hybrid_ollama_cpu_v1_prompts.jsonl",
+    "prompts_sha256": "6d37cbeda5a03e6e3afad90acf42e809e5582bac5c3c2c0fbbec7d0c66409ead",
+    "warmup_requests": 1,
+    "completion_tokens": 32,
+    "context_format": "compact",
+    "memory_records": 4,
+    "prompt_records": 3,
+    "top_k": 1,
+    "minimum_score": 0.05,
+    "maximum_context_characters": 400,
+    "system_prompt": "You are a helpful assistant. Answer directly and concisely."
+  },
+  "quality": {
+    "claim": "task_specific_rubric_only",
+    "baseline_answer_passes": 0,
+    "hybrid_answer_passes": 3,
+    "hybrid_retrieval_passes": 3,
+    "records": 3,
+    "development_24_token_hybrid_answer_passes": 2,
+    "development_failure": "cpu-policy response was truncated before the final required term"
+  },
+  "timing": {
+    "baseline_total_wall_seconds": 20.0958137970,
+    "hybrid_total_wall_seconds": 26.4623491670,
+    "baseline_mean_wall_seconds": 6.6986045990,
+    "hybrid_mean_wall_seconds": 8.8207830557,
+    "hybrid_over_baseline_mean_ratio": 1.3168090347,
+    "mean_retrieval_milliseconds": 0.2233963266,
+    "baseline_total_prompt_tokens": 127,
+    "hybrid_total_prompt_tokens": 220
+  },
+  "prompts": [
+    {
+      "id": "architecture",
+      "retrieved_memory_id": "milestone-status",
+      "baseline_answer_passed": false,
+      "hybrid_answer_passed": true,
+      "retrieval_passed": true,
+      "baseline_wall_seconds": 5.3953282680,
+      "hybrid_wall_seconds": 7.7257095560
+    },
+    {
+      "id": "cpu-policy",
+      "retrieved_memory_id": "cpu-policy",
+      "baseline_answer_passed": false,
+      "hybrid_answer_passed": true,
+      "retrieval_passed": true,
+      "baseline_wall_seconds": 7.3154907140,
+      "hybrid_wall_seconds": 10.4236709350
+    },
+    {
+      "id": "host-role",
+      "retrieved_memory_id": "host-role",
+      "baseline_answer_passed": false,
+      "hybrid_answer_passed": true,
+      "retrieval_passed": true,
+      "baseline_wall_seconds": 7.3849948150,
+      "hybrid_wall_seconds": 8.3129686760
+    }
+  ],
+  "summary": {
+    "decision": "task-specific grounding passes; performance improvement does not",
+    "limitation": "Three project-fact prompts with lexical retrieval do not establish general answer quality or semantic retrieval."
+  }
+}

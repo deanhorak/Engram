@@ -107,6 +107,14 @@ that retrieval is useful. This hybrid path is not evidence for the original
 layer-free Milestone 4 claim; it is the concrete product fallback if the host
 model remains necessary for quality.
 
+Memory records may store a full retrieval document separately from an optional
+concise deployment payload. The hashing index embeds the full `text`; only
+`prompt_text` is injected after selection. This distinction reduces host prefill
+traffic without weakening the lexical evidence available to the selector. Benchmark
+prompts can also carry expected memory IDs and required answer terms. Those checks
+are deliberately deterministic and task-specific, and the input hashes are recorded
+so later optimization cannot silently change the evaluation set.
+
 This document describes one compiled model worker. A separate, request-level
 [Oracle cognitive executive](cognitive_executive.md) may manage goals, evidence, persistent
 memory policy, tools, and multiple workers above it. Those system functions are not stored in an

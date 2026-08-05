@@ -60,6 +60,8 @@ from .hybrid import (
     HybridPromptPolicy,
     OpenAICompatibleClient,
     load_hybrid_memory,
+    score_expected_memory_ids,
+    score_required_terms,
 )
 
 __all__ = [
@@ -111,4 +113,6 @@ __all__ = [
     "HybridPromptPolicy",
     "OpenAICompatibleClient",
     "load_hybrid_memory",
+    "score_expected_memory_ids",
+    "score_required_terms",
 ]

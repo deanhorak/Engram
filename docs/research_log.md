@@ -1,5 +1,30 @@
 # Research log
 
+## 2026-08-05 — Separate retrieval and deployment payload passes frozen fact recall
+
+The next optimization attacked host prefill traffic while preserving retrieval
+evidence. `HybridMemoryRecord` now accepts optional `prompt_text`: its full `text`
+is embedded and searched, while the concise deployment payload alone is rendered
+for the host. The benchmark accepts per-prompt required answer terms and expected
+memory IDs, records hashes for both frozen JSONL inputs, and labels the resulting
+claim `task_specific_rubric_only` rather than general quality.
+
+The protocol froze four memory records and three prompts. Memory SHA-256 is
+`6f80e193a7fa248c578d670c0a6ac7418e74f88a4edc5ec095e8dad447ec7689`;
+prompt SHA-256 is
+`6d37cbeda5a03e6e3afad90acf42e809e5582bac5c3c2c0fbbec7d0c66409ead`.
+With top-k 1, compact context, and CPU-only Ollama/Qwen3, expected retrieval passed
+3/3. A 24-token development run passed 2/3 augmented answer rubrics because the
+CPU-policy response stopped immediately before its final required word. The frozen
+32-token confirmation changed only that ceiling and passed augmented answers 3/3;
+the baseline passed 0/3. Mean wall time was 6.6986 s baseline and 8.8208 s hybrid
+(1.3168x), while mean retrieval took 0.223 ms. The evidence establishes narrow
+fact-grounding utility but remains a negative latency result and says nothing about
+general model quality.
+
+The full Python regression suite passes: 1,151 passed and one CUDA-only test skipped.
+Evidence: `reports/hybrid_ollama_cpu_payload_2026-08-05.json`.
+
 ## 2026-08-04 — Hybrid host boundary
 
 The learned transformer-free provider remains far outside the fixed causal

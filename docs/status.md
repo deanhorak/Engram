@@ -1,6 +1,6 @@
 # Project status
 
-Snapshot date: **2026-08-04**
+Snapshot date: **2026-08-05**
 
 ## Hybrid architecture boundary
 
@@ -11,8 +11,8 @@ generation and expose an OpenAI-compatible endpoint, including a local
 `llama.cpp` server; the client also understands Ollama's native `/api/chat`
 protocol. Engram contributes only a bounded retrieval sidecar:
 JSONL records are indexed with a deterministic CPU hashing encoder, selected
-records are capped by count and characters, and the prompt marks them as
-untrusted reference material. Baseline mode uses the same host and history
+records are capped by count and characters, and the prompt treats them as
+reference facts while forbidding embedded instructions. Baseline mode uses the same host and history
 without retrieved records, making the comparison controlled.
 
 This is intentionally not a new semantic-gate result. The initial hashing
@@ -39,6 +39,18 @@ hybrid latency fell from 13.8032 s to 7.9709 s. Retrieval itself took 0.288 ms.
 The warm baseline was 4.6491 s, so compact hybrid remains 1.71× slower. The
 benchmark CLI now performs an explicit one-token warmup by default and reports
 retrieval time and injected context characters.
+
+A second optimization now lets each immutable memory record carry separate full
+`text` for retrieval and concise `prompt_text` for host deployment. The benchmark
+also accepts frozen `required_terms` and `expected_memory_ids`, records both input
+SHA-256 hashes, and reports deterministic task-specific pass rates. On the frozen
+three-prompt CPU-only Qwen3 protocol, top-1 retrieval passed 3/3, baseline answers
+passed 0/3, and augmented answers passed 3/3. Mean latency was 6.699 s baseline
+versus 8.821 s augmented (1.32x); mean retrieval time was 0.223 ms. The 24-token
+development run had passed only 2/3 because the CPU-policy answer was truncated;
+raising only the completion ceiling to 32 tokens completed the unchanged fact and
+passed 3/3. This is a narrow fact-grounding result, not a broad quality gate or a
+latency win.
 
 ## Latest native recurrent-controller boundary
 

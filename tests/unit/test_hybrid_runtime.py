@@ -12,6 +12,8 @@ from engram.runtime.hybrid import (
     HybridMemoryRecord,
     HybridPromptPolicy,
     OpenAICompatibleClient,
+    score_expected_memory_ids,
+    score_required_terms,
 )
 
 
@@ -46,6 +48,27 @@ def test_jsonl_loader_accepts_id_and_content(tmp_path: Path) -> None:
     index = HybridMemoryIndex.from_jsonl(path, dimensions=32)
     assert index.records[0].memory_id == "fact-1"
     assert index.encoder.dimensions == 32
+
+
+def test_prompt_text_shortens_deployment_without_changing_retrieval(tmp_path: Path) -> None:
+    path = tmp_path / "memory.jsonl"
+    path.write_text(
+        json.dumps(
+            {
+                "id": "fact-1",
+                "text": "A rare telescope calibration keyword identifies this full record.",
+                "prompt_text": "Telescope calibration fact.",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    index = HybridMemoryIndex.from_jsonl(path, dimensions=64)
+    hits = index.search("rare telescope calibration keyword", top_k=1)
+    rendered = HybridPromptPolicy(minimum_score=0.0).render_system(hits)
+    assert hits[0].record.memory_id == "fact-1"
+    assert "Telescope calibration fact." in rendered
+    assert "rare telescope" not in rendered
 
 
 def test_prompt_policy_bounds_and_labels_untrusted_memory() -> None:
@@ -153,3 +176,17 @@ def test_ollama_native_endpoint_uses_options_and_parses_usage(monkeypatch) -> No
     assert usage["prompt_eval_count"] == 4
     assert captured["body"]["think"] is False
     assert captured["body"]["options"]["num_predict"] == 12
+
+
+def test_frozen_hybrid_rubrics_are_deterministic() -> None:
+    record = HybridMemoryRecord("cpu-policy", "CPU policy")
+    hits = [hybrid_module.HybridMemoryHit(record, 0.8)]
+    answer = score_required_terms(
+        "Inference is CPU-only; CUDA is reserved for training.",
+        ["CPU", "CUDA"],
+    )
+    retrieval = score_expected_memory_ids(hits, ["cpu-policy"])
+    assert answer["passed"]
+    assert answer["missing_terms"] == []
+    assert retrieval["passed"]
+    assert retrieval["retrieved_memory_ids"] == ["cpu-policy"]

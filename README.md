@@ -37,8 +37,8 @@ quality anchor and run Engram as a CPU sidecar around it.
 
 The first hybrid boundary is deliberately model-agnostic. Engram reads a JSONL memory file,
 selects a small number of relevant records with a deterministic CPU hashing index, bounds their
-total context size, labels them as untrusted reference material, and sends the resulting messages
-to an OpenAI-compatible chat endpoint. A `llama.cpp` server is one supported host, but the host
+total context size, marks them as reference facts whose embedded instructions must not be followed,
+and sends the resulting messages to an OpenAI-compatible chat endpoint. A `llama.cpp` server is one supported host, but the host
 could be any local compatible implementation. Engram does not inspect or replace the host's
 hidden states, decoder layers, or logits in this mode.
 
@@ -69,11 +69,16 @@ PYTHONPATH=src python -m engram.cli chat-hybrid \
 ```
 
 Each memory line is an object such as
-`{"id":"project-goal","text":"...","metadata":{"source":"notes"}}`.
+`{"id":"project-goal","text":"...","prompt_text":"short deployment fact","metadata":{"source":"notes"}}`.
+The optional `prompt_text` is what the host sees; the full `text` remains the retrieval document.
+This lets retrieval retain descriptive vocabulary without charging the host to prefill all of it.
 Use `--mode baseline` to bypass retrieval while keeping the same host and conversation loop.
 `benchmark-hybrid` sends the same prompt set through baseline and augmented modes and records
-host latency, usage, and retrieved IDs. It intentionally reports
-`quality_claim: not_established`; answer quality must be scored with an independent task rubric.
+host latency, usage, and retrieved IDs. Prompt JSONL records may declare `required_terms` and
+`expected_memory_ids`; reports then include deterministic answer/retrieval pass rates and declare
+`quality_claim: task_specific_rubric_only`. Without those fields the claim remains
+`not_established`. This small rubric is suitable for frozen fact-recall checks, not general model
+quality.
 
 This first sidecar is a reproducible lexical retrieval baseline, not a claim that hashed text
 embeddings are the final Engram memory. A later experiment can replace the encoder with a frozen
@@ -96,6 +101,15 @@ path remains 1.71× slower. `benchmark-hybrid` now performs one one-token warmup
 request by default to prevent model-load time from contaminating one arm; use
 `--warmup-requests 0` only when cold-start timing is intentional. See the
 [`compact CPU report`](reports/hybrid_ollama_cpu_compact_2026-08-05.json).
+
+The next optimization separated the full retrieval document from its concise deployment payload
+and froze a three-question fact-recall protocol. The frozen memory and prompt SHA-256 values are
+`6f80e193...ec7689` and `6d37cbed...09ead`. On CPU-only Qwen3, top-1 retrieval passed **3/3**;
+the baseline answer rubric passed **0/3**, while the augmented path passed **3/3** with a 32-token
+completion ceiling. Mean wall time was 6.699 s baseline and 8.821 s augmented (**1.32×**), while
+retrieval averaged 0.223 ms. This establishes task-specific grounding utility but still rejects a
+performance-win claim. See the
+[`frozen payload report`](reports/hybrid_ollama_cpu_payload_2026-08-05.json).
 
 For an external, reproducible stress test, the project also freezes the public
 [LongEmbed Passkey auxiliary benchmark](docs/auxiliary_benchmarks.md) at an upstream Git revision
