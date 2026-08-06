@@ -1,5 +1,12 @@
 # The Oracle cognitive executive
 
+## Final conclusion
+
+The Oracle scaffolding is an independent systems experiment and did not change the central outcome:
+Engram did not produce an LLM runtime superior or equivalent to current practical technology. Its
+event stores, policies, and adapters should be treated as research infrastructure, not evidence of
+successful model replacement.
+
 Status: **durable policy/session and adapter scaffolds implemented; production workers and learned predictors are not**
 
 This subsystem is tracked separately from the compiled model worker's

@@ -1,5 +1,19 @@
 # Research log
 
+## 2026-08-06 — Project wrap-up conclusion
+
+The project is closed as a research record. Across the native BitNet, OLMoE, dense-Transformer,
+controller, attention, routing, and hybrid retrieval tracks, Engram did not demonstrate an
+inference system that improved on or achieved equivalence with current practical LLM technology.
+The strongest results are qualified component or source-specific passes: they validate kernels,
+serialization, routing mechanics, or bounded public retrieval, but not a superior end-to-end model.
+
+The hybrid host remains slower on the measured CPU protocols and does not reliably improve answer
+quality. The generic dense-Transformer conversion remains unqualified. Native low-bit and MoE
+artifacts remain useful research evidence, but no production promotion is claimed. Future work,
+if resumed, should begin from an explicitly sparse model trained or distilled for CPU execution;
+the present post-hoc dense-model routing direction is closed.
+
 ## 2026-08-05 — Public SciFact retrieval passes; complete host boundary does not
 
 Implemented a standard BEIR corpus/query/qrels loader and extended the host-independent
@@ -31,6 +45,47 @@ boundary while localizing the next quality experiment to CPU reranking/top-1 pre
 Evidence: `reports/hybrid_beir_scifact_host_2026-08-05.json`.
 
 The full Python regression suite passes: 1,155 passed and one CUDA-only test skipped.
+
+## 2026-08-05 — Bounded BM25 reranking improves public candidate ordering
+
+Added a dependency-free BM25 second stage to the hybrid runtime. MiniLM still generates
+the semantic candidate pool; BM25 uses only those candidates for ordering, with corpus-wide
+document frequencies and fixed `k1=1.2`, `b=0.75`. The CLI exposes this as
+`benchmark-beir-hybrid-retrieval --reranker bm25 --candidate-pool 100`.
+
+On the frozen SciFact test split, the top-100 pool preserved Recall@100 at **0.926667**.
+BM25 raised nDCG@10 from **0.649268** to **0.666952** and mean reciprocal rank from
+**0.614555** to **0.633778**. nDCG@1 rose from 0.516667 to 0.536667. Index build was
+177.587 s and lookup latency remained about 59.7 ms mean; the report is
+`reports/hybrid_beir_scifact_minilm_bm25_2026-08-05.json`.
+
+The unchanged five-claim CPU-only Qwen3 fixture then regressed with BM25: top-five retrieval
+was 3/5 and augmented answer rubrics were 2/5, versus 4/5 and 3/5 for semantic-only MiniLM.
+Query 1 is the clearest failure: semantic retrieval placed its judged paper at rank 3, while
+BM25 pushed it outside the top five. Query 5 also retrieved the judged title but the host emitted
+only its ID. Evidence: `reports/hybrid_beir_scifact_host_bm25_2026-08-05.json`.
+
+Decision: reject BM25 as the host deployment reranker. Its aggregate SciFact nDCG/MRR gain is
+not sufficient when the frozen host task is sensitive to a small top-five pool. Keep semantic-only
+MiniLM as the host baseline and investigate a calibrated query/document reranker with a safeguard
+that preserves semantic hits before attempting another host run.
+
+## 2026-08-05 — Train-only linear calibration is also rejected for host use
+
+Before investing in a second neural model, a fixed pairwise logistic ranker was fit only on the
+809-query SciFact train qrels. Its three features were frozen MiniLM cosine, BM25, and title-token
+overlap; no test tuning or host answers were used. Positive candidate coverage was 92.83% in the
+train top-100 pools. On the held-out test candidates, nDCG@10 reached **0.712903** and MRR
+**0.678364**, substantially above semantic-only aggregate ranking.
+
+That aggregate gain is misleading for the host boundary: the learned ordering removed query 1's
+judged paper from the frozen top five, reducing host retrieval coverage to 3/5 before generation.
+The screen is therefore rejected without spending another 10-call Qwen run. Evidence:
+`reports/hybrid_beir_scifact_train_calibrated_2026-08-05.json`.
+
+Decision: generic feature calibration is closed. A future reranker must model query/document
+interaction directly (a domain-adapted cross-encoder or equivalent), preserve semantic-hit
+coverage by contract, and be validated on an untouched host fixture before promotion.
 
 ## 2026-08-05 — Quantized CPU sentence encoder clears scaled selector boundary
 

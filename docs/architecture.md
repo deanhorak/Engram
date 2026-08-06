@@ -1,5 +1,13 @@
 # Architecture
 
+## Final conclusion
+
+This architecture remains a research design, not a demonstrated replacement for a conventional
+Transformer runtime. Engram did not achieve better or equivalent general LLM quality, latency, and
+CPU usability. The native BitNet and OLMoE branches validate particular sparse/low-bit mechanisms,
+while the dense-Llama conversion and layer-free controller remain unqualified. Keep the original
+Transformer as the teacher and quality reference when reading the historical architecture below.
+
 For the current implementation/evidence boundary, see
 [Project status](status.md). No representation has passed the original
 dense-Llama conversion gate. The separate native-BitNet track now has a
@@ -134,6 +142,16 @@ needs a CPU reranker that presents fewer, better-ordered records. The corpus emb
 matrix should then be serialized with its encoder and input hashes and memory-mapped at
 startup. Neither change alters the conventional host model's ownership of generation,
 so this remains a hybrid fallback rather than the layer-free target architecture.
+
+The first reranker is deliberately conservative: MiniLM proposes a top-100 pool, then a
+dependency-free BM25 scorer reorders only those records. It improves aggregate public SciFact
+nDCG@10 and MRR without changing Recall@100, but the unchanged Qwen3 host fixture regressed
+from 4/5 to 3/5 retrieval and from 3/5 to 2/5 answer rubrics. It is therefore evaluation-only,
+not a serving default. A future reranker must be calibrated against the host task and include a
+semantic-hit protection rule; its corpus statistics also need authenticated persistence. A
+train-only linear calibration over MiniLM, BM25, and title overlap improved aggregate SciFact
+ranking but removed a known-good host candidate, confirming that the next model must represent
+query/document interaction rather than add more scalar heuristics.
 
 This document describes one compiled model worker. A separate, request-level
 [Oracle cognitive executive](cognitive_executive.md) may manage goals, evidence, persistent

@@ -1,0 +1,712 @@
+{
+  "format": "engram-hybrid-benchmark",
+  "version": 1,
+  "endpoint": "http://127.0.0.1:11435/api/chat",
+  "model": "qwen3:latest",
+  "mode": "both",
+  "memory": null,
+  "memory_sha256": "dec31c8182f3d744c7d2c09423756fd1d17cbef75808db13ba01cc0aab4d1ac6",
+  "beir_dataset": {
+    "directory": "/tmp/engram-scifact-v1/scifact",
+    "split": "test",
+    "corpus_sha256": "dec31c8182f3d744c7d2c09423756fd1d17cbef75808db13ba01cc0aab4d1ac6",
+    "queries_sha256": "8ff84a7c903f722981cd8d595c022660140c51867b27608a6d4910db86080313",
+    "qrels_sha256": "0864bb985e0ca2367ba217977e72004d549054b2b06666ed9d4825ac7c21284c",
+    "corpus_records": 5183,
+    "available_queries": 1109,
+    "evaluated_queries": 300,
+    "relevance_pairs": 339,
+    "relevance": "binary_positive_qrels"
+  },
+  "encoder": {
+    "type": "onnx_sentence_transformer_mean_pooling",
+    "model": "sentence-transformers/all-MiniLM-L6-v2",
+    "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "source_kind": "huggingface_hub",
+    "resolved_model_path": "/home/dean/.cache/huggingface/hub/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "onnx_file": "onnx/model_quint8_avx2.onnx",
+    "onnx_sha256": "b941bf19f1f1283680f449fa6a7336bb5600bdcd5f84d10ddc5cd72218a0fd21",
+    "tokenizer_sha256": "be50c3628f2bf5bb5e3a7f17b1f74611b2561a3a27eeab05e5aa30f411572037",
+    "dimensions": 384,
+    "maximum_tokens": 256,
+    "batch_size": 32,
+    "providers": [
+      "CPUExecutionProvider"
+    ]
+  },
+  "reranker": {
+    "type": "bm25",
+    "k1": 1.2,
+    "b": 0.75,
+    "document_count": 5183
+  },
+  "candidate_pool": 100,
+  "prompts_sha256": "cae60612343648e4c159dace99c6077cadc4ef3e94619fca313d64260ac9cd94",
+  "context_format": "compact",
+  "system_prompt": "Given a scientific claim, name the most relevant paper title from the reference facts. Answer with the title only.",
+  "warmup": {
+    "requests": 1,
+    "usage": [
+      {
+        "prompt_eval_count": 47,
+        "eval_count": 1,
+        "total_duration": 6569486996,
+        "load_duration": 1729374562,
+        "prompt_eval_duration": 4758677913,
+        "client_elapsed_seconds": 6.574732729990501
+      }
+    ]
+  },
+  "prompts": [
+    {
+      "id": "scifact-1",
+      "prompt": "0-dimensional biomaterials show inductive properties.",
+      "rubric": {
+        "required_terms": [
+          "nanotechnologies",
+          "stem cells"
+        ],
+        "expected_memory_ids": [
+          "31715818"
+        ]
+      },
+      "baseline": {
+        "text": "\"Inductive Properties of 0-Dimensional Biomaterials for Tissue Engineering Applications\"",
+        "elapsed_seconds": 6.372086421994027,
+        "usage": {
+          "prompt_eval_count": 53,
+          "eval_count": 19,
+          "total_duration": 6370612644,
+          "load_duration": 234004016,
+          "prompt_eval_duration": 2733130928,
+          "eval_duration": 3384288901,
+          "client_elapsed_seconds": 6.37188381399028
+        },
+        "augmented": false,
+        "retrieval_seconds": 1.675973180681467e-06,
+        "context_characters": 0,
+        "memory_hits": [],
+        "wall_seconds": 6.372135868994519,
+        "answer_rubric": {
+          "passed": false,
+          "required_terms": [
+            "nanotechnologies",
+            "stem cells"
+          ],
+          "matched_terms": [],
+          "missing_terms": [
+            "nanotechnologies",
+            "stem cells"
+          ]
+        }
+      },
+      "hybrid": {
+        "text": "\"Mechanical modulation of receptor-ligand interactions at cell-cell interfaces.\"",
+        "elapsed_seconds": 20.43643693998456,
+        "usage": {
+          "prompt_eval_count": 203,
+          "eval_count": 16,
+          "total_duration": 20434534130,
+          "load_duration": 267504918,
+          "prompt_eval_duration": 17577461744,
+          "eval_duration": 2576199404,
+          "client_elapsed_seconds": 20.436237893009093
+        },
+        "augmented": true,
+        "retrieval_seconds": 0.03082418697886169,
+        "context_characters": 588,
+        "memory_hits": [
+          {
+            "memory_id": "43385013",
+            "score": 0.19846776127815247,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "40212412",
+            "score": 0.18985997140407562,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "803312",
+            "score": 0.2091195285320282,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "10607877",
+            "score": 0.1848757565021515,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "25404036",
+            "score": 0.21662816405296326,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          }
+        ],
+        "wall_seconds": 20.467405209026765,
+        "answer_rubric": {
+          "passed": false,
+          "required_terms": [
+            "nanotechnologies",
+            "stem cells"
+          ],
+          "matched_terms": [],
+          "missing_terms": [
+            "nanotechnologies",
+            "stem cells"
+          ]
+        },
+        "retrieval_rubric": {
+          "passed": false,
+          "expected_memory_ids": [
+            "31715818"
+          ],
+          "retrieved_memory_ids": [
+            "43385013",
+            "40212412",
+            "803312",
+            "10607877",
+            "25404036"
+          ],
+          "missing_memory_ids": [
+            "31715818"
+          ]
+        }
+      }
+    },
+    {
+      "id": "scifact-3",
+      "prompt": "1,000 genomes project enables mapping of genetic sequence variation consisting of rare variants with larger penetrance effects than common variants.",
+      "rubric": {
+        "required_terms": [
+          "Rare Variants",
+          "Synthetic"
+        ],
+        "expected_memory_ids": [
+          "14717500"
+        ]
+      },
+      "baseline": {
+        "text": "\" A genome-wide association study of 14,000 individuals identifies 83 new loci in the search for genes influencing complex traits \"",
+        "elapsed_seconds": 10.456415817025118,
+        "usage": {
+          "prompt_eval_count": 69,
+          "eval_count": 32,
+          "total_duration": 10454689634,
+          "load_duration": 225234192,
+          "prompt_eval_duration": 4726153130,
+          "eval_duration": 5478536940,
+          "client_elapsed_seconds": 10.456173888000194
+        },
+        "augmented": false,
+        "retrieval_seconds": 1.6060075722634792e-06,
+        "context_characters": 0,
+        "memory_hits": [],
+        "wall_seconds": 10.4564779039938,
+        "answer_rubric": {
+          "passed": false,
+          "required_terms": [
+            "rare variants",
+            "synthetic"
+          ],
+          "matched_terms": [],
+          "missing_terms": [
+            "rare variants",
+            "synthetic"
+          ]
+        }
+      },
+      "hybrid": {
+        "text": "Rare Variants Create Synthetic Genome-Wide Associations",
+        "elapsed_seconds": 19.749168769980315,
+        "usage": {
+          "prompt_eval_count": 207,
+          "eval_count": 10,
+          "total_duration": 19747468010,
+          "load_duration": 227043905,
+          "prompt_eval_duration": 17969587956,
+          "eval_duration": 1539986818,
+          "client_elapsed_seconds": 19.748955825984012
+        },
+        "augmented": true,
+        "retrieval_seconds": 0.03945055999793112,
+        "context_characters": 530,
+        "memory_hits": [
+          {
+            "memory_id": "14717500",
+            "score": 0.6038827896118164,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "2739854",
+            "score": 0.6478487253189087,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "23389795",
+            "score": 0.6424397230148315,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "4632921",
+            "score": 0.5633693933486938,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "4414547",
+            "score": 0.5337128639221191,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          }
+        ],
+        "wall_seconds": 19.788762921991292,
+        "answer_rubric": {
+          "passed": true,
+          "required_terms": [
+            "rare variants",
+            "synthetic"
+          ],
+          "matched_terms": [
+            "rare variants",
+            "synthetic"
+          ],
+          "missing_terms": []
+        },
+        "retrieval_rubric": {
+          "passed": true,
+          "expected_memory_ids": [
+            "14717500"
+          ],
+          "retrieved_memory_ids": [
+            "14717500",
+            "2739854",
+            "23389795",
+            "4632921",
+            "4414547"
+          ],
+          "missing_memory_ids": []
+        }
+      }
+    },
+    {
+      "id": "scifact-5",
+      "prompt": "1/2000 in UK have abnormal PrP positivity.",
+      "rubric": {
+        "required_terms": [
+          "abnormal prion protein",
+          "appendixes"
+        ],
+        "expected_memory_ids": [
+          "13734012"
+        ]
+      },
+      "baseline": {
+        "text": "\"Prevalence of abnormal prion protein in the UK population\"",
+        "elapsed_seconds": 6.144480285991449,
+        "usage": {
+          "prompt_eval_count": 57,
+          "eval_count": 15,
+          "total_duration": 6143032138,
+          "load_duration": 258660854,
+          "prompt_eval_duration": 3427340546,
+          "eval_duration": 2442698803,
+          "client_elapsed_seconds": 6.1442682489869185
+        },
+        "augmented": false,
+        "retrieval_seconds": 1.5369732864201069e-06,
+        "context_characters": 0,
+        "memory_hits": [],
+        "wall_seconds": 6.144534761027899,
+        "answer_rubric": {
+          "passed": false,
+          "required_terms": [
+            "abnormal prion protein",
+            "appendixes"
+          ],
+          "matched_terms": [
+            "abnormal prion protein"
+          ],
+          "missing_terms": [
+            "appendixes"
+          ]
+        }
+      },
+      "hybrid": {
+        "text": "\"13734012\"",
+        "elapsed_seconds": 23.551585534994956,
+        "usage": {
+          "prompt_eval_count": 227,
+          "eval_count": 11,
+          "total_duration": 23549845525,
+          "load_duration": 260121223,
+          "prompt_eval_duration": 21508127388,
+          "eval_duration": 1769835182,
+          "client_elapsed_seconds": 23.551401574979536
+        },
+        "augmented": true,
+        "retrieval_seconds": 0.025026012968737632,
+        "context_characters": 641,
+        "memory_hits": [
+          {
+            "memory_id": "13734012",
+            "score": 0.41600164771080017,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "18617259",
+            "score": 0.3191138207912445,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "11880289",
+            "score": 0.2682827115058899,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "103007",
+            "score": 0.2734428942203522,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "841371",
+            "score": 0.3249661326408386,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          }
+        ],
+        "wall_seconds": 23.57673900795635,
+        "answer_rubric": {
+          "passed": false,
+          "required_terms": [
+            "abnormal prion protein",
+            "appendixes"
+          ],
+          "matched_terms": [],
+          "missing_terms": [
+            "abnormal prion protein",
+            "appendixes"
+          ]
+        },
+        "retrieval_rubric": {
+          "passed": true,
+          "expected_memory_ids": [
+            "13734012"
+          ],
+          "retrieved_memory_ids": [
+            "13734012",
+            "18617259",
+            "11880289",
+            "103007",
+            "841371"
+          ],
+          "missing_memory_ids": []
+        }
+      }
+    },
+    {
+      "id": "scifact-13",
+      "prompt": "5% of perinatal mortality is due to low birth weight.",
+      "rubric": {
+        "required_terms": [
+          "childhood underweight"
+        ],
+        "expected_memory_ids": [
+          "1606628"
+        ]
+      },
+      "baseline": {
+        "text": "\"Low Birth Weight and Perinatal Mortality: A Systematic Review and Meta-Analysis\"",
+        "elapsed_seconds": 7.127602606022265,
+        "usage": {
+          "prompt_eval_count": 57,
+          "eval_count": 21,
+          "total_duration": 7126001648,
+          "load_duration": 191334292,
+          "prompt_eval_duration": 3395621364,
+          "eval_duration": 3520896284,
+          "client_elapsed_seconds": 7.127348037029151
+        },
+        "augmented": false,
+        "retrieval_seconds": 1.5370314940810204e-06,
+        "context_characters": 0,
+        "memory_hits": [],
+        "wall_seconds": 7.1276597359683365,
+        "answer_rubric": {
+          "passed": false,
+          "required_terms": [
+            "childhood underweight"
+          ],
+          "matched_terms": [],
+          "missing_terms": [
+            "childhood underweight"
+          ]
+        }
+      },
+      "hybrid": {
+        "text": "Perinatal mortality in rural China: retrospective cohort study.",
+        "elapsed_seconds": 19.774318838957697,
+        "usage": {
+          "prompt_eval_count": 197,
+          "eval_count": 13,
+          "total_duration": 19769659207,
+          "load_duration": 249882160,
+          "prompt_eval_duration": 17442213239,
+          "eval_duration": 2066800242,
+          "client_elapsed_seconds": 19.771125512954313
+        },
+        "augmented": true,
+        "retrieval_seconds": 0.039284967991989106,
+        "context_characters": 553,
+        "memory_hits": [
+          {
+            "memory_id": "1263446",
+            "score": 0.5205289721488953,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "7662395",
+            "score": 0.5598843693733215,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "17450673",
+            "score": 0.4824453890323639,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "8842332",
+            "score": 0.4889179766178131,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "12779444",
+            "score": 0.3243696391582489,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          }
+        ],
+        "wall_seconds": 19.813735107018147,
+        "answer_rubric": {
+          "passed": false,
+          "required_terms": [
+            "childhood underweight"
+          ],
+          "matched_terms": [],
+          "missing_terms": [
+            "childhood underweight"
+          ]
+        },
+        "retrieval_rubric": {
+          "passed": false,
+          "expected_memory_ids": [
+            "1606628"
+          ],
+          "retrieved_memory_ids": [
+            "1263446",
+            "7662395",
+            "17450673",
+            "8842332",
+            "12779444"
+          ],
+          "missing_memory_ids": [
+            "1606628"
+          ]
+        }
+      }
+    },
+    {
+      "id": "scifact-42",
+      "prompt": "A high microerythrocyte count raises vulnerability to severe anemia in homozygous alpha (+)- thalassemia trait subjects.",
+      "rubric": {
+        "required_terms": [
+          "Microerythrocyte",
+          "Thalassaemia"
+        ],
+        "expected_memory_ids": [
+          "18174210"
+        ]
+      },
+      "baseline": {
+        "text": "\"Microerythrocytosis and the risk of severe anemia in homozygous alpha-thalassemia trait\"",
+        "elapsed_seconds": 10.152845987991896,
+        "usage": {
+          "prompt_eval_count": 73,
+          "eval_count": 28,
+          "total_duration": 10151353633,
+          "load_duration": 202121886,
+          "prompt_eval_duration": 5112223714,
+          "eval_duration": 4815017786,
+          "client_elapsed_seconds": 10.152565927011892
+        },
+        "augmented": false,
+        "retrieval_seconds": 1.467007678002119e-06,
+        "context_characters": 0,
+        "memory_hits": [],
+        "wall_seconds": 10.152905074006412,
+        "answer_rubric": {
+          "passed": false,
+          "required_terms": [
+            "microerythrocyte",
+            "thalassaemia"
+          ],
+          "matched_terms": [],
+          "missing_terms": [
+            "microerythrocyte",
+            "thalassaemia"
+          ]
+        }
+      },
+      "hybrid": {
+        "text": "Increased Microerythrocyte Count in Homozygous \u03b1+-Thalassaemia Contributes to Protection against Severe Malarial Anaemia",
+        "elapsed_seconds": 31.14935624995269,
+        "usage": {
+          "prompt_eval_count": 256,
+          "eval_count": 31,
+          "total_duration": 31147713457,
+          "load_duration": 220528469,
+          "prompt_eval_duration": 25598426203,
+          "eval_duration": 5306868548,
+          "client_elapsed_seconds": 31.149165166018065
+        },
+        "augmented": true,
+        "retrieval_seconds": 0.03834030299913138,
+        "context_characters": 584,
+        "memory_hits": [
+          {
+            "memory_id": "40913091",
+            "score": 0.6838599443435669,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "18174210",
+            "score": 0.676085352897644,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "6315132",
+            "score": 0.44955974817276,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "45218443",
+            "score": 0.5479217171669006,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          },
+          {
+            "memory_id": "27162821",
+            "score": 0.4899541735649109,
+            "metadata": {
+              "dataset": "scifact",
+              "split": "test"
+            }
+          }
+        ],
+        "wall_seconds": 31.18783267197432,
+        "answer_rubric": {
+          "passed": true,
+          "required_terms": [
+            "microerythrocyte",
+            "thalassaemia"
+          ],
+          "matched_terms": [
+            "microerythrocyte",
+            "thalassaemia"
+          ],
+          "missing_terms": []
+        },
+        "retrieval_rubric": {
+          "passed": true,
+          "expected_memory_ids": [
+            "18174210"
+          ],
+          "retrieved_memory_ids": [
+            "40913091",
+            "18174210",
+            "6315132",
+            "45218443",
+            "27162821"
+          ],
+          "missing_memory_ids": []
+        }
+      }
+    }
+  ],
+  "quality_summary": {
+    "answer_rubric_records": 5,
+    "retrieval_rubric_records": 5,
+    "baseline_answer_pass_rate": 0.0,
+    "hybrid_answer_pass_rate": 0.4,
+    "hybrid_retrieval_pass_rate": 0.6,
+    "hybrid_answer_noninferior": true
+  },
+  "quality_claim": "task_specific_rubric_only",
+  "note": "This report measures host latency/usage and retrieval behavior. It does not claim answer quality without an independent task rubric."
+}

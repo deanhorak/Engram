@@ -1,5 +1,11 @@
 # Limitations
 
+## Final conclusion
+
+The central limitation is decisive: Engram did not improve on or reach equivalence with current
+practical LLM inference. The following limitations explain why the qualified subsystem results do
+not add up to a successful replacement.
+
 - The original dense-Llama limitation is unchanged: no serialized
   representation jointly passes the all-layer causal gate and complete cold
   MLP traffic at or below 45% of dense ideal Q4. Its older SmolLM DIP arm is a

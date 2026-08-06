@@ -1,5 +1,12 @@
 # Evaluation
 
+## Final conclusion
+
+The evaluation record does not support a claim that Engram improves on or equals current practical
+LLM inference. Some source-specific semantic, routing, native-kernel, and retrieval boundaries
+passed, but the complete quality/latency/usability objective did not. All numbers below must be
+read within their declared gates and protocols.
+
 ## Current combined-gate decision
 
 As of 2026-07-30, no generic dense-Llama conversion passes the causal quality

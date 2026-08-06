@@ -129,6 +129,7 @@ from engram.compiler import (
     install_native_bitnet_semantic_memory,
 )
 from engram.runtime import (
+    BM25Reranker,
     EngramRuntime,
     HybridChatRuntime,
     HybridPromptPolicy,
@@ -1556,6 +1557,8 @@ def _parser() -> argparse.ArgumentParser:
     _add_hybrid_encoder_arguments(hybrid_chat)
     hybrid_chat.add_argument("--top-k", type=int, default=4)
     hybrid_chat.add_argument("--min-score", type=float, default=0.15)
+    hybrid_chat.add_argument("--reranker", choices=("none", "bm25"), default="none")
+    hybrid_chat.add_argument("--candidate-pool", type=int, default=100)
     hybrid_chat.add_argument("--max-context-chars", type=int, default=4000)
     hybrid_chat.add_argument(
         "--context-format", choices=("compact", "verbose"), default="compact"
@@ -1602,6 +1605,10 @@ def _parser() -> argparse.ArgumentParser:
     _add_hybrid_encoder_arguments(hybrid_benchmark)
     hybrid_benchmark.add_argument("--top-k", type=int, default=4)
     hybrid_benchmark.add_argument("--min-score", type=float, default=0.15)
+    hybrid_benchmark.add_argument(
+        "--reranker", choices=("none", "bm25"), default="none"
+    )
+    hybrid_benchmark.add_argument("--candidate-pool", type=int, default=100)
     hybrid_benchmark.add_argument("--max-context-chars", type=int, default=4000)
     hybrid_benchmark.add_argument(
         "--context-format", choices=("compact", "verbose"), default="compact"
@@ -1655,6 +1662,10 @@ def _parser() -> argparse.ArgumentParser:
         "--top-k-values", type=int, nargs="+", default=[1, 3, 5, 10, 100]
     )
     beir_hybrid_benchmark.add_argument("--min-score", type=float, default=-1.0)
+    beir_hybrid_benchmark.add_argument(
+        "--reranker", choices=("none", "bm25"), default="none"
+    )
+    beir_hybrid_benchmark.add_argument("--candidate-pool", type=int, default=100)
     beir_hybrid_benchmark.add_argument(
         "--minimum-ndcg-at-10", type=float, default=0.60
     )
@@ -3649,6 +3660,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 maximum_context_characters=args.max_context_chars,
                 context_format=args.context_format,
             ),
+            candidate_pool=args.candidate_pool if args.reranker != "none" else None,
+            reranker=(BM25Reranker(memory.records) if args.reranker == "bm25" and memory is not None else None),
             max_tokens=args.max_tokens,
             temperature=args.temperature,
         )
@@ -3692,6 +3705,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             queries,
             top_k_values=args.top_k_values,
             minimum_score=args.min_score,
+            candidate_pool=args.candidate_pool if args.reranker != "none" else None,
+            reranker=(BM25Reranker(memory.records) if args.reranker == "bm25" else None),
         )
         if "10" not in evaluation["metrics"] or "100" not in evaluation["metrics"]:
             raise ValueError("BEIR evaluation requires top-k values 10 and 100")
@@ -3896,6 +3911,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                         maximum_context_characters=args.max_context_chars,
                         context_format=args.context_format,
                     ),
+                    candidate_pool=(
+                        args.candidate_pool if args.reranker != "none" else None
+                    ),
+                    reranker=(
+                        BM25Reranker(memory.records)
+                        if args.reranker == "bm25" and memory is not None
+                        else None
+                    ),
                     max_tokens=args.max_tokens,
                     temperature=args.temperature,
                 )
@@ -3969,6 +3992,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             ),
             "beir_dataset": beir_manifest,
             "encoder": memory.encoder.to_dict() if memory is not None else None,
+            "reranker": (
+                BM25Reranker(memory.records).to_dict()
+                if args.reranker == "bm25" and memory is not None
+                else None
+            ),
+            "candidate_pool": (
+                args.candidate_pool if args.reranker != "none" else None
+            ),
             "prompts_sha256": sha256_file(args.prompts),
             "context_format": args.context_format,
             "system_prompt": args.system,

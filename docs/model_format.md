@@ -1,5 +1,12 @@
 # Model format
 
+## Final conclusion
+
+The package format is inspectable and operational for several research artifacts, but it is not a
+validated superior model format. Engram did not demonstrate equivalent or better general LLM quality
+and CPU inference than established Transformer runtimes. Treat the formats below as archival
+research interfaces and source-specific experiments, not a production replacement.
+
 Format support is ahead of model quality. The compiler can write and validate
 the package described here, but no trained SmolLM2 semantic artifact is
 currently eligible for the default format because none passes both causal

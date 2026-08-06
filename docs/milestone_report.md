@@ -1,6 +1,15 @@
 # Engram milestone and gate report
 
-Status date: 2026-08-05
+Status date: 2026-08-06
+
+## Final conclusion
+
+The project did not meet its overall objective. Engram produced useful implementation artifacts
+and source-specific subsystem passes, but no compiled representation improved on or achieved
+equivalence with current practical LLM inference. In particular, the complete hybrid host tests
+did not show reliable answer-quality improvement or a latency improvement, and the generic dense
+Transformer replacement remained unqualified. The milestone entries below preserve what was
+validated; they must not be read as an end-to-end success claim.
 
 ## Practical hybrid direction
 
@@ -65,6 +74,17 @@ the complete host pipeline does not. Remaining work is frozen reranking/top-1
 precision, followed by embedding persistence and a larger held-out host protocol.
 This public evidence neither replaces the separately protected gate nor advances the
 layer-free Milestone 4 provider.
+
+The first reranking arm is now implemented and measured. BM25 reranks only the top 100
+MiniLM candidates using the full immutable corpus for IDF statistics. On the unchanged
+SciFact test qrels, nDCG@10 improved from 0.6493 to **0.6670**, MRR from 0.6146 to
+**0.6338**, and Recall@100 remained **0.9267**. The gate therefore remains passed as an
+offline aggregate result, but the unchanged five-claim Qwen3 host confirmation regressed:
+top-five retrieval became 3/5 and augmented answers 2/5, versus 4/5 and 3/5 for semantic-only
+retrieval. BM25 is rejected for deployment despite its aggregate nDCG improvement; the
+semantic-only path remains the selected host baseline. A train-only pairwise linear calibration
+using MiniLM cosine, BM25, and title overlap improved held-out nDCG@10 to 0.7129 but also removed
+query 1's judged paper from the frozen host top five; it was rejected before another host call.
 
 ## Alternative dense-teacher boundary (Qwen3, 2026-08-04)
 

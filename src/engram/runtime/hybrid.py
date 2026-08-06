@@ -17,6 +17,7 @@ import hashlib
 import json
 import re
 import time
+from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping, Protocol, Sequence
@@ -261,6 +262,80 @@ class ONNXSentenceTextEncoder:
         }
 
 
+class BM25Reranker:
+    """Small dependency-free BM25 reranker for a retrieved candidate pool."""
+
+    def __init__(
+        self,
+        records: Sequence["HybridMemoryRecord"],
+        *,
+        k1: float = 1.2,
+        b: float = 0.75,
+    ) -> None:
+        if k1 < 0.0 or b < 0.0 or b > 1.0:
+            raise ValueError("BM25 requires k1 >= 0 and b in [0, 1]")
+        if not records:
+            raise ValueError("BM25 requires at least one record")
+        self.k1 = float(k1)
+        self.b = float(b)
+        self._token_pattern = re.compile(r"(?u)\b\w+\b")
+        self._tokens = tuple(
+            self._tokenize(record.text) for record in records
+        )
+        self._term_frequencies = tuple(Counter(tokens) for tokens in self._tokens)
+        document_frequency: Counter[str] = Counter()
+        for tokens in self._tokens:
+            document_frequency.update(set(tokens))
+        self._document_count = len(self._tokens)
+        self._average_length = sum(map(len, self._tokens)) / self._document_count
+        self._idf = {
+            term: float(
+                np.log1p(
+                    (self._document_count - frequency + 0.5)
+                    / (frequency + 0.5)
+                )
+            )
+            for term, frequency in document_frequency.items()
+        }
+
+    def _tokenize(self, text: str) -> tuple[str, ...]:
+        return tuple(self._token_pattern.findall(text.lower()))
+
+    def score(self, query: str, record_index: int) -> float:
+        """Return a BM25 score for one indexed record."""
+
+        if not 0 <= record_index < self._document_count:
+            raise IndexError("record_index is outside the BM25 corpus")
+        query_terms = Counter(self._tokenize(query))
+        frequencies = self._term_frequencies[record_index]
+        document_length = len(self._tokens[record_index])
+        score = 0.0
+        for term, query_frequency in query_terms.items():
+            term_frequency = frequencies.get(term, 0)
+            if not term_frequency:
+                continue
+            denominator = term_frequency + self.k1 * (
+                1.0
+                - self.b
+                + self.b * document_length / self._average_length
+            )
+            score += self._idf.get(term, 0.0) * (
+                query_frequency
+                * term_frequency
+                * (self.k1 + 1.0)
+                / denominator
+            )
+        return float(score)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "type": "bm25",
+            "k1": self.k1,
+            "b": self.b,
+            "document_count": self._document_count,
+        }
+
+
 def _sha256_path(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -342,6 +417,8 @@ class HybridMemoryIndex:
         *,
         top_k: int = 4,
         minimum_score: float = 0.0,
+        candidate_pool: int | None = None,
+        reranker: BM25Reranker | None = None,
     ) -> tuple[HybridMemoryHit, ...]:
         if top_k < 0:
             raise ValueError("top_k must be nonnegative")
@@ -349,16 +426,33 @@ class HybridMemoryIndex:
             raise ValueError("minimum_score must lie in [-1, 1]")
         if top_k == 0:
             return ()
+        if candidate_pool is not None and candidate_pool <= 0:
+            raise ValueError("candidate_pool must be positive when provided")
         query_vector = self.encoder.encode(query)
         scores = self._embeddings @ query_vector
         ordered = sorted(
             range(len(self.records)),
             key=lambda index: (-float(scores[index]), self.records[index].memory_id),
         )
+        candidate_count = min(
+            len(self.records), max(top_k, candidate_pool or top_k)
+        )
+        candidates = [
+            index
+            for index in ordered
+            if float(scores[index]) >= minimum_score
+        ][:candidate_count]
+        if reranker is not None:
+            candidates.sort(
+                key=lambda index: (
+                    -reranker.score(query, index),
+                    -float(scores[index]),
+                    self.records[index].memory_id,
+                )
+            )
         return tuple(
             HybridMemoryHit(self.records[index], float(scores[index]))
-            for index in ordered[:top_k]
-            if float(scores[index]) >= minimum_score
+            for index in candidates[:top_k]
         )
 
 
@@ -523,6 +617,8 @@ def evaluate_hybrid_retrieval(
     *,
     top_k_values: Sequence[int] = (1, 4, 8),
     minimum_score: float = 0.05,
+    candidate_pool: int | None = None,
+    reranker: BM25Reranker | None = None,
 ) -> dict[str, Any]:
     """Evaluate frozen retrieval membership without invoking a model host."""
 
@@ -557,6 +653,8 @@ def evaluate_hybrid_retrieval(
             query.text,
             top_k=maximum_k,
             minimum_score=minimum_score,
+            candidate_pool=candidate_pool,
+            reranker=reranker,
         )
         elapsed = time.perf_counter() - started
         latencies.append(elapsed)
@@ -653,6 +751,8 @@ def evaluate_hybrid_retrieval(
         "query_count": len(queries),
         "dimensions": index.encoder.dimensions,
         "minimum_score": minimum_score,
+        "candidate_pool": candidate_pool,
+        "reranker": reranker.to_dict() if reranker is not None else None,
         "top_k_values": requested_k,
         "metrics": metrics,
         "category_metrics": category_metrics,
@@ -786,6 +886,8 @@ class HybridChatRuntime:
         model: str,
         memory: HybridMemoryIndex | None = None,
         policy: HybridPromptPolicy | None = None,
+        candidate_pool: int | None = None,
+        reranker: BM25Reranker | None = None,
         max_tokens: int = 128,
         temperature: float = 0.0,
     ) -> None:
@@ -799,6 +901,8 @@ class HybridChatRuntime:
         self.model = model
         self.memory = memory
         self.policy = policy or HybridPromptPolicy()
+        self.candidate_pool = candidate_pool
+        self.reranker = reranker
         self.max_tokens = max_tokens
         self.temperature = temperature
         self.history: list[dict[str, str]] = []
@@ -815,6 +919,8 @@ class HybridChatRuntime:
                 user_text,
                 top_k=self.policy.top_k,
                 minimum_score=self.policy.minimum_score,
+                candidate_pool=self.candidate_pool,
+                reranker=self.reranker,
             )
             if augmented and self.memory is not None
             else ()
@@ -984,6 +1090,7 @@ def load_beir_retrieval_dataset(
 
 __all__ = [
     "ChatCompletionClient",
+    "BM25Reranker",
     "HashingTextEncoder",
     "ONNXSentenceTextEncoder",
     "HybridChatRuntime",

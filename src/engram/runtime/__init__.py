@@ -49,6 +49,7 @@ from .olmoe_selector_policy import (
 )
 from .reference import EngramRuntime, GenerationToken
 from .hybrid import (
+    BM25Reranker,
     ChatCompletionClient,
     HashingTextEncoder,
     ONNXSentenceTextEncoder,
@@ -107,6 +108,7 @@ __all__ = [
     "load_olmoe_selector_policy",
     "validate_native_bitnet_package",
     "ChatCompletionClient",
+    "BM25Reranker",
     "HashingTextEncoder",
     "ONNXSentenceTextEncoder",
     "HybridChatRuntime",

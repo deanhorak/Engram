@@ -1,5 +1,12 @@
 # How Engram works
 
+## Final conclusion
+
+Engram is a completed research investigation, not a proven replacement for current LLM inference.
+It did not improve on or match a practical Transformer host end to end. The mechanisms described
+below explain the intended architecture and the validated component experiments; they do not imply
+that the full compiled system achieved equivalent quality or performance.
+
 This document explains Engram for readers with a general computer science background. No prior
 knowledge of neural networks or large language models is assumed. It describes the architecture
 we are trying to build, how information is extracted from a trained Llama-compatible model, the
@@ -8,14 +15,10 @@ compiled representation, and how generation works without the source transformer
 Engram is a research prototype. Where the implemented baseline differs from the intended trained
 system, this document says so explicitly.
 
-For the shortest current account, start with [Project status](status.md). The
-key result is that the separate native-BitNet path now combines teacher-like
-behavior with the required modeled memory-traffic reduction through practical
-DIP semantic memory. Its final semantic gate passed by postmortem
-adjudication, and the authenticated DIP package now runs inside the complete
-CPU-only C++ token-step runtime and the user-facing chat command. The original
-dense-Llama conversion path still has no qualifying representation. A newer
-OLMoE branch now passes semantic quality/evidence using its native learned
+For the shortest current account, start with [Project status](status.md). The strongest historical
+results are qualified native-BitNet and OLMoE subsystem passes; they did not produce a general
+improvement or equivalence to current LLM runtimes. The original dense-Llama conversion path still
+has no qualifying representation. A newer OLMoE branch passed semantic quality/evidence using its native learned
 top-8 expert router and Q7 expert weights. Its packed serialization and direct
 CPU expert kernel now pass too. A mapped BF16 companion artifact and complete
 native token/generation path are installed in an authenticated package.

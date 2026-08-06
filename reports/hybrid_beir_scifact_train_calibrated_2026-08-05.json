@@ -1,0 +1,44 @@
+{
+  "format": "engram-beir-train-calibrated-reranker-screen",
+  "version": 1,
+  "dataset": {
+    "name": "BeIR/scifact",
+    "corpus_sha256": "dec31c8182f3d744c7d2c09423756fd1d17cbef75808db13ba01cc0aab4d1ac6",
+    "queries_sha256": "8ff84a7c903f722981cd8d595c022660140c51867b27608a6d4910db86080313",
+    "train_qrels_sha256": "a53f2114831916c096b6c37d9e54da68cef4efdcdbd5ed46533601af972acf1d",
+    "test_qrels_sha256": "0864bb985e0ca2367ba217977e72004d549054b2b06666ed9d4825ac7c21284c",
+    "train_queries": 809,
+    "train_positive_pairs": 919,
+    "test_queries": 300
+  },
+  "candidate_generator": {
+    "encoder": "sentence-transformers/all-MiniLM-L6-v2",
+    "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "candidate_pool": 100,
+    "train_positive_pool_coverage": 0.9283065512978986
+  },
+  "reranker": {
+    "type": "pairwise_logistic_linear",
+    "features": ["minilm_cosine", "bm25", "title_token_overlap"],
+    "normalization": {
+      "mean": [0.3917257728738013, 6.8566903001256145, 0.10195071912713581],
+      "std": [0.08528927027742152, 7.258834267087769, 0.09704070216888139]
+    },
+    "weights": [0.9833794691032238, 0.8943376058695157, 0.15922557856380434],
+    "training_contract": "train qrels only; no test tuning"
+  },
+  "test_metrics": {
+    "1": {"mean_expected_recall": 0.5712222222222223, "ndcg": 0.5933333333333334, "mrr": 0.5933333333333334},
+    "3": {"mean_expected_recall": 0.7103333333333333, "ndcg": 0.665223057420839, "mrr": 0.6588888888888889},
+    "5": {"mean_expected_recall": 0.7697777777777778, "ndcg": 0.6898834868984435, "mrr": 0.6702222222222222},
+    "10": {"mean_expected_recall": 0.8362222222222222, "ndcg": 0.7129024416510247, "mrr": 0.6783637566137566},
+    "100": {"mean_expected_recall": 0.9266666666666666, "ndcg": 0.7330955081991617, "mrr": 0.6819717115585381}
+  },
+  "host_fixture_retrieval": {
+    "top_five_pass_rate": 0.6,
+    "expected_ids_missing": ["scifact-1", "scifact-13"],
+    "host_generation_run": false,
+    "decision": "reject_generic_linear_reranker_for_host"
+  },
+  "note": "The ranker improves aggregate held-out metrics but removes a known-good semantic candidate from the frozen five-claim host pool. It is not a promotion or an end-to-end answer result."
+}

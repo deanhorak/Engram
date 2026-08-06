@@ -1,5 +1,11 @@
 # Auxiliary external benchmarks
 
+## Final conclusion
+
+These auxiliary benchmarks document reproducibility and failure boundaries only. They do not show
+that Engram improves on or equals current LLM technology, and none authorizes the protected Engram
+gate or a production-quality claim.
+
 The project now freezes one public long-context retrieval corpus for an
 independent, reproducible stress test. It is deliberately separate from the
 project-specific protected gate.

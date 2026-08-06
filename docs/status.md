@@ -1,6 +1,15 @@
 # Project status
 
-Snapshot date: **2026-08-05**
+Snapshot date: **2026-08-06**
+
+## Final project conclusion
+
+Engram did **not** demonstrate an improvement over, or equivalence to, current practical LLM
+technology. No general Transformer-free package matched an established CPU inference host in
+quality, latency, and usability. Several native BitNet/OLMoE and retrieval subsystems passed
+qualified internal or public boundaries, but those results do not establish a superior model or
+runtime. The project is closed as a research record; the original Transformer remains the quality
+reference and the hybrid path remains a fallback, not a demonstrated replacement.
 
 ## Hybrid architecture boundary
 
@@ -83,7 +92,20 @@ Mean wall time increased from 7.02 s to 23.53 s (3.35x). The two failures separa
 remaining quality problem: one relevant document was rank 17, while another was rank 3
 but lost the host's implicit reranking to a rank-1 distractor. The next boundary is a
 frozen CPU reranker/top-1 precision experiment on the unchanged corpus and qrels, not a
-larger prompt. Persisted embeddings should follow to remove repeated 176.8 s startup.
+larger prompt. A dependency-free BM25 reranker over the top-100 MiniLM candidates now raises
+nDCG@10 from 0.6493 to **0.6670** and MRR from 0.6146 to **0.6338**, with Recall@100 unchanged
+at 0.9267. This confirms useful aggregate ordering improvement offline, but the unchanged
+five-claim CPU-only Qwen3 fixture then regressed: BM25 produced 3/5 top-five retrieval and 2/5
+augmented answers, versus 4/5 and 3/5 for semantic-only retrieval. The semantic-only configuration
+remains the selected host baseline. BM25 is retained as an offline negative result and rejected as
+a deployment reranker. The next direction is a calibrated query/document reranker with a
+semantic-hit protection rule, followed by persisted embeddings to remove repeated 176.8 s startup.
+
+A train-only pairwise linear calibration was screened before considering a neural reranker. It
+used 809 train queries and 919 positive pairs, with MiniLM cosine, BM25, and title-token-overlap
+features. It improved held-out test nDCG@10 to 0.7129, but removed query 1's judged paper from
+the frozen host top five (host retrieval would be 3/5), so it is rejected without a Qwen3 run.
+The full screen is [recorded here](../reports/hybrid_beir_scifact_train_calibrated_2026-08-05.json).
 
 ## Latest native recurrent-controller boundary
 

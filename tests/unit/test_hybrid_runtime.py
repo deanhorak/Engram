@@ -7,9 +7,11 @@ import pytest
 
 import engram.runtime.hybrid as hybrid_module
 from engram.runtime.hybrid import (
+    BM25Reranker,
     HybridChatRuntime,
     HybridMemoryIndex,
     HybridMemoryRecord,
+    HashingTextEncoder,
     HybridPromptPolicy,
     HybridRetrievalQuery,
     OpenAICompatibleClient,
@@ -223,6 +225,24 @@ def test_retrieval_evaluator_reports_top_k_and_category_metrics() -> None:
     assert result["metrics"]["2"]["mean_average_precision"] == 1.0
     assert result["category_metrics"]["lexical"]["1"]["query_count"] == 2
     assert result["latency"]["maximum_seconds"] >= 0.0
+
+
+def test_bm25_reranker_reorders_semantic_candidates() -> None:
+    records = [
+        HybridMemoryRecord("a", "rare alpha finding"),
+        HybridMemoryRecord("b", "common alpha background"),
+    ]
+    reranker = BM25Reranker(records)
+    index = HybridMemoryIndex(records, encoder=HashingTextEncoder(dimensions=16))
+    hits = index.search(
+        "rare finding",
+        top_k=1,
+        candidate_pool=2,
+        reranker=reranker,
+        minimum_score=-1.0,
+    )
+    assert hits[0].record.memory_id == "a"
+    assert reranker.to_dict()["type"] == "bm25"
 
 
 def test_beir_loader_uses_only_judged_split_queries(tmp_path: Path) -> None:

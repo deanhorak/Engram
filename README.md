@@ -29,6 +29,21 @@ The long-term systems target is a substantial reduction in DRAM traffic—ideall
 retaining useful model quality. That target is a hypothesis, not a result. Engram will not claim
 success from random fixtures, synthetic tasks, proxy byte counts, or a runnable compiler alone.
 
+## Final conclusion (2026-08-06)
+
+This research project did **not** produce an inference system that improves on, or is equivalent
+to, current practical LLM technology. The native Transformer-free paths demonstrated useful
+component and source-specific results, but no general compiled representation matched the quality,
+latency, and usability of an established CPU host such as `llama.cpp`. The hybrid retrieval path
+passed a public offline candidate-recall boundary, yet the complete Qwen3 host protocol remained
+slower and its answer quality was not improved reliably. Generic BM25 and learned scalar rerankers
+also failed to transfer aggregate retrieval gains to the host task.
+
+The repository is therefore being wrapped up as a research record, not promoted as a superior LLM
+runtime. The original Transformer checkpoints remain the quality reference. The documented native
+BitNet and OLMoE results are qualified subsystem achievements, not evidence that Engram replaced a
+general Transformer or improved CPU inference.
+
 ## Practical direction: the hybrid architecture
 
 The original layer-free replacement remains a research result, not a validated product path. The
@@ -163,10 +178,22 @@ baseline answered 0/5 title rubrics, retrieval placed the judged paper in the to
 and the augmented host answered 3/5. Mean wall time rose from 7.02 s to 23.53 s (**3.35x**).
 One relevant paper was ranked 17th; on another claim the relevant paper was rank 3 but Qwen chose
 the rank-1 distractor. Thus the offline public retrieval gate passes, while the complete public
-host boundary does not. The next quality experiment is a frozen CPU reranker/top-1 precision
-boundary on the same corpus and qrels; persisting corpus embeddings is the subsequent startup-cost
-optimization. See the [hashing report](reports/hybrid_beir_scifact_hashing_2026-08-05.json),
-[MiniLM report](reports/hybrid_beir_scifact_minilm_2026-08-05.json), and
+host boundary does not. A dependency-free BM25 stage now reranks only the top 100 MiniLM
+candidates. On the unchanged qrels it raises nDCG@10 to **0.6670** and MRR to **0.6338** while
+leaving Recall@100 at **0.9267**; the declared public retrieval gate remains passed. This is an
+offline ordering result, but it did not transfer to the host fixture: with BM25 enabled, top-five
+retrieval fell to **3/5** and augmented answers fell to **2/5**. The semantic-only configuration
+remains the selected host baseline. BM25 is rejected for deployment and preserved as a useful
+negative result; the next direction is a calibrated query/document reranker with a semantic-hit
+protection rule, followed by persisted embeddings to remove the 177-second CPU index rebuild. A
+train-only pairwise linear calibration using MiniLM cosine, BM25, and title overlap improved
+aggregate test nDCG@10 to **0.7129**, but removed query 1's judged paper from the host top five;
+it is rejected as another generic reranker. See the
+the [hashing report](reports/hybrid_beir_scifact_hashing_2026-08-05.json),
+[MiniLM report](reports/hybrid_beir_scifact_minilm_2026-08-05.json),
+[BM25 report](reports/hybrid_beir_scifact_minilm_bm25_2026-08-05.json),
+[BM25 host report](reports/hybrid_beir_scifact_host_bm25_2026-08-05.json), and
+[calibration screen](reports/hybrid_beir_scifact_train_calibrated_2026-08-05.json), and
 [host confirmation](reports/hybrid_beir_scifact_host_2026-08-05.json).
 
 For an external, reproducible stress test, the project also freezes the public

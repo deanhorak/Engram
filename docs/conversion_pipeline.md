@@ -1,5 +1,12 @@
 # Conversion pipeline
 
+## Final conclusion
+
+The conversion pipeline can inspect checkpoints and emit research packages, but it did not convert
+a general dense Transformer into an equivalent or better Engram model. Dense-to-sparse conversion
+requires retraining/distillation rather than a lossless file-format transformation. This pipeline
+is therefore archival and experimental.
+
 Current eligibility is summarized in [Project status](status.md). Although the
 fixture compiler and experimental serializers work, no trained SmolLM2
 semantic artifact currently passes both the causal and physical-traffic gates,
